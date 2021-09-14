@@ -1,0 +1,12 @@
+site_name: KataSDK Offical Doc.
+site_url: https://kata.games/developers
+nav:
+    - Presentation: index.md
+    - Getting Started: start.md
+    - The Game Engine: kataen.md
+    - Examples: examples.md
+    - Web Context: web_ctx.md
+    - Performance Discussion: perf.md
+    - Troubleshooting: debug.md
+
+theme: readthedocs
