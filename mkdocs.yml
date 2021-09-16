@@ -8,5 +8,6 @@ nav:
     - Web Context: web_ctx.md
     - Performance Discussion: perf.md
     - Troubleshooting: debug.md
+    - F.A.Q.: faq.md
 
 theme: readthedocs

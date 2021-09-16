@@ -1,89 +1,67 @@
-# Polyxena dare interdum flores movere per
+# Run games in the Web Context
 
-## Consulat exstinguere si suas
+## Pre-requisites, game structure
 
-Lorem markdownum, inconcessaeque quia nomine Dymantida obortae Iovis; ubi aestu
-sceleris! Ventis caesa rus unda turris imas inpius lancea: nec fessa latratu.
+You need to have the `katasdk` installed. Moreover for version `0.0.5` or inferior,
+you would need to put all your code in `main.py`.
 
-    if (ispClipHard.pseudocode(illegal_interface + ddr_encoding_dv +
-            command_analog_app, browser)) {
-        debugMultiprocessingWindows.ttlNetwork(runtime_down_page,
-                newbie_peripheral(-1, sram, 5), twain);
-    }
-    if (fiosCiscPpi < namespaceCmyk) {
-        nameDlcTraceroute.data(lamp);
-        plagiarism /= shell_boot;
-    } else {
-        real = dv_menu_parity / sampleWebHypertext;
-        hibernate.stickYobibyteWordart += manetLeaderboardLogic *
-                dualCompactSwitch + 3823;
-    }
-    var stationHypermediaAvatar = windows_menu_mouse;
-    var dataSms = matrix - bankruptcy;
-    blu -= host_drive_offline;
+You need a folder named `assets/` and a JSON-file name `assets.json` that lists all images your game is using.
 
-Costas in latebat habet hastile precaris fontibus, ducta ingeniosus opus; ille
-vertit, contractosque lapis; In. In reponuntur cantus dolet Bacchus, fratres
-pericula caelumque Latiaeque phocen deos igne, dabat deus, sit!
+Example of such a file:
 
-    if (newline * flatbedProtectorClipboard(dv, client_exif) >= printerDot(
-            bugLaptopDdl, data_netmask, broadband(vga))) {
-        duplex += minimize_flops_payload;
-    }
-    powerpoint -= servicesClobFormat;
-    if (host_scrolling_interface + hardGui) {
-        dac.install += peripheral(55, managementDigitalZif, 1);
-    } else {
-        drive.metafile(malware, on.dithering_nosql(5));
-        mms_kernel_open.zipWhitelist = webResponsiveLion;
-        lpiSystem += web;
-    }
-    if (moodleInfotainmentUpload + 1) {
-        hostCrm(warm_blob_stack, tag, 64530);
-    } else {
-        clusterIpodSuffix = 4;
-        bit_output = mediaBacksideCmos(-5);
-    }
+```
+[
+  'explo_sprsheet.png',
+  'minerals.png',
+  'my-plane.png',
+  'myspace.png',
+  'sc-trail.png',
+  'sc-trail-maxpower.png',
+  'space_mine.png'
+]
+```
+Don't add any symbols except the braces. Spaces or newlines do not matter.
 
-## Ancaei esse tamen turgida lumina tendat quercus
+## webtest VS bundle
 
-Esse vellet accepta, illa coniuge; nunc densetur siccare quoque trepidantum
-illi: quae et forsitan movit stabat? Commune vergit; exiguas sed veri pensas
-minimo premis si nunc necis adsuetudine ut iugis?
+The two choices for a developer are: test your game / bundle your game for the web.
 
-- Matre portat cupies
-- Bisque auras
-- Ad faciunt silet inmemores fugit
-- Ignis quam petis corniger donec scelerataque cetera
-- Portentificisque denique capillos
-- Mea sit dum Paean desertum umero leto
+It is important to understand that a game in the "web bundle" or "wbundle" format is supposed to be distributed. 
+This means **you only bundle a game once it is finished!**
+For bundling you need a dev account, also the number of games you can bundle is limited to 3 for now.
 
-Dianae explet circueunt arsit moderatus Rhodiae essem aliter. Est lupum serpens
-populus et capit. Tangam trepidans *tantique* ferro es facit ducere ac nunc,
-trahi mixta: tristes?
+### Testing your game in a web context: how-to
 
-    reality_readme.pplPromptEbook = cyberspace_json * newbie;
-    if (2 != 1) {
-        dlc(image.slaDiskXp(directory_scraping, bluetooth));
-    } else {
-        drive_user_jsp = 1;
-        facebook_file_terminal = serial_gif.engine(
-                drive_multiplatform_hardware);
-        cisc_toggle_lag += blobUrlVolume;
-    }
-    if (1 > engine(secondary_dongle_vlb, record, firmware)) {
-        text_snow_data = userParity + runtimeRowCharacter + 1;
-    }
-    flashModelOnline.radcabCybersquatter(rdf_design, sdk_gbps, 2);
-    if (tracerouteHalftoneP) {
-        rippingIde(beta.spam(lossless, dlcRequirements, mountain));
-        dock_box_screenshot = bcc + port_ipad + media_hdtv.dimm_language(
-                function_phishing, card);
-    } else {
-        queryResolutionProgramming.computingDigitalMatrix(xml_web_soap(
-                tigerHost, carrierHttpsBarcraft, webDebugger));
-    }
+Open a command line interface (you can run `cmd.exe` if you're using Windows).
+Go to the directory parent to your project (one step below the project's root folder), then type this command:
 
-Caput duraeque, qua nymphe vibrant oculi locumque rapinae, sed **ignemque**
-temptat [timidusque](http://fores.io/ora): erexit? Mihi manu eadem conluerant
-evertere satis, parat.
+    katasdk webtest folder/
+
+This will create a temporary web bundle.
+The product of this command is not meant to be distributed! The access can be revoked after 30 minutes.
+
+## Bundling your game once it's ready an can be released: how-to
+
+When your game is finished, polished, test... You are ready to go, you can share it and distribute over the Internet! To do so, first you would need to create an account on the [Kata.games platform](https://kata.games), register if you haven't yet, it is free!
+
+Once you have your account, log in using the web interface (top right widgets on the landing page).
+This will let you access to *Advanced options related to your Kata.games account*.
+
+Once you have downloaded you key you can copy it to any folder on your hard drive. Copy/move it to make things convenient for you.
+
+Go to the directory parent to your project (one step below the project's root folder), then if my account name is `goku3` for example I would type this command:
+
+    katasdk bundle goku3.key folder/
+
+## Run again existing bundles (tests, or release)
+
+If your wbundle already exists but you want to run it again,
+you can use this command:
+
+    katasdk serve folder/
+
+Click on the third button: **"Request a Dev Demo key (KataSDK)""**
+you get one unique DevKey per account but you can download this file as many times as needed.
+
+If you need further assistance, you can [join our Discord community](https://discord.gg/3NFfvHAt44)
+and ask anything. You can also contact the support: [support@kata.games](mailto:support@kata.games) Have fun coding for the Web!

@@ -1,9 +1,3 @@
-# Sorry this part is not ready yet
-
-The text below is just a placeholder.
-
-## Consulat exstinguere si suas
-
 Lorem markdownum, inconcessaeque quia nomine Dymantida obortae Iovis; ubi aestu
 sceleris! Ventis caesa rus unda turris imas inpius lancea: nec fessa latratu.
 

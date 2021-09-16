@@ -7,7 +7,7 @@ SDK stands for Software Development Kit. This is a set of tools for third-party 
 KataSDK is made up of four parts:
 
 * a game engine written in Python, named `kataen`
-* a pygame emulator to run pygame programs in the web context
+* a pygame emulator able to run pygame programs in the web context
 * an API, named `katapi` that is useful for interacting with our servers
 * a set of commands that helps you in publishing/ pushing games to our platform
 

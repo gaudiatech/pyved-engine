@@ -1,4 +1,7 @@
-# Performance issues
+# Sorry this part is not ready yet
+(we should talk about Performance issues)
+
+The text below is just a placeholder.
 
 Basic infos blah blah...
 

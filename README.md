@@ -8,7 +8,9 @@ Code - test - publish - monetize your games based on pygame, using one single To
 
 ## Documentation
 
-The KataSDK official documentation can be found [Here](https://kata.games/developers).
+The KataSDK official documentation is to be found
+
+Here: [kata.games/developers](https://kata.games/developers).
 
 ## Basic example: how to start using kataen
 
