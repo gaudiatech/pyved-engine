@@ -8,9 +8,18 @@ Code - test - publish - monetize your games based on pygame, using one single To
 
 ## Documentation
 
-The KataSDK official documentation is to be found
+The KataSDK official documentation is available here:
 
-Here: [kata.games/developers](https://kata.games/developers).
+[kata.games/developers](https://kata.games/developers).
+
+This is built using `mkdocs` and you can edit sources/improve the docs if you wish. Sources are given in the `docs/` folder of this repository. 
+
+## Purpose
+
+The first purpose of this public repository is to share parts of the KataSDK that are open-sourced. This includes the documentation but also the game engine itself, etc.
+
+Another very important purpose is to allow people to list bugs/ crashes by submitting issues directly on github. If you've found a bug, please create an issue here and describe how to reproduce your bug.
+
 
 ## Basic example: how to start using kataen
 
@@ -71,7 +80,6 @@ class AvatarView(EventReceiver):
     super().__init__()
     self.avref = avref
   def proc_event(self, ev, source):
-    global scr_size
     if ev.type == EngineEvTypes.PAINT:
       ev.screen.fill(pygame.color.Color('antiquewhite2'))
       pygame.draw.circle(ev.screen, (244,105,251), self.avref.pos, 15, 0)
@@ -85,8 +93,6 @@ class AvatarCtrl(EventReceiver):
     if ev.type == EngineEvTypes.LOGICUPDATE:
       avdir = self.avref.direct
       self.avref.pos[1] = (self.avref.pos[1] + avdir) % scr_size[1]
-    elif ev.type == pygame.QUIT:
-      gameover = True
     elif ev.type == pygame.KEYDOWN:
       if ev.key == pygame.K_UP:
         self.avref.direct = -1
@@ -112,9 +118,13 @@ if __name__=='__main__':
   run_game()
 ```
 
-The structural change is due to the fact that the Katagames Engine uses the MVC design pattern. We also use a game controller (an object that inherits from `EventReceiver` but also exposes a special `loop` method) in order to ensure compatibility with the Web context.
+These programs are shared as `min-example-0.py` and `min-example-1.py` in the current repo.
 
-You can also notice that we have put our main code inside a `run_game()` function. This is important when using `kataen`, as it will allow to *bundle our game and effectively run it in a Web context!*
+The structural change comes from the fact that the Katagames Engine uses the MVC design pattern.
+
+It also uses a game controller (an object that inherits from `EventReceiver` but also exposes a special `loop` method) in order to ensure compatibility with the Web context. Notice we have put our main code inside a `run_game()` function. This is also important when using `kataen`, if you wish to *bundle our game and effectively run it in a Web context!*
+
+See the official documentation for more info.
 
 ## Graphic modes
 All games that rely on the `kataen` component run in a fixed-size window of 960x540 pixels.

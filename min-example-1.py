@@ -14,7 +14,6 @@ class AvatarView(EventReceiver):
     super().__init__()
     self.avref = avref
   def proc_event(self, ev, source):
-    global scr_size
     if ev.type == EngineEvTypes.PAINT:
       ev.screen.fill(pygame.color.Color('antiquewhite2'))
       pygame.draw.circle(ev.screen, (244,105,251), self.avref.pos, 15, 0)
@@ -28,8 +27,6 @@ class AvatarCtrl(EventReceiver):
     if ev.type == EngineEvTypes.LOGICUPDATE:
       avdir = self.avref.direct
       self.avref.pos[1] = (self.avref.pos[1] + avdir) % scr_size[1]
-    elif ev.type == pygame.QUIT:
-      gameover = True
     elif ev.type == pygame.KEYDOWN:
       if ev.key == pygame.K_UP:
         self.avref.direct = -1
