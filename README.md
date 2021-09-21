@@ -7,7 +7,7 @@ A new tool suite that enables your games to be:
 
 + **structured** - use the integrated M-V-C architecture to reach a rare and amazing level of Code reuse;
 
-+ **web compatible** - share with creation online with no hassle... Finally!
++ **web compatible** - share your creations online with no hassle... It's finally here!
 
 
 ## Installation
@@ -31,8 +31,6 @@ These pages are built using the `mkdocs` tool. You can help improving the docs i
 
 
 ## Getting started guide
-
-
 
 
 Imagine you have an existing game that you would like to transform/run on the web. 
@@ -138,13 +136,14 @@ Refer to the official documentation for more info.
 ## About graphic modes
 
 
-All games that rely on the `kataen` component run in a fixed-size window of 960x540 pixels.
+All games that are based upon `kataen` run in a fixed-size window of 960x540 pixels,
+while this seems to be a problem it has many benefits for permance / web compatibility.
 
-However, your effective in-game resolution can be selected amongst **three different possibilities**:
+Moreover your effective in-game resolution can be selected amongst **three different possibilities**:
 
-+ the SUPER_RETRO_MODE: 320x180 (game screen is upscaled by 3)
++ the HD_MODE: 960x540 pixels (no upscaling at all)
 + the OLD_SCHOOL_MODE: 480x270 (game screen is upscaled by 2)
-+ the HD_MODE: 960x540 (without any upscaling)
++ the SUPER_RETRO_MODE: 320x180 (game screen is upscaled by 3)
 
 
 ## Repo content description
@@ -160,6 +159,7 @@ One of the main purpose for this repository is to allow people to list bugs/ cra
 
 **Long term goal of the KataSDK:**
 "Code - test - publish - monetize your games using one single Tool Suite!"
+
 
 ## License
 
