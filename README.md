@@ -1,29 +1,39 @@
-# KataSDK Python Package
+# Create 'magic' pygame-based games
 
-Code - test - publish - monetize your games based on pygame, using one single Tool Suite!
+
+A new tool suite that enables your games to be:
+ 
++ **standardized** - stop rewriting game building blocks over & over again. We've got you covered!
+
++ **structured** - use the integrated M-V-C architecture to reach a rare and amazing level of Code reuse;
+
++ **web compatible** - share with creation online with no hassle... Finally!
+
 
 ## Installation
 
+
+To install the ready-to-use KataSDK locally, type:
 `pip install katasdk`
 
-## Documentation
+You can start experimenting by adding this line in your source-code:
+`import katagames_sdk.engine as kataen`
+
+
+## Requirements and documentation
+
+The Katagames Engine (`kataen` for short) is a wrapper around pygame therefore `pygame>=2.0.1` is required.
 
 The KataSDK official documentation is available here:
-
 [kata.games/developers](https://kata.games/developers).
 
-This is built using `mkdocs` and you can edit sources/improve the docs if you wish. Sources are given in the `docs/` folder of this repository. 
-
-## Purpose
-
-The first purpose of this public repository is to share parts of the KataSDK that are open-sourced. This includes the documentation but also the game engine itself, etc.
-
-Another very important purpose is to allow people to list bugs/ crashes by submitting issues directly on github. If you've found a bug, please create an issue here and describe how to reproduce your bug.
+These pages are built using the `mkdocs` tool. You can help improving the docs if you wish! All docs sources are located in the `docs/` folder of this repository. 
 
 
-## Basic example: how to start using kataen
+## Getting started guide
 
-The Katagames Engine (or `kataen` for short) is a wrapper around pygame.
+
+
 
 Imagine you have an existing game that you would like to transform/run on the web. 
 Let us take one basic example that relies solely on the Pygame library:
@@ -119,14 +129,15 @@ if __name__=='__main__':
 ```
 
 These programs are shared as `min-example-0.py` and `min-example-1.py` in the current repo.
-
 The structural change comes from the fact that the Katagames Engine uses the MVC design pattern.
-
 It also uses a game controller (an object that inherits from `EventReceiver` but also exposes a special `loop` method) in order to ensure compatibility with the Web context. Notice we have put our main code inside a `run_game()` function. This is also important when using `kataen`, if you wish to *bundle our game and effectively run it in a Web context!*
 
-See the official documentation for more info.
+Refer to the official documentation for more info.
 
-## Graphic modes
+
+## About graphic modes
+
+
 All games that rely on the `kataen` component run in a fixed-size window of 960x540 pixels.
 
 However, your effective in-game resolution can be selected amongst **three different possibilities**:
@@ -134,3 +145,24 @@ However, your effective in-game resolution can be selected amongst **three diffe
 + the SUPER_RETRO_MODE: 320x180 (game screen is upscaled by 3)
 + the OLD_SCHOOL_MODE: 480x270 (game screen is upscaled by 2)
 + the HD_MODE: 960x540 (without any upscaling)
+
+
+## Repo content description
+
+
+**The present repository contains:**
++ the Game Engine that is a component of the KataSDK, requires `pygame>=2.0.1`
++ the client-side API to communicate with [https://kata.games](https://kata.games) servers
++ sources for the official KataSDK documention
+
+**Identify bugs, improve tools so everyone can benefit**
+One of the main purpose for this repository is to allow people to list bugs/ crashes by submitting issues directly on github. If you've found a bug, please create an issue here and describe how to reproduce your bug.
+
+**Long term goal of the KataSDK:**
+"Code - test - publish - monetize your games using one single Tool Suite!"
+
+## License
+
+
+Materials in this repo are licensed under the LGPL3 license, see `LICENSE` file.
+
