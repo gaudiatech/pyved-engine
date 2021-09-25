@@ -116,6 +116,11 @@ if __name__=='__main__':
   run_game()
 ```
 
+**Important remark:**
+when using this SDK, you always need to create a `main.py` file that contains a `def run_game():` statement.
+This becomes the entry point for the web version of your game!
+Be aware that your game won't be able to run and will crash in the web context if you forget this rule!
+
 ## Kata engine main functions & classes
 
 Functions:
