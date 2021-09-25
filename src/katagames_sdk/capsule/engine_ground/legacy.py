@@ -33,6 +33,8 @@ def init(pygame_pym, gfxmode_str, caption=None, maxfps=60):
     pygame_pym.init()
     if not cgmconf.runs_in_web():
         pygame_pym.mixer.init()
+    else:
+        pygame_pym.time.do_fake_init()
 
     engine_is_init = True
 
@@ -114,12 +116,6 @@ def tag_multistate(allstates, glvars_pymodule, use_katagames_env, providedst_cla
 
 def get_manager():
     return kevent.gl_unique_manager
-
-
-# def init_headless():
-#     global headless_mode
-#     headless_mode = True
-#     init((None, None), -1)
 
 
 def cleanup(pygame_pym):
