@@ -1,9 +1,10 @@
+import json
 import time
 import weakref
 from abc import abstractmethod
-import katagames_sdk.capsule.engine_ground.conf_eng as engineconf
-from katagames_sdk.capsule.engine_ground.defs import EngineEvTypes, FIRST_CUSTO_TYPE, USEREVENT
-
+from . import conf_eng as engineconf
+from .defs import EngineEvTypes, FIRST_CUSTO_TYPE, USEREVENT
+from collections import deque as deque_obj
 
 PygameBridge = None
 
@@ -30,7 +31,6 @@ class CgmEvent:
             raise ValueError('ev_type {} is not valid (cgm reserved type)')
 
         self.type = engin_ev_type
-
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -42,6 +42,30 @@ class CgmEvent:
     def ext_tev_detection(etype):
         # extended type event detection
         return etype == USEREVENT
+
+    @classmethod
+    def deserialize(cls, ser):
+        # print(ser)
+        tmpli = ser.split('@')
+        adhoc_type = int(tmpli[0])
+        dico = json.loads(tmpli[1])
+        if adhoc_type == EngineEvTypes.PAINT:
+            dico['screen'] = engineconf.screen
+        return cls(adhoc_type, **dico)
+
+    def serialize(self):
+        kwargs_cp = dict()
+        for k, v in self.__dict__.items():
+            if k == 'type':
+                pass
+            elif k == 'screen' and self.type == EngineEvTypes.PAINT:
+                kwargs_cp['screen'] = None
+            elif isinstance(v, tuple):
+                kwargs_cp[k] = list(v)
+            else:
+                kwargs_cp[k] = v
+
+        return '{}@'.format(self.type) + json.dumps(kwargs_cp)
 
     def wrap(self):
         """
@@ -96,6 +120,9 @@ class CogObject:
     lu_cached_ev = None
     paint_cached_ev = None
 
+    # contains time from webctx
+    wt = None
+
     # we can send 'N times' the logic update event
     # while keeping the same time.time() value
     # => this speeds up the game without loosing too much precision on time handling
@@ -107,8 +134,8 @@ class CogObject:
 
         # - module events, init procedure...
         if CogObject.lu_cached_ev is None:
-            CogObject.lu_cached_ev = CgmEvent(EngineEvTypes.LOGICUPDATE, time=None)
-            CogObject.paint_cached_ev = CgmEvent(EngineEvTypes.PAINT, screen=engineconf.get_screen())
+            CogObject.lu_cached_ev = CgmEvent(EngineEvTypes.LOGICUPDATE, curr_t=None)
+            CogObject.paint_cached_ev = CgmEvent(EngineEvTypes.PAINT, screen=None)
 
         # resuming constructor
         self._manager = gl_unique_manager
@@ -126,9 +153,6 @@ class CogObject:
             cls._next_id += 1
         res = cls._next_id
         return res
-
-    def __del__(self):
-        self.__class__._unavailable_ids.remove(self._id)
 
     def get_id(self):
         return self._id
@@ -153,13 +177,19 @@ class CogObject:
 
     def pev(self, ev_type, **kwargs):
         if ev_type == EngineEvTypes.LOGICUPDATE:
-            self.lu_cached_ev.curr_t = time.time()
-            ev = self.lu_cached_ev
+            if CogObject.wt:
+                CogObject.lu_cached_ev.curr_t = CogObject.wt
+            else:
+                CogObject.lu_cached_ev.curr_t = time.time()
+            self._manager.post(CogObject.lu_cached_ev)
+
         elif ev_type == EngineEvTypes.PAINT:
-            ev = self.paint_cached_ev
+            CogObject.paint_cached_ev.screen = engineconf.screen
+            self._manager.post(CogObject.paint_cached_ev)
+
         else:
             ev = CgmEvent(ev_type, **kwargs)
-        self._manager.post(ev)
+            self._manager.post(ev)
 
 
 class EventReceiver(CogObject):
@@ -269,28 +299,24 @@ class EventReceiver(CogObject):
 #             rev = pygame.event.poll()
 
 
-class DeadSimpleManager:
-
-    def __init__(self, pygame_pym):
-        self.pygame_pym = pygame_pym
-        self._queue = list()
-        self._listener_ids = list()
+class ListenerSet:
+    def __init__(self):
         self._corresp = dict()
-        self._timers = dict()
+        self._listener_ids = list()
 
     def add_listener(self, cog_obj):
-        self._corresp[cog_obj.get_id()] = cog_obj
-        self._listener_ids.append(cog_obj.get_id())
+        key = cog_obj.get_id()
+        self._corresp[key] = cog_obj
+        self._listener_ids.append(key)
 
     def remove_listener(self, cog_obj):
-        self._listener_ids.remove(cog_obj.get_id())
-        del self._corresp[cog_obj.get_id()]
+        key = cog_obj.get_id()
+        self._listener_ids.remove(key)
+        del self._corresp[key]
 
-    def post(self, ev):
-        self._queue.append(ev)
-
-    def get_pressed_keys(self):
-        return self.pygame_pym.key.get_pressed()
+    def hard_reset(self):
+        del self._listener_ids[:]
+        self._corresp.clear()
 
     def soft_reset(self):
         ids_tbr = set()
@@ -301,52 +327,51 @@ class DeadSimpleManager:
             self._listener_ids.remove(adhoc_id)
             del self._corresp[adhoc_id]
 
-    def hard_reset(self):
-        del self._listener_ids[:]
-        self._corresp.clear()
+    def __getitem__(self, k):
+        return self._corresp[k]
 
-    def xtimer_set_timer(self, evtype, ms, tinfo=None):
-        if ms > 0:
-            if tinfo:
-                tnow = tinfo
-            else:
-                tnow = time.time()
+    def __iter__(self):
+        return self._listener_ids.__iter__()
 
-            # - debug
-            # print('record in timer {}, {}, {}'.format(evtype, tnow+(ms/1000), ms))
-            self._timers[evtype] = (tnow+(ms/1000), ms)
 
-            self._queue.append(CgmEvent(evtype))
+class DeadSimpleManager:
+    nb_inst = 0
 
-        else:  # deleting timed event
-            if evtype in self._timers:
-                del self._timers[evtype]
+    def __init__(self, pygame_pym):
+        self.__class__.nb_inst += 1
+        if self.__class__.nb_inst > 1:
+            raise ValueError('using 2+ instances of DeadSimpleManager is forbidden')
 
-    def _inject_timed_events(self):
-        # inject timed events
-        tnow = time.time()
-        for evtype, infopair in self._timers.items():
-            proc_date, delay = infopair
-            if tnow >= proc_date:
-                self.xtimer_set_timer(evtype, delay, tnow)
+        self._ref_ls = ListenerSet()
+        self.add_listener = self._ref_ls.add_listener
+        self.remove_listener = self._ref_ls.remove_listener
+        self.hard_reset = self._ref_ls.hard_reset
+        self.soft_reset = self._ref_ls.soft_reset
+
+        self.pygame_pym = pygame_pym
+        self._omega_mouse_events = {
+            pygame_pym.MOUSEMOTION,
+            pygame_pym.MOUSEBUTTONDOWN,
+            pygame_pym.MOUSEBUTTONUP
+        }
+        self._ev_queue = deque_obj()
+
+    def get_pressed_keys(self):
+        return self.pygame_pym.key.get_pressed()
+
+    def post(self, ev):
+        self._ev_queue.appendleft(ev)
 
     def update(self):
-        self._inject_timed_events()
+        for alien_ev in self.pygame_pym.event.get():
+            # if alien_ev.type in self._omega_mouse_events:
+            #    alien_ev.pos = engineconf.conv_to_vscreen(*alien_ev.pos)
+            self._ev_queue.appendleft(alien_ev)
 
-        # we will assume that self._queue is the full_ev_queue,
-        # so anything that needs a fix is done now
-        for extra_ev in self.pygame_pym.event.get():
-            if extra_ev.type in (self.pygame_pym.MOUSEMOTION, self.pygame_pym.MOUSEBUTTONDOWN, self.pygame_pym.MOUSEBUTTONUP):
-                extra_ev.pos = engineconf.conv_to_vscreen(*extra_ev.pos)
-            self._queue.append(extra_ev)
-        
-        amount_to_proc = len(self._queue)
-        if amount_to_proc:
-            while amount_to_proc > 0:
-                curr_ev = self._queue[0]
-                for un_id in self._listener_ids:
-                    listener = self._corresp[un_id]
-                    if listener.proc_event(curr_ev, None):
-                        continue
-                del self._queue[0]
-                amount_to_proc -= 1
+        n = len(self._ev_queue)
+        for _ in range(n):
+            curr_ev = self._ev_queue.pop()
+            for cogobj_id in self._ref_ls:
+                blocking = self._ref_ls[cogobj_id].proc_event(curr_ev, None)
+                if blocking:
+                    continue

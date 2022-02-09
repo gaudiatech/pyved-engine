@@ -1,9 +1,8 @@
-import time
-from katagames_sdk.capsule.engine_ground.StContainer import StContainer
-from katagames_sdk.capsule.engine_ground.defs import EngineEvTypes
-from katagames_sdk.capsule.engine_ground.gfx_updater import display_update
-from katagames_sdk.capsule.event import EventReceiver
-from katagames_sdk.capsule.struct.misc import Stack
+from ..StContainer import StContainer
+from .defs import EngineEvTypes
+from .gfx_updater import display_update
+from .events import EventReceiver
+from .structures import Stack
 
 
 class GameTicker(EventReceiver):
@@ -14,6 +13,10 @@ class GameTicker(EventReceiver):
         self._running = True
         self._clock = self.pygame_pym.time.Clock()
         self._maxfps = xmaxfps
+
+    @property
+    def running(self):
+        return self._running
 
     def proc_event(self, ev, source):
         if ev.type == self.pygame_pym.QUIT or ev.type == EngineEvTypes.GAMEENDS:
@@ -28,7 +31,7 @@ class GameTicker(EventReceiver):
 
     def loop(self):
         while self._running:  # many iterations with only this line
-            self.pev(EngineEvTypes.LOGICUPDATE, giventime=time.time())
+            self.pev(EngineEvTypes.LOGICUPDATE)
             self.pev(EngineEvTypes.PAINT)
 
             self._manager.update()
@@ -42,7 +45,7 @@ class GameTicker(EventReceiver):
 # - - -  - -
 class StackBasedGameCtrl(EventReceiver):
 
-    def __init__(self, existing_ticker, gamestates_enum, glvars_pymodule, use_katagame_env, stmapping=None):
+    def __init__(self, existing_ticker, gamestates_enum, stmapping, glvars_pymodule, katagame_st=None, ):
         super().__init__(sticky=True)
 
         self.ticker = existing_ticker
@@ -50,18 +53,15 @@ class StackBasedGameCtrl(EventReceiver):
 
         # lets build up all gamestates objects
         self._st_container = StContainer.instance()
-        self._st_container.setup(gamestates_enum, glvars_pymodule, stmapping)
+        self._st_container.setup(gamestates_enum, stmapping, glvars_pymodule)
 
-        if use_katagame_env:
+        if katagame_st:
             self.first_state_id = -1
+            self._st_container.hack_bios_state(katagame_st)
         else:
             self.first_state_id = 0
 
         self.__state_stack = Stack()
-
-    # not used now but can be handy for engine hacking...
-    def replace_bios_state(self, gs_obj):
-        self._st_container.hack_bios_state(gs_obj)
 
     # redefinition
     def halt(self):

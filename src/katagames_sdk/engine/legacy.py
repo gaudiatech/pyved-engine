@@ -7,15 +7,12 @@ contact author: thomas@gaudia-tech.com
 
  the structure has been slightly modified in 2021 to become web-compatible
 
-_defs.vernum was used to store the coremon ver. information
-
 License LGPL3
 """
-
-import katagames_sdk.capsule.engine_ground.conf_eng as cgmconf
-from katagames_sdk.capsule.engine_ground.runners import GameTicker, StackBasedGameCtrl
-from katagames_sdk.capsule.event import DeadSimpleManager
-from katagames_sdk.capsule import event as kevent
+from .foundation import conf_eng as cgmconf
+from .foundation import events as kevent
+from .foundation.events import DeadSimpleManager
+from .foundation.runners import GameTicker, StackBasedGameCtrl
 
 
 engine_is_init = False
@@ -27,15 +24,15 @@ _multistate = False
 _stack_based_ctrl = None
 
 
-def init(pygame_pym, gfxmode_str, caption=None, maxfps=60):
+def legacyinit(pygame_module, gfxmode_str, caption=None, maxfps=60):
     global engine_is_init, game_ticker, SCR_SIZE
 
-    pygame_pym.init()
-    if not cgmconf.runs_in_web():
-        pygame_pym.mixer.init()
+    pygame_module.init()
+    if not cgmconf.runs_in_web:
+        pygame_module.mixer.init()
     else:
-        pygame_pym.time.do_fake_init()
-
+        pygame_module.time.do_fake_init()
+    
     engine_is_init = True
 
     # we defined 3 canonical modes for display:
@@ -59,39 +56,42 @@ def init(pygame_pym, gfxmode_str, caption=None, maxfps=60):
         K_OLDSCHOOL: 2.0,
         K_HD: None
     }
+    taille_surf_dessin = drawspace_size[chosen_mode]
 
-    if cgmconf.runs_in_web():
-        my_vscreen = pygame_pym.display.set_mode(drawspace_size[chosen_mode])
+    if cgmconf.runs_in_web:
+        print('call display set_mode with arg: ')
+        print(taille_surf_dessin)
+        pygame_surf_dessin = pygame_module.display.set_mode(taille_surf_dessin)
     else:
-        tmp = pygame_pym.display.set_mode(cgmconf.CONST_SCR_SIZE)
-        my_vscreen = pygame_pym.surface.Surface(drawspace_size[chosen_mode])
-        cgmconf.set_realpygame_screen(tmp)
+        pgscreen = pygame_module.display.set_mode(cgmconf.CONST_SCR_SIZE)
+        pygame_surf_dessin = pygame_module.surface.Surface(taille_surf_dessin)
+        cgmconf.set_realpygame_screen(pgscreen)
 
     result = upscaling[chosen_mode]
-    cgmconf.set_vscreen(my_vscreen, upscaling[chosen_mode])
-    SCR_SIZE = my_vscreen.get_size()
+    cgmconf.set_virtual_screen(pygame_surf_dessin, upscaling[chosen_mode])
 
     if upscaling[chosen_mode] is not None:
         print('upscaling x{}'.format(upscaling[chosen_mode]))
 
-    if not cgmconf.runs_in_web():
+    if not cgmconf.runs_in_web:
         print('<->context: genuine Pygame')
         if caption is None:
-            pygame_pym.display.set_caption(
-                'Made using KataSDK v'+cgmconf.VERSION
+            pygame_module.display.set_caption(
+                'Made using KataSDK'
             )
         else:
-            pygame_pym.display.set_caption(caption)
+            pygame_module.display.set_caption(caption)
 
-        kevent.gl_unique_manager = DeadSimpleManager(pygame_pym)
-        game_ticker = GameTicker(pygame_pym, maxfps)
+        kevent.gl_unique_manager = DeadSimpleManager(pygame_module)
+        game_ticker = GameTicker(pygame_module, maxfps)
 
     else:
         import katagames_sdk.pygame_emu.overlay as overlay
         print('<->context: Web')
-        manager_4web = overlay.upgrade_evt_manager(pygame_pym)
+        manager_4web = overlay.upgrade_evt_manager(pygame_module)
+        print('overlay ok')
         kevent.gl_unique_manager = manager_4web
-        game_ticker = overlay.WebCtxGameTicker(pygame_pym, None)
+        game_ticker = overlay.WebCtxGameTicker(pygame_module)
 
     return result  # can be None, if no upscaling applied
 
@@ -118,11 +118,12 @@ def get_manager():
     return kevent.gl_unique_manager
 
 
-def cleanup(pygame_pym):
+def cleanup():
     global engine_is_init
     assert engine_is_init
+    pygame_pym = cgmconf.pygame
 
-    if not cgmconf.runs_in_web():
+    if not cgmconf.runs_in_web:
         kevent.gl_unique_manager.hard_reset()
         cgmconf.pygame_screen = None
 

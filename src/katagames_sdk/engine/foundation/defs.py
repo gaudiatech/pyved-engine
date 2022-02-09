@@ -6,10 +6,13 @@ FIRST_ENGIN_TYPE = USEREVENT + 1
 FIRST_CUSTO_TYPE = FIRST_ENGIN_TYPE + 20  # therefore, 20 is the maximal amount of engine events
 
 
-vernum = '0.0.4'  # before december 13th, 2020
+# --- constants ---
+HD_MODE = 'hd'
+OLD_SCHOOL_MODE = 'oldschool'
+SUPER_RETRO_MODE = 'superretro'
 
 
-from katagames_sdk.capsule.struct.misc import enum_builder_generic
+from .structures import enum_builder_generic
 
 
 def enumeration_pr_events_engine(*sequential, **named):
@@ -31,6 +34,8 @@ EngineEvTypes = enumeration_pr_events_engine(
 
     'GameBegins',  # correspond à l'ancien InitializeEvent
     'GameEnds',  # indique que la sortie de jeu est certaine
+
+    'BtClick',
 
     'FocusCh',
     'FieldCh',

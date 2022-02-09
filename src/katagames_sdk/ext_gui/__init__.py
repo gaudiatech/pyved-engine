@@ -1,12 +1,16 @@
+from .Button import Button
+from .Button import ButtonPanel
+from .Button2 import Button2
+from .Trigger import Trigger
+from .WidgetBo import WidgetBo
+from ..engine import EventReceiver, import_pygame
+
 """
 GUI sub-module,
  belongs to the katasdk_pym
 """
-from katagames_sdk.capsule.event import EventReceiver
-import katagames_sdk.capsule.pygame_provider as pprov
 
-
-PygameBridge = pprov.get_module()
+pygame = import_pygame()
 
 
 # pr GUI
@@ -32,130 +36,6 @@ class Etiquette:
     def set_text(self, t):
         self._text = t
         self.img = self.ft_obj.render(self._text, True, self._color)
-
-
-def test_func():
-    print("Button clicked!")
-
-
-class Button(EventReceiver):
-    HIDEOUS_PURPLE = (255, 0, 255)
-
-    def __init__(self, font, text, position_on_screen, callback=None, draw_background=True):
-        super().__init__()
-        padding_value = 12  # pixels
-
-        if draw_background:
-            self.bg_color = (100, 100, 100)
-            self.fg_color = (255, 255, 255)
-        else:
-            self.bg_color = self.HIDEOUS_PURPLE
-            self.fg_color = (0, 0, 0)
-
-        # data
-        self._callback = callback
-        self._text = text
-        self._hit = False
-
-        # dawing
-        self.font = font
-        self.txt = text
-
-        size = font.size(text)
-        self.tmp_size = size
-        self.position = position_on_screen
-        self.collision_rect = PygameBridge.Rect(self.position, size).inflate(padding_value, padding_value)
-        self.collision_rect.topleft = self.position
-
-        self.image = None
-        self.refresh_img()
-
-    def refresh_img(self):
-        self.image = PygameBridge.Surface(self.collision_rect.size).convert()
-        self.image.fill(self.bg_color)
-
-        if self.bg_color != self.HIDEOUS_PURPLE:
-            textimg = self.font.render(self.txt, True, self.fg_color, self.bg_color)
-        else:
-            textimg = self.font.render(self.txt, False, self.fg_color)
-
-        ssdest = self.image.get_size()
-        ssource = textimg.get_size()
-        blit_dest = (
-            (ssdest[0] - ssource[0])//2,
-            (ssdest[1] - ssource[1])//2
-        )
-        self.image.blit(textimg, blit_dest)
-
-        #  TODO is this useful?
-        # if self.bg_color == self.HIDEOUS_PURPLE:
-        #     self.image.set_colorkey((self.bg_color))
-        #     box_color = (190,) * 3
-        #     full_rect = (0, 0, self.image.get_size()[0], self.image.get_size()[1])
-        #     pygame.draw.rect(self.image, box_color, full_rect, 1)
-
-    # pour des raisons pratiques (raccourci)
-    def get_size(self):
-        return self.image.get_size()
-
-    def proc_event(self, ev, source):
-        if ev.type == PygameBridge.KEYDOWN:
-            self.on_keydown(ev)
-        elif ev.type == PygameBridge.MOUSEMOTION:
-            self.on_mousemotion(ev)
-        elif ev.type == PygameBridge.MOUSEBUTTONDOWN:
-            self.on_mousedown(ev)
-        elif ev.type == PygameBridge.MOUSEBUTTONUP:
-            self.on_mouseup(ev)
-
-    def on_keydown(self, event):
-        """
-        Decides what do to with a keypress.
-        special meanings have these keys: 
-        enter, left, right, home, end, backspace, delete
-        """
-        if event.type != PygameBridge.KEYDOWN:
-            print("textentry got wrong event: " + str(event))
-        else:
-            self.render()
-
-    ### debug
-    # if __name__=='__main__' and event.key == pygame.K_ESCAPE:
-    #     events.RootEventSource.instance().stop()
-
-    def on_mousedown(self, event):
-        pos = event.pos
-        if self.collision_rect.collidepoint(pos):
-            if self._callback:
-                self._callback()
-
-    def on_mouseup(self, event):
-        pos = event.pos
-        # print('button: mouse button up detected! x,y = {}'.format(pos))
-
-    def on_mousemotion(self, event):
-        pass
-
-    def set_callback(self, callback):
-        self._callback = callback
-
-    def render(self):
-        """
-        
-        """
-        pass
-
-    def update(self):
-        pass
-    #     """
-    #     Actually not needed. (only need if this module is run as a script)
-    #     """
-    #     # only need if this module is run as a script
-    #     if __name__ == '__main__':
-    #         screen = pygame.display.get_surface()
-    #         screen.fill((100, 0, 0))
-    #         screen.blit(self.image, self.position)
-    #         pygame.display.flip()
 
 
 class TextInput(EventReceiver):
@@ -196,12 +76,12 @@ class TextInput(EventReceiver):
         self.dirty = True
         self.font = font
         height = self.font.get_ascent() - self.font.get_descent() + 8
-        self.image = PygameBridge.Surface((width, height)).convert()
+        self.image = pygame.Surface((width, height)).convert()
         self.size = (width, height)
 
         self.text_color = (1, 1, 1)
-        self.text_field_rect = PygameBridge.Rect(0, 0, width - 1, height - 1)
-        self.text_img = PygameBridge.Surface((2, 2))
+        self.text_field_rect = pygame.Rect(0, 0, width - 1, height - 1)
+        self.text_img = pygame.Surface((2, 2))
         self.pixel_width = width - 4
 
         self._focus = None
@@ -241,35 +121,35 @@ class TextInput(EventReceiver):
         return ''.join(tmp)
 
     def proc_event(self, event, source):
-        if event.type != PygameBridge.KEYDOWN:
+        if event.type != pygame.KEYDOWN:
             return
 
         # - traitement touche pressée
-        if event.key == PygameBridge.K_RETURN:
+        if event.key == pygame.K_RETURN:
             # self.on_enter()
             self.on_enter_func(self.__txt_content)
             self.__txt_content = ''
             self.caretpos = 0
 
-        elif event.key == PygameBridge.K_RIGHT:
+        elif event.key == pygame.K_RIGHT:
             self.move_caret(+1)
 
-        elif event.key == PygameBridge.K_LEFT:
+        elif event.key == pygame.K_LEFT:
             self.move_caret(-1)
 
-        elif event.key == PygameBridge.K_HOME:
+        elif event.key == pygame.K_HOME:
             self.move_caret('home')
 
-        elif event.key == PygameBridge.K_END:
+        elif event.key == pygame.K_END:
             self.move_caret('end')
 
-        elif event.key == PygameBridge.K_BACKSPACE:
+        elif event.key == pygame.K_BACKSPACE:
             self.backspace_char()
 
-        elif event.key == PygameBridge.K_DELETE:
+        elif event.key == pygame.K_DELETE:
             self.delete_char()
 
-        elif event.key == PygameBridge.K_TAB:
+        elif event.key == pygame.K_TAB:
             pass
 
         else:
@@ -331,4 +211,4 @@ class TextInput(EventReceiver):
             # pygame.draw.line(self.image, self._caret_color, (xpos, self._padding),
             #                  (xpos, self.image.get_height() - self._padding), 2)
 
-        PygameBridge.draw.rect(self.image, (100, 100, 100), self.text_field_rect, 2)
+        pygame.draw.rect(self.image, (100, 100, 100), self.text_field_rect, 2)

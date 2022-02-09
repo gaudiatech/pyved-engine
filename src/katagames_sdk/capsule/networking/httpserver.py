@@ -1,8 +1,9 @@
 import urllib.parse as urlparse
 import urllib.request as urll
 from urllib.parse import urlencode
-import katagames_sdk.capsule.engine_ground.conf_eng as cgmconf
-from katagames_sdk.capsule.struct.Singleton import Singleton
+from ...engine.foundation import conf_eng as cgmconf
+from ...alpha_pyg.Singleton import Singleton
+from ...engine import runs_in_web
 
 
 @Singleton
@@ -63,7 +64,7 @@ class HttpServer:
             print(str(post_fields))
             print('...')
 
-        if cgmconf.runs_in_web():
+        if runs_in_web():
             from browser import ajax, window
 
             temppp = '0x999'
