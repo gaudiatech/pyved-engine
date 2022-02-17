@@ -3,7 +3,7 @@ from .. import engine as kataen
 
 
 # import pygame
-pygame = kataen.import_pygame()
+pygame = kataen.pygame
 
 
 class ButtonPanel(EventReceiver):

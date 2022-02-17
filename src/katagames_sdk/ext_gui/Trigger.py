@@ -2,10 +2,10 @@
 deprecated! This class has been copied for better retro-compatibility with old projects(e.g. Brutos)
 """
 
-from ..engine import import_pygame
+from .. import engine as kataen
 
 
-pygame = import_pygame()
+pygame = kataen.pygame
 
 
 class Trigger:

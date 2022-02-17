@@ -1,8 +1,8 @@
 import sys
 import traceback
 
-from ..alpha_pyg.Singleton import Singleton
-from ..alpha_pyg.util import underscore_format
+from .foundation.structures import Singleton
+from .foundation.util import underscore_format
 
 
 @Singleton

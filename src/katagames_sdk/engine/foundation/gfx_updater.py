@@ -1,4 +1,4 @@
-from . import conf_eng as cgmconf
+from .. import cgmconf
 
 
 def display_update():

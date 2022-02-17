@@ -3,14 +3,14 @@ from .Button import ButtonPanel
 from .Button2 import Button2
 from .Trigger import Trigger
 from .WidgetBo import WidgetBo
-from ..engine import EventReceiver, import_pygame
+from .. import engine as kataen
 
 """
 GUI sub-module,
  belongs to the katasdk_pym
 """
 
-pygame = import_pygame()
+pygame = kataen.pygame
 
 
 # pr GUI
@@ -38,7 +38,7 @@ class Etiquette:
         self.img = self.ft_obj.render(self._text, True, self._color)
 
 
-class TextInput(EventReceiver):
+class TextInput(kataen.EventReceiver):
     """
     Simple text entry component.
     """

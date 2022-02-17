@@ -1,7 +1,8 @@
-from ..engine import EventReceiver, import_pygame
+from ..engine import EventReceiver
+from .. import engine as kataen
 
 
-pygame = import_pygame()
+pygame = kataen.pygame
 
 
 def test_func():

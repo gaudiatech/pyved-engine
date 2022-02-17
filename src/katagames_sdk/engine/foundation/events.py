@@ -2,7 +2,7 @@ import json
 import time
 import weakref
 from abc import abstractmethod
-from . import conf_eng as engineconf
+from .. import cgmconf as engineconf
 from .defs import EngineEvTypes, FIRST_CUSTO_TYPE, USEREVENT
 from collections import deque as deque_obj
 

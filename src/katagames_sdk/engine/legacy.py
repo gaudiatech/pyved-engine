@@ -9,7 +9,7 @@ contact author: thomas@gaudia-tech.com
 
 License LGPL3
 """
-from .foundation import conf_eng as cgmconf
+from . import cgmconf
 from .foundation import events as kevent
 from .foundation.events import DeadSimpleManager
 from .foundation.runners import GameTicker, StackBasedGameCtrl
@@ -40,8 +40,8 @@ def legacyinit(pygame_module, gfxmode_str, caption=None, maxfps=60):
     # 'hd' & with a pixel to canvas mapping
 
     str_to_code = {
-        'superretro': K_LEGACY,
-        'oldschool': K_OLDSCHOOL,
+        'super_retro': K_LEGACY,
+        'old_school': K_OLDSCHOOL,
         'hd': K_HD
     }
     chosen_mode = str_to_code[gfxmode_str]

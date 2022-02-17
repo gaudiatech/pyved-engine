@@ -2,7 +2,7 @@
 """
 to be set externally when engine.init is called
 """
-runs_in_web = None
+runs_in_web = '__BRYTHON__' in globals()
 pygame = None
 pygame_gfxdraw = None
 

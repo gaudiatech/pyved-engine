@@ -1,137 +1,169 @@
 """
-interface to the Kata.games game Engine
- alias "kataen"
+Author: github.com/wkta
+Principles: The ultimate engine
+-------------------------------
+ * is a wrapper around pygame functions & objects
 
-GAUDIA TECH INC.
- (c) 2018-2021
+ * runs best within the KataSDK but can also be detached and runs independently.
+ Just rename _engine -> engine, and Voila
 
-Author:
- Thomas Iwaszko
+ * does not know ANYTHING about whether it runs in web ctx or not.
+ The engine can be "hacked" so it runs a pygame emulator instead of pygame,
+ but this does not change anythin' to engine's implementation per se
+
+ * is extensible: engine needs to be able to receive extensions like a GUI manager,
+ an isometric engine, etc. without any architecture change.
+ To achieve this we will use the same hacking method as previously,
+ basically this is like using an Injector (relates to-> Dependency Injection pattern)
+ that is:
+ if an extension module is called it will be searched/fetched via the Injector.
+ This searching is done via __getattr__(name) and the _available_sub_modules dict. structure
+
 """
+import importlib
 
-from . import legacy as eng_
-from .foundation import conf_eng as cgmconf, events as kevent
-from .foundation import defs as _defs
-from ..alpha_pyg.PygproxyBringer import PygproxyBringer as _BringerCls
-from ._BaseGameState import BaseGameState
+from . import legacy as _eng_legacy
 
-# --------------------------------------------------
-# [  ! ]_FORCE_ expose objects_[ !  ]
-# --------------------------------------------------
-from .AnimatedSprite import AnimatedSprite
-from .foundation.defs import HD_MODE, OLD_SCHOOL_MODE, SUPER_RETRO_MODE
-e = AnimatedSprite or HD_MODE or OLD_SCHOOL_MODE or SUPER_RETRO_MODE
+from . import cgmconf
 
-from .foundation.events import EventReceiver, EngineEvTypes, CogObject, EventManager, CgmEvent
-e = e or EventReceiver or EngineEvTypes or CogObject or EventManager or CgmEvent
+# TODO transition to:
+# from ._carrefour import *
+# from .boilerplate import gfx_updater as _updater
+# from .boilerplate.BaseGameState import BaseGameState
+from ..capsule.engine_ground.BaseGameState import BaseGameState
+from .foundation import gfx_updater as _updater
+from ..capsule.struct.misc import Stack
 
-from .foundation.conf_eng import runs_in_web as _r_web_context
-
+# - required
+from .foundation.events import CogObject, EventReceiver, EngineEvTypes, CgmEvent, EventManager
 from .foundation.defs import enum_for_custom_event_types
-e = e or enum_for_custom_event_types
 
-from .foundation.gfx_updater import display_update
-e = e or display_update
-
-
-# 4 methods below are kept only for improved backward compat' (SDK) ----------
-def runs_in_web():
-    return _BringerCls.instance().web_enabled
-
-
-def import_gfxdraw():
-    return _BringerCls.instance().pygame_gfxdraw()
+# gere extensions
+_available_sub_modules = {
+    'pygame': 'pygame',
+    'anim': '..ext_anim',
+    'isometric': '..ext_isometric'
+}
+_dep_cache = dict()
+_flag_submodule_import = False
 
 
-def import_pygame():
-    return _BringerCls.instance().pygame()
+# gere states
+class DummyState(BaseGameState):
+    def __init__(self, ident, name):
+        super().__init__(ident, name)
+
+    def enter(self):
+        print('entree dummy state')
+
+    def release(self):
+        print('release dummy state')
 
 
-def embody_lib(givenmodule):
-    print('*** warning embody_lib is now deprecated! ***')
-    print('calling this function has no effect.')
-
-# -------------------- end improved backward compat' --------------------
-
-
-# - variables privées du module
-_cached_screen = None
+_curr_state = DummyState(-1, 'dummy_gs')
+_loaded_states = {
+    -1: _curr_state
+}
+state_stack = Stack()
 
 
-def screen_size():
-    global _cached_screen
-    if _cached_screen is None:
-        _cached_screen = cgmconf.screen
-    return _cached_screen.get_size()
-
-
-def target_upscaling(mode):
-    return {
-        SUPER_RETRO_MODE: 3,
-        OLD_SCHOOL_MODE: 2,
-        HD_MODE: 1
-    }[mode]
-
-
-def target_w(mode):
-    if mode == SUPER_RETRO_MODE:
-        return 960 // 3
-    if mode == OLD_SCHOOL_MODE:
-        return 960 // 2
-    return 960
-
-
-def target_h(mode):
-    if mode == SUPER_RETRO_MODE:
-        return 540 // 3
-    if mode == OLD_SCHOOL_MODE:
-        return 540 // 2
-    return 540
-
-
-# -----------------------------------
-# -<>- public procedures: engine -<>-
-# -----------------------------------
-def init(mode=HD_MODE):
+def init(gfc_mode='hd', ext_module_asso=None):
     """
-    :param mode: type str, describes what gfx mode we are using
-    :return: nothing
+    :param gfc_mode:
+    :param ext_module_asso: submodule name <> py module path
     """
-    bringer = _BringerCls.instance()
+    global _available_sub_modules, state_stack
+    if ext_module_asso is not None:
+        _available_sub_modules.update(ext_module_asso)
 
-    # we "push higher" the data, for an easier access from within the foundation sub-module
-    cgmconf.runs_in_web = bringer.web_enabled
-    cgmconf.pygame = bringer.pygame()
-    cgmconf.pygame_gfxdraw = bringer.pygame_gfxdraw()
-
-    kevent.PygameBridge = cgmconf.pygame.constants
-    eng_.legacyinit(cgmconf.pygame, mode)
-    kevent.gl_unique_manager = get_manager()
+    _pygme = _lazy_import('pygame')
+    cgmconf.pygame = _pygme
+    _eng_legacy.legacyinit(_pygme, gfc_mode)
+    _new_state(-1)
 
 
-def get_game_ctrl():
-    return eng_.retrieve_game_ctrl()
+def declare_states(assoc_code_gs, new_state_id=None):
+    global _loaded_states
+    print('declaring states...')
+    print(str(assoc_code_gs))
+    print()
+
+    # verif
+    for ke, gs in assoc_code_gs.items():
+        if ke in _loaded_states.keys():
+            print('[Warning] gamestate code {} was already taken. Overriding state(risky)...'.format(ke))
+            del _loaded_states[ke]
+    _loaded_states.update(assoc_code_gs)
+    # can change state instant
+    if new_state_id is not None:
+        print('wish new state:'+str(new_state_id))
+        _new_state(new_state_id)
 
 
-def cleanup():
-    eng_.cleanup()
+def _new_state(gs_code):
+    global _curr_state, state_stack, _loaded_states
+
+    print('new state call')
+    print(gs_code)
+    print(str(_loaded_states))
+
+    _curr_state.release()
+    state_stack.pop()
+
+    state_stack.push(gs_code)
+    _loaded_states[gs_code].enter()
 
 
-def get_manager():
-    if cgmconf.runs_in_web:
-        pygm = cgmconf.pygame
-        return pygm.key.linkto_ev_manager
-    else:
-        return EventManager.instance()
+def submodule_hacking(submodule_name, py_module):
+    global _dep_cache, _flag_submodule_import
+    if _flag_submodule_import:
+        print('*** warning, submodule hacking done while some modules already loaded, this is risky! ***')
+        print('prefer hacking before any loading (forced cache clear now...)')
+    _dep_cache[submodule_name] = py_module
+    print('submodule_hacking({}) -> ok'.format(submodule_name))
+
+
+# implementing lazy, cached submodule import operation
+def _lazy_import(name):
+    global _available_sub_modules, _dep_cache, _flag_submodule_import
+    if name not in _dep_cache:
+        if name in _available_sub_modules.keys():
+            _flag_submodule_import = True
+            target_mod = _available_sub_modules[name]
+            _dep_cache[name] = importlib.import_module(target_mod, __name__)
+        else:
+            raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    return _dep_cache[name]
+
+
+def __getattr__(name):
+    return _lazy_import(name)
+
+
+# -------------------------------------
+#  METIER
+# -------------------------------------
+# you should call: kataen.EventManager.instance() instead
+# def get_ev_manager():
+#    return _eng_legacy.kevent.gl_unique_manager
 
 
 def get_screen():
     return cgmconf.screen
 
 
-# -----------------------------------
-# -<>- public procedures: utils -<>-
-# -----------------------------------
+def get_game_ctrl():
+    return _eng_legacy.retrieve_game_ctrl()
 
-def proj_to_vscreen(org_screen_pos):
-    return cgmconf.conv_to_vscreen(*org_screen_pos)
+
+def display_update():
+    _updater.display_update()
+
+
+# deprecated
+def runs_in_web():
+    return cgmconf.runs_in_web
+
+
+def cleanup():
+    _eng_legacy.cleanup()
