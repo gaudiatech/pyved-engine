@@ -9,30 +9,36 @@ contact author: thomas@gaudia-tech.com
 
 License LGPL3
 """
-from . import cgmconf
-from .foundation import events as kevent
-from .foundation.events import DeadSimpleManager
-from .foundation.runners import GameTicker, StackBasedGameCtrl
+# from .... import engine as kataen
+# from . import cgmconf
+# from .foundation import events as kevent
+# from .foundation.events import DeadSimpleManager
+# GameTicker = kataen
+# from .foundation.runners import GameTicker, StackBasedGameCtrl
+
+from katagames_sdk import engine as kataen
+from katagames_sdk.engine.foundation import shared
 
 
 engine_is_init = False
 headless_mode = False
 game_ticker = None
 SCR_SIZE = None  # virtual scr size
-K_LEGACY, K_OLDSCHOOL, K_HD = range(79, 79+3)
+K_LEGACY, K_OLDSCHOOL, K_HD = range(79, 79 + 3)
 _multistate = False
 _stack_based_ctrl = None
 
 
-def legacyinit(pygame_module, gfxmode_str, caption=None, maxfps=60):
+def legacyinit(gfxmode_str, caption=None, maxfps=60):
     global engine_is_init, game_ticker, SCR_SIZE
+    pygame_module = kataen.pygame
 
     pygame_module.init()
-    if not cgmconf.runs_in_web:
+    if not shared.RUNS_IN_WEB_CTX:
         pygame_module.mixer.init()
     else:
         pygame_module.time.do_fake_init()
-    
+
     engine_is_init = True
 
     # we defined 3 canonical modes for display:
@@ -58,22 +64,22 @@ def legacyinit(pygame_module, gfxmode_str, caption=None, maxfps=60):
     }
     taille_surf_dessin = drawspace_size[chosen_mode]
 
-    if cgmconf.runs_in_web:
+    if shared.RUNS_IN_WEB_CTX:
         print('call display set_mode with arg: ')
         print(taille_surf_dessin)
         pygame_surf_dessin = pygame_module.display.set_mode(taille_surf_dessin)
     else:
-        pgscreen = pygame_module.display.set_mode(cgmconf.CONST_SCR_SIZE)
+        pgscreen = pygame_module.display.set_mode(shared.CONST_SCR_SIZE)
         pygame_surf_dessin = pygame_module.surface.Surface(taille_surf_dessin)
-        cgmconf.set_realpygame_screen(pgscreen)
+        kataen.core.set_realpygame_screen(pgscreen)
 
     result = upscaling[chosen_mode]
-    cgmconf.set_virtual_screen(pygame_surf_dessin, upscaling[chosen_mode])
+    kataen.core.set_virtual_screen(pygame_surf_dessin, upscaling[chosen_mode])
 
     if upscaling[chosen_mode] is not None:
         print('upscaling x{}'.format(upscaling[chosen_mode]))
 
-    if not cgmconf.runs_in_web:
+    if not shared.RUNS_IN_WEB_CTX:
         print('<->context: genuine Pygame')
         if caption is None:
             pygame_module.display.set_caption(
@@ -82,16 +88,16 @@ def legacyinit(pygame_module, gfxmode_str, caption=None, maxfps=60):
         else:
             pygame_module.display.set_caption(caption)
 
-        kevent.gl_unique_manager = DeadSimpleManager(pygame_module)
-        game_ticker = GameTicker(pygame_module, maxfps)
+        kataen.event.create_manager()
+        game_ticker = kataen.event.GameTicker(maxfps)
 
     else:
         import katagames_sdk.pygame_emu.overlay as overlay
         print('<->context: Web')
         manager_4web = overlay.upgrade_evt_manager(pygame_module)
         print('overlay ok')
-        kevent.gl_unique_manager = manager_4web
-        game_ticker = overlay.WebCtxGameTicker(pygame_module)
+        kataen.event.gl_unique_manager = manager_4web
+        game_ticker = overlay.WebCtxGameTicker()
 
     return result  # can be None, if no upscaling applied
 
@@ -118,18 +124,57 @@ def get_manager():
     return kevent.gl_unique_manager
 
 
-def cleanup():
+def old_cleanup():
     global engine_is_init
     assert engine_is_init
-    pygame_pym = cgmconf.pygame
+    kataen.event.gl_unique_manager.hard_reset()
 
-    if not cgmconf.runs_in_web:
-        kevent.gl_unique_manager.hard_reset()
-        cgmconf.pygame_screen = None
+    kataen.pygame.mixer.quit()
+    kataen.pygame.quit()
 
-        pygame_pym.mixer.quit()
-        pygame_pym.quit()
-        engine_is_init = False
-        print('clean exit: OK')
-    else:
-        print('never ending gameloop (web context)')
+    engine_is_init = False
+    print('cleanup: OK')
+
+
+# -------------------------------------------------
+#    nouveautés 2021 - 2022
+# -------------------------------------------------
+
+# _curr_state = DummyState(-1, 'dummy_gs')
+# _loaded_states = {
+#     -1: _curr_state
+# }
+#
+# state_stack = Stack()
+
+
+def declare_states(assoc_code_gs, new_state_id=None):
+    global _loaded_states
+    print('declaring states...')
+    print(str(assoc_code_gs))
+    print()
+
+    # verif
+    for ke, gs in assoc_code_gs.items():
+        if ke in _loaded_states.keys():
+            print('[Warning] gamestate code {} was already taken. Overriding state(risky)...'.format(ke))
+            del _loaded_states[ke]
+    _loaded_states.update(assoc_code_gs)
+    # can change state instant
+    if new_state_id is not None:
+        print('wish new state:'+str(new_state_id))
+        _new_state(new_state_id)
+
+
+def _new_state(gs_code):
+    global _curr_state, state_stack, _loaded_states
+
+    print('new state call')
+    print(gs_code)
+    print(str(_loaded_states))
+
+    _curr_state.release()
+    state_stack.pop()
+
+    state_stack.push(gs_code)
+    _loaded_states[gs_code].enter()

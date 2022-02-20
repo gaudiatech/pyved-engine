@@ -1,9 +1,9 @@
-from ..engine.foundation.events import EventReceiver
-from .. import engine as kataen
+from .... import engine as kataen
 
 
 # import pygame
 pygame = kataen.pygame
+EventReceiver = kataen.event.EventReceiver
 
 
 class ButtonPanel(EventReceiver):

@@ -1,5 +1,4 @@
-from ..engine import EventReceiver
-from .. import engine as kataen
+from .... import engine as kataen
 
 
 pygame = kataen.pygame
@@ -9,7 +8,7 @@ def test_func():
     print("Button clicked!")
 
 
-class Button2(EventReceiver):
+class Button2(kataen.event.EventReceiver):
     HIDEOUS_PURPLE = (255, 0, 255)
 
     def __init__(self, font, text, position_on_screen, callback=None, draw_background=True):

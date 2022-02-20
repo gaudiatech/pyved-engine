@@ -1,11 +1,11 @@
 import json
-from .. import engine as kataen
+from katagames_sdk import engine as kataen
 
 
 pygame = kataen.pygame
 
 
-class _Spritesheet(object):
+class _Spritesheet:
     """
     This class handles sprite sheets,
     source-code inspired by: www.scriptefun.com/transcript-2-using
@@ -14,7 +14,7 @@ class _Spritesheet(object):
     (x, y, x + offset, y + offset)
     """
 
-    def __init__(self, ressource_pygame_ratio11, scale=2):
+    def __init__(self, ressource_pygame_ratio11, scale=1):
         self.sheet = ressource_pygame_ratio11  # .convert()
         if scale != 1:
             self.sheet = pygame.transform.scale(
@@ -178,7 +178,9 @@ class AnimatedSprite(pygame.sprite.Sprite):
         self.stack_time = 0
 
     def draw(self, screenref):
+        # this will bug bc of pygame.transform.scale not properly implemented in pygame_emu (v. 007+)
         screenref.blit(self.image, self.rect.topleft)
+        # pygame.draw.rect(screenref, 'red', (self.rect.topleft, (89, 89)))
 
     def update(self, dt):
         self.stack_time += dt

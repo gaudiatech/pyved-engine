@@ -1,14 +1,16 @@
+"""
+sub-module dedicated to GUI management/creation,
+ belongs to the kata engine
+"""
+
+from .... import engine as kataen
+
 from .Button import Button
 from .Button import ButtonPanel
 from .Button2 import Button2
 from .Trigger import Trigger
 from .WidgetBo import WidgetBo
-from .. import engine as kataen
 
-"""
-GUI sub-module,
- belongs to the katasdk_pym
-"""
 
 pygame = kataen.pygame
 
@@ -38,7 +40,7 @@ class Etiquette:
         self.img = self.ft_obj.render(self._text, True, self._color)
 
 
-class TextInput(kataen.EventReceiver):
+class TextInput(kataen.event.EventReceiver):
     """
     Simple text entry component.
     """

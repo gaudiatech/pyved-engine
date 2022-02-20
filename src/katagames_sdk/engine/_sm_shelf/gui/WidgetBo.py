@@ -1,5 +1,5 @@
 from .Trigger import Trigger
-from .. import engine as kataen
+from .... import engine as kataen
 
 
 pygame = kataen.pygame

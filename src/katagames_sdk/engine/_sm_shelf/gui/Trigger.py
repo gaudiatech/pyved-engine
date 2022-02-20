@@ -2,7 +2,7 @@
 deprecated! This class has been copied for better retro-compatibility with old projects(e.g. Brutos)
 """
 
-from .. import engine as kataen
+from .... import engine as kataen
 
 
 pygame = kataen.pygame
