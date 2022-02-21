@@ -1,8 +1,8 @@
-import katagames_sdk.engine as kataen
+import katagames_engine as kengi
 
-pygame = kataen.pygame
-EventReceiver = kataen.event.EventReceiver
-EngineEvTypes = kataen.event.EngineEvTypes
+pygame = kengi.pygame
+EventReceiver = kengi.event.EventReceiver
+EngineEvTypes = kengi.event.EngineEvTypes
 scr_size = [0, 0]
 
 
@@ -46,12 +46,12 @@ class AvatarCtrl(EventReceiver):
 
 
 if __name__ == '__main__':
-    kataen.core.init('old_school')
-    game_scr = kataen.core.get_screen()
+    kengi.core.init('old_school')
+    game_scr = kengi.core.get_screen()
     scr_size[0], scr_size[1] = game_scr.get_size()
     av = Avatar()
-    li_recv = [kataen.core.get_game_ctrl(), AvatarView(av), AvatarCtrl(av)]
+    li_recv = [kengi.core.get_game_ctrl(), AvatarView(av), AvatarCtrl(av)]
     for recv_obj in li_recv:
         recv_obj.turn_on()
     li_recv[0].loop()
-    kataen.core.cleanup()
+    kengi.core.cleanup()

@@ -1,9 +1,11 @@
-import katagames_sdk.engine as kataen
-from katagames_sdk.engine import BaseGameState
-from katagames_sdk.engine import EventReceiver, EngineEvTypes
+import katagames_engine as kengi
 
 
-pygame = kataen.import_pygame()
+BaseGameState = kengi.BaseGameState
+EventReceiver = kengi.event.EventReceiver
+EngineEvTypes = kengi.event.EngineEvTypes
+
+pygame = kengi.pygame
 
 
 class ClickChallgView(EventReceiver):

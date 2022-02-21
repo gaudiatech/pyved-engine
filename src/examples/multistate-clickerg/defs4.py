@@ -1,5 +1,5 @@
 
-import katagames_sdk.engine as kataen
+import katagames_engine as kengin
 
 
 # - in this game wrapper, the line below should be the only
@@ -8,7 +8,7 @@ import katagames_sdk.engine as kataen
 #import coremon_main.engine as coremon
 
 # gamestates
-GameStates = kataen.enum_builder(
+GameStates = kengin.struct.enum_builder(
     'MenuScreen',
     'ClickChallg'
 )
@@ -16,6 +16,6 @@ GameStates = kataen.enum_builder(
 
 
 # custom events
-MyEvTypes = kataen.enum_for_custom_event_types(
+MyEvTypes = kengin.event.enum_custom_ev_types(
     'ChallengeStarts',
 )

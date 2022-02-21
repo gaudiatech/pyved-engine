@@ -1,10 +1,11 @@
-import katagames_sdk.engine as kataen
-from defs4 import GameStates
-from katagames_sdk.engine import BaseGameState
-from katagames_sdk.engine import EngineEvTypes, EventReceiver
+import katagames_engine as kengi
+from defs4 import *
 
 
-pygame = kataen.import_pygame()
+BaseGameState = kengi.BaseGameState
+EventReceiver = kengi.event.EventReceiver
+EngineEvTypes = kengi.event.EngineEvTypes
+pygame = kengi.pygame
 
 
 class MenuScreenView(EventReceiver):
