@@ -20,29 +20,27 @@ Principles: The ultimate engine
  This searching is done via __getattr__(name) and the _available_sub_modules dict. structure
 
 """
-from . import _Injector as InjDedicatedF
+from . import _hub
 from ._BaseGameState import BaseGameState
-from ._Injector import Injector
 from ._util import underscore_format, camel_case_format
 
 
 vernum = '22-fire'  # format: « yy-4letterWord » first letter is like the month of build [f]ire - [f]ebruary etc.
-injector_obj = Injector()
 
 
 def plugin_bind(extname, pypath):
-    injector_obj.alert_if_needed()
-    type(injector_obj).register_plugin(extname, pypath)
+    _hub.instance.alert_if_needed()
+    _hub.Injector.register_plugin(extname, pypath)
 
 
 def bulk_plugin_bind_op(assoc_extname_pypath):
-    injector_obj.alert_if_needed()
-    cls = type(injector_obj)
+    _hub.instance.alert_if_needed()
     for ename, pypath in assoc_extname_pypath.items():
-        cls.register_plugin(ename, pypath)
+        _hub.Injector.register_plugin(ename, pypath)
 
 
 def __getattr__(targ_sm_name):
-    if targ_sm_name in InjDedicatedF.extra_sm:
-        return injector_obj.fetch_sm(targ_sm_name)
-    raise AttributeError("module '{}' has no attribute '{}'".format(__name__, targ_sm_name))
+    try:
+        return getattr(_hub, targ_sm_name)
+    except AttributeError:
+        raise AttributeError("module '{}' has no attribute '{}'".format(__name__, targ_sm_name))

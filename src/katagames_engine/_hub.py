@@ -1,6 +1,6 @@
 import importlib.util
 
-package_arg = 'katagames_sdk.engine'  # CHANGE this to 'engine' if youre using the engine stand-alone(no sdk)
+package_arg = 'katagames_engine'  # MODIFY this, if not using the engine stand-alone
 
 extra_sm = {
     'anim': '._sm_shelf.anim',
@@ -49,3 +49,11 @@ class Injector:
             return importlib.import_module(pypath, package_arg)
         else:
             return importlib.import_module(pypath)
+
+
+instance = Injector()
+
+
+def __getattr__(targ_sm_name):
+    if targ_sm_name in extra_sm:
+        return instance.fetch_sm(targ_sm_name)

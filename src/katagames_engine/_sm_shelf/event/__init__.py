@@ -2,12 +2,14 @@ import time
 from abc import abstractmethod
 from collections import deque as deque_obj
 
-from katagames_sdk import engine as kataen
-from katagames_sdk.engine.foundation import defs
+from ... import _hub as injec
 
 
-enum_builder_generic = kataen.struct.enum_builder_generic
-pygame = kataen.pygame
+from ...foundation import defs
+
+
+enum_builder_generic = injec.struct.enum_builder_generic
+pygame = injec.pygame
 gl_unique_manager = None
 
 
@@ -251,7 +253,7 @@ class CogObj:
             event_obj = self._cached_lu
         elif EngineEvTypes.PAINT == ev_type:
             if self._cached_pt.screen is None:
-                self._cached_pt.screen = kataen.core.get_screen()
+                self._cached_pt.screen = injec.core.get_screen()
             event_obj = self._cached_pt
         else:
             event_obj = CgmEvent(ev_type, **kwargs)
@@ -464,7 +466,7 @@ class GameTicker(EventReceiver):
             self.pev(EngineEvTypes.PAINT)
 
             self._manager.update()
-            kataen.core.display_update()
+            injec.core.display_update()
 
             self._clock.tick(self._maxfps)
 
@@ -474,13 +476,12 @@ class GameTicker(EventReceiver):
 # - - -  - -
 class StackBasedGameCtrl(EventReceiver):
 
-    def __init__(self, existing_ticker, gamestates_enum, stmapping, glvars_pymodule, katagame_st=None, ):
+    def __init__(self, existing_ticker, gamestates_enum, glvars_pymodule, stmapping, katagame_st=None, ):
         super().__init__(sticky=True)
 
         self.ticker = existing_ticker
         # lets build up all gamestates objects
-        self._st_container = kataen.struct.StContainer.instance()
-        print(stmapping)
+        self._st_container = injec.struct.StContainer.instance()
 
         self._st_container.setup(gamestates_enum, stmapping, glvars_pymodule)
 
@@ -490,7 +491,7 @@ class StackBasedGameCtrl(EventReceiver):
         else:
             self.first_state_id = 0
 
-        self.__state_stack = kataen.struct.Stack()
+        self.__state_stack = injec.struct.Stack()
 
     # redefinition
     def halt(self):

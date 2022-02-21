@@ -3,7 +3,7 @@
 
 # - avoid relative import for brython -
 # from .... import engine as kataen
-from katagames_sdk import engine as kataen
+from .. import _hub as injec
 
 
 def enum_builder_generic(to_upper, starting_index, *sequential, **named):
@@ -199,7 +199,7 @@ class StContainer:
                 obj = adhoc_cls(id_choisi, nom_etat)
                 self.assoc_id_state_obj[id_choisi] = obj
             else:
-                pymodule_name = kataen.underscore_format(nom_etat)
+                pymodule_name = injec.underscore_format(nom_etat)
                 pythonpath = 'app.{}.state'.format(pymodule_name)
                 print('StContainer is loading a new game state...')
                 try:

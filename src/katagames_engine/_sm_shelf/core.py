@@ -1,8 +1,9 @@
 # - avoid rel import for brython
 # from ...foundation import shared
 # from .... import engine as kataen
-from katagames_sdk import engine as kataen
-from katagames_sdk.engine.foundation import shared
+
+from .. import _hub as injec
+from ..foundation import shared
 
 
 def register_upscaling(upscaling_val):
@@ -39,7 +40,7 @@ def set_virtual_screen(ref_surface, upscaling):
 
 # --------- avant ca ct gfx_updater.py
 def display_update():
-    pyg = kataen.pygame
+    pyg = injec.pygame
     if not shared.RUNS_IN_WEB_CTX:
         # ---------------
         #  runs in ctx Win/Mac
@@ -53,7 +54,7 @@ def display_update():
 
 
 def init(gfc_mode='hd'):
-    kataen.legacy.legacyinit(gfc_mode)
+    injec.legacy.legacyinit(gfc_mode)
     # _new_state(-1)
 
 
@@ -67,7 +68,7 @@ def get_disp_size():
 
 
 def get_game_ctrl():
-    return kataen.legacy.retrieve_game_ctrl()
+    return injec.legacy.retrieve_game_ctrl()
 
 
 # deprecated
@@ -76,7 +77,7 @@ def runs_in_web():
 
 
 def cleanup():
-    kataen.legacy.old_cleanup()
+    injec.legacy.old_cleanup()
 
 
 # -----------------------------------

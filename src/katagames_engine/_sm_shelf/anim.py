@@ -1,5 +1,5 @@
 import json
-from katagames_sdk import engine as kataen
+from ... import katagames_engine as kataen
 
 
 pygame = kataen.pygame

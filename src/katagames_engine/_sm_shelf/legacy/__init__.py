@@ -16,8 +16,8 @@ License LGPL3
 # GameTicker = kataen
 # from .foundation.runners import GameTicker, StackBasedGameCtrl
 
-from katagames_sdk import engine as kataen
-from katagames_sdk.engine.foundation import shared
+from ... import _hub as injec
+from ...foundation import shared
 
 
 engine_is_init = False
@@ -31,7 +31,7 @@ _stack_based_ctrl = None
 
 def legacyinit(gfxmode_str, caption=None, maxfps=60):
     global engine_is_init, game_ticker, SCR_SIZE
-    pygame_module = kataen.pygame
+    pygame_module = injec.pygame
 
     pygame_module.init()
     if not shared.RUNS_IN_WEB_CTX:
@@ -71,10 +71,10 @@ def legacyinit(gfxmode_str, caption=None, maxfps=60):
     else:
         pgscreen = pygame_module.display.set_mode(shared.CONST_SCR_SIZE)
         pygame_surf_dessin = pygame_module.surface.Surface(taille_surf_dessin)
-        kataen.core.set_realpygame_screen(pgscreen)
+        injec.core.set_realpygame_screen(pgscreen)
 
     result = upscaling[chosen_mode]
-    kataen.core.set_virtual_screen(pygame_surf_dessin, upscaling[chosen_mode])
+    injec.core.set_virtual_screen(pygame_surf_dessin, upscaling[chosen_mode])
 
     if upscaling[chosen_mode] is not None:
         print('upscaling x{}'.format(upscaling[chosen_mode]))
@@ -88,15 +88,15 @@ def legacyinit(gfxmode_str, caption=None, maxfps=60):
         else:
             pygame_module.display.set_caption(caption)
 
-        kataen.event.create_manager()
-        game_ticker = kataen.event.GameTicker(maxfps)
+        injec.event.create_manager()
+        game_ticker = injec.event.GameTicker(maxfps)
 
     else:
         import katagames_sdk.pygame_emu.overlay as overlay
         print('<->context: Web')
         manager_4web = overlay.upgrade_evt_manager(pygame_module)
         print('overlay ok')
-        kataen.event.gl_unique_manager = manager_4web
+        injec.event.gl_unique_manager = manager_4web
         game_ticker = overlay.WebCtxGameTicker()
 
     return result  # can be None, if no upscaling applied
@@ -114,23 +114,31 @@ def retrieve_game_ctrl():
 
 def tag_multistate(allstates, glvars_pymodule, use_katagames_env, providedst_classes=None):
     global game_ticker, _stack_based_ctrl, _multistate
+
     _multistate = True
-    _stack_based_ctrl = StackBasedGameCtrl(
-        game_ticker, allstates, glvars_pymodule, use_katagames_env, providedst_classes
+
+    if use_katagames_env:
+        temp_var = ' ???'  # TODO fix this case /!\ the kata base auth auth screen needs to be def somewhere else
+        raise NotImplementedError
+    else:
+        temp_var = None
+
+    _stack_based_ctrl = injec.event.StackBasedGameCtrl(
+        game_ticker, allstates, glvars_pymodule, providedst_classes, temp_var
     )
 
 
 def get_manager():
-    return kevent.gl_unique_manager
+    return injec.gl_unique_manager
 
 
 def old_cleanup():
     global engine_is_init
     assert engine_is_init
-    kataen.event.gl_unique_manager.hard_reset()
+    injec.event.gl_unique_manager.hard_reset()
 
-    kataen.pygame.mixer.quit()
-    kataen.pygame.quit()
+    injec.pygame.mixer.quit()
+    injec.pygame.quit()
 
     engine_is_init = False
     print('cleanup: OK')
