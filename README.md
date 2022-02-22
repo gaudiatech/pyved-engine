@@ -1,33 +1,73 @@
-# Create 'magic' pygame-based games
+# The kengi project
+
+kengi? The abbreviation of <ins>K</ins>ata.Games <ins>ENGI</ins>ne.
+
+[Kata.Games](https://kata.games)? The name of a new gaming portal. Test it out if you're curious!
+
+More precisely it is a game engine written in python, and is a wrapper around the popular 
+[pygame lib](https://github.com/pygame/pygame).
+
+## Contributions
+
+Feel free to contribute! If you spot bugs, please create an issue. Pull requests are welcome. Any help is very appreciated.
+
+Join our [Discord server](https://discord.gg/nyvDpXebZB) to receive news about the development / if you need help for your game dev.
+
+The story behind `kengi` started back in july 2018 when I got serious about
+coding games in python.
+While you can be surprised by some details found in the code, 
+you can be sure that the software design isn't random at all. If you find
+better solutions, I wanna hear about it!
 
 
-A new tool suite that enables your games to be:
- 
-+ **standardized** - stop rewriting game building blocks over & over again. We've got you covered!
 
-+ **structured** - use the integrated M-V-C architecture to reach a rare and amazing level of Code reuse;
+## Game Engine strengths
 
-+ **web compatible** - share your creations online with no hassle... It's finally here!
+What is so good about `kengi`? It enables you:
+
+1. to create games much faster
+
+2. to write standardized, therefore easy-to-read code.
+Encounter at least 30% less bugs, fix bugs faster...
+It's like magic!
+
+3. to write code that evolves easily.
+By using the included M-V-C pattern you can reach a level of code flexibility
+that is amazing 
+
+And finally:
+
+if used along with another component named `katasdk`, `kengi` is the first pygame-based
+Game Engine that produces games for the Web!
+*A world premiere!*
 
 
-## Installation
+## Design principles
+
+1. `kengi` is delivered along with 5 templates, see it as minimal examples of a real game.
+A game template can be adjusted to your needs easily
+
+2. `kengi` is based upon a custom event manager
+
+3. `kengi` includes classes that implement the M-V-C pattern. You are free to use this pattern or not in your games
 
 
-To install the ready-to-use KataSDK locally, type:
-`pip install katasdk`
+## Installation and requirements
 
-You can start experimenting by adding this line in your source-code:
-`import katagames_sdk.engine as kataen`
+For requirements see `requirements.txt`
 
+To install, simply clone this repo and copy-paste the whole `src/katagames_engine`
+inside your project folder (root).
+It's recommended that you import the lib in your code via:\
+```import katagames_engine as kengi```
 
-## Requirements and documentation
-
-The Katagames Engine (`kataen` for short) is a wrapper around pygame therefore `pygame>=2.0.1` is required.
 
 The KataSDK official documentation is available here:
 [kata.games/developers](https://kata.games/developers).
 
 These pages are built using the `mkdocs` tool. You can help improving the docs if you wish! All docs sources are located in the `docs/` folder of this repository. 
+
+
 
 
 ## Getting started guide
