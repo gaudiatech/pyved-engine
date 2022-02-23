@@ -1,5 +1,5 @@
 import katagames_engine as kengi
-from defs4 import *
+from myrpg_defs import GameStates, MyEvTypes
 
 
 BaseGameState = kengi.BaseGameState
@@ -34,7 +34,7 @@ class MenuScreenCtrl(EventReceiver):
 
         if ev.type == pygame.MOUSEBUTTONDOWN:
             print('pushing the ClickChallg state onto the stack...')
-            self.pev(EngineEvTypes.PUSHSTATE, state_ident=GameStates.ClickChallg)
+            self.pev(EngineEvTypes.PUSHSTATE, state_ident=GameStates.Overworld)
 
 
 class MenuScreenState(BaseGameState):
