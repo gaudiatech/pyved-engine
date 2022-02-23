@@ -18,15 +18,11 @@ def create_manager():
     gl_unique_manager = DeadSimpleManager()
 
 
-def enum_engine_ev_types(*sequential, **named):
+def _enum_engine_ev_types(*sequential, **named):
     return enum_builder_generic(True, defs.FIRST_ENGIN_TYPE, *sequential, **named)
 
 
-def enum_custom_ev_types(*sequential, **named):
-    return enum_builder_generic(False, defs.FIRST_CUSTO_TYPE, *sequential, **named)
-
-
-EngineEvTypes = enum_engine_ev_types(
+EngineEvTypes = _enum_engine_ev_types(
     'LogicUpdate',
     'Paint',
     'RefreshScreen',
@@ -47,6 +43,11 @@ EngineEvTypes = enum_engine_ev_types(
     'AsyncRecv',  # [num] un N°identification & [msg] un string
     'AsyncSend'  # [num] un N°identification & [msg] un string
 )
+
+
+def enum_ev_types(*sequential, **named):  # Custom events /!\ not engine events
+    # this function should be used by the custom game
+    return enum_builder_generic(False, defs.FIRST_CUSTO_TYPE, *sequential, **named)
 
 
 class EventManager:

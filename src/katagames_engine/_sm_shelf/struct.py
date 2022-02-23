@@ -30,7 +30,7 @@ def enum_builder_nplus(n, *sequential, **named):
     return enum_builder_generic(False, n, *sequential, **named)
 
 
-def enum_builder(*sequential, **named):
+def enum(*sequential, **named):
     """
     the most used enum builder
     """
@@ -173,6 +173,7 @@ class StContainer:
     """
     contient toutes les instances de classes qui dérivent de BaseGameState
     """
+
     def __init__(self):
         self.__setup_done = False
         self.assoc_id_state_obj = dict()
@@ -180,43 +181,53 @@ class StContainer:
     def hack_bios_state(self, gs_obj):
         self.assoc_id_state_obj[-1] = gs_obj
 
-    def setup(self, enum_game_states, stmapping, pymodule):
+    def setup(self, enum_game_states, stmapping, pymodule=None):
         self.__setup_done = True
 
-        # - if we need to add the kataframestate...
+        """
+        - deprecated & disabled: auto-load kata service state
+        if -1 in stmapping.keys():
+            gs_obj = stmapping[-1]  # constructor KataFrameState -> __init__(-1, 'KataFrame')
+            gs_obj.glvars_module = pymodule
+            self.hack_bios_state(gs_obj)
+        """
+        # - debug
+        print('* * * in setup  ')
+        print('enum_game_states= ' + str(enum_game_states))
+        print('stmapping= ' + str(stmapping))
 
-        # gs_obj = KataFrameState(-1, 'KataFrame')
-        # gs_obj.glvars_module = pymodule
-        # self.hack_bios_state(gs_obj)
+        # - initialisation d'après paramètre type: core.enum
+        if stmapping:  # but = charger la classe deja identifiee en memoire
+            for state_ident, adhoc_cls in stmapping.items():
+                obj = adhoc_cls(state_ident, adhoc_cls.__name__)
+                self.assoc_id_state_obj[state_ident] = obj
+        else:
 
-        # -- initialisation d'après ce qu'on recoit comme enumeration...
-        for id_choisi, nom_etat in enum_game_states.inv_map.items():
-            nom_cl = nom_etat + 'State'
+            # old code
+            for id_choisi, nom_etat in enum_game_states.inv_map.items():
+                class_name = nom_etat + 'State'
+                self._auto_find_statecls(id_choisi, nom_etat, class_name)
 
-            if stmapping:  # but = charger en mémoire la classe
-                adhoc_cls = stmapping[nom_cl]  # class has been provided
+    def _auto_find_statecls(self, id_choisi, nom_etat, nom_cls):
+        pymodule_name = injec.underscore_format(nom_etat)
+        pythonpath = 'app.{}.state'.format(pymodule_name)
+        print('StContainer is loading a new game state...')
+        try:
+            pymodule = __import__(pythonpath, fromlist=[nom_cls])
+            adhoc_cls = getattr(pymodule, nom_cls)  # class has been retrieved -> ok
 
-                obj = adhoc_cls(id_choisi, nom_etat)
-                self.assoc_id_state_obj[id_choisi] = obj
-            else:
-                pymodule_name = injec.underscore_format(nom_etat)
-                pythonpath = 'app.{}.state'.format(pymodule_name)
-                print('StContainer is loading a new game state...')
-                try:
-                    pymodule = __import__(pythonpath, fromlist=[nom_cl])
-                    adhoc_cls = getattr(pymodule, nom_cl)  # class has been retrieved -> ok
+            obj = adhoc_cls(id_choisi, nom_etat)
+            self.assoc_id_state_obj[id_choisi] = obj
 
-                    obj = adhoc_cls(id_choisi, nom_etat)
-                    self.assoc_id_state_obj[id_choisi] = obj
+        except ImportError as exc:
+            print('adhoc module name(conv. to underscore format)={}'.format(pymodule_name))
+            print('full path for finding class={}'.format(pythonpath))
+            print('target class={}'.format(nom_cls))
 
-                except ImportError as exc:
-                    print('adhoc module name(conv. to underscore format)={}'.format(pymodule_name))
-                    print('full path for finding class={}'.format(pythonpath))
-                    print('target class={}'.format(nom_cl))
-                    print('WEB CONTEXT WARNING: make sure you dont have a file named app.py in your project!')
-                    # brython - wants no trouble
-                    #sys.stderr.write("Error: failed to import class {} (info= {})\n".format(nom_cl, exc))
-                    #traceback.print_last()
+            print('WEB CONTEXT WARNING: make sure you dont have a file named app.py in your project!')
+            # avoid trouble with Brython...
+            # sys.stderr.write("Error: failed to import class {} (info= {})\n".format(nom_cl, exc))
+            # traceback.print_last()
 
     def retrieve(self, identifiant):
         """

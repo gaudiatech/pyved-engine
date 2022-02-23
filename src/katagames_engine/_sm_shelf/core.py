@@ -53,11 +53,6 @@ def display_update():
     pyg.display.update()
 
 
-def init(gfc_mode='hd'):
-    injec.legacy.legacyinit(gfc_mode)
-    # _new_state(-1)
-
-
 def get_screen():
     return shared.screen
 
@@ -67,17 +62,9 @@ def get_disp_size():
     return 960, 540
 
 
-def get_game_ctrl():
-    return injec.legacy.retrieve_game_ctrl()
-
-
-# deprecated
+# deprecated /!\
 def runs_in_web():
     return shared.RUNS_IN_WEB_CTX
-
-
-def cleanup():
-    injec.legacy.old_cleanup()
 
 
 # -----------------------------------
@@ -85,3 +72,27 @@ def cleanup():
 # -----------------------------------
 def proj_to_vscreen(org_screen_pos):
     return conv_to_vscreen(*org_screen_pos)
+
+
+# -----------------------------------
+#  can PROXY some things if it's really universal needs
+#   => should be prefixed by .core
+# --
+def declare_states(mapping_enum_classes, mod_glvars=None):
+    all_states = list(mapping_enum_classes.keys())
+    injec.legacy.tag_multistate(
+        all_states, mod_glvars, False, providedst_classes=mapping_enum_classes
+    )
+
+
+def init(gfc_mode='hd'):
+    injec.legacy.legacyinit(gfc_mode)
+    # _new_state(-1)
+
+
+def get_game_ctrl():
+    return injec.legacy.retrieve_game_ctrl()
+
+
+def cleanup():
+    injec.legacy.old_cleanup()

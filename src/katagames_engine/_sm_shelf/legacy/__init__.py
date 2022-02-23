@@ -112,7 +112,7 @@ def retrieve_game_ctrl():
         return game_ticker
 
 
-def tag_multistate(allstates, glvars_pymodule, use_katagames_env, providedst_classes=None):
+def tag_multistate(allstates, use_katagames_env, glvars_pymodule, providedst_classes=None):
     global game_ticker, _stack_based_ctrl, _multistate
 
     _multistate = True
