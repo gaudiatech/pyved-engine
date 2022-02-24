@@ -1,14 +1,15 @@
 
 <img src="https://gaudia-tech.com/shared/kengi-logo.png"/>
 
-<p style="text-align:center"><a href="https://discord.gg/nyvDpXebZB">
-join us on Discord<br>
+<p align="center">
+<a href="https://discord.gg/nyvDpXebZB">join us on Discord<br>
 <img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
-</a></p>
+</a>
+</p>
 
 "kengi" is the abbreviation of <ins>K</ins>ata.Games <ins>ENGI</ins>ne.
 
-It's a game engine fully written in python, built no top of the popular
+It's a game engine fully written in python, built on top of the popular
 [pygame lib](https://github.com/pygame/pygame) and with almost no other
 dependencies.
 
