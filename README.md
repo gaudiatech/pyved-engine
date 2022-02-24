@@ -1,40 +1,51 @@
-# The kengi project
-kengi? The abbreviation of <ins>K</ins>ata.Games <ins>ENGI</ins>ne.
 
-[Kata.Games](https://kata.games)? The name of a new gaming portal.
-Test it out if you're curious!
+<img src="https://gaudia-tech.com/shared/kengi-logo.png"/>
 
-More precisely `kengi` is a game engine fully written in python,
-and it is a wrapper around the popular 
-[pygame lib](https://github.com/pygame/pygame).
+<p style="text-align:center"><a href="https://discord.gg/nyvDpXebZB">
+join us on Discord<br>
+<img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
+</a></p>
+
+"kengi" is the abbreviation of <ins>K</ins>ata.Games <ins>ENGI</ins>ne.
+
+It's a game engine fully written in python, built no top of the popular
+[pygame lib](https://github.com/pygame/pygame) and with almost no other
+dependencies.
+
+Kata.Games is the name of a new gaming portal that aims at distributing
+newly created browser games. You can test the
+[pre-alpha version of this portal](https://kata.games) if you're curious!
 
 
 ## Contributions
-Feel free to contribute!
+Feel free to contribute and improve the game engine.
+
 If you spot bugs, please create an issue and
 tell us how to reproduce that bug.
-
 Pull requests are welcome.
 Documentation is built via the `mkdocs` tool
 (see `docs/` for sources).
-You can improve the docs if you prefer to write in plain english, not in python!
+Improving the docs is as important as improving the code!
 
-Any kind of help is very appreciated.
+Any kind of help is very appreciated!
 
-Join the [Discord server](https://discord.gg/nyvDpXebZB)
-to receive news about the dev/ if you need help for your game dev based on `kengi`.
+Discord if you wish to discuss with current contributors.
 
 
 ## Background
-The story behind `kengi` started back in july 2018 when I got serious about
-coding games in python. While you can be surprised by some details found in the code, 
-you can be sure that the software design isn't random at all.
+The story behind `kengi` starts back in july 2018.
 
-If you know better solutions about how to solve game dev problems,
-using python, we want to hear about you!
+After coding several small games
+I was surprised by the productivity boost you can get,
+if you introduce a few particular patterns. It led me to study game engines and experiment.
 
-I've studied many game engines but I wanted to propose one
-that has a unique mix of benefits... Benefits not seen elsewhere.
+While you can be surprised by some details found in the code,
+the code layout isn't random at all.
+If you know better solutions about how to solve game dev problems using python,
+we want to hear about you!
+
+The ultimate goal is to offer a unique mix of benefits for all
+game devs using python... Benefits you don't see elsewhere.
 
 
 ## Game Engine benefits
@@ -56,14 +67,21 @@ if used along with another component named `katasdk`, the `kengi`
 is the first *pygame-based* Game Engine that produces browser games!
 *A world premiere!*
 
+
 ## Design principles
-1. `kengi` is delivered along with 5 templates, see it as minimal examples of a real game.
-A game template can be adjusted to your needs easily
 
-2. `kengi` is based upon a custom event manager
+1. Code layout matters. Clean, expressive code isn't optional ;
 
-3. `kengi` includes classes that implement the M-V-C pattern.
-You are free to use the pattern in your games or keep it basic, as you wish
+2. `kengi` is delivered along with 5 templates, see it as minimal examples of a real game.
+A game template can be adjusted to your needs easily ;
+
+3. `kengi` is based upon a custom event manager ;
+
+4. `kengi` includes classes that implement the M-V-C pattern.
+You are free to use the pattern in your games or keep it basic, as you wish.
+
+> "It’s Harder to Read Code than to Write it" - Joel Spolsky
+
 
 ## Get started
 See the file `requirements.txt` to learn about dependencies.
