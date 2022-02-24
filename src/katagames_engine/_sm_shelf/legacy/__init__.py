@@ -17,7 +17,7 @@ License LGPL3
 # from .foundation.runners import GameTicker, StackBasedGameCtrl
 
 from ... import _hub as injec
-from ...foundation import shared
+from ...foundation import shared, defs
 
 
 engine_is_init = False
@@ -82,9 +82,8 @@ def legacyinit(gfxmode_str, caption=None, maxfps=60):
     if not shared.RUNS_IN_WEB_CTX:
         print('<->context: genuine Pygame')
         if caption is None:
-            pygame_module.display.set_caption(
-                'Made using KataSDK'
-            )
+            lbl = 'my demo | based upon katagames_engine version {}'.format(defs.VERSIONTAG)
+            pygame_module.display.set_caption(lbl)
         else:
             pygame_module.display.set_caption(caption)
 

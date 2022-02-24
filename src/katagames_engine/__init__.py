@@ -23,9 +23,10 @@ Principles: The ultimate engine
 from . import _hub
 from ._BaseGameState import BaseGameState
 from ._util import underscore_format, camel_case_format
+from .foundation import defs
 
 
-vernum = '22-fire'  # format: « yy-4letterWord » first letter is like the month of build [f]ire - [f]ebruary etc.
+vernum = defs.VERSIONTAG
 
 
 def plugin_bind(extname, pypath):
