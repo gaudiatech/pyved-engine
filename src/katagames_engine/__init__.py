@@ -40,7 +40,10 @@ def bulk_plugin_bind_op(assoc_extname_pypath):
 
 
 def __getattr__(targ_sm_name):
-    try:
-        return getattr(_hub, targ_sm_name)
-    except AttributeError:
-        raise AttributeError("module '{}' has no attribute '{}'".format(__name__, targ_sm_name))
+    if targ_sm_name not in _hub.extra_sm.keys():
+        raise KeyError('sub-module "{}" you request from Kengi cannot be found!'.format(targ_sm_name))
+    else:
+        try:
+            return getattr(_hub, targ_sm_name)
+        except AttributeError:
+            raise AttributeError("(kengi injector) _hub has no valid attribute '{}'".format(targ_sm_name))
