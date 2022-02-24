@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="172" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="4" nextobjectid="6">
+ <tileset firstgid="1" source="tiles.tsx"/>
+ <imagelayer id="3" name="bg" offsetx="11.2782" offsety="54.7594" repeatx="1">
+  <image source="tiledbackground.png" width="640" height="360"/>
+ </imagelayer>
+ <layer id="1" name="set" width="172" height="14">
+  <data encoding="base64" compression="zlib">
+   eJztlX1OwkAQxQf8QMRLWEVFuIS2MRq9hND4D5zDc/s2dNIJbux+tHRj5yW/NDTb2dk3OwORSqVSqVQqlUql+s+agAswA1c955KaUvNmNkIeo76z6Ff34AEswarnXFJTat4scVdXA7uv5rhjcOK4PrUZ06VS9ob3moLLI+3pq7EF4+VpQCyuxTXIwI3jd6nNGNbQvOG9FuDRcc9j3XH2L7NgvLwNiOVbi1Q1BG/knD+PiBNyx0PE/j2DHBTVMxe/bbPFNmtSq0WshuCNzOuuYW3oDJU9EYPx8Yn29ViDDSirp4FrktHvOmXifSHoWk2eqTd+98mckXN/aVgbOkNlT8Rg/s8+aV8PWZOS7PMkt7yX35TUfV2aPFNv7N7IPja9eAZewZvI9wu8t8wH1X1v88uHoorDcF3kms0BLjFjz6fetO+N7GPTi3NLft9g2zI7qvv+0C9fSqrnx/qPmHJGuMSMPZ960743P3SspbU=
+  </data>
+ </layer>
+ <objectgroup id="2" name="triggers">
+  <object id="1" name="platform" x="-0.00193237" y="384.009" width="191.991" height="31.9043"/>
+  <object id="2" name="platform" x="352.005" y="225.048" width="191.991" height="31.9043"/>
+  <object id="3" name="platform" x="541.005" y="321.048" width="191.991" height="31.9043"/>
+  <object id="4" name="platform" x="769.005" y="255.048" width="191.991" height="31.9043"/>
+  <object id="5" name="platform" x="195.004" y="289.048" width="125.991" height="31.9043"/>
+ </objectgroup>
+</map>
