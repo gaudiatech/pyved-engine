@@ -9,6 +9,7 @@ extra_sm = {
     'legacy': '._sm_shelf.legacy',
     'struct': '._sm_shelf.struct',
     'isometric': '._sm_shelf.isometric',
+    'tmx': '._sm_shelf.tmx',
 
     'pygame': 'pygame',
 }
