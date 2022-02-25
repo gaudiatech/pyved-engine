@@ -1,8 +1,9 @@
 from .Trigger import Trigger
-from .... import engine as kataen
+
+from ... import _hub as inj
 
 
-pygame = kataen.pygame
+pygame = inj.pygame
 
 
 class SpriteBo:

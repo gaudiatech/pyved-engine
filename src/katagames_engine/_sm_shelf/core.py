@@ -94,5 +94,9 @@ def get_game_ctrl():
     return injec.legacy.retrieve_game_ctrl()
 
 
+def get_manager():  # saves some time
+    return injec.event.EventManager.instance()
+
+
 def cleanup():
     injec.legacy.old_cleanup()

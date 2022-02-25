@@ -6,6 +6,7 @@ extra_sm = {
     'anim': '._sm_shelf.anim',
     'core': '._sm_shelf.core',
     'event': '._sm_shelf.event',
+    'gui': '._sm_shelf.gui',
     'legacy': '._sm_shelf.legacy',
     'struct': '._sm_shelf.struct',
     'isometric': '._sm_shelf.isometric',

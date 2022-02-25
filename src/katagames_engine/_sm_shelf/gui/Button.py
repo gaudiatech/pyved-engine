@@ -1,9 +1,8 @@
-from .... import engine as kataen
+from ... import _hub as inj
 
 
-# import pygame
-pygame = kataen.pygame
-EventReceiver = kataen.event.EventReceiver
+pygame = inj.pygame
+EventReceiver = inj.event.EventReceiver
 
 
 class ButtonPanel(EventReceiver):

@@ -3,7 +3,7 @@ sub-module dedicated to GUI management/creation,
  belongs to the kata engine
 """
 
-from .... import engine as kataen
+from ... import _hub as inj
 
 from .Button import Button
 from .Button import ButtonPanel
@@ -12,7 +12,7 @@ from .Trigger import Trigger
 from .WidgetBo import WidgetBo
 
 
-pygame = kataen.pygame
+pygame = inj.pygame
 
 
 # pr GUI
@@ -40,7 +40,7 @@ class Etiquette:
         self.img = self.ft_obj.render(self._text, True, self._color)
 
 
-class TextInput(kataen.event.EventReceiver):
+class TextInput(inj.event.EventReceiver):
     """
     Simple text entry component.
     """

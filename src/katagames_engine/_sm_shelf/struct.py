@@ -26,7 +26,7 @@ def enum_builder_generic(to_upper, starting_index, *sequential, **named):
     return type('Enum', (), enums)
 
 
-def enum_builder_nplus(n, *sequential, **named):
+def enum_from_n(n, *sequential, **named):
     return enum_builder_generic(False, n, *sequential, **named)
 
 
@@ -34,7 +34,7 @@ def enum(*sequential, **named):
     """
     the most used enum builder
     """
-    return enum_builder_nplus(0, *sequential, **named)
+    return enum_from_n(0, *sequential, **named)
 
 
 class Singleton:

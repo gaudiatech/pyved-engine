@@ -1,8 +1,8 @@
 import json
-from ... import katagames_engine as kataen
+from .. import _hub as inj
 
 
-pygame = kataen.pygame
+pygame = inj.pygame
 
 
 class _Spritesheet:
