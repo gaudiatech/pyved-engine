@@ -10,12 +10,14 @@ from .Button import ButtonPanel
 from .Button2 import Button2
 from .Trigger import Trigger
 from .WidgetBo import WidgetBo
-
+from .Label import Label
 
 pygame = inj.pygame
 
+# TODO doublon Label , Etiquette
+#  à regler
 
-# pr GUI
+# ---------- pr GUI
 class Etiquette:
     ft_obj = None
 
