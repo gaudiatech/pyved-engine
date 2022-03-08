@@ -1,16 +1,21 @@
 
-Assets come from a browser game called 
+
+Avatar - https://opengameart.org/content/blocky
+ by Zack Alvarado
+
+Tileset - https://opengameart.org/content/free-platformer-game-tileset
+  by pzUH
+
+background - https://opengameart.org/content/magic-cliffs-environment
+  by Luis Zuno (@ansimuz)
+
+
+A few other assets were taken come from a browser game called 
  "Wizard With Cane In Purple Mantle Goes On Journey"
  that is freely available on the web.
+Most assets in the game are probably copyright free,
+but I cannot be 100%
+the  "Wizard With Cane In Purple Mantle Goes On Journey"
+does not display Credits or author information!
 
- I know for sure that some assets in the game are copyright free
-but cannot remember which ones. Maybe some are copyrighted but I cannot find the information by myself for the moment( because the 
-"Wizard With Cane In Purple Mantle Goes On Journey" does not display Credits, author info!)
-
-so use this with care or simply replace assets with your own.
-
-If you find more information about the License for these assets or if you recognize
-your own work, please email me:  contact@kata.games
-I am very interested.
-
-Thank you for the help <3
+Use with care or simply replace assets from unknown origin with your own.
