@@ -2,7 +2,7 @@
 constants only
 """
 
-VERSIONTAG = '22-fire'  # format: « yy-4letterWord » first letter is like the month of build [f]ire - [f]ebruary etc.
+VERSIONTAG = 'kengi:22fire'  # format: « kengi:yy4letterWord » first letter is like the month of build [f]ire - [f]ebruary etc.
 HD_MODE = 'hd'
 OLD_SCHOOL_MODE = 'old_school'
 SUPER_RETRO_MODE = 'super_retro'
