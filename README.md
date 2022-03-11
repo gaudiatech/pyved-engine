@@ -48,7 +48,7 @@ Count with me to six, *I promise it's worth your time*.
 The import and three initialisation steps:
 ```python
 import katagames_engine as kengi
-kengi.init()  # instead of pygame.init(), and pygame.display.set_mode(...)
+kengi.core.init()  # instead of pygame.init(), and pygame.display.set_mode(...)
 
 pygame = kengi.pygame  # alias to keep on using pygame, easily
 screen = kengi.core.get_screen()  # new way to retrieve the surface used for display
