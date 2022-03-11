@@ -4,7 +4,7 @@ sub-module dedicated to GUI management/creation,
 """
 
 from ... import _hub as inj
-
+from .TextBlock import TextBlock
 from .Button import Button
 from .Button import ButtonPanel
 from .Button2 import Button2
