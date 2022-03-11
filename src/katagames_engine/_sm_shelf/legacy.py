@@ -9,16 +9,10 @@ contact author: thomas@gaudia-tech.com
 
 License LGPL3
 """
-# from .... import engine as kataen
-# from . import cgmconf
-# from .foundation import events as kevent
-# from .foundation.events import DeadSimpleManager
-# GameTicker = kataen
-# from .foundation.runners import GameTicker, StackBasedGameCtrl
-
 from .. import _hub as injec
-from ..foundation import shared, defs
+from ..foundation import shared
 
+registered_vernum = None  # to be set by the katagames_engine.__init__.py script
 
 engine_is_init = False
 headless_mode = False
@@ -82,8 +76,8 @@ def legacyinit(gfxmode_str, caption=None, maxfps=60):
     if not shared.RUNS_IN_WEB_CTX:
         print('<->context: genuine Pygame')
         if caption is None:
-            lbl = 'untitled demo | game engine v. {}'.format(defs.VERSIONTAG)
-            pygame_module.display.set_caption(lbl)
+            default_caption = 'Untitled demo - KENGI ver'+registered_vernum
+            pygame_module.display.set_caption(default_caption)
         else:
             pygame_module.display.set_caption(caption)
 

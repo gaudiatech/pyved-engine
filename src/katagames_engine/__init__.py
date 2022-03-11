@@ -25,8 +25,8 @@ from ._BaseGameState import BaseGameState
 from ._util import underscore_format, camel_case_format
 from .foundation import defs
 
-
-vernum = defs.VERSIONTAG
+from .__version__ import ENGI_VERSION as vernum
+_hub.legacy.registered_vernum = vernum
 
 
 def plugin_bind(extname, pypath):
