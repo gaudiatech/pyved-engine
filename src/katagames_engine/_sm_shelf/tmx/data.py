@@ -607,12 +607,20 @@ class Tileset:
         return self.tiles[gid - self.firstgid]
 
     @classmethod
-    def fromxml(cls, tag, firstgid=None):
+    def fromxml(cls, tag, firstgid=None, hacksource=None, hacktileset=None):
+        print('fromxml ')
         if 'source' in tag.attrib:
             firstgid = int(tag.attrib['firstgid'])
-            with open(tag.attrib['source']) as f:
+            if hacksource:
+                srcc = hacksource
+            else:
+                srcc = tag.attrib['source']
+
+            with open(srcc) as f:
+                print('opened ', srcc)
                 tileset = ElementTree.fromstring(f.read())
-            return cls.fromxml(tileset, firstgid)
+
+            return cls.fromxml(tileset, firstgid, hacktileset=hacktileset)
 
         name = tag.attrib['name']
         if firstgid is None:
@@ -625,7 +633,8 @@ class Tileset:
         for c in tag:  # .getchildren():
             if c.tag == "image":
                 # create a tileset
-                tileset.add_image(c.attrib['source'])
+                arg_sheet = c.attrib['source'] if (hacktileset is None) else hacktileset
+                tileset.add_image(arg_sheet)
             elif c.tag == 'tile':
                 gid = tileset.firstgid + int(c.attrib['id'])
                 tileset.get_tile(gid).loadxml(c)
@@ -700,7 +709,7 @@ class TileMap:
             layer.update(dt, *args)
 
     @classmethod
-    def load(cls, filename):
+    def load(cls, filename, hack_tsxfile=None, hack_ts=None):
         with open(filename) as f:
             tminfo_tree = ElementTree.fromstring(f.read())
 
@@ -715,7 +724,10 @@ class TileMap:
         tilemap.px_height = tilemap.height * tilemap.tile_height
 
         for tag in tminfo_tree.findall('tileset'):
-            tilemap.tilesets.add(Tileset.fromxml(tag))
+            tilemap.tilesets.add(
+                Tileset.fromxml(tag, hacksource=hack_tsxfile, hacktileset=hack_ts)  # hacks work only if no more than 1 ts
+            )
+            print('tilesets added')
 
         for tag in tminfo_tree.findall('layer'):
             layer = Layer.fromxml(tag, tilemap)
