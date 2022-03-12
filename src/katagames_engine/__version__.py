@@ -2,7 +2,7 @@ VYEAR_2DIG = 22  # remember to use only 2 digits
 VMONTH = 3
 _idx = 1  # 1 for alpha, 2 for beta etc.
 VRTYPE = ['','a','b','rc'][_idx]  # do not change this line
-VRANK = 0
+VRANK = 2
 
 """
 To respect the PEP440, do not modify the code below
