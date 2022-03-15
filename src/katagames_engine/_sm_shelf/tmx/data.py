@@ -1,4 +1,5 @@
-import pygame
+from ... import _hub as inj
+pygame = inj.pygame
 
 # TODO model refactoring: use matrices as building blocks,
 # it will save some effort (Cell, CellLayer etc.)
@@ -11,6 +12,8 @@ from base64 import b64decode
 import struct
 
 # ElemenTree est employé en 2 endroits: dans Tileset.fromxml & Tilemap.load
+# this works in local ctx:
+# from xml.etree import ElementTree
 from xml.etree import ElementTree
 
 

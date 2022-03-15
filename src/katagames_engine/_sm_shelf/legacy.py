@@ -73,6 +73,8 @@ def legacyinit(gfxmode_str, caption=None, maxfps=60):
     if upscaling[chosen_mode] is not None:
         print('upscaling x{}'.format(upscaling[chosen_mode]))
 
+    # TODO l'upgrade de levent manager devrait avoir lieu dans le sdk...
+
     if not shared.RUNS_IN_WEB_CTX:
         print('<->context: genuine Pygame')
         if caption is None:
@@ -83,9 +85,8 @@ def legacyinit(gfxmode_str, caption=None, maxfps=60):
 
         injec.event.create_manager()
         game_ticker = injec.event.GameTicker(maxfps)
-
     else:
-        import katagames_sdk.pygame_emu.overlay as overlay
+        from ...pygame_emu import overlay
         print('<->context: Web')
         manager_4web = overlay.upgrade_evt_manager(pygame_module)
         print('overlay ok')

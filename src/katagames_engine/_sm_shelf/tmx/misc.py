@@ -2,7 +2,8 @@
 """
 TODO support .json, uncompressed files
 """
-import pygame
+from ... import _hub as inj
+pygame = inj.pygame
 
 
 class SpriteLayer(pygame.sprite.AbstractGroup):
