@@ -11,6 +11,7 @@ extra_sm = {
     'struct': '._sm_shelf.struct',
     'isometric': '._sm_shelf.isometric',
     'tmx': '._sm_shelf.tmx',
+    'console': '._sm_shelf.console',
 
     'pygame': 'pygame',
 }
