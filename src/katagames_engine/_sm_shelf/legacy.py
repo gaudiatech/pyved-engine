@@ -73,25 +73,17 @@ def legacyinit(gfxmode_str, caption=None, maxfps=60):
     if upscaling[chosen_mode] is not None:
         print('upscaling x{}'.format(upscaling[chosen_mode]))
 
-    # TODO l'upgrade de levent manager devrait avoir lieu dans le sdk...
-
-    if not shared.RUNS_IN_WEB_CTX:
-        print('<->context: genuine Pygame')
-        if caption is None:
-            default_caption = 'Untitled demo - KENGI ver'+registered_vernum
-            pygame_module.display.set_caption(default_caption)
-        else:
-            pygame_module.display.set_caption(caption)
-
-        injec.event.create_manager()
-        game_ticker = injec.event.GameTicker(maxfps)
+    # - BLOC qui etait censé sexecuter que si pas en Web ctx... {{
+    print('<->context: genuine Pygame')
+    if caption is None:
+        default_caption = 'Untitled demo - KENGI ver'+registered_vernum
+        pygame_module.display.set_caption(default_caption)
     else:
-        from ...pygame_emu import overlay
-        print('<->context: Web')
-        manager_4web = overlay.upgrade_evt_manager(pygame_module)
-        print('overlay ok')
-        injec.event.gl_unique_manager = manager_4web
-        game_ticker = overlay.WebCtxGameTicker()
+        pygame_module.display.set_caption(caption)
+
+    injec.event.create_manager()
+    game_ticker = injec.event.GameTicker(maxfps)
+    # - }}
 
     return result  # can be None, if no upscaling applied
 
