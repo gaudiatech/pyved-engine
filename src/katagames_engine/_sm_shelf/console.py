@@ -5,7 +5,6 @@ pygame = inj.pygame
 
 # - options
 # --------------- constants for IgCustomConsole display formattage -------------
-FONT_PATH = 'niobepolis/myassets/alphbeta.ttf'
 CONSOLE_FT_SIZE = 12
 omega_ascii_letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 ANTIALIAS_OPT = False
@@ -63,7 +62,7 @@ class CustomConsole:
     en phase de devenir le MODELE, a separer de la vue...
     """
 
-    def __init__(self, screen, rect, functions=None, key_calls=None, vari=None, syntax=None):
+    def __init__(self, screen, rect, functions=None, key_calls=None, vari=None, syntax=None, fontpath=None, ftsize=None):
         """
         :param screen:
         :param rect:
@@ -73,6 +72,7 @@ class CustomConsole:
         :param syntax: dict that associates v,k where
            v is a regexp processor
            k is a function in the form console_func(console, match) that calls console.output(...)
+        :param fontpath: str
         """
         self.message_of_the_day = ["-Niobe Polis CONSOLE ready-"]
 
@@ -109,8 +109,8 @@ class CustomConsole:
         self.rect = pygame.Rect(rect)
         self.size = self.rect.size
 
-        # self.font = pygame.font.SysFont("Courier New", 14)
-        self.font = pygame.font.Font(FONT_PATH, CONSOLE_FT_SIZE)
+        adhoc_ft_size = CONSOLE_FT_SIZE if (ftsize is None) else ftsize
+        self.font = pygame.font.Font(fontpath, adhoc_ft_size)
 
         self.font_height = self.font.get_linesize()
         self.max_lines = int((self.size[1] / self.font_height) - 1)
@@ -118,7 +118,9 @@ class CustomConsole:
         self.txt_wrapper = textwrap.TextWrapper()
 
         self.bg_layer = pygame.Surface(self.size)
+
         self.bg_layer.set_alpha(self.bg_alpha)
+
         self.txt_layer = pygame.Surface(self.size)
         self.txt_layer.set_colorkey(self.bg_color)
 
@@ -203,28 +205,28 @@ class CustomConsole:
         self.c_hist_pos = len(self.c_hist) - 1
 
     def draw(self):
-        if not self.active:
-            return
+        if self.active:
+            if self.changed:
 
-        if self.changed:
-            self.changed = False
-            self.txt_layer.fill(self.bg_color)
-            # grab lines from history
-            lines = self.c_out[-(self.max_lines + self.c_scroll):len(self.c_out) - self.c_scroll]
-            y_pos = self.size[1]-(self.font_height*(len(lines)+1))
+                # creation du txt layer
+                self.txt_layer.fill(self.bg_color)
+                lines = self.c_out[-(self.max_lines + self.c_scroll):len(self.c_out) - self.c_scroll]
+                y_pos = self.size[1]-(self.font_height*(len(lines)+1))
+                for line in lines:
+                    tmp_surf = self.font.render(line, False, self.txt_color_o, (0,0,0))
+                    self.txt_layer.blit(tmp_surf, (1, y_pos+self.line_disp_yoffset)) #, 0, 0))
+                    y_pos += self.font_height
 
-            for line in lines:
-                tmp_surf = self.font.render(line, ANTIALIAS_OPT, self.txt_color_o)
-                self.txt_layer.blit(tmp_surf, (1, y_pos+self.line_disp_yoffset, 0, 0))
-                y_pos += self.font_height
+                tmp_surf = self.font.render(self.format_input_line(), False, self.txt_color_i)
+                self.txt_layer.blit(tmp_surf, (1, self.size[1] - self.font_height + self.line_disp_yoffset))#, 0, 0))
 
-            tmp_surf = self.font.render(self.format_input_line(), ANTIALIAS_OPT, self.txt_color_i)
-            self.txt_layer.blit(tmp_surf, (1, self.size[1] - self.font_height + self.line_disp_yoffset, 0, 0))
+                # refresh bg_layer qui contiendra aussi txt_layer...
+                self.bg_layer.fill(self.bg_color)
+                self.bg_layer.blit(self.txt_layer, (0, 0)) #, 0, 0))
 
-            self.bg_layer.fill(self.bg_color)
-            self.bg_layer.blit(self.txt_layer, (0, 0, 0, 0))
+                self.changed = False
 
-        self.parent_screen.blit(self.bg_layer, self.rect)
+            self.parent_screen.blit(self.bg_layer, self.rect)
 
     def process_input(self, eventlist):
         if not self.active:
