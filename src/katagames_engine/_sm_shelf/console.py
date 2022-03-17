@@ -110,16 +110,22 @@ class CustomConsole:
         self.size = self.rect.size
 
         adhoc_ft_size = CONSOLE_FT_SIZE if (ftsize is None) else ftsize
+        print('CONSOLE uses font {}, size{}'.format(fontpath, adhoc_ft_size))
+
         self.font = pygame.font.Font(fontpath, adhoc_ft_size)
 
         self.font_height = self.font.get_linesize()
         self.max_lines = int((self.size[1] / self.font_height) - 1)
-        self.max_chars = int(((self.size[0]) / (self.font.size(omega_ascii_letters)[0]/len(omega_ascii_letters))) - 1)
+        ftdim = self.font.size(omega_ascii_letters)
+        kappa = ftdim[0] / len(omega_ascii_letters)
+        print('kappa', kappa)
+        print('ratio', ftdim[0]/ftdim[1])
+        self.max_chars = int(((self.size[0]) / kappa) - 1)
         self.txt_wrapper = textwrap.TextWrapper()
-
         self.bg_layer = pygame.Surface(self.size)
 
-        self.bg_layer.set_alpha(self.bg_alpha)
+        # TODO use alpha!
+        # self.bg_layer.set_alpha(self.bg_alpha)
 
         self.txt_layer = pygame.Surface(self.size)
         self.txt_layer.set_colorkey(self.bg_color)
@@ -213,7 +219,7 @@ class CustomConsole:
                 lines = self.c_out[-(self.max_lines + self.c_scroll):len(self.c_out) - self.c_scroll]
                 y_pos = self.size[1]-(self.font_height*(len(lines)+1))
                 for line in lines:
-                    tmp_surf = self.font.render(line, False, self.txt_color_o, (0,0,0))
+                    tmp_surf = self.font.render(line, False, self.txt_color_o, (0, 0, 0))
                     self.txt_layer.blit(tmp_surf, (1, y_pos+self.line_disp_yoffset)) #, 0, 0))
                     y_pos += self.font_height
 
@@ -318,8 +324,7 @@ class CustomConsole:
                 self.setvar(assign.group('name'), tokens[0])
             else:
                 # Function
-                print('key taken in .func_calls= ', tokens[0])
-                print(tokens[1:])
+
                 out = self.func_calls[tokens[0]](*tokens[1:])
                 if out is None:
                     print('*Warning console func MUST return a value*')
@@ -329,9 +334,17 @@ class CustomConsole:
 
             if out is not None:
                 self.output(out)
-        except (KeyError, TypeError):
+        except KeyError:
             self.output("Unknown Command: " + str(tokens[0]))
             self.output(r'Type "help" for a list of commands.')
+        except ValueError as ve:
+            self.output("Error: {0}".format(ve))
+        except TypeError as te:
+            tmp = "Error {0}".format(te)
+            if tmp.find('missing'):
+                self.output("Bad syntax, type help cmd for more info")
+            else:
+                self.output(tmp)
 
     def setvar(self, name, value):
         """Sets the value of a variable"""
@@ -409,8 +422,9 @@ class CustomConsole:
 
     def clear(self):
         """Clear the screen! Use: clear"""
-        self.c_out = ["[Screen Cleared]"]
+        self.c_out = [" "]
         self.c_scroll = 0
+        return "[Screen Cleared]"
 
     def help(self, *args):
         if args:
