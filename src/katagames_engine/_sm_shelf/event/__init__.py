@@ -477,18 +477,18 @@ class GameTicker(EventReceiver):
 # - - -  - -
 class StackBasedGameCtrl(EventReceiver):
 
-    def __init__(self, existing_ticker, gamestates_enum, glvars_pymodule, stmapping, katagame_st=None, ):
+    def __init__(self, existing_ticker, gamestates_enum, glvars_pymodule, stmapping):
         super().__init__(sticky=True)
 
         self.ticker = existing_ticker
         # lets build up all gamestates objects
         self._st_container = injec.struct.StContainer.instance()
 
+        # relation avec stcontainer
         self._st_container.setup(gamestates_enum, stmapping, glvars_pymodule)
 
-        if katagame_st:
+        if -1 in stmapping:  # TODO fix architecture, engine shouldnt know bout SDK feat
             self.first_state_id = -1
-            self._st_container.hack_bios_state(katagame_st)
         else:
             self.first_state_id = 0
 

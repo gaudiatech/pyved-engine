@@ -98,19 +98,12 @@ def retrieve_game_ctrl():
         return game_ticker
 
 
-def tag_multistate(allstates, use_katagames_env, glvars_pymodule, providedst_classes=None):
+def tag_multistate(allstates, glvars_pymodule, providedst_classes=None):
     global game_ticker, _stack_based_ctrl, _multistate
 
     _multistate = True
-
-    if use_katagames_env:
-        temp_var = ' ???'  # TODO fix this case /!\ the kata base auth auth screen needs to be def somewhere else
-        raise NotImplementedError
-    else:
-        temp_var = None
-
     _stack_based_ctrl = injec.event.StackBasedGameCtrl(
-        game_ticker, allstates, glvars_pymodule, providedst_classes, temp_var
+        game_ticker, allstates, glvars_pymodule, providedst_classes
     )
 
 

@@ -178,28 +178,21 @@ class StContainer:
         self.__setup_done = False
         self.assoc_id_state_obj = dict()
 
-    def hack_bios_state(self, gs_obj):
-        self.assoc_id_state_obj[-1] = gs_obj
-
     def setup(self, enum_game_states, stmapping, pymodule=None):
         self.__setup_done = True
-
-        """
-        - deprecated & disabled: auto-load kata service state
-        if -1 in stmapping.keys():
-            gs_obj = stmapping[-1]  # constructor KataFrameState -> __init__(-1, 'KataFrame')
-            gs_obj.glvars_module = pymodule
-            self.hack_bios_state(gs_obj)
-        """
-        # - debug
-        print('* * * in setup  ')
-        print('enum_game_states= ' + str(enum_game_states))
-        print('stmapping= ' + str(stmapping))
 
         # - initialisation d'après paramètre type: core.enum
         if stmapping:  # but = charger la classe deja identifiee en memoire
             for state_ident, adhoc_cls in stmapping.items():
+                print('creating state:', adhoc_cls.__name__)
                 obj = adhoc_cls(state_ident, adhoc_cls.__name__)
+
+                # if needed: enable Kata bios state
+                if -1 == state_ident:
+                    obj.glvars_module = pymodule  # TODO fix architecture,
+                    # StContainer shouldnt know details bout SDK feat
+
+                # the regular op
                 self.assoc_id_state_obj[state_ident] = obj
         else:
 

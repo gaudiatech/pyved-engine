@@ -81,7 +81,7 @@ def proj_to_vscreen(org_screen_pos):
 def declare_states(mapping_enum_classes, mod_glvars=None):
     all_states = list(mapping_enum_classes.keys())
     injec.legacy.tag_multistate(
-        all_states, mod_glvars, False, providedst_classes=mapping_enum_classes
+        all_states, mod_glvars, providedst_classes=mapping_enum_classes
     )
 
 

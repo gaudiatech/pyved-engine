@@ -7,6 +7,7 @@ extra_sm = {
     'event': '._sm_shelf.event',
     'gui': '._sm_shelf.gui',
     'legacy': '._sm_shelf.legacy',
+    'network': '._sm_shelf.network',
     'struct': '._sm_shelf.struct',
     'isometric': '._sm_shelf.isometric',
     'tmx': '._sm_shelf.tmx',
