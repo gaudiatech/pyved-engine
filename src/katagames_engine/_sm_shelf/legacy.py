@@ -11,8 +11,8 @@ License LGPL3
 """
 from .. import _hub as injec
 from ..foundation import shared
+from ..__version__ import ENGI_VERSION as registered_vernum
 
-registered_vernum = None  # to be set by the katagames_engine.__init__.py script
 
 engine_is_init = False
 headless_mode = False

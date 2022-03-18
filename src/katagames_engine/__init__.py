@@ -24,9 +24,12 @@ from . import _hub
 from ._BaseGameState import BaseGameState
 from ._util import underscore_format, camel_case_format
 from .foundation import defs
-
 from .__version__ import ENGI_VERSION as vernum
-_hub.legacy.registered_vernum = vernum
+
+
+def set_package_arg(parg):
+    _hub.Injector.package_arg = parg
+    print('new package_arg set:', parg)
 
 
 def plugin_bind(extname, pypath):
