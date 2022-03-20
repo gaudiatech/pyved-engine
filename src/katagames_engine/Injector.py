@@ -46,18 +46,29 @@ class Injector:
         for mname, pypath in module_listing.items():
             obj = ModuleLazyLoader(mname, pypath)
             self._listing[obj.name] = obj
+        self._man_set = dict()
+
         self.package_arg = pack_arg
         self._loading_done = False
 
     def __contains__(self, item):
-        return item in self._listing.keys()
+        if item in self._man_set:
+            return True
+        else:
+            return item in self._listing
+
+    def set(self, mname, pymod):
+        self._man_set[mname] = pymod
 
     def __getitem__(self, item):
-        tmp = self._listing[item]
-        if not tmp.ready:
-            self._loading_done = True
-            tmp.load_now(self.package_arg)
-        return tmp.pymod
+        if item in self._man_set:
+            return self._man_set[item]
+        else:
+            tmp = self._listing[item]
+            if not tmp.ready:
+                self._loading_done = True
+                tmp.load_now(self.package_arg)
+            return tmp.pymod
 
     def register(self, sm_name, py_path):
         if self._loading_done:

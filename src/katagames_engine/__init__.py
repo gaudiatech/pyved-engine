@@ -34,16 +34,18 @@ pygame = PygameIface()
 init_done = False
 
 
-def init(gfc_mode='hd'):
+def init(gfc_mode='hd', pygame_mod_info='pygame'):
     global pygame
     global init_done
-    if init_done:
-        raise RuntimeError('dont init two times')
-    init_done = True
 
-    # replace iface by genuine pygame lib, use this lib from now on
-    del pygame
-    _hub.kengi_inj.register('pygame', 'pygame')
+    if not init_done:
+        init_done = True
+        # replace iface by genuine pygame lib, use this lib from now on
+        del pygame
+        if isinstance(pygame_mod_info, str):
+            _hub.kengi_inj.register('pygame', pygame_mod_info)
+        else:
+            _hub.kengi_inj.set('pygame', pygame_mod_info)  # manually set the module, instead of using the injector
 
     __getattr__('legacy').legacyinit(gfc_mode)
 
@@ -80,9 +82,6 @@ def bulk_plugin_bind(darg: dict):
 def __getattr__(targ_sm_name):
     global init_done
     if init_done:
-        try:
-            return getattr(_hub, targ_sm_name)
-        except AttributeError:
-            raise AttributeError(f"kengi has no attribute named {targ_sm_name}")
+        return getattr(_hub, targ_sm_name)
     else:
         raise AttributeError(f"kengi cannot load {targ_sm_name}, the engine is not init yet!")

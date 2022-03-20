@@ -15,7 +15,10 @@ gl_unique_manager = None
 
 def create_manager():
     global gl_unique_manager
-    gl_unique_manager = DeadSimpleManager()
+    if gl_unique_manager is None:
+        gl_unique_manager = DeadSimpleManager()
+    else:
+        print('* warning: second call to event.create_manager()')
 
 
 def _enum_engine_ev_types(*sequential, **named):
@@ -244,6 +247,11 @@ class CogObj:
 
         self._cached_lu = CgmEvent(EngineEvTypes.LOGICUPDATE, curr_t=None)
         self._cached_pt = CgmEvent(EngineEvTypes.PAINT, screen=None)
+
+    @classmethod
+    def reset_class_state(cls):
+        cls._free_id = 2
+        cls._taken.clear()
 
     def get_id(self):
         return self._ident

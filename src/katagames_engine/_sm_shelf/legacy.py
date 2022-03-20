@@ -25,6 +25,10 @@ _stack_based_ctrl = None
 
 def legacyinit(gfxmode_str, caption=None, maxfps=60):
     global engine_is_init, game_ticker, SCR_SIZE
+
+    if engine_is_init:
+        raise ValueError('legacyinit called while engine_is_init==True')
+
     pygame_module = injec.pygame
 
     pygame_module.init()
@@ -115,6 +119,7 @@ def old_cleanup():
     global engine_is_init
     assert engine_is_init
     injec.event.gl_unique_manager.hard_reset()
+    injec.event.CogObj.reset_class_state()
 
     injec.pygame.mixer.quit()
     injec.pygame.quit()
