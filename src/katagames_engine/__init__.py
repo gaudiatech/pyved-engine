@@ -31,22 +31,23 @@ from .pygame_iface import PygameIface
 
 ver = ENGI_VERSION
 pygame = PygameIface()
-init_done = False
+one_plus_init = False
 
 
-def init(gfc_mode='hd', pygame_mod_info='pygame'):
-    global pygame
-    global init_done
-
-    if not init_done:
-        init_done = True
+def ensure_pygame_rdy(pygame_mod_info='pygame'):
+    global pygame, one_plus_init
+    if not one_plus_init:
+        one_plus_init = True
         # replace iface by genuine pygame lib, use this lib from now on
         del pygame
         if isinstance(pygame_mod_info, str):
             _hub.kengi_inj.register('pygame', pygame_mod_info)
         else:
-            _hub.kengi_inj.set('pygame', pygame_mod_info)  # manually set the module, instead of using the injector
+            _hub.kengi_inj.set('pygame', pygame_mod_info)  # set the module directly, instead of using lazy load
 
+
+def init(gfc_mode='hd', ):
+    ensure_pygame_rdy()
     __getattr__('legacy').legacyinit(gfc_mode)
 
 
@@ -80,8 +81,8 @@ def bulk_plugin_bind(darg: dict):
 
 
 def __getattr__(targ_sm_name):
-    global init_done
-    if init_done:
+    global one_plus_init
+    if one_plus_init:
         return getattr(_hub, targ_sm_name)
     else:
         raise AttributeError(f"kengi cannot load {targ_sm_name}, the engine is not init yet!")
