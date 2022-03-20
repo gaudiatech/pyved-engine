@@ -22,9 +22,39 @@ Principles: The ultimate engine
 """
 from . import _hub
 from ._BaseGameState import BaseGameState
+from .__version__ import ENGI_VERSION
 from ._util import underscore_format, camel_case_format
 from .foundation import defs
-from .__version__ import ENGI_VERSION as vernum
+from .pygame_iface import PygameIface
+
+
+ver = ENGI_VERSION
+# pygame = PygameIface()
+init_done = False
+
+
+def init(gfc_mode='hd'):
+    # global pygame
+    global init_done
+    if init_done:
+        raise RuntimeError('dont init two times')
+    init_done = True
+
+    _hub.kengi_inj.register('pygame', 'pygame')  # lets use the genuine pygame lib, from now on
+    # del pygame
+    _hub.legacy.legacyinit(gfc_mode)
+
+
+def get_surface():
+    return _hub.core.get_screen()
+
+
+def flip():
+    _hub.core.display_update()
+
+
+def quit():
+    _hub.legacy.old_cleanup()
 
 
 def set_package_arg(parg):
@@ -33,21 +63,16 @@ def set_package_arg(parg):
 
 
 def plugin_bind(extname, pypath):
-    _hub.instance.alert_if_needed()
-    _hub.Injector.register_plugin(extname, pypath)
+    _hub.kengi_inj.register_plugin(extname, pypath)
 
 
 def bulk_plugin_bind_op(assoc_extname_pypath):
-    _hub.instance.alert_if_needed()
     for ename, pypath in assoc_extname_pypath.items():
-        _hub.Injector.register_plugin(ename, pypath)
+        _hub.kengi_inj.register_plugin(ename, pypath)
 
 
 def __getattr__(targ_sm_name):
-    if targ_sm_name not in _hub.extra_sm.keys():
-        raise KeyError('sub-module "{}" you request from Kengi cannot be found!'.format(targ_sm_name))
-    else:
-        try:
-            return getattr(_hub, targ_sm_name)
-        except AttributeError:
-            raise AttributeError("(kengi injector) _hub has no valid attribute '{}'".format(targ_sm_name))
+    try:
+        return getattr(_hub, targ_sm_name)
+    except AttributeError:
+        raise AttributeError("kengi has no attribute '{}'".format(targ_sm_name))

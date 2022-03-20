@@ -84,19 +84,9 @@ def declare_states(mapping_enum_classes, mod_glvars=None):
         all_states, mod_glvars, providedst_classes=mapping_enum_classes
     )
 
-
-def init(gfc_mode='hd'):
-    injec.legacy.legacyinit(gfc_mode)
-    # _new_state(-1)
-
-
 def get_game_ctrl():
     return injec.legacy.retrieve_game_ctrl()
 
 
 def get_manager():  # saves some time
     return injec.event.EventManager.instance()
-
-
-def cleanup():
-    injec.legacy.old_cleanup()
