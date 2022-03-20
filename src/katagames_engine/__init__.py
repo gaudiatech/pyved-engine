@@ -21,6 +21,7 @@ Principles: The ultimate engine
 
 """
 from . import _hub
+from .Injector import Injector
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION
 from ._util import underscore_format, camel_case_format
@@ -29,50 +30,59 @@ from .pygame_iface import PygameIface
 
 
 ver = ENGI_VERSION
-# pygame = PygameIface()
+pygame = PygameIface()
 init_done = False
 
 
 def init(gfc_mode='hd'):
-    # global pygame
+    global pygame
     global init_done
     if init_done:
         raise RuntimeError('dont init two times')
     init_done = True
 
-    _hub.kengi_inj.register('pygame', 'pygame')  # lets use the genuine pygame lib, from now on
-    # del pygame
-    _hub.legacy.legacyinit(gfc_mode)
+    # replace iface by genuine pygame lib, use this lib from now on
+    del pygame
+    _hub.kengi_inj.register('pygame', 'pygame')
+
+    __getattr__('legacy').legacyinit(gfc_mode)
 
 
 def get_surface():
-    return _hub.core.get_screen()
+    return __getattr__('core').get_screen()
 
 
 def flip():
-    _hub.core.display_update()
+    __getattr__('core').display_update()
 
 
 def quit():
-    _hub.legacy.old_cleanup()
+    __getattr__('legacy').old_cleanup()
 
 
-def set_package_arg(parg):
-    _hub.Injector.package_arg = parg
-    print('new package_arg set:', parg)
+def get_injector():
+    return _hub.kengi_inj
 
 
-def plugin_bind(extname, pypath):
-    _hub.kengi_inj.register_plugin(extname, pypath)
+def plugin_bind(plugin_name, pypath):
+    _hub.kengi_inj.register(plugin_name, pypath)
 
 
-def bulk_plugin_bind_op(assoc_extname_pypath):
-    for ename, pypath in assoc_extname_pypath.items():
-        _hub.kengi_inj.register_plugin(ename, pypath)
+def bulk_plugin_bind(darg: dict):
+    """
+    :param darg: association extension(plug-in) name to a pypath
+    :return:
+    """
+    for pname, ppath in darg.items():
+        plugin_bind(ppath, ppath)
 
 
 def __getattr__(targ_sm_name):
-    try:
-        return getattr(_hub, targ_sm_name)
-    except AttributeError:
-        raise AttributeError("kengi has no attribute '{}'".format(targ_sm_name))
+    global init_done
+    if init_done:
+        try:
+            return getattr(_hub, targ_sm_name)
+        except AttributeError:
+            raise AttributeError(f"kengi has no attribute named {targ_sm_name}")
+    else:
+        raise AttributeError(f"kengi cannot load {targ_sm_name}, the engine is not init yet!")
