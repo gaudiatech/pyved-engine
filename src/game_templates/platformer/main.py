@@ -13,8 +13,11 @@ github.com/gaudiatech/kengi so every game dev can learn more,
 discover cool stuff that saves time if youre already a pygame user.
 """
 
+# import sys
+# sys.path.append("..\\..\\")
 
 import katagames_engine as kengi
+kengi.init('old_school')
 
 pygame = kengi.pygame
 Spr = pygame.sprite.Sprite
@@ -140,7 +143,6 @@ class MyGame:
         print()
         self.wanna_quit = False
 
-        kengi.core.init('old_school')
         self.clock = pygame.time.Clock()
         self.scr = kengi.core.get_screen()
         scr_size = self.scr.get_size()
@@ -170,7 +172,7 @@ class MyGame:
             self._reset_game()
 
         # quit
-        kengi.core.cleanup()
+        kengi.quit()
 
     def _reset_game(self):
         # TODO improve design
@@ -217,7 +219,7 @@ class MyGame:
             # - display
             self.scr.blit(self.bg.image, (0, 0))
             self.viewport.draw(self.scr)
-            kengi.core.display_update()
+            kengi.flip()
 
 
 if __name__ == '__main__':

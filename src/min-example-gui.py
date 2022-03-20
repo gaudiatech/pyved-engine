@@ -1,8 +1,8 @@
 import katagames_engine as kengi
+kengi.init()
 
 pygame = kengi.pygame
-kengi.core.init()
-screen = kengi.core.get_screen()
+screen = kengi.get_surface()
 width, height = screen.get_size()
 FT_PATH = 'alphbeta.ttf'
 INIT_TXT = 'hello user this\nis\nsome\ndope\ntext'
@@ -26,5 +26,5 @@ while not ended:
                 block.text = INIT_TXT
     screen.fill('white')
     block.draw(screen)
-    kengi.core.display_update()
-kengi.core.cleanup()
+    kengi.flip()
+kengi.quit()

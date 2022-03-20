@@ -1,12 +1,12 @@
 import katagames_engine as kengi
-
+kengi.init('old_school')
+scr_size = kengi.get_surface().get_size()
 pygame = kengi.pygame
+
 avpos = [240, 135]
 av_y_speed = 0
 clock = pygame.time.Clock()
-kengi.core.init('old_school')
-screen = kengi.core.get_screen()
-scr_size = screen.get_size()
+screen = kengi.get_surface()
 bgcolor = 'antiquewhite2'
 print('\n[kengi demo]\nTRACKED KEYS: up/down arrow keys ; Spacebar ; Escape')
 acolors = {
@@ -38,8 +38,8 @@ while not gameover:
     
     screen.fill(bgcolor)
     pygame.draw.circle(screen, acolors[curr_color_code], avpos, 15, 0)
-    kengi.core.display_update()
+    kengi.flip()
     clock.tick(60)
 
-kengi.core.cleanup()
+kengi.quit()
 print('game over.')

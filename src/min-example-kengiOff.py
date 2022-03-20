@@ -1,10 +1,10 @@
 import pygame
+pygame.init()
+scr_size = (480, 270)
 
 avpos = [240, 135]
 av_y_speed = 0
 clock = pygame.time.Clock()
-pygame.init()
-scr_size = (480, 270)
 screen = pygame.display.set_mode(scr_size)
 bgcolor = 'antiquewhite2'
 print('\n[kengi demo]\nTRACKED KEYS: up/down arrow keys ; Spacebar ; Escape')
