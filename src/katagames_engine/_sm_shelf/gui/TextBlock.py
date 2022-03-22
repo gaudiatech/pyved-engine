@@ -4,16 +4,28 @@ from ... import _hub as inj
 pygame = inj.pygame
 
 
-def create_txtblock_surf(text, ft_obj, color=(0, 0, 0), bg_color=(255, 255, 255), alignment_f=0.0, debug=0):
+
+def create_txtblock_surf(text, ft_obj, alignment_f=0.0, debug=0, color=(0, 0, 0), bg_color=None):
     """
     goal = to produce a pygame surface
     append a pair (lbl, textRect) to render_list,one per line
+
+    if bg_color ->None then transparent bg!!!
+    
     """
     render_list = list()
     mw = mh = -1
     toth = 0
+    
     for line in text.split('\n'):
-        text_lbl = ft_obj.render(line, True, color)
+
+        # CustomFt: crea surface, puis render...
+        #text_lbl = pygame.Surface((ft_obj.width(line), 16),pygame.SRCALPHA)
+        #ft_obj.render(line, text_lbl, (0,0))
+
+        #pyg font
+        text_lbl = ft_obj.render(line, False, color, bg_color)
+        
         w, h = text_lbl.get_size()
         if w > mw:
             mw = w
@@ -23,9 +35,8 @@ def create_txtblock_surf(text, ft_obj, color=(0, 0, 0), bg_color=(255, 255, 255)
         render_list.append(text_lbl)
 
     # create surf, that represents txtblock
-    surf = pygame.Surface((mw, toth))
-    surf.fill(bg_color)
-
+    surf = pygame.Surface((mw, toth), pygame.SRCALPHA)
+    
     # stack labels, to gen the txt block
     target_y = 0
     for lbl in render_list:
@@ -40,11 +51,14 @@ def create_txtblock_surf(text, ft_obj, color=(0, 0, 0), bg_color=(255, 255, 255)
 class TextBlock(pygame.sprite.Sprite):
     ALIGN_LEFT, ALIGN_CENTER = 0, 1
 
-    def __init__(self, ft_name, ft_size, text='', color=(0, 0, 0), bg_color=(255, 255, 255)):
+    #def __init__(self, ft_name, ft_size, text='', color=(0, 0, 0), bg_color=(255, 255, 255)):
+    def __init__(self, ft_obj, text='', color=(0, 0, 0), bg_color=(255, 255, 255)):
         super().__init__()
-        self.ft_obj = pygame.font.Font(ft_name, ft_size)
+        #self.ft_obj = pygame.font.Font(ft_name, ft_size)
         self._color = color
         self._bg_color = bg_color
+        self.ft_obj = ft_obj
+        
         self._align = self.ALIGN_CENTER
         self._debug = 0
         self.rect = None  # no position for now
@@ -62,9 +76,11 @@ class TextBlock(pygame.sprite.Sprite):
             prev_pos = None
 
         if self._align == self.ALIGN_CENTER:
-            ts = create_txtblock_surf(self._text, self.ft_obj, self._color, self._bg_color, 0.5, self.debug)
+            ts = create_txtblock_surf(self._text, self.ft_obj, 0.5, self.debug, self._color)
+            # ts = create_txtblock_surf(self._text, self.ft_obj, self._color, self._bg_color, 0.5, self.debug)
         else:
-            ts = create_txtblock_surf(self._text, self.ft_obj, self._color, self._bg_color, 0.0, self.debug)
+            ts = create_txtblock_surf(self._text, self.ft_obj, 0.0, self.debug, self._color)
+            # ts = create_txtblock_surf(self._text, self.ft_obj, self._color, self._bg_color, 0.0, self.debug)
         self.image = ts
         self.rect = self.image.get_rect()
         # restore previous position

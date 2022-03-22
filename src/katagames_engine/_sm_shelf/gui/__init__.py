@@ -11,6 +11,8 @@ from .Button2 import Button2
 from .Trigger import Trigger
 from .WidgetBo import WidgetBo
 from .Label import Label
+from .text import Font as ImgBasedFont
+
 
 pygame = inj.pygame
 

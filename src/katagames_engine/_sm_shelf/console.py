@@ -62,7 +62,7 @@ class CustomConsole:
     en phase de devenir le MODELE, a separer de la vue...
     """
 
-    def __init__(self, screen, rect, functions=None, key_calls=None, vari=None, syntax=None, fontpath=None, ftsize=None):
+    def __init__(self, screen, rect, functions=None, key_calls=None, vari=None, syntax=None, fontobj=None):
         """
         :param screen:
         :param rect:
@@ -72,7 +72,6 @@ class CustomConsole:
         :param syntax: dict that associates v,k where
            v is a regexp processor
            k is a function in the form console_func(console, match) that calls console.output(...)
-        :param fontpath: str
         """
         self.message_of_the_day = ["-Niobe Polis CONSOLE ready-"]
 
@@ -109,10 +108,14 @@ class CustomConsole:
         self.rect = pygame.Rect(rect)
         self.size = self.rect.size
 
-        adhoc_ft_size = CONSOLE_FT_SIZE if (ftsize is None) else ftsize
-        print('CONSOLE uses font {}, size{}'.format(fontpath, adhoc_ft_size))
-
-        self.font = pygame.font.Font(fontpath, adhoc_ft_size)
+        if fontobj is None:
+            self.font = pygame.font.Font(None, 18)
+        else:
+            self.font = fontobj
+        # en remplacement de:
+        # adhoc_ft_size = CONSOLE_FT_SIZE if (ftsize is None) else ftsize
+        # print('CONSOLE uses font {}, size{}'.format(fontpath, adhoc_ft_size))
+        # self.font = pygame.font.Font(fontpath, adhoc_ft_size)
 
         self.font_height = self.font.get_linesize()
         self.max_lines = int((self.size[1] / self.font_height) - 1)
