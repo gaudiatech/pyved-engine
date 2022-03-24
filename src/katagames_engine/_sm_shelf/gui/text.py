@@ -16,8 +16,10 @@ def swap_color(img, old_c, new_c):
     global e_colorkey
     img.set_colorkey(old_c)
     surf = img.copy()
-    surf.fill(new_c)
-    surf.blit(img, (0, 0))
+    
+    # TODO retablir ca qd texte en rouge correctement affiche ds ktg-webapp
+    #surf.fill(new_c)
+    #surf.blit(img, (0, 0))
     return surf
 
 
