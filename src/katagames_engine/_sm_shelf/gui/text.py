@@ -5,10 +5,14 @@ pygame = _hub.pygame
 
 
 def clip(surf, x, y, x_size, y_size):
-    handle_surf = surf.copy()
-    clipR = pygame.Rect(x, y, x_size, y_size)
-    handle_surf.set_clip(clipR)
-    image = surf.subsurface(handle_surf.get_clip())
+    # WTF bro? Part of original code commented:
+    # handle_surf = surf.copy()
+    clip_r = pygame.Rect(x, y, x_size, y_size)
+    # handle_surf.set_clip(clipR)
+    image = surf.subsurface(clip_r)  # handle_surf.get_clip())
+
+    # pr port ca vers Web Ctx
+    # ya donc que 2 operations a emuler convenablement: .subsurface & .copy
     return image.copy()
 
 
@@ -17,9 +21,11 @@ def swap_color(img, old_c, new_c):
     img.set_colorkey(old_c)
     surf = img.copy()
     
-    # TODO retablir ca qd texte en rouge correctement affiche ds ktg-webapp
-    #surf.fill(new_c)
-    #surf.blit(img, (0, 0))
+    # TODO theres a BUG when interactin with KataSDK, you need to comment these
+    #  two line so ktg-webapp does not crash. Fix the bug Asap!
+    surf.fill(new_c)
+    surf.blit(img, (0, 0))
+
     return surf
 
 
@@ -46,7 +52,7 @@ def load_font_img(path, font_color):
     return letters, letter_spacing, font_img.get_height()
 
 
-class Font:
+class ImgBasedFont:
     def __init__(self, path, color):
         self.letters, self.letter_spacing, self.line_height = load_font_img(path, color)
         self.font_order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
@@ -77,7 +83,9 @@ class Font:
     # --add-on to stick to pygame interface
     def render(self, gtext, antialias, color, bgcolor=None):
         rez = pygame.Surface((self.width(gtext), 16), pygame.SRCALPHA)
+        rez.fill((255,0,255))
         self._xrender(gtext, rez, (0, 0))
+        rez.set_colorkey((255, 0, 255))
         return rez
 
     def _xrender(self, text, surf, loc, line_width=0):

@@ -1,5 +1,5 @@
 import katagames_engine as kengi
-kengi.init()
+kengi.init('old_school')
 
 pygame = kengi.pygame
 screen = kengi.get_surface()
@@ -7,7 +7,10 @@ width, height = screen.get_size()
 FT_PATH = 'alphbeta.ttf'
 INIT_TXT = 'hello user this\nis\nsome\ndope\ntext'
 ALT_TXT = 'i\nunderstand that\nyou watch the console'
-ft_obj = pygame.font.Font(FT_PATH, 32)
+ft_obj = pygame.font.Font(FT_PATH, 16)
+# - can use img based font, too
+# ft_obj = kengi.gui.ImgBasedFont('gibson0_font.png', (15, 130, 243))
+
 block = kengi.gui.TextBlock(ft_obj, INIT_TXT, (0, 0, 0))
 block.rect.center = (width // 2, height // 2)  # lets center the text block
 print('*~*~*\npress and hold the space bar ; press ENTER to change alignment')
