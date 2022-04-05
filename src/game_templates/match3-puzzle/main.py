@@ -81,15 +81,15 @@ def game_update(tinfo=None):
 
         elif ev.type == pygame.MOUSEBUTTONUP:
             temp = test_snapgrid(ev.pos)
-            te = gamegrid.can_swap(draggin, temp)
-            print('can swap? ', te)
-            if draggin and temp and te:
-                gamegrid.swap(draggin, test_snapgrid(ev.pos))
-                draggin = None
+            if draggin and temp:
+                te = gamegrid.can_swap(draggin, temp)
+                if te:
+                    gamegrid.swap(draggin, test_snapgrid(ev.pos))
+                    draggin = None
 
         elif ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_SPACE:
-                pass
+                gamegrid.randomize()
 
     mger.post(CgmEvent(EngineEvTypes.PAINT, screen=scr))
     mger.update()
