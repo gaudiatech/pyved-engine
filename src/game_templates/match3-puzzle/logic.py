@@ -28,10 +28,46 @@ class Grid(kengi.event.CogObj):
         self._content[j1][i1] = tmp
         self.test_explosion()
 
+    def _tmp_func(self, cpos, lim, b, x=None, y=None):
+        print(f'call tmp_func with cpos={cpos}, lim={lim}, b={b}')
+        # returns info about explosion if it occurs
+        if cpos+1 >= lim:
+            return None
+        cpos += 1
+        if x is None and y is None:
+            raise ValueError
+        
+        if y is not None:
+            b.append(self._content[y][cpos])
+        if x is not None:
+            b.append(self._content[cpos][x])
+        if len(b)<3:
+            return self._tmp_func(cpos, lim, b, x, y)
+        
+        symc = b[0]
+        efound = True
+        for elt in b:
+            if elt != symc:
+                efound = False
+                break
+        if efound:
+            return b
+        else:
+            del b[0]
+            return self._tmp_func(cpos, lim, b, x, y)
+    
     def test_explosion(self):
-        # TODO
-        pass
-
+        print(' test explo')
+        offset_a = [1, 0]
+        offset_b = [0, 1]
+        bsup_a, bsup_b = self.WIDTH, self.HEIGHT
+        c_pos = [0, 0]
+        buffer = list()
+        e_horz = self._tmp_func(c_pos[0], bsup_a, buffer, y=0)
+        if e_horz:
+            return e_horz
+        return False
+    
     def can_swap(self, a, b):
         if a[0] != b[0] or a[1] != b[1]:
             if abs(a[0]-b[0])+abs(a[1]-b[1]) == 1:
