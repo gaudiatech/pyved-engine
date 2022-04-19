@@ -2,8 +2,9 @@
 Match3 game
 Author: wkta-tom. Game template written for kengi
 """
-import sys
-sys.path.append("..\\..\\")
+# import sys
+# sys.path.append("..\\..\\")
+
 import katagames_engine as kengi
 kengi.init()
 EngineEvTypes = kengi.event.EngineEvTypes
@@ -20,19 +21,41 @@ THR = 644
 class PuzzleView(kengi.event.EventReceiver):
     def __init__(self):
         super().__init__()
+        # tiles that wont be displayed in the regular way bc its now moving(swapping)
+        self.ghost_tile_li = list()
+
+        self.w = None  # will store screen width
+        self.ft = kengi.pygame.font.Font(None, 37)
+        self.score_etq = self.ft.render('score: 0', False, (250, 11, 12))
+
+    def _paint(self, screen):
+        global gamegrid
+        screen.fill('antiquewhite2')
+        for gcoords, symcode in gamegrid:
+            tmp_pos = map_c_to_screen(gcoords)
+            if symcode is not None:  # otherwise we dont display anything
+                screen.blit(sym_to_img_table[symcode], tmp_pos)
+        if self.w:
+            pass
+        else:
+            self.w = screen.get_size()[0]
+        screen.blit(self.score_etq, (self.w-192, 33))
+
+        kengi.flip()
 
     def proc_event(self, ev, source=None):
         if ev.type == EngineEvTypes.PAINT:
-            # draw
-            scr.fill('antiquewhite2')
-            for gcoords, symcode in gamegrid:
-                tmp_pos = map_c_to_screen(gcoords)
-                if symcode is not None:  # otherwise we dont display anything
-                    scr.blit(sym_to_img_table[symcode], tmp_pos)
+            self._paint(ev.screen)
 
-            kengi.flip()
+        elif ev.type == MyEvTypes.SymSwap:
+            x = (ev.ij_source, ev.ij_target)
+            self.ghost_tile_li.extend(x)
+
         elif ev.type == MyEvTypes.Explosion:
             print('explo @ '+str(ev.einfos))
+
+        elif ev.type == MyEvTypes.ScoreUpdate:
+            self.score_etq = self.ft.render(f'score: {ev.value}', False, (250, 11, 12))
 
 
 def map_c_to_screen(gamcoords):
@@ -49,6 +72,8 @@ def test_snapgrid(mousecoords):
                 print(i, j)
                 return i, j
 
+from logic import Score
+pl_score = Score()
 
 def game_enter():
     global pygame, scr, gamegrid, sym_to_img_table, mger
@@ -72,7 +97,7 @@ def game_enter():
 
 
 def game_update(tinfo=None):
-    global gameover, gamegrid, sym_to_img_table, scr, mger, draggin
+    global gameover, gamegrid, sym_to_img_table, scr, mger, draggin, pl_score
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT:
             gameover = True
@@ -89,7 +114,18 @@ def game_update(tinfo=None):
 
         elif ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_SPACE:
+                pl_score.reset()
                 gamegrid.randomize()
+
+    # logic: auto-destroy combos
+    k = 1
+    while k is not None:
+        k = gamegrid.test_explosion()
+        if k:
+            cbinfo = list(map(lambda x: x[0], k))
+            gamegrid.destroy(cbinfo)
+            pl_score.record(cbinfo)
+            print(pl_score.val)
 
     mger.post(CgmEvent(EngineEvTypes.PAINT, screen=scr))
     mger.update()

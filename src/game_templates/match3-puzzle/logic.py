@@ -9,6 +9,20 @@ OMEGA_CODES = list(range(6))
 C_EVIL, C_EMERALD, C_FIRESTONE, C_HEART, C_RUBY, C_STAR = OMEGA_CODES
 
 
+class Score(kengi.event.CogObj):
+    def __init__(self):
+        super().__init__()
+        self.val = 0
+
+    def record(self, comboinfo):
+        self.val += 100 * len(comboinfo)
+        self.pev(MyEvTypes.ScoreUpdate, value=self.val)
+
+    def reset(self):
+        self.val = 0
+        self.pev(MyEvTypes.ScoreUpdate, value=0)
+
+
 class Grid(kengi.event.CogObj):
     WIDTH = 10
     HEIGHT = 7
@@ -27,12 +41,7 @@ class Grid(kengi.event.CogObj):
         self._content[j0][i0] = self._content[j1][i1]
         self._content[j1][i1] = tmp
 
-        k = 1
-        while k is not None: 
-            k = self.test_explosion()
-            if k:
-                self.destroy(list(map(lambda x:x[0], k)))
-    
+    @staticmethod
     def _can_score(b):
         # returns list if 3+ combo exists, None otherwise 
         symc = b[0][1]
@@ -165,5 +174,6 @@ class Grid(kengi.event.CogObj):
         return res
 
 
-t = Grid()
-print(t)
+# - test
+# t = Grid()
+# print(t)
