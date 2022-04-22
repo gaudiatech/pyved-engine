@@ -1,6 +1,5 @@
 from ... import _hub
 
-
 pygame = _hub.pygame
 
 
@@ -20,11 +19,11 @@ def swap_color(img, old_c, new_c):
     global e_colorkey
     img.set_colorkey(old_c)
     surf = img.copy()
-    
+
     # TODO theres a BUG when interactin with KataSDK, you need to comment these
     #  two line so ktg-webapp does not crash. Fix the bug Asap!
-    surf.fill(new_c)
-    surf.blit(img, (0, 0))
+    # surf.fill(new_c)
+    # surf.blit(img, (0, 0))
 
     return surf
 
@@ -59,17 +58,16 @@ class ImgBasedFont:
                            'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
                            'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '.', '-',
                            ',', ':', '+', '\'', '!', '?', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')',
-                           '/', '_', '=', '\\', '[', ']', '*', '"', '<', '>', ';']
-        self.space_width = self.letter_spacing[0]
+                           '/', '_', '=', '\\', '[', ']', '*', '"', '<', '>', ';', '#', '$', '%', '@', '{', '}']
+        self.space_width = self.letter_spacing[self.font_order.index('_')]
         self.base_spacing = 1
         self.line_spacing = 2
 
     def get_linesize(self):  # stick to pygame interface
-        # TODO but implement this properly plz!
-        return 16
+        return 11  # TODO implement properly plz! 11 is hardset comes from 11px the PNG height gibson0_font
 
     def size(self, sample_txt):  # stick to pygame interface
-        return self.width(sample_txt), 16
+        return self.width(sample_txt), self.get_linesize()
 
     def width(self, text):
         text_width = 0
@@ -77,15 +75,23 @@ class ImgBasedFont:
             if char == ' ':
                 text_width += self.space_width + self.base_spacing
             else:
-                text_width += self.letter_spacing[self.font_order.index(char)] + self.base_spacing
+                try:
+                    idx = self.font_order.index(char)
+                except ValueError:
+                    # generic char
+                    print('cannot comp width for: ', char)
+                    idx = self.font_order.index('_')
+                text_width += self.letter_spacing[idx] + self.base_spacing
+
         return text_width
 
     # --add-on to stick to pygame interface
     def render(self, gtext, antialias, color, bgcolor=None):
-        rez = pygame.Surface((self.width(gtext), 16), pygame.SRCALPHA)
-        rez.fill((255,0,255))
+        rez = pygame.Surface((self.width(gtext), self.get_linesize()), pygame.SRCALPHA)
+        upink = (255, 0, 255)  # ugly pink
+        rez.fill(upink)
         self._xrender(gtext, rez, (0, 0))
-        rez.set_colorkey((255, 0, 255))
+        rez.set_colorkey(upink)
         return rez
 
     def _xrender(self, text, surf, loc, line_width=0):
