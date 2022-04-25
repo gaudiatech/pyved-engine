@@ -48,7 +48,7 @@ Count with me to six, *I promise it's worth your time*.
 The import and three initialisation steps:
 ```python
 import katagames_engine as kengi
-kengi.core.init()  # instead of pygame.init(), and pygame.display.set_mode(...)
+kengi.init('hd')  # instead of pygame.init(), and pygame.display.set_mode(...)
 
 pygame = kengi.pygame  # alias to keep on using pygame, easily
 screen = kengi.core.get_screen()  # new way to retrieve the surface used for display
@@ -57,11 +57,11 @@ You see? 4/6, woohoo! We're almost done.
 
 In the game loop you will need to update the display every frame:
 ```python
-kengi.core.display_update()  # instead of pygame.display.flip(), for example
+kengi.flip()  # instead of pygame.display.flip(), for example
 ```
 And lastly at the end of your program you need to call:
 ```python
-kengi.core.cleanup()  # instead of pygame.quit()
+kengi.quit()  # instead of pygame.quit()
 ```
 And voila! You are now a `kengi` user, congrats.
 
