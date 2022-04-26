@@ -114,12 +114,15 @@ class ImgBasedFont:
                     line_offset += spaces[i - 1][0] - line_offset
                     if i != 0:
                         text = text[:spaces[i - 1][1]] + '\n' + text[spaces[i - 1][1] + 1:]
+
+        escaped_chars = ['\n', ' ', '\r']
         for char in text:
-            if char not in ['\n', ' ']:
+            if char not in escaped_chars:
                 surf.blit(self.letters[self.font_order.index(char)], (loc[0] + x_offset, loc[1] + y_offset))
                 x_offset += self.letter_spacing[self.font_order.index(char)] + self.base_spacing
-            elif char == ' ':
+                continue
+            if char == ' ':
                 x_offset += self.space_width + self.base_spacing
-            else:
+            elif char == '\n':
                 y_offset += self.line_spacing + self.line_height
                 x_offset = 0
