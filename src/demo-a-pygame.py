@@ -60,7 +60,7 @@ if __name__ == '__main__':
     print("Demo A | controls:")
     print("UP/DOWN arrow, SPACE, ESCAPE")
     pygame.init()
-    pygame.display.set_caption('demo-a vanilla pygame')
+    pygame.display.set_caption('demo-a uses pygame only')
     play_game()
     pygame.quit()
     print('bye.')

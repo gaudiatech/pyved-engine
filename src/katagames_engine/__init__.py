@@ -46,8 +46,13 @@ def ensure_pygame_rdy(pygame_mod_info='pygame'):
             _hub.kengi_inj.set('pygame', pygame_mod_info)  # set the module directly, instead of using lazy load
 
 
+def _show_ver_infos():
+    print(f'KENGI - ver {ENGI_VERSION}, built on top of ')
+
+
 def init(gfc_mode='hd', caption=None, maxfps=60):
     ensure_pygame_rdy()
+    _show_ver_infos()
     __getattr__('legacy').legacyinit(gfc_mode, caption, maxfps)
 
 

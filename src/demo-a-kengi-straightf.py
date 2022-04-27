@@ -1,5 +1,5 @@
 import katagames_engine as kengi
-kengi.init('old_school', caption='demo-a KENGI-based, variant= straightf.')
+kengi.init('old_school', caption='demo-a uses kengi / straightforward variant')
 pygame = kengi.pygame
 
 
@@ -59,7 +59,7 @@ def play_game():
 
 
 if __name__ == '__main__':
-    print("kengi straightf. variant of ~~~ Demo A | controls:")
+    print(" KENGI straightforward variant of ~~~ Demo A | controls:")
     print("UP/DOWN arrow, SPACE, ESCAPE")
     play_game()
     kengi.quit()
