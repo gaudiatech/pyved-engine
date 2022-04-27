@@ -46,9 +46,9 @@ def ensure_pygame_rdy(pygame_mod_info='pygame'):
             _hub.kengi_inj.set('pygame', pygame_mod_info)  # set the module directly, instead of using lazy load
 
 
-def init(gfc_mode='hd', ):
+def init(gfc_mode='hd', caption=None, maxfps=60):
     ensure_pygame_rdy()
-    __getattr__('legacy').legacyinit(gfc_mode)
+    __getattr__('legacy').legacyinit(gfc_mode, caption, maxfps)
 
 
 def get_surface():

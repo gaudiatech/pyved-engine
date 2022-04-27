@@ -23,7 +23,7 @@ _multistate = False
 _stack_based_ctrl = None
 
 
-def legacyinit(gfxmode_str, caption=None, maxfps=60):
+def legacyinit(gfxmode_str, caption, maxfps):
     global engine_is_init, game_ticker, SCR_SIZE
 
     if engine_is_init:
