@@ -50,10 +50,10 @@ def _show_ver_infos():
     print(f'KENGI - ver {ENGI_VERSION}, built on top of ')
 
 
-def init(gfc_mode='hd', caption=None, maxfps=60):
+def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
     ensure_pygame_rdy()
     _show_ver_infos()
-    __getattr__('legacy').legacyinit(gfc_mode, caption, maxfps)
+    __getattr__('legacy').legacyinit(gfc_mode, caption, maxfps, screen_dim)
 
 
 def get_surface():

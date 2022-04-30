@@ -18,12 +18,12 @@ engine_is_init = False
 headless_mode = False
 game_ticker = None
 SCR_SIZE = None  # virtual scr size
-K_LEGACY, K_OLDSCHOOL, K_HD = range(79, 79 + 3)
+K_LEGACY, K_OLDSCHOOL, K_HD, K_CUSTOM = range(79, 79 + 4)
 _multistate = False
 _stack_based_ctrl = None
 
 
-def legacyinit(gfxmode_str, caption, maxfps):
+def legacyinit(gfxmode_str, caption, maxfps, screen_dim=None):
     global engine_is_init, game_ticker, SCR_SIZE
 
     if engine_is_init:
@@ -46,7 +46,8 @@ def legacyinit(gfxmode_str, caption, maxfps):
     str_to_code = {
         'super_retro': K_LEGACY,
         'old_school': K_OLDSCHOOL,
-        'hd': K_HD
+        'hd': K_HD,
+        'custom': K_CUSTOM
     }
     chosen_mode = str_to_code[gfxmode_str]
 
@@ -58,16 +59,25 @@ def legacyinit(gfxmode_str, caption, maxfps):
     upscaling = {
         K_LEGACY: 3.0,
         K_OLDSCHOOL: 2.0,
-        K_HD: None
+        K_HD: None,
+        K_CUSTOM: None
     }
-    taille_surf_dessin = drawspace_size[chosen_mode]
+    if chosen_mode == K_CUSTOM:
+        if screen_dim is None:
+            raise ValueError('custom mode for gfx, but no screen_dim found!')
+        taille_surf_dessin = screen_dim
+    else:
+        taille_surf_dessin = drawspace_size[chosen_mode]
 
     if shared.RUNS_IN_WEB_CTX:
         print('call display set_mode with arg: ')
         print(taille_surf_dessin)
         pygame_surf_dessin = pygame_module.display.set_mode(taille_surf_dessin)
     else:
-        pgscreen = pygame_module.display.set_mode(shared.CONST_SCR_SIZE)
+        if chosen_mode == K_CUSTOM:
+            pgscreen = pygame_module.display.set_mode(taille_surf_dessin)
+        else:
+            pgscreen = pygame_module.display.set_mode(shared.CONST_SCR_SIZE)
         pygame_surf_dessin = pygame_module.surface.Surface(taille_surf_dessin)
         injec.core.set_realpygame_screen(pgscreen)
 
