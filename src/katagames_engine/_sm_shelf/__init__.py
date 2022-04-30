@@ -19,3 +19,4 @@ from . import core
 from . import legacy
 from . import struct
 from . import console
+from . import terrain
