@@ -3,13 +3,9 @@ import katagames_engine as kengi
 kengi.init('old_school', caption='demo-pathfinding uses kengi')
 pygame = kengi.pygame
 
-map_dim = (14, 9)
-the_map = kengi.terrain.BoolMatrix(map_dim)
-the_map.set_all(False)  # False means non-blocking
-
-print(the_map)
 
 # constants
+MAP_DIM = (14, 9)
 BG_COLOR = 'antiquewhite2'
 COLOR_PALETTE = {
     0: (144, 105, 151),
@@ -17,42 +13,55 @@ COLOR_PALETTE = {
 }
 START_DISP = (30, 30)
 OFFSETS = (22, 22)
+MAXFPS = 60
+DEBUG_MSG = '** computing path **'
 
+
+# global variables
+demo_instructions = [
+    '||KENGI pathfinding demo||',
+    'Controls: ',
+    '- ARROW keys',
+    '- SPACE to set blocking/non-blocking',
+    '- BACKSPACE to clear last computed result',
+    'Most important: ',
+    '- when RETURN is pressed the shortest path between {} and {} is computed',
+]
 start_pos = [0, 0]
 cursor_pos = [0, 0]
-end_pos = list(map_dim)
+end_pos = list(MAP_DIM)
 end_pos[0] -= 1
 end_pos[1] -= 1
-
-
-def move_cursor(direct):
-    global cursor_pos, map_dim
-    if 'up' == direct:
-        if cursor_pos[1] > 0:
-            cursor_pos[1] -= 1
-    elif 'down' == direct:
-        if cursor_pos[1] < map_dim[1]-1:
-            cursor_pos[1] += 1
-    elif 'left' == direct:
-        if cursor_pos[0] > 0:
-            cursor_pos[0] -= 1
-    elif 'right' == direct:
-        if cursor_pos[0] < map_dim[0]-1:
-            cursor_pos[0] += 1
+demo_instructions[-1] = demo_instructions[-1].format(start_pos, end_pos)
+the_map = kengi.terrain.BoolMatrix(MAP_DIM)
+the_map.set_all(False)  # False means non-blocking
+print(the_map)
 
 
 class SharedVars:
     def __init__(self):
         self.game_over = False
-        self.av_y_speed = 0
         self.curr_color_code = 0
+        self.last_res = None
 
 
-last_res = None
+def move_cursor(direct):
+    global cursor_pos, MAP_DIM
+    if 'up' == direct:
+        if cursor_pos[1] > 0:
+            cursor_pos[1] -= 1
+    elif 'down' == direct:
+        if cursor_pos[1] < MAP_DIM[1]-1:
+            cursor_pos[1] += 1
+    elif 'left' == direct:
+        if cursor_pos[0] > 0:
+            cursor_pos[0] -= 1
+    elif 'right' == direct:
+        if cursor_pos[0] < MAP_DIM[0]-1:
+            cursor_pos[0] += 1
 
 
 def event_handling(ev_queue, state):
-    global last_res
     for ev in ev_queue:
         if ev.type == pygame.QUIT:
             state.game_over = True
@@ -62,24 +71,22 @@ def event_handling(ev_queue, state):
                 state.game_over = True
 
             elif ev.key == pygame.K_BACKSPACE:
-                last_res = None
+                state.last_res = None
 
             elif ev.key == pygame.K_RETURN:
-                print('Pathfinding !')
+                print(DEBUG_MSG)
                 pathfinding_result = kengi.terrain.DijkstraPathfinder.find_path(
                     the_map, start_pos, end_pos
                 )
                 print(pathfinding_result)
-                last_res = pathfinding_result
+                state.last_res = pathfinding_result
 
             elif ev.key == pygame.K_SPACE:
                 i, j = cursor_pos
                 if the_map.get_val(i, j):
                     the_map.set_val(i, j, False)
-                    print('swap matrix value to false(non-blocking)')
                 else:
                     the_map.set_val(i, j, True)
-                    print('swap matrix value to True (blocking)')
 
             elif ev.key == pygame.K_UP:
                 move_cursor('up')
@@ -90,31 +97,20 @@ def event_handling(ev_queue, state):
             elif ev.key == pygame.K_RIGHT:
                 move_cursor('right')
 
-        elif ev.type == pygame.KEYUP:
-            prkeys = pygame.key.get_pressed()
-            if (not prkeys[pygame.K_UP]) and (not prkeys[pygame.K_DOWN]):
-                state.av_y_speed = 0
-
 
 def play_game():
-    print('press RETURN to compute the path.')
-
-    av_pos = [240, 135]
     game_st = SharedVars()
     screen = kengi.get_surface()
-    scr_size = screen.get_size()
     clock = pygame.time.Clock()
 
     while not game_st.game_over:
         event_handling(pygame.event.get(), game_st)
 
-        av_pos[1] = (av_pos[1] + game_st.av_y_speed) % scr_size[1]
-
         # - screen update
         screen.fill(BG_COLOR)
 
-        for i in range(map_dim[0]):
-            for j in range(map_dim[1]):
+        for i in range(MAP_DIM[0]):
+            for j in range(MAP_DIM[1]):
 
                 pos = list(START_DISP)
                 pos[0] += i * OFFSETS[0]
@@ -123,8 +119,8 @@ def play_game():
                 # pick a color based on if its blocking or not ; if it belongs to the path or not
                 idx = 1 if the_map.get_val(i, j) else 0
                 chosen_color = COLOR_PALETTE[idx]
-                if last_res is not None:
-                    if (i, j) in last_res:
+                if game_st.last_res is not None:
+                    if (i, j) in game_st.last_res:
                         chosen_color = 'orange'
 
                 pygame.draw.circle(screen, chosen_color, pos, 10, 0)
@@ -134,17 +130,12 @@ def play_game():
         pygame.draw.rect(screen, 'navyblue', (a, b, 20, 20), 1)
 
         kengi.flip()
-        clock.tick(60)
+        clock.tick(MAXFPS)
 
 
 if __name__ == '__main__':
-    print("KENGI pathfinding demo | Controls:")
-    print()
-    print('- ARROW keys')
-    print('- SPACE to set blocking/non-blocking')
-    print('- RETURN to compute path')
-    print('- BACKSPACE to clear last result')
-
+    for line in demo_instructions:
+        print(line)
     play_game()
     kengi.quit()
     print('done.')
