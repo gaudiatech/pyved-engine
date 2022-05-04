@@ -1,149 +1,129 @@
-
 <img src="https://gaudia-tech.com/shared/kengi-logo.png"/>
-
 <p align="center">
 <a href="https://discord.gg/nyvDpXebZB">join us on Discord<br>
 <img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
 </a>
 </p>
 
-kengi is the abbreviation of **K**ata game **ENGI**ne; a game engine written in python built on top of the popular
-[pygame](https://github.com/pygame/pygame) library. It has no other dependencies.
+kengi is the abbreviation of **K**ata **ENGI**ne: a pythonic game engine built on top of
+the in python built on top of the popular [pygame](https://github.com/pygame/pygame)
+library. It has no other dependencies. So why "Kata"? [Kata.Games](https://kata.games) is
+a new gaming portal for indie game fans!
 
-But why Kata? [Kata.Games](https://kata.games) is a new gaming portal (it's already online so test it if you're curious!)
-that aims at distributing cool indie games.
 
-## Getting started
-Using the command line, navigate to the `src` folder. Ensure that you meet the requirements,
-by typing:
+## Get started
+Using the command line, navigate to the `src` folder. To ensure that your python
+distribution meets the requirements and to install the tool type:
 ```shell
 > pip install -r requirements.txt
-```
-Then you can run minimalistic examples by typing:
-```shell
-> python min-example-kengiOn.py
-```
-or
-```shell
-> python min-example-gui.py
-```
-
-In order to create your own games or run better examples, you have to install the tool.
-Hence you can use `kengi` from anywhere on your system.
-Navigate to the `src` folder if you haven't done so before and type this command:
-```shell
 > pip install .
 ```
-
-If you really prefer to test the tool before installing,
-you can always copy-paste the whole
-`src/katagames_engine` folder into your own project.
-This works too but you would have to do this for every program.
-
-## Basic tutorial
-If you already know how to code games in `pygame`, transition to `kengi` is super easy!
-There are only 6 new lines to be aware of.
-Count with me to six, *I promise it's worth your time*.
-
-The import and three initialisation steps:
+In this way, you can use `kengi` from any folder on your system. It is a good
+practice to start all your games with this kind of code snippet:
 ```python
 import katagames_engine as kengi
-kengi.init('hd')  # instead of pygame.init(), and pygame.display.set_mode(...)
-
-pygame = kengi.pygame  # alias to keep on using pygame, easily
-screen = kengi.core.get_screen()  # new way to retrieve the surface used for display
+kengi.init('hd', caption='my first game')
+pygame = kengi.pygame
 ```
-You see? 4/6, woohoo! We're almost done.
-
-In the game loop you will need to update the display every frame:
-```python
-kengi.flip()  # instead of pygame.display.flip(), for example
-```
-And lastly at the end of your program you need to call:
-```python
-kengi.quit()  # instead of pygame.quit()
-```
-And voila! You are now a `kengi` user, congrats.
 
 
-## Background
-The story behind `kengi` starts back in july 2018.
+## First demos
+If you're familiar with `pygame`, getting used to `kengi` is really easy.
+Navigate to the `src/` folder. There, you see a very basic example that uses only pygame:
+* [demo-a-pygame.py](https://github.com/gaudiatech/kengi/blob/master/src/demo-a-pygame.py)
 
-After coding several small games
-I was surprised by the productivity boost you can get,
-if you introduce a few particular patterns. It led me to study game engines and experiment.
+Now try to notice what is diffirent when one uses `kengi`, you see there are only minor
+details that change:
+* [demo-a-kengi-straightf.py](https://github.com/gaudiatech/kengi/blob/master/src/demo-a-kengi-straightf.py)
 
-While you can be surprised by some details found in the code,
-the code layout isn't random at all.
-If you know better solutions about how to solve game dev problems using python,
-we want to hear about you!
+This is only one way to use `kengi` but it's most likely that you will start with this one,
+if you already have some background in creating games using `pygame`.
+Actually, one can see `kengi` as a mere wrapper around pygame. Everything that you can do
+with `pygame` can be done the same way when using `kengi`, but `kengi` also unlocks
+many new features that are very worthy of interest!
 
-The ultimate goal is to offer a unique mix of benefits for all
-game devs using python... Benefits you don't see elsewhere.
+To explore more possibilites you can take a glimpse on the next demo
+that implements the same thing but using the M-V-C pattern:
+* [demo-a-kengi-mvc.py](https://github.com/gaudiatech/kengi/blob/master/src/demo-a-kengi-mvc.py)
 
-## Game Engine benefits
-What is so good about `kengi`? It enables you:
+Note that this program starts with the declaration
+of a list of user-defined events. User-defined events can have attributes.
+These events, just like regular pygame events, are processed via a standard method
+`proc_event` that you need to re-define when you sub-class
+`kengi.event.EventReceiver`...
 
-1. to create games much faster
 
-2. to write standardized, therefore easy-to-read code.
-Encounter at least 30% less bugs, fix bugs faster...
-It's like magic!
+## Game templates
+Want to take a glimpse at how one would code a real game that has more features?
+Having a basic set of game templates is a great thing for an engine,
+since it allows you the user to bootstrap your next Game Dev project very fast!
 
-3. to write code that evolves easily.
-By using the included M-V-C pattern, you can reach a level of code flexibility
-that is amazing 
+So save yourself a lot of time for your project,
+feel free to study/copy all files available in this folder:
+* [game_templates](https://github.com/gaudiatech/kengi/blob/master/src/game_templates) 
 
-And the most important one:
+To test a game template simply navigate the corresponding folder. There, type `python main.py`.
+Game templates include a flappy bird clone... 
 
-if used along with another component named `katasdk`, the `kengi`
-is the first *pygame-based* Game Engine that produces browser games!
-*A world premiere!*
+<img src="flappybird-preview.png" alt="flappybird screenshot" width=600>
 
-## Design principles
+Or a match3 puzzle game (screenshot below) and many other.
 
-1. Code layout matters. Clean, expressive code isn't optional ;
+<img src="match3-preview.png" alt="match3 screenshot" width=600>
 
-2. `kengi` is delivered along with 5 templates, see it as minimal examples of a real game.
-A game template can be adjusted to your needs easily ;
+
+## Kengi design principles
+1. Code layout matters. Clean, expressive code is not an option!
+
+2. `kengi` is delivered along with 6 templates, see it as minimal examples of a real game.
+A game template should be customizable very easily ;
 
 3. `kengi` is based upon a custom event manager ;
 
-4. `kengi` includes classes that implement the M-V-C pattern.
-You are free to use the pattern in your games or keep it basic, as you wish.
+4. `kengi` implements the M-V-C pattern.
+People should be free to use this pattern or keep it basic based on their preferences.
 
+
+## Goals
 > "It’s Harder to Read Code than to Write it" - Joel Spolsky
 
+The ultimate goal is to offer a mix of benefits for all
+game devs who use python... These benefits are precious.
+`kengi` enables you:
 
-## Targeting the browser
-In case you wish to use the engine along with `katasdk`,
-the installation is a bit different and the recommended syntax changes.
-For example:
-```
-# - katasdk+kengi, the general case -
-import katagames_sdk as katasdk
-kengi = katasdk.import_kengi()
-```
-Please refer to [the KataSDK official documentation](https://kata.games/developers)
-to learn more about this scenario.
+1. to write standardized therefore very easy-to-read code.
+Readability is not to overlook!
+If you take care of your code readability you'll encounter 30% less bugs,
+you will fix any bug faster, etc. It works like magic!
+
+2. to write a type of code that can evolve easily.
+By using the built-in **custom event system** and the **M-V-C pattern**,
+you can reach an amazing level of code flexibility.
+
+3. to save a lot of time while creating your game
+
+(And most importantly)
+
+4. to use your `kengi`-based game  as the input for another 
+tool that we produce, named `katasdk`.
+This tool creates special game bundles, out of python source-code,
+that can run in your browser! *A world premiere!*
 
 
 ## License
-Materials in this repo are licensed under the LGPL3 license,
-see `LICENSE` file.
+Currently, materials in this repo are all licensed under the LGPL3 license.
+See the `LICENSE` file for more info.
 
 
-## Contribute
-Feel free to contribute and improve the game engine.
-If you spot bugs, please create an issue and
-tell us how to reproduce that bug.
-Pull requests are welcome.
-Documentation is built via the `mkdocs` tool
-(see `docs/` for sources).
-Improving the docs is as important as improving the code!
-Any kind of help is very appreciated!
-Discord if you wish to discuss with current contributors.
+## Contributors
+When `kengi` becomes a great tool, we won't forget who made this
+possible! Special acknowledgements:
+* [tank-king](https://github.com/tank-king) wrote a great game template (flappy bird)
+* ...
 
+If you spot bugs, create an issue and tell us how to reproduce that bug.
 
-## Graphic modes
-...todo...
+The documentation is built via the `mkdocs` tool. Feel free to make it more user-friendly.
+It's as simple as modifying a few text files in the `docs/` folder.
+
+Fork `kengi`, Pull Requests are much appreciated! New contributors are always welcome. Thank you.
