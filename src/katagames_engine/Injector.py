@@ -26,7 +26,9 @@ class ModuleLazyLoader:
 
     def load_now(self, parg):
         nam = self.name
-        print(f' lazy loading: {nam}')
+        if nam != 'pygame':
+            print(f' lazy loading: {nam}')  # debug infos
+
         if self._pypath[0] == '.':  # relative import detected
             self._m = importlib.import_module(self._pypath, parg)
         else:

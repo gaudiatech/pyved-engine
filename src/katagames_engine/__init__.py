@@ -34,25 +34,42 @@ pygame = PygameIface()
 one_plus_init = False
 
 
-def ensure_pygame_rdy(pygame_mod_info='pygame'):
-    global pygame, one_plus_init
-    if not one_plus_init:
-        one_plus_init = True
-        # replace iface by genuine pygame lib, use this lib from now on
-        del pygame
-        if isinstance(pygame_mod_info, str):
-            _hub.kengi_inj.register('pygame', pygame_mod_info)
-        else:
-            _hub.kengi_inj.set('pygame', pygame_mod_info)  # set the module directly, instead of using lazy load
-
-
 def _show_ver_infos():
     print(f'KENGI - ver {ENGI_VERSION}, built on top of ')
 
 
-def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
-    ensure_pygame_rdy()
+def bootstrap_e(info=None):
+    """
+    ensure the engine is ready to be used
+
+    :param info:
+    :return:
+    """
+    global pygame, one_plus_init
+    if one_plus_init:
+        return
+
+    del pygame
+
+    def _ensure_pygame(xinfo):
+        # replace iface by genuine pygame lib, use this lib from now on
+        if isinstance(xinfo, str):
+            _hub.kengi_inj.register('pygame', xinfo)
+        else:
+            _hub.kengi_inj.set('pygame', xinfo)  # set the module directly, instead of using lazy load
+
+    one_plus_init = True
     _show_ver_infos()
+    if info is None:
+        _ensure_pygame('pygame')
+    else:
+        _ensure_pygame(info)
+    # dry import
+    t = get_injector()['pygame']
+
+
+def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
+    bootstrap_e()
     __getattr__('legacy').legacyinit(gfc_mode, caption, maxfps, screen_dim)
 
 
