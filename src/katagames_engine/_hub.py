@@ -8,6 +8,7 @@ from .Injector import Injector
 
 kengi_inj = Injector({
     'anim': '._sm_shelf.anim',
+    'ascii': '._sm_shelf.ascii',
     'terrain': '._sm_shelf.terrain',
     'console': '._sm_shelf.console',
     'core': '._sm_shelf.core',

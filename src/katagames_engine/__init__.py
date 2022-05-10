@@ -4,12 +4,10 @@ Principles: The ultimate engine
 -------------------------------
  * is a wrapper around pygame functions & objects
 
- * runs best within the KataSDK but can also be detached and runs independently.
- Just rename _engine -> engine, and Voila
+ * can run within the KataSDK but can also be detached and runs independently
 
  * does not know ANYTHING about whether it runs in web ctx or not.
- The engine can be "hacked" so it runs a pygame emulator instead of pygame,
- but this does not change anythin' to engine's implementation per se
+ The engine can be "hacked" but this barely changes the engine's design
 
  * is extensible: engine needs to be able to receive extensions like a GUI manager,
  an isometric engine, etc. without any architecture change.
@@ -27,7 +25,7 @@ from .__version__ import ENGI_VERSION
 from ._util import underscore_format, camel_case_format
 from .foundation import defs
 from .pygame_iface import PygameIface
-
+from . import palettes
 
 ver = ENGI_VERSION
 pygame = PygameIface()
