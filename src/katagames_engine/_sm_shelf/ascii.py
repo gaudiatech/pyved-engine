@@ -144,6 +144,14 @@ class Acanvas:
     def paste(self, src_surf, pos):
         self.screen.blit(src_surf, (pos[0]*_char_size, pos[1]*_char_size))
 
+    @property
+    def bounds(self):
+        return last_col+1, last_row+1
+
+    def is_inside(self, ij_coords):
+        i, j = ij_coords
+        return -1 < i < last_col+1 and -1 < j < last_row+1
+
     @classmethod
     def screen_to_cpos(cls, pos):
         a, b = pos[0] // _char_size, pos[1] // _char_size
