@@ -51,10 +51,11 @@ def legacyinit(gfxmode_str, caption, maxfps, screen_dim=None):
     }
     chosen_mode = str_to_code[gfxmode_str]
 
+    bw, bh = shared.CONST_SCR_SIZE
     drawspace_size = {
-        K_LEGACY: (320, 180),
-        K_OLDSCHOOL: (480, 270),
-        K_HD: (960, 540)
+        K_HD: (bw, bh),
+        K_OLDSCHOOL: (bw//2, bh//2),
+        K_LEGACY: (bw // 3, bh // 3),
     }
     upscaling = {
         K_LEGACY: 3.0,
