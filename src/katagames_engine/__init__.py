@@ -24,6 +24,8 @@ from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION
 from ._util import underscore_format, camel_case_format
 from .foundation import defs
+from .foundation import shared  # must keep this line /!\ see web vm
+
 from .pygame_iface import PygameIface
 from . import palettes
 

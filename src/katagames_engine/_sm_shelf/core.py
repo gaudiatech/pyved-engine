@@ -1,7 +1,3 @@
-# - avoid rel import for brython
-# from ...foundation import shared
-# from .... import engine as kataen
-
 from .. import _hub as injec
 from ..foundation import shared
 
@@ -57,14 +53,16 @@ def get_screen():
     return shared.screen
 
 
-def get_disp_size():
-    # display
-    return 960, 540
+# - deprecated
+# it's confusing! When upscaling is used its unclear what size is returned here,
+# better avoid this function...
+# def get_disp_size():
+#     return shared.CONST_SCR_SIZE
 
 
-# deprecated /!\
-def runs_in_web():
-    return shared.RUNS_IN_WEB_CTX
+# - deprecated /!\
+# def runs_in_web():
+#    return shared.RUNS_IN_WEB_CTX
 
 
 # -----------------------------------
@@ -83,6 +81,7 @@ def declare_states(mapping_enum_classes, mod_glvars=None):
     injec.legacy.tag_multistate(
         all_states, mod_glvars, providedst_classes=mapping_enum_classes
     )
+
 
 def get_game_ctrl():
     return injec.legacy.retrieve_game_ctrl()

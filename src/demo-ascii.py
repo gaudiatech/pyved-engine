@@ -41,10 +41,12 @@ while not gameover:
         elif ev.type == pygame.MOUSEBUTTONDOWN:
             text_pos = list(kengi.ascii.Acanvas.screen_to_cpos(ev.pos))
         elif ev.type == pygame.KEYDOWN:
-            if ev.key == pygame.K_RETURN:
-                kengi.ascii.increm_char_size()
 
-            if text_pos is not None:
+            if ev.key == pygame.K_BACKSPACE:
+                kengi.ascii.increm_char_size()
+                text_pos = None
+
+            elif (text_pos is not None) and ev.key != pygame.K_RETURN:
                 cle = tuple(text_pos)
                 if cle not in ajouts:
                     ajouts[cle] = list()
@@ -70,7 +72,7 @@ while not gameover:
 
     for adhoc_tpos, aj in ajouts.items():
         if len(aj):
-            tmp = asc_canvas.alphabet.render(aj, PAL[3], PAL[5])
+            tmp = asc_canvas.alphabet.render(aj, PAL[3], PAL['darkgrey'])
             asc_canvas.paste(tmp, adhoc_tpos)
 
     # draw the cursor
