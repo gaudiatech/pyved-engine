@@ -32,6 +32,7 @@ from . import palettes
 ver = ENGI_VERSION
 pygame = PygameIface()
 one_plus_init = False
+_active_state = False
 
 
 def _show_ver_infos():
@@ -69,7 +70,9 @@ def bootstrap_e(info=None):
 
 
 def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
+    global _active_state
     bootstrap_e()
+    _active_state = True
     __getattr__('legacy').legacyinit(gfc_mode, caption, maxfps, screen_dim)
 
 
@@ -82,7 +85,11 @@ def flip():
 
 
 def quit():
-    __getattr__('legacy').old_cleanup()
+    global _active_state
+    if _active_state:
+        __getattr__('event').EventManager.instance().hard_reset()
+        __getattr__('legacy').old_cleanup()
+        _active_state = False
 
 
 def get_injector():
