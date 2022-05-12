@@ -45,3 +45,9 @@ _c64pdef = (  # Commodore 64
 )
 
 c64 = _Pal(_c64pdef)
+
+_cyberpunkdef = (
+    ('darkblue', 40, 40, 68),
+)
+
+cyberpunk = _Pal(_cyberpunkdef)

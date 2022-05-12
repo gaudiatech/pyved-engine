@@ -3,7 +3,23 @@ from ..foundation import shared
 
 
 # - constants
-CODE_FILL = 13 * 16 + 11  # the character that allows to fill the space
+# character set that allows to draw a box with single line around it
+CODE_LINE_VERT = 16*11 + 3
+CODE_LINE_NE = 16*12 - 1
+CODE_LINE_SW = 16*12 + 0
+CODE_LINE_NW = 16*13 + 10
+CODE_LINE_HORZ = 16*12 + 4
+CODE_LINE_SE = 16*13 + 9
+
+# the character that allows to fill the space
+CODE_FILL = 13 * 16 + 11
+# all
+KNOWN_CODES = (
+    CODE_LINE_VERT, CODE_LINE_HORZ,
+    CODE_LINE_NE, CODE_LINE_SW, CODE_LINE_SE, CODE_LINE_NW,
+    CODE_FILL
+)
+
 # embedded png files white fg, black bg. I used base64.b64encode(fptr)...
 # Use base64.b64decode(encoded) to decode!
 _EMB_TILEMAPS_PNGF = {
@@ -65,6 +81,9 @@ def is_inside(ij_coords):
 
 
 def put_char(identifier, arraypos, fgcolor, bgcolor=None):
+    if bgcolor is None and identifier == ' ':  # skip if nothing to show
+        return
+
     if _screen is None:
         raise Exception('put_char called but the .ascii submodule has not been init!')
     if fgcolor == (255, 255, 255):
@@ -76,6 +95,29 @@ def put_char(identifier, arraypos, fgcolor, bgcolor=None):
 
 # def paste(self, src_surf, pos):
 #     self.screen.blit(src_surf, (pos[0]*_char_size, pos[1]*_char_size))
+_corresp_table = dict()
+
+
+def mapping_letter_tileset_idx(lettre):
+    global _corresp_table
+    # corresp caracteres & indice tile
+    nbparcol = 16
+    if not len(_corresp_table):  # empty dict
+        for y in range(32, 32 + nbparcol * 9):
+            _corresp_table[chr(y)] = y
+
+    if lettre in KNOWN_CODES:
+        return lettre
+    if lettre == '/':
+        return 3 * nbparcol - 1
+    if lettre == '\\':
+        return 6 * nbparcol - 4
+    if lettre in _corresp_table:
+        return _corresp_table[lettre]
+    import binascii
+    print('*warning:couldnt map letter to tileset idx: {}[{}]'.format(lettre, str(binascii.hexlify(lettre.encode()))))
+
+    return 0
 
 
 def screen_to_cpos(pos):
@@ -150,18 +192,9 @@ class _KFont:
         return fres
 
     def fetch(self, k):
-        nbparcol = 16
+        k = mapping_letter_tileset_idx(k)
 
-        # corresp caracteres & indice tile
-        corresp_table = dict()
-        for y in range(32, 32 + 16*9):
-            corresp_table[chr(y)] = y
-        if k == '/':
-            k = 3 * 16 - 1
-        elif k == '\\':
-            k = 6 * 16 - 4
-        elif k in corresp_table:
-            k = corresp_table[k]
+        nbparcol = 16
 
         if not isinstance(k, int):
             raise ValueError('try to fetch by char code but that is not an int')
