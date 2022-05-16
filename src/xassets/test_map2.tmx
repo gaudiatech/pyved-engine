@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.8" tiledversion="1.8.4" orientation="isometric" renderorder="right-down" width="30" height="20" tilewidth="64" tileheight="32" infinite="0" nextlayerid="11" nextobjectid="2">
+ <editorsettings>
+  <export format="json"/>
+ </editorsettings>
+ <tileset firstgid="1" source="sync-tileset.json"/>
+ <tileset firstgid="10" source="sync-tileset.tsx"/>
+ <layer id="4" name="Tile Layer 4" width="30" height="20" offsetx="0" offsety="15">
+  <data encoding="base64" compression="zlib">
+   eJwTYmBgEAJiTiQsRCHmR6L50eSoaQ8+u7FhWtk5iomPg6FmJzHmUttufhqZO1jjbhSPYnpgQvUOreolQmbSsj7EhQeqbMHWJhgu9vJjwQBrPilu
+  </data>
+ </layer>
+ <objectgroup id="5" name="Object Layer 1"/>
+ <layer id="1" name="Tile Layer 1" width="30" height="20">
+  <data encoding="base64" compression="zlib">
+   eJzt08EKwCAMA9AwkZ37x376vBREGIvDNeAMBA8tvItNABLmx4idL1zG9Ea77fsXN9I2kdtbM1zmftxS/WelGx2V67bCXM09azNQ7ubMzVlTNnlg98l74+9octReTgIBzg==
+  </data>
+ </layer>
+ <layer id="2" name="Tile Layer 2" width="30" height="20" offsetx="0" offsety="-16">
+  <data encoding="base64" compression="zlib">
+   eJxjYKANEKSRudQCjKP2Dju70dPcUA5rUvPPUPbrKBicYKDK8JFm7ygYnoAJiAE54gBx
+  </data>
+ </layer>
+ <layer id="3" name="Tile Layer 3" width="30" height="20" offsetx="0" offsety="-32">
+  <data encoding="base64" compression="zlib">
+   eJxjYKANEKSRuaNgFOACwynNDSe/jIJRMBTAaJ4bBdQETEAMAJyvAEc=
+  </data>
+ </layer>
+ <layer id="6" name="Tile Layer 5" width="30" height="20" offsetx="0" offsety="-48">
+  <data encoding="base64" compression="zlib">
+   eJxjYKAN4KaRuaNgFOACo2luFIyCUTAKRsFgAQC1FAAX
+  </data>
+ </layer>
+ <layer id="7" name="Tile Layer 6" width="30" height="20" offsetx="0" offsety="-64">
+  <data encoding="base64" compression="zlib">
+   eJxjYKAN4KaRuaNgFOACo2luFIyCUTAKRsFgAQC1FAAX
+  </data>
+ </layer>
+ <layer id="8" name="Tile Layer 7" width="30" height="20" offsetx="0" offsety="-80">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2B4AO6BdsAoGAWjYBSMglEABQBRvAAM
+  </data>
+ </layer>
+ <layer id="9" name="Tile Layer 8" width="30" height="20" offsetx="0" offsety="-96">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2B4AO6BdsAoGAWjYBSMglEABQBRvAAM
+  </data>
+ </layer>
+ <layer id="10" name="Tile Layer 9" width="30" height="20" offsetx="0" offsety="-112">
+  <data encoding="base64" compression="zlib">
+   eJztwTEBAAAAwqD1T20JT6AAAHgaCWAAAQ==
+  </data>
+ </layer>
+</map>
