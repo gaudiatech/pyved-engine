@@ -1,14 +1,19 @@
 """
-legacy of the first GAME ENGINE
-  designed by wkta
-(the "coremon engine" 2018-2020)
-
+(~*~ legacy code ~*~)
+AUTHOR INFO
+ Thomas I. cf. https://github.com/wkta
 contact author: thomas@gaudia-tech.com
 
- the structure has been slightly modified in 2021 to become web-compatible
+LICENSE INFO
+ for the whole legacy folder: LGPL3
 
-License LGPL3
+It's the legacy of the first GAME ENGINE named
+coremon engine, coded by Tom during 2018-2020.
+the structure has been modified later,
+in 2021 to become web-compatible
 """
+
+
 from .. import _hub as injec
 from ..foundation import shared
 from ..__version__ import ENGI_VERSION as registered_vernum
