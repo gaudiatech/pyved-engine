@@ -4,11 +4,13 @@ from .isosm_config import SCROLL_STEP, NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, F
 
 
 pygame = _hub.pygame
+EngineEvTypes = _hub.event.EngineEvTypes
 
 
-class IsometricMapViewer:
+class IsometricMapViewer(_hub.event.EventReceiver):
     def __init__(self, isometric_map, screen, postfx=None, cursor=None,
                  left_scroll_key=None, right_scroll_key=None, up_scroll_key=None, down_scroll_key=None):
+        super().__init__()
 
         self.isometric_map = isometric_map
         self.screen = screen
@@ -40,7 +42,8 @@ class IsometricMapViewer:
         self._focused_object_x0 = 0
         self._focused_object_y0 = 0
 
-        #self.debug_sprite = image.Image("assets/floor-tile.png")
+        self.debug_sprite = pygame.image.load('xassets/half-floor-tile.png')  #image.Image("assets/floor-tile.png")
+        self.lastmousepos = None
 
     def set_focused_object(self, fo):
         if fo:
@@ -226,116 +229,128 @@ class IsometricMapViewer:
         if dx or dy:
             self._update_camera(dx, dy)
 
-    def __call__(self):
-        """Draws this mapview to the provided screen."""
-        screen_area = self.screen.get_rect()
-        mouse_x, mouse_y = _hub.core.proj_to_vscreen(pygame.mouse.get_pos())
+    def proc_event(self, ev, source=None):
+        if ev.type == pygame.MOUSEMOTION:
+            mouse_x, mouse_y = _hub.core.proj_to_vscreen(ev.pos)
+            self.lastmousepos = (mouse_x, mouse_y)
+            # this was in the __call__ method, previously
+            self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
 
-        self.screen.fill('black')
-        self.camera_updated_this_frame = False
-        if self._focused_object and (self._focused_object_x0 != self._focused_object.x or
-                                     self._focused_object_y0 != self._focused_object.y):
-            self.focus(self._focused_object.x, self._focused_object.y)
-            self._focused_object_x0 = self._focused_object.x
-            self._focused_object_y0 = self._focused_object.y
-        # hack disable temporarely the scroll via mouse.To enable-> uncomment 2 lines below
-        #else:
-        #    self._check_mouse_scroll(screen_area, mouse_x, mouse_y)
+            if self.cursor:
+                self.cursor.update(self, ev)
 
-        x, y = self.map_x(0, 0) - 2, self.map_y(0, 0) - 1
-        x0, y0 = x, y
-        keep_going = True
-        line_number = 1
-        line_cache = list()
+        elif ev.type == EngineEvTypes.PAINT:
+            ev.screen.fill('black')
+            self.camera_updated_this_frame = False
+            if self._focused_object and (self._focused_object_x0 != self._focused_object.x or
+                                         self._focused_object_y0 != self._focused_object.y):
+                self.focus(self._focused_object.x, self._focused_object.y)
+                self._focused_object_x0 = self._focused_object.x
+                self._focused_object_y0 = self._focused_object.y
+            # hack disable temporarely the scroll via mouse.To enable-> uncomment 2 lines below
+            # else:
+            #    self._check_mouse_scroll(screen_area, mouse_x, mouse_y)
 
-        # The visible area describes the region of the map we need to draw. It is bigger than the physical screen
-        # because we probably have to draw cells that are not fully on the map.
-        visible_area = self.screen.get_rect()
-        visible_area.inflate_ip(self.tile_width, self.isometric_map.tile_height)
-        visible_area.h += self.isometric_map.tile_height + self.half_tile_height - self.isometric_map.layers[-1].offsety
+            x, y = self.map_x(0, 0) - 2, self.map_y(0, 0) - 1
+            x0, y0 = x, y
+            keep_going = True
+            line_number = 1
+            line_cache = list()
 
-        # Record all of the objectgroup contents for display when their tile comes up.
-        objectgroup_contents = dict()
-        for k, v in self.isometric_map.objectgroups.items():
-            objectgroup_contents[k] = collections.defaultdict(list)
-            for ob in v.contents:
-                sx, sy = self.screen_coords(ob.x, ob.y, k.offsetx + v.offsetx, k.offsety + v.offsety)
-                obkey = (self.map_x(sx, sy, return_int=True), self.map_y(sx, sy, return_int=True))
-                objectgroup_contents[k][obkey].append(ob)
+            # The visible area describes the region of the map we need to draw. It is bigger than the physical screen
+            # because we probably have to draw cells that are not fully on the map.
+            visible_area = ev.screen.get_rect()
+            visible_area.inflate_ip(self.tile_width, self.isometric_map.tile_height)
+            visible_area.h += self.isometric_map.tile_height + self.half_tile_height - self.isometric_map.layers[
+                -1].offsety
 
-        while keep_going:
-            # In order to allow smooth sub-tile movement of stuff, we have
-            # to draw everything in a particular order.
-            nuline = self._get_horizontal_line(x0, y0, line_number, visible_area)
-            line_cache.append(nuline)
-            current_y_offset = self.isometric_map.layers[0].offsety
-            current_line = len(line_cache) - 1
+            # Record all of the objectgroup contents for display when their tile comes up.
+            objectgroup_contents = dict()
+            for k, v in self.isometric_map.objectgroups.items():
+                objectgroup_contents[k] = collections.defaultdict(list)
+                for ob in v.contents:
+                    sx, sy = self.screen_coords(ob.x, ob.y, k.offsetx + v.offsetx, k.offsety + v.offsety)
+                    obkey = (self.map_x(sx, sy, return_int=True), self.map_y(sx, sy, return_int=True))
+                    objectgroup_contents[k][obkey].append(ob)
 
-            for layer_num, layer in enumerate(self.isometric_map.layers):
-                if current_line >= 0:
-                    if line_cache[current_line]:
-                        for x, y in line_cache[current_line]:
-                            gid = layer[x, y]
-                            tile_id = gid & NOT_ALL_FLAGS
-                            if tile_id > 0:
-                                my_tile = self.isometric_map.tilesets[tile_id]
-                                sx, sy = self.screen_coords(x, y)
-                                my_tile(self.screen, sx, sy + layer.offsety, gid & FLIPPED_HORIZONTALLY_FLAG,
-                                        gid & FLIPPED_VERTICALLY_FLAG)
-                            if self.cursor and self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
-                                self.cursor.render(self)
+            while keep_going:
+                # In order to allow smooth sub-tile movement of stuff, we have
+                # to draw everything in a particular order.
+                nuline = self._get_horizontal_line(x0, y0, line_number, visible_area)
+                line_cache.append(nuline)
+                current_y_offset = self.isometric_map.layers[0].offsety
+                current_line = len(line_cache) - 1
 
-                    if current_line > 1 and layer in objectgroup_contents and line_cache[current_line - 1]:
-                        # After drawing the terrain, draw any objects in the previous cell.
-                        for x, y in line_cache[current_line - 1]:
+                for layer_num, layer in enumerate(self.isometric_map.layers):
+                    if current_line >= 0:
+                        if line_cache[current_line]:
+                            for x, y in line_cache[current_line]:
+                                gid = layer[x, y]
+                                tile_id = gid & NOT_ALL_FLAGS
+                                if tile_id > 0:
+                                    my_tile = self.isometric_map.tilesets[tile_id]
+                                    sx, sy = self.screen_coords(x, y)
+                                    my_tile(ev.screen, sx, sy + layer.offsety, gid & FLIPPED_HORIZONTALLY_FLAG,
+                                            gid & FLIPPED_VERTICALLY_FLAG)
+                                if self.cursor and self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
+                                    self.cursor.render(self)
 
-                            if (x, y) in objectgroup_contents[layer]:
-                                objectgroup_contents[layer][(x, y)].sort(key=self._model_depth)
-                                for ob in objectgroup_contents[layer][(x, y)]:
-                                    sx, sy = self.screen_coords(
-                                        ob.x, ob.y,
-                                        layer.offsetx + self.isometric_map.objectgroups[layer].offsetx,
-                                        layer.offsety + self.isometric_map.objectgroups[layer].offsety
-                                    )
-                                    ob(self.screen, sx, sy, self.isometric_map)
+                        if current_line > 1 and layer in objectgroup_contents and line_cache[current_line - 1]:
+                            # After drawing the terrain, draw any objects in the previous cell.
+                            for x, y in line_cache[current_line - 1]:
 
-                    elif line_cache[current_line] is None and layer == self.isometric_map.layers[-1]:
-                        keep_going = False
+                                if (x, y) in objectgroup_contents[layer]:
+                                    objectgroup_contents[layer][(x, y)].sort(key=self._model_depth)
+                                    for ob in objectgroup_contents[layer][(x, y)]:
+                                        sx, sy = self.screen_coords(
+                                            ob.x, ob.y,
+                                            layer.offsetx + self.isometric_map.objectgroups[layer].offsetx,
+                                            layer.offsety + self.isometric_map.objectgroups[layer].offsety
+                                        )
+                                        ob(ev.screen, sx, sy, self.isometric_map)
 
-                else:
-                    break
+                        elif line_cache[current_line] is None and layer == self.isometric_map.layers[-1]:
+                            keep_going = False
 
-                if layer.offsety < current_y_offset:
-                    current_line -= 1
-                    current_y_offset = layer.offsety
+                    else:
+                        break
 
-            line_number += 1
+                    if layer.offsety < current_y_offset:
+                        current_line -= 1
+                        current_y_offset = layer.offsety
 
-        #mx = self.map_x(mouse_x, mouse_y)
-        #my = self.map_y(mouse_x, mouse_y)
-        #if self.isometric_map.on_the_map(mx, my):
-        #    mydest = self.debug_sprite.bitmap.get_rect(midbottom=self.screen_coords(mx, my))
-        #    self.debug_sprite.render(mydest, 0)
+                line_number += 1
 
-        self.phase = (self.phase + 1) % 600
-        self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
+            # draw cursor org size
+            #if self.lastmousepos:
+                # mx = self.map_x(self.lastmousepos[0], self.lastmousepos[1])
+                # my = self.map_y(self.lastmousepos[0], self.lastmousepos[1])
+                # if self.isometric_map.on_the_map(mx, my):
+                   ## mydest = self.debug_sprite.bitmap.get_rect(midbottom=self.screen_coords(mx, my))
+                   ## mydest = self.debug_sprite.get_rect(midbottom=self.screen_coords(mx, my))
+                   # ev.screen.blit(self.debug_sprite, self.screen_coords(mx, my)) # self.debug_sprite.render(mydest, 0)
+            # Call this function every time your game loop gets an event.
+            if self.cursor:
+                self.cursor.update(self, pygame.event.Event(pygame.USEREVENT))
 
-        if self.postfx:
-            self.postfx()
+            self.phase = (self.phase + 1) % 600
 
-    def check_event(self, ev):
-        # Call this function every time your game loop gets an event.
-        if self.cursor:
-            self.cursor.update(self, ev)
-        mykeys = pygame.key.get_pressed()
-        dx, dy = 0, 0
-        if self.up_scroll_key and mykeys[self.up_scroll_key]:
+            if self.postfx:
+                self.postfx()
+
+    def scroll_to(self, directioncode):
+        """
+        :param directioncode: 0 - 3 such as 0 north, 1 east, 2 south, 3 west
+        """
+        dx = dy = 0
+        if 0 == directioncode:
             dy = SCROLL_STEP
-        elif self.down_scroll_key and mykeys[self.down_scroll_key]:
+        elif 2 == directioncode:
             dy = -SCROLL_STEP
-        if self.left_scroll_key and mykeys[self.left_scroll_key]:
+        elif 3 == directioncode:
             dx = SCROLL_STEP
-        elif self.right_scroll_key and mykeys[self.right_scroll_key]:
+        elif 1 == directioncode:
             dx = -SCROLL_STEP
-        if dx or dy:
-            self._update_camera(dx, dy)
+        else:
+            raise ValueError('invalid directioncode: ', directioncode)
+        self._update_camera(dx, dy)
