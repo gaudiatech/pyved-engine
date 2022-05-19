@@ -13,7 +13,8 @@ setup(
         "katagames_engine._sm_shelf.event",
         "katagames_engine._sm_shelf.gui",
         "katagames_engine._sm_shelf.isometric",
-        "katagames_engine._sm_shelf.tmx"
+        "katagames_engine._sm_shelf.tmx",
+        "katagames_engine._sm_shelf.polarbear"
         ],
     include_package_data=True,  # to be sure we get _sm_shelf/legacy.py, etc.
 

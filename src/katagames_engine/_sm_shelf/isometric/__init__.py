@@ -416,6 +416,8 @@ class IsometricMap():
         # object_fun is a function that can parse a dict describing an object.
         # If None, the only objects that can be loaded are terrain objects.
         with open(os.path.join(os.pathsep.join(folders), filename)) as f:
+            #res = cls.parse_tmx_data(f.read())
+            #return res
             tminfo_tree = ElementTree.fromstring(f.read())
 
         # get most general map informations and create a surface
@@ -448,13 +450,7 @@ class IsometricMap():
         return tilemap
 
     @classmethod
-    def load_json(cls, folders, filename, object_fun=None):
-        # object_fun is a function that can parse a dict describing an object.
-        # If None, the only objects that can be loaded are terrain objects.
-
-        with open(os.path.join(folders, filename)) as f:
-            jdict = json.load(f)
-
+    def from_json_dict(cls, folders, jdict, object_fun=None):
         # get most general map informations and create a surface
         tilemap = cls()
 
@@ -464,9 +460,7 @@ class IsometricMap():
         tilemap.tile_height = jdict['tileheight']
 
         for tag in jdict['tilesets']:
-            tilemap.tilesets.add(
-                IsometricTileset.fromjson(folders, tag)
-            )
+            tilemap.tilesets.add(IsometricTileset.fromjson(folders, tag))
 
         for tag in jdict["layers"]:
             if tag["type"] == 'tilelayer':
@@ -476,9 +470,18 @@ class IsometricMap():
                 if not tilemap.layers:
                     # See above comment for why I'm adding an empty layer. TLDR: the objects need a reference frame.
                     tilemap.layers.append(IsometricLayer.emptylayer("The Mysterious Empty Layer", tilemap))
-                tilemap.objectgroups[tilemap.layers[-1]] = ObjectGroup.fromjson(folders, tag, tilemap.layers[-1], object_fun)
-
+                tilemap.objectgroups[tilemap.layers[-1]] = ObjectGroup.fromjson(folders, tag, tilemap.layers[-1],
+                                                                                object_fun)
         return tilemap
+
+    @classmethod
+    def load_json(cls, folders, filename, object_fun=None):
+        # object_fun is a function that can parse a dict describing an object.
+        # If None, the only objects that can be loaded are terrain objects.
+
+        with open(os.path.join(os.pathsep.join(folders), filename)) as f:
+            jdict = json.load(f)
+        return cls.from_json_dict(folders, jdict, object_fun)
 
     @classmethod
     def load(cls, folders, filename, object_fun=None):
@@ -732,8 +735,10 @@ class IsometricMapViewer(object):
             self.focus(self._focused_object.x, self._focused_object.y)
             self._focused_object_x0 = self._focused_object.x
             self._focused_object_y0 = self._focused_object.y
-        else:
-            self._check_mouse_scroll(screen_area, mouse_x, mouse_y)
+        # hack disable temporarely the scroll via mouse.To enable-> uncomment 2 lines below
+        #else:
+        #    self._check_mouse_scroll(screen_area, mouse_x, mouse_y)
+
         x, y = self.map_x(0, 0) - 2, self.map_y(0, 0) - 1
         x0, y0 = x, y
         keep_going = True

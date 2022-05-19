@@ -468,7 +468,10 @@ from . import frects
 from . import rpgmenu
 from . import image
 from . import widgets
-from . import dialogue
+
+# disabled as this
+# creates a problem (circular import? Cannot import from partially initialized polarbear)
+# from . import dialogue
 
 
 class BasicNotification(frects.Frect):
