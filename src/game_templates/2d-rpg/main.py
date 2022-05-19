@@ -20,8 +20,9 @@ import katagames_engine as kengi
 kengi.bootstrap_e()
 
 
-from app_click_challg import ClickChallgState
+from app_overworld import OverworldState
 from app_menu_screen import MenuScreenState
+from app_forest import ForestState
 from myrpg_defs import GameStates
 
 
@@ -32,7 +33,8 @@ if __name__ == '__main__':
     # this line also changes the type of game controller used
     kengi.core.declare_states({
         GameStates.TitleScreen: MenuScreenState,
-        GameStates.Overworld: ClickChallgState
+        GameStates.Overworld: OverworldState,
+        GameStates.ForestLevel: ForestState
     })
 
     t = kengi.core.get_game_ctrl()

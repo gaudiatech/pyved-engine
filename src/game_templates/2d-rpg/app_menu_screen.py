@@ -23,8 +23,8 @@ class MenuScreenView(EventReceiver):
 
         ft = pygame.font.Font(None, 19)
         txt_labels = {
-            0: 'Explore the world',
-            1: 'Enter the dungeon',
+            0: 'Travel the world',
+            1: 'Enter the mysterious forest',
             2: 'Quit'
         }
         self.labels = dict()
@@ -66,17 +66,21 @@ class MenuScreenCtrl(EventReceiver):
             elif ev.key == pygame.K_UP:
                 self._mod.decrem()
             elif ev.key == pygame.K_RETURN or ev.key == pygame.K_KP_ENTER:
-                if self._mod.curr_option == 2:  # quit
+                if self._mod.curr_option == MiniModel.QUITOPTION:  # quit
                     self.pev(EngineEvTypes.GAMEENDS)
-                elif self._mod.curr_option == 1:  # dungeon
-                    pass
-                elif self._mod.curr_option == 0:  # explore world
+                elif self._mod.curr_option == MiniModel.FOREST:  # forest
+                    self.pev(EngineEvTypes.PUSHSTATE, state_ident=GameStates.ForestLevel)
+                elif self._mod.curr_option == MiniModel.WORLD:  # explore world
                     self.pev(EngineEvTypes.PUSHSTATE, state_ident=GameStates.Overworld)
 
 
 class MiniModel(kengi.event.CogObj):
+    WORLD = 0
+    FOREST = 1
+    QUITOPTION = 2
+
     def __init__(self):
-        self.curr_option = 0
+        self.curr_option = self.WORLD
         self.total_nb_options = 3
 
     def increm(self):
