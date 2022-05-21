@@ -75,7 +75,7 @@ class IsometricTileset:
 
     def _add_image(self, folders, source, num_tiles):
         # TODO: Make this bit compatible with Kenji.
-        mysurf = pygame.image.load(os.path.join(os.pathsep.join(folders), source)).convert_alpha()
+        mysurf = pygame.image.load(os.path.join(os.sep.join(folders), source)).convert_alpha()
         mysurf.set_colorkey((255, 0, 255))
         myrect = pygame.Rect(0, 0, self.tile_width, self.tile_height)
         frames_per_row = mysurf.get_width() // self.tile_width
@@ -239,6 +239,8 @@ class IsometricMapObject:
 
 
 class IsometricLayer:
+    flag_csv = False
+
     def __init__(self, name, visible, map, offsetx=0, offsety=0):
         self.name = name
         self.visible = visible
@@ -296,6 +298,7 @@ class IsometricLayer:
 
     @classmethod
     def fromjson(cls, jdict, givenmap):
+
         layer = cls(
             jdict['name'], jdict.get('visible', True), givenmap,
             jdict.get('offsetx', 0), jdict.get('offsety', 0)
@@ -305,18 +308,27 @@ class IsometricLayer:
         if data is None:
             raise ValueError('layer %s does not contain <data>' % layer.name)
 
-        data = data.strip()
-        data = data.encode()  # Convert to bytes
-        # Decode from base 64 and decompress via zlib
-        data = decompress(b64decode(data))
+        # Tom: may 21th.
+        # we need to use uncompressed data like CSV,
+        # in order to match with KataSDK because of compat. issues right now,
+        # As there's a bug in the brython{zlib} lib...
 
-        # I ran a test today and there's a slight speed advantage in leaving the cells as a list. It's not a big
-        # advantage, but it's just as easy for now to leave the data as it is.
-        #
-        # I'm changing to a list from a tuple in case destructible terrain or modifiable terrain (such as doors) are
-        # wanted in the future.
-        layer.cells = list(struct.unpack('<%di' % (len(data) / 4,), data))
-        assert len(layer.cells) == layer.width * layer.height
+        # - default = compressed data
+        if not cls.flag_csv:
+            data = data.strip()
+            data = data.encode()  # Convert to bytes
+            # Decode from base 64 and decompress via zlib
+            data = decompress(b64decode(data))
+
+            # I ran a test today and there's a slight speed advantage in leaving the cells as a list. It's not a big
+            # advantage, but it's just as easy for now to leave the data as it is.
+            #
+            # I'm changing to a list from a tuple in case destructible terrain or modifiable terrain (such as doors) are
+            # wanted in the future.
+            layer.cells = list(struct.unpack('<%di' % (len(data) / 4,), data))
+            assert len(layer.cells) == layer.width * layer.height
+        else:
+            layer.cells = data
 
         return layer
 
