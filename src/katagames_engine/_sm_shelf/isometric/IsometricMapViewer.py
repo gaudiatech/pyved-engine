@@ -42,7 +42,8 @@ class IsometricMapViewer(_hub.event.EventReceiver):
         self._focused_object_x0 = 0
         self._focused_object_y0 = 0
 
-        self.debug_sprite = pygame.image.load('xassets/half-floor-tile.png')  #image.Image("assets/floor-tile.png")
+        self.debug_sprite = None
+        #image.Image("assets/floor-tile.png")
         self.lastmousepos = None
 
     def set_focused_object(self, fo):
@@ -289,9 +290,11 @@ class IsometricMapViewer(_hub.event.EventReceiver):
                                 tile_id = gid & NOT_ALL_FLAGS
                                 if tile_id > 0:
                                     my_tile = self.isometric_map.tilesets[tile_id]
+
                                     sx, sy = self.screen_coords(x, y)
                                     my_tile(ev.screen, sx, sy + layer.offsety, gid & FLIPPED_HORIZONTALLY_FLAG,
                                             gid & FLIPPED_VERTICALLY_FLAG)
+
                                 if self.cursor and self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
                                     self.cursor.render(self)
 

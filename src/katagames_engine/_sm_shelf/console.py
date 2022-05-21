@@ -25,12 +25,15 @@ ANTIALIAS_OPT = False
 # --------------- SYNTAX DETECTORS FOR IgCustomConsole --------------
 re_token = re.compile(r"""[\"].*?[\"]|[\{].*?[\}]|[\(].*?[\)]|[\[].*?[\]]|\S+""")
 re_is_list = re.compile(r'^[{\[(]')
-re_is_number = re.compile(r"""
-(?x)
-[-]?[0][x][0-9a-fA-F]+[lLjJ]? | 	#  Hexadecimal
-[-]?[0][0-7]+[lLjJ]? |				#  Octal
-[-]?[\d]+(?:[.][\d]*)?[lLjJ]?		#  Decimal (Int or float)
-""")
+
+# re_is_number = re.compile(r"""
+# (?x)
+# [-]?[0][x][0-9a-fA-F]+[lLjJ]? | 	#  Hexadecimal
+# [-]?[0][0-7]+[lLjJ]? |				#  Octal
+# [-]?[\d]+(?:[.][\d]*)?[lLjJ]?		#  Decimal (Int or float)
+#""")
+re_is_number = re.compile("(?x)[-]?[\d]+(?:[.][\d]*)?[lLjJ]?")  # decimal only
+
 re_is_assign = re.compile(r'[$](?P<name>[a-zA-Z_]+\S*)\s*[=]\s*(?P<value>.+)')
 re_is_comment = re.compile(r'\s*#.*')
 re_is_var = re.compile(r'^[$][a-zA-Z_]+\w*\Z')
