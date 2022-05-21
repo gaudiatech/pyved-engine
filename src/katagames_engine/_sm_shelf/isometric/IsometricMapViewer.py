@@ -11,6 +11,7 @@ class IsometricMapViewer(_hub.event.EventReceiver):
     def __init__(self, isometric_map, screen, postfx=None, cursor=None,
                  left_scroll_key=None, right_scroll_key=None, up_scroll_key=None, down_scroll_key=None):
         super().__init__()
+        self.is_drawing = True
 
         self.isometric_map = isometric_map
         self.screen = screen
@@ -45,6 +46,12 @@ class IsometricMapViewer(_hub.event.EventReceiver):
         self.debug_sprite = None
         #image.Image("assets/floor-tile.png")
         self.lastmousepos = None
+
+        self.visible_area = None
+
+        # util for the drawing of tiles
+        self.line_cache = list()
+        self.objgroup_contents = dict()
 
     def set_focused_object(self, fo):
         if fo:
@@ -230,116 +237,140 @@ class IsometricMapViewer(_hub.event.EventReceiver):
         if dx or dy:
             self._update_camera(dx, dy)
 
+    def pause_draw(self):
+        self.is_drawing = False
+
+    def resume_draw(self):
+        self.is_drawing = True
+
+    def _init_visible_area_init(self, scr):
+        # The visible area describes the region of the map we need to draw.
+        # It is bigger than the physical screen
+        # because we probably have to draw cells that are not fully on the map.
+        self.visible_area = scr.get_rect()
+
+        # - temp disabled inflate op. (web ctx issues)
+        # visible_area.inflate_ip(self.tile_width, self.isometric_map.tile_height)
+        # visible_area.h += self.isometric_map.tile_height + self.half_tile_height - self.isometric_map.layers[-1].offsety
+
+        # BUT
+        # inflate replaced by the followin hack
+        self.visible_area.x += 64
+        self.visible_area.y -= 64
+        self.visible_area.w += 64
+        self.visible_area.h += 64 * 2
+
     def proc_event(self, ev, source=None):
-        if ev.type == pygame.MOUSEMOTION:
-            mouse_x, mouse_y = _hub.core.proj_to_vscreen(ev.pos)
-            self.lastmousepos = (mouse_x, mouse_y)
-            # this was in the __call__ method, previously
-            self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
+        if self.is_drawing:
+            # if ev.type == pygame.MOUSEMOTION:
+            #     # - temp disabled for speed
+            #     return
+            #     mouse_x, mouse_y = _hub.core.proj_to_vscreen(ev.pos)
+            #     self.lastmousepos = (mouse_x, mouse_y)
+            #     #  was in the __call__ method, previously {{
+            #     self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
+            #     if self.cursor:
+            #         self.cursor.update(self, ev)
+            #     # }}
 
-            if self.cursor:
-                self.cursor.update(self, ev)
+            if ev.type == EngineEvTypes.PAINT:
+                if self.phase < 240:  # dirty frameskip, its TEMPORARY
+                    ev.screen.fill('black')
+                    self._paint_all(ev.screen)
 
-        elif ev.type == EngineEvTypes.PAINT:
-            ev.screen.fill('black')
-            self.camera_updated_this_frame = False
-            if self._focused_object and (self._focused_object_x0 != self._focused_object.x or
-                                         self._focused_object_y0 != self._focused_object.y):
-                self.focus(self._focused_object.x, self._focused_object.y)
-                self._focused_object_x0 = self._focused_object.x
-                self._focused_object_y0 = self._focused_object.y
-            # hack disable temporarely the scroll via mouse.To enable-> uncomment 2 lines below
-            # else:
-            #    self._check_mouse_scroll(screen_area, mouse_x, mouse_y)
+    def _paint_all(self, rscreen):
+        if self.visible_area is None:
+            self._init_visible_area_init(rscreen)
 
-            x, y = self.map_x(0, 0) - 2, self.map_y(0, 0) - 1
-            x0, y0 = x, y
-            keep_going = True
-            line_number = 1
-            line_cache = list()
+        self.camera_updated_this_frame = False
+        if self._focused_object and (self._focused_object_x0 != self._focused_object.x or
+                                     self._focused_object_y0 != self._focused_object.y):
+            self.focus(self._focused_object.x, self._focused_object.y)
+            self._focused_object_x0 = self._focused_object.x
+            self._focused_object_y0 = self._focused_object.y
+        # hack disable temporarely the scroll via mouse.To enable-> uncomment 2 lines below
+        # else:
+        #    self._check_mouse_scroll(screen_area, mouse_x, mouse_y)
 
-            # The visible area describes the region of the map we need to draw. It is bigger than the physical screen
-            # because we probably have to draw cells that are not fully on the map.
-            visible_area = ev.screen.get_rect()
-            visible_area.inflate_ip(self.tile_width, self.isometric_map.tile_height)
-            visible_area.h += self.isometric_map.tile_height + self.half_tile_height - self.isometric_map.layers[
-                -1].offsety
+        x, y = self.map_x(0, 0) - 2, self.map_y(0, 0) - 1
+        x0, y0 = x, y
+        painting_tiles = True
+        line_number = 1
 
-            # Record all of the objectgroup contents for display when their tile comes up.
-            objectgroup_contents = dict()
-            for k, v in self.isometric_map.objectgroups.items():
-                objectgroup_contents[k] = collections.defaultdict(list)
-                for ob in v.contents:
-                    sx, sy = self.screen_coords(ob.x, ob.y, k.offsetx + v.offsetx, k.offsety + v.offsety)
-                    obkey = (self.map_x(sx, sy, return_int=True), self.map_y(sx, sy, return_int=True))
-                    objectgroup_contents[k][obkey].append(ob)
+        del self.line_cache[:]
+        self.objgroup_contents.clear()
 
-            while keep_going:
-                # In order to allow smooth sub-tile movement of stuff, we have
-                # to draw everything in a particular order.
-                nuline = self._get_horizontal_line(x0, y0, line_number, visible_area)
-                line_cache.append(nuline)
-                current_y_offset = self.isometric_map.layers[0].offsety
-                current_line = len(line_cache) - 1
+        # Record all of the objectgroup contents for display when their tile comes up
+        for k, v in self.isometric_map.objectgroups.items():
+            self.objgroup_contents[k] = collections.defaultdict(list)
+            for ob in v.contents:
+                sx, sy = self.screen_coords(ob.x, ob.y, k.offsetx + v.offsetx, k.offsety + v.offsety)
+                obkey = (self.map_x(sx, sy, return_int=True), self.map_y(sx, sy, return_int=True))
+                self.objgroup_contents[k][obkey].append(ob)
 
-                for layer_num, layer in enumerate(self.isometric_map.layers):
-                    if current_line >= 0:
-                        if line_cache[current_line]:
-                            for x, y in line_cache[current_line]:
-                                gid = layer[x, y]
-                                tile_id = gid & NOT_ALL_FLAGS
-                                if tile_id > 0:
-                                    my_tile = self.isometric_map.tilesets[tile_id]
+        while painting_tiles:
+            # In order to allow smooth sub-tile movement of stuff, we have
+            # to draw everything in a particular order.
+            nuline = self._get_horizontal_line(x0, y0, line_number, self.visible_area)
+            self.line_cache.append(nuline)
+            current_y_offset = self.isometric_map.layers[0].offsety
+            current_line = len(self.line_cache) - 1
 
-                                    sx, sy = self.screen_coords(x, y)
-                                    my_tile(ev.screen, sx, sy + layer.offsety, gid & FLIPPED_HORIZONTALLY_FLAG,
-                                            gid & FLIPPED_VERTICALLY_FLAG)
+            for layer_num, layer in enumerate(self.isometric_map.layers):
+                if current_line >= 0:
+                    if self.line_cache[current_line]:
+                        for x, y in self.line_cache[current_line]:
+                            gid = layer[x, y]
+                            tile_id = gid & NOT_ALL_FLAGS
+                            if tile_id > 0:
+                                my_tile = self.isometric_map.tilesets[tile_id]
 
-                                if self.cursor and self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
-                                    self.cursor.render(self)
+                                sx, sy = self.screen_coords(x, y)
+                                my_tile(rscreen, sx, sy + layer.offsety, gid & FLIPPED_HORIZONTALLY_FLAG,
+                                        gid & FLIPPED_VERTICALLY_FLAG)
 
-                        if current_line > 1 and layer in objectgroup_contents and line_cache[current_line - 1]:
-                            # After drawing the terrain, draw any objects in the previous cell.
-                            for x, y in line_cache[current_line - 1]:
+                            if self.cursor and self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
+                                self.cursor.render(self)
 
-                                if (x, y) in objectgroup_contents[layer]:
-                                    objectgroup_contents[layer][(x, y)].sort(key=self._model_depth)
-                                    for ob in objectgroup_contents[layer][(x, y)]:
-                                        sx, sy = self.screen_coords(
-                                            ob.x, ob.y,
-                                            layer.offsetx + self.isometric_map.objectgroups[layer].offsetx,
-                                            layer.offsety + self.isometric_map.objectgroups[layer].offsety
-                                        )
-                                        ob(ev.screen, sx, sy, self.isometric_map)
+                    if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
+                        # After drawing the terrain, draw any objects in the previous cell.
+                        for x, y in self.line_cache[current_line - 1]:
 
-                        elif line_cache[current_line] is None and layer == self.isometric_map.layers[-1]:
-                            keep_going = False
+                            if (x, y) in self.objgroup_contents[layer]:
+                                self.objgroup_contents[layer][(x, y)].sort(key=self._model_depth)
+                                for ob in self.objgroup_contents[layer][(x, y)]:
+                                    sx, sy = self.screen_coords(
+                                        ob.x, ob.y,
+                                        layer.offsetx + self.isometric_map.objectgroups[layer].offsetx,
+                                        layer.offsety + self.isometric_map.objectgroups[layer].offsety
+                                    )
+                                    ob(rscreen, sx, sy, self.isometric_map)
 
-                    else:
-                        break
+                    elif self.line_cache[current_line] is None and layer == self.isometric_map.layers[-1]:
+                        painting_tiles = False
+                else:
+                    break
+                if layer.offsety < current_y_offset:
+                    current_line -= 1
+                    current_y_offset = layer.offsety
+            line_number += 1
 
-                    if layer.offsety < current_y_offset:
-                        current_line -= 1
-                        current_y_offset = layer.offsety
+        # draw cursor org size
+        #if self.lastmousepos:
+            # mx = self.map_x(self.lastmousepos[0], self.lastmousepos[1])
+            # my = self.map_y(self.lastmousepos[0], self.lastmousepos[1])
+            # if self.isometric_map.on_the_map(mx, my):
+               ## mydest = self.debug_sprite.bitmap.get_rect(midbottom=self.screen_coords(mx, my))
+               ## mydest = self.debug_sprite.get_rect(midbottom=self.screen_coords(mx, my))
+               # ev.screen.blit(self.debug_sprite, self.screen_coords(mx, my)) # self.debug_sprite.render(mydest, 0)
+        # Call this function every time your game loop gets an event.
 
-                line_number += 1
+        #if self.cursor:
+        #    self.cursor.update(self, pygame.event.Event(pygame.USEREVENT))
 
-            # draw cursor org size
-            #if self.lastmousepos:
-                # mx = self.map_x(self.lastmousepos[0], self.lastmousepos[1])
-                # my = self.map_y(self.lastmousepos[0], self.lastmousepos[1])
-                # if self.isometric_map.on_the_map(mx, my):
-                   ## mydest = self.debug_sprite.bitmap.get_rect(midbottom=self.screen_coords(mx, my))
-                   ## mydest = self.debug_sprite.get_rect(midbottom=self.screen_coords(mx, my))
-                   # ev.screen.blit(self.debug_sprite, self.screen_coords(mx, my)) # self.debug_sprite.render(mydest, 0)
-            # Call this function every time your game loop gets an event.
-            if self.cursor:
-                self.cursor.update(self, pygame.event.Event(pygame.USEREVENT))
-
-            self.phase = (self.phase + 1) % 600
-
-            if self.postfx:
-                self.postfx()
+        self.phase = (self.phase + 1) % 300
+        #if self.postfx:
+        #    self.postfx()
 
     def scroll_to(self, directioncode):
         """

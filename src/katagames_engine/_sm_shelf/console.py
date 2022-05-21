@@ -144,7 +144,7 @@ class CustomConsole:
         self.user_syntax = syntax
         self.user_namespace = {}
 
-        self.add_key_calls({"l": self.clear, "c": self.clear_input, "w": self.set_active})
+        self.add_key_calls({"l": self.clear, "c": self.clear_input, "w": self.toggle_active})
         self.add_key_calls(key_calls)
 
         self.add_functions_calls({"help": self.help, "echo": self.output, "clear": self.clear})
@@ -205,12 +205,14 @@ class CustomConsole:
                 self.c_draw_pos = 0
                 self.c_pos = 0
 
-    def set_active(self, b=None):
-        if not b:
-            self.active = not self.active
-        else:
-            self.active = b
-        print("Console toggled")
+    def toggle_active(self):
+        self.active = not self.active
+
+    def activate(self):
+        self.active = True
+
+    def desactivate(self):
+        self.active = False
 
     def add_to_history(self, text):
         self.c_hist.insert(-1, text)
