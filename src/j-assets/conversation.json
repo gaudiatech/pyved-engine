@@ -1,0 +1,74 @@
+{
+  "msg": "Greetings, stranger. You look like you have travelled a great distance to get here.",
+  "replies": [
+    {
+      "msg": "Hold on there... this is a cyberpunk game, not a fantasy game. You should've called me \"chummer\" or something.",
+      "destination": {
+        "msg": "Fair enough. Yolo, chummer. I can see you've been hacking the intertubes for gigaparsecs.",
+        "replies": [
+          {
+            "msg": "Much better, thank you. Now can you explain what all of this is about?",
+            "destination": {
+              "msg": "This is a tech demo using the Kengi engine."
+            }
+          }
+        ]
+      }
+    },{
+      "msg": "Hi there. Who are you?",
+      "destination": {
+        "msg": "I am a mysterious stranger... I could be anyone, or anything, you want me to be. The only limit is your imagination.",
+        "replies": [
+          {
+            "msg": "Sounds like you are the beginnings of a generic NPC class, designed to be flexible yet powerful.",
+            "destination": {
+              "msg": "Actually I'm just a generic isometric map object right now. But yeah, that is pretty flexible and powerful.",
+              "replies": [
+                {
+                  "msg": "Just like a monomolecular sword!",
+                  "destination": {
+                    "msg": "That's the spirit. Keep that in mind until the inventory system and combat get worked out."
+                  }
+                },
+                {
+                  "msg": "Well, it was nice talking to you. I'll see you around.",
+                  "destination": {
+                    "msg": "Of course you will. I'm the only entity besides you on this map."
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "msg": "Can you be a dog?",
+            "destination": {
+              "msg": "I could be a dog, a character, a computer terminal. Anything you need for the game.",
+              "replies": [
+                {
+                  "msg": "Be a dog right now.",
+                  "destination": {
+                    "msg": "[You stand before a friendly-looking samoyed dog. For some reason it is wearing a wizard robe and had glowing eyes.]",
+                    "replies": [
+                      {
+                        "msg": "[Pet the dog]",
+                        "destination": {
+                          "msg": "Achievement unlocked: It is possible to pet the dog in the Kengi demo!"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "msg": "That sounds really useful.",
+                  "destination": {
+                    "msg": "Well, that's the point. This code is just a starting point; bricks from which games can be created."
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
