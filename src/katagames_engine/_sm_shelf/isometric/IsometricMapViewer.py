@@ -48,6 +48,7 @@ class IsometricMapViewer(_hub.event.EventReceiver):
         self.lastmousepos = None
 
         self.visible_area = None
+        self.tfrskip = 2
 
         # util for the drawing of tiles
         self.line_cache = list()
@@ -274,13 +275,15 @@ class IsometricMapViewer(_hub.event.EventReceiver):
             #     # }}
 
             if ev.type == EngineEvTypes.PAINT:
-                if self.phase < 240:  # dirty frameskip, its TEMPORARY
+                if self.visible_area is None:
+                    self._init_visible_area_init(ev.screen)
+                # frameskip (temporary)
+                self.tfrskip = (self.tfrskip+1) % 3
+                if not self.tfrskip:
                     ev.screen.fill('black')
-                    self._paint_all(ev.screen)
+                    self._paint_all()
 
-    def _paint_all(self, rscreen):
-        if self.visible_area is None:
-            self._init_visible_area_init(rscreen)
+    def _paint_all(self):
 
         self.camera_updated_this_frame = False
         if self._focused_object and (self._focused_object_x0 != self._focused_object.x or
@@ -326,7 +329,7 @@ class IsometricMapViewer(_hub.event.EventReceiver):
                                 my_tile = self.isometric_map.tilesets[tile_id]
 
                                 sx, sy = self.screen_coords(x, y)
-                                my_tile(rscreen, sx, sy + layer.offsety, gid & FLIPPED_HORIZONTALLY_FLAG,
+                                my_tile(self.screen, sx, sy + layer.offsety, gid & FLIPPED_HORIZONTALLY_FLAG,
                                         gid & FLIPPED_VERTICALLY_FLAG)
 
                             if self.cursor and self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
@@ -344,7 +347,7 @@ class IsometricMapViewer(_hub.event.EventReceiver):
                                         layer.offsetx + self.isometric_map.objectgroups[layer].offsetx,
                                         layer.offsety + self.isometric_map.objectgroups[layer].offsety
                                     )
-                                    ob(rscreen, sx, sy, self.isometric_map)
+                                    ob(self.screen, sx, sy, self.isometric_map)
 
                     elif self.line_cache[current_line] is None and layer == self.isometric_map.layers[-1]:
                         painting_tiles = False

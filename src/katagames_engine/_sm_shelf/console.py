@@ -76,7 +76,7 @@ class CustomConsole:
            v is a regexp processor
            k is a function in the form console_func(console, match) that calls console.output(...)
         """
-        self.message_of_the_day = ["-Niobe Polis CONSOLE ready-"]
+        self.message_of_the_day = ["no Motd"]
 
         self.bg_color = '#06170e'  # very dark green
 
@@ -99,7 +99,7 @@ class CustomConsole:
 
         # --- c_out is the history of all text
         # -- c_hist is the history of all commands
-        self.c_out = self.message_of_the_day
+        self.c_out = ['',]
         self.c_in = ""
         self.c_hist = [""]
         self.c_hist_pos = 0
@@ -124,8 +124,7 @@ class CustomConsole:
         self.max_lines = int((self.size[1] / self.font_height) - 1)
         ftdim = self.font.size(omega_ascii_letters)
         kappa = ftdim[0] / len(omega_ascii_letters)
-        print('kappa', kappa)
-        print('ratio', ftdim[0]/ftdim[1])
+
         self.max_chars = int(((self.size[0]) / kappa) - 1)
         self.txt_wrapper = textwrap.TextWrapper()
         self.bg_layer = pygame.Surface(self.size)
@@ -149,6 +148,12 @@ class CustomConsole:
 
         self.add_functions_calls({"help": self.help, "echo": self.output, "clear": self.clear})
         self.add_functions_calls(functions)
+
+        self.cb_func = None
+
+    def set_motd(self, msg):
+        self.message_of_the_day = msg.splitlines()
+        self.c_out.extend(self.message_of_the_day)
 
     def screen(self):
         return self.parent_screen
@@ -175,15 +180,27 @@ class CustomConsole:
 
     def submit_input(self, text):
         self.clear_input()
-        self.output(self.c_ps + text)
+        if self.cb_func:
+            self.output(text)
+        else:
+            self.output(self.c_ps + text)
+
         self.c_scroll = 0
-        self.send_pyconsole(text)
+        if self.cb_func:
+            self.cb_func(text)
+            self.cb_func = None
+        else:
+            self.send_pyconsole(text)
 
     def format_input_line(self):
         text = self.c_in[:self.c_pos] + self.pos_sym_char + self.c_in[self.c_pos + 1:]
         n_max = int(self.max_chars - len(self.c_ps))
         vis_range = self.c_draw_pos, self.c_draw_pos + n_max
-        return self.c_ps + text[vis_range[0]:vis_range[1]]
+        if self.cb_func:
+            prefix = ''
+        else:
+            prefix = self.c_ps
+        return prefix + text[vis_range[0]:vis_range[1]]
 
     def str_insert(self, text, strn):
         string = text[:self.c_pos] + strn + text[self.c_pos:]
@@ -455,6 +472,9 @@ class CustomConsole:
                 self.output(out)
                 self.txt_wrapper.subsequent_indent = tmp_indent
         else:
-            out = "Available commands: " + str(self.func_calls.keys()).strip("[]")
+            out = "Available commands are\n"
+            lc = list(self.func_calls.keys())
+            lc.sort()
+            out += '; '.join(lc)
             self.output(out)
             self.output(r'Type "help command-name" for more information on that command')
