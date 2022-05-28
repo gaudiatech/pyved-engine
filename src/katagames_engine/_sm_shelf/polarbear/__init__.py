@@ -110,9 +110,9 @@ class Border(object):
 
 
 # Monkey Type these definitions to fit your game/assets.
-default_border = Border(border_width=8, tex_width=16, border_name="sys_defborder.png", tex_name="sys_defbackground.png",
+default_border = Border(border_width=8, tex_width=16, border_name="assets/sys_defborder.png", tex_name="assets/sys_defbackground.png",
                         tl=0, tr=3, bl=4, br=5, t=1, b=1, l=2, r=2)
-notex_border = Border(border_width=8, border_name="sys_defborder.png", padding=4, tl=0, tr=3, bl=4, br=5, t=1, b=1, l=2,
+notex_border = Border(border_width=8, border_name="assets/sys_defborder.png", padding=4, tl=0, tr=3, bl=4, br=5, t=1, b=1, l=2,
                       r=2)
 # map_border = Border( border_name="sys_mapborder.png", tex_name="sys_maptexture.png", tl=0, tr=1, bl=2, br=3, t=4, b=6, l=7, r=5 )
 # gold_border = Border( border_width=8, tex_width=16, border_name="sys_rixsborder.png", tex_name="sys_rixstexture.png", tl=0, tr=3, bl=4, br=5, t=1, b=1, l=2, r=2 )
@@ -236,7 +236,10 @@ ANIMFONT = None
 MEDIUMFONT = None
 ALTTEXTFONT = None  # Use this instead of MEDIUMFONT when you want to shake things up a bit.
 POSTERS = list()
+
 my_state = GameState()
+# fix: add ref to screen
+my_state.screen = _hub.core.get_screen()
 
 # The FPS the rules runs at.
 FPS = 30

@@ -5,7 +5,10 @@ screen = kengi.core.get_screen()  # new way to retrieve the surface used for dis
 
 import copy
 from . import rpgmenu
-from pbge import default_border, frects, draw_text
+default_border = kengi.polarbear.default_border
+frects = kengi.polarbear.frects
+draw_text = kengi.polarbear.draw_text
+
 import json
 
 
@@ -77,8 +80,10 @@ class SimpleVisualizer(object):
         self.portrait = pygame.image.load("assets/mysterious_stranger.png").convert_alpha()
 
     def render(self):
-        if self.pre_render:
-            self.pre_render()
+        # TODO commented on may 28th bc it crashes, but we need to fix this
+        # if self.pre_render:
+        #    self.pre_render()
+
         text_rect = self.TEXT_AREA.get_rect()
         default_border.render(text_rect)
         draw_text(self.font, self.text, text_rect)
@@ -93,6 +98,7 @@ class SimpleVisualizer(object):
         # coff is the "current offer"
         coff = self.root_offer
         while coff:
+            print('xx')
             self.text = coff.msg
             mymenu = self.get_menu()
             for i in coff.replies:

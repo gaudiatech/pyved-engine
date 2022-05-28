@@ -1,6 +1,9 @@
 import pygame
 from . import my_state
 
+from ... import _hub
+
+
 ANCHOR_UPPERLEFT = (0,0)
 ANCHOR_UPPERRIGHT = (2,0)
 ANCHOR_CENTER = (1,1)
@@ -26,8 +29,7 @@ class Frect( object ):
             x0 = prect.left + ( prect.w // 2 ) * self.anchor[0]
             y0 = prect.top + ( prect.h // 2 ) * self.anchor[1]
         else:
-            x0 = ( my_state.screen.get_width() // 2 ) * self.anchor[0]
-            y0 = ( my_state.screen.get_height() // 2 ) * self.anchor[1]
+            sw, sh = _hub.core.get_screen().get_size()
+            x0 = (sw // 2 ) * self.anchor[0]
+            y0 = (sh // 2 ) * self.anchor[1]
         return pygame.Rect(self.dx+x0,self.dy+y0,self.w,self.h)
-
-
