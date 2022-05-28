@@ -13,7 +13,7 @@ Technical stuff:
 # uncommenting these lines is handy...
 # In case you're running the template with no local installation of kengi
 # import sys
-# sys.path.append("..")
+# sys.path.append("..\\..")
 
 
 import katagames_engine as kengi

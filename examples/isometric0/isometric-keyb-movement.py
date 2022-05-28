@@ -31,14 +31,19 @@ class Character(isometric_maps.IsometricMapObject):
         dest_surface.blit(self.surf, mydest)
 
 
-def game_exec():
-    global screen, tilemap, tilemap2
+viewer = None
+mypc = manager = paint_ev = mv_offset = None
+keep_going = True
+current_tilemap = 0
+
+
+def game_init():
+    global screen, tilemap, tilemap2, viewer, manager, mypc, paint_ev, mv_offset
     # aliases
     kengi.init('old_school')
     screen = kengi.core.get_screen()
 
     # model
-    current_tilemap = 0
     tilemap = isometric_maps.IsometricMap.load(['xassets', ], 'test_map.tmx')
     tilemap2 = isometric_maps.IsometricMap.load(['xassets', ], 'test_map2.tmx')
     mypc = Character(10.5, 10.5)
@@ -53,6 +58,8 @@ def game_exec():
         left_scroll_key=pygame.K_LEFT,
         right_scroll_key=pygame.K_RIGHT
     )
+    viewer.turn_on()
+
     cursor_image = pygame.image.load("xassets/half-floor-tile.png").convert_alpha()
     cursor_image.set_colorkey((255, 0, 255))
     viewer.cursor = isometric_maps.IsometricMapQuarterCursor(0, 0, cursor_image, tilemap.layers[1])
@@ -64,15 +71,23 @@ def game_exec():
     # TODO port Pbge to kengi CogObj+EventReceiver+event system,
     #  so we can avoid using pygame.USEREVENT and viewer() like here
 
+    manager = kengi.event.EventManager.instance()
+    CgmEvent = kengi.event.CgmEvent
+    paint_ev = CgmEvent(kengi.event.EngineEvTypes.PAINT, screen=kengi.get_surface())
+    mypc.x += 0.5
+    mv_offset = 0.5
+
+
+def game_update(infot=None):
+    global manager, mypc, keep_going, current_tilemap
     keep_going = True
+
     while keep_going:
+
         gdi = pbge.wait_event()
 
-        viewer.check_event(gdi)
-
-        if gdi.type == pbge.TIMEREVENT:
-            viewer()
-            kengi.flip()
+        if gdi.type == pygame.QUIT:
+            keep_going = False
 
         elif gdi.type == pygame.KEYDOWN:
             if gdi.key == pygame.K_ESCAPE:
@@ -85,23 +100,26 @@ def game_exec():
                 # )
                 # print(viewer.relative_x(0, 0), viewer.relative_y(0, 0))
                 # print(viewer.relative_x(0, 19), viewer.relative_y(0, 19))
-            elif gdi.key == pygame.K_d and mypc.x < tilemap.width - 1.5:
-                mypc.x += 0.1
-            elif gdi.key == pygame.K_a and mypc.x > -1:
-                mypc.x -= 0.1
-            elif gdi.key == pygame.K_w and mypc.y > -1:
-                mypc.y -= 0.1
-            elif gdi.key == pygame.K_s and mypc.y < tilemap.height - 1.5:
-                mypc.y += 0.1
+            elif gdi.key == pygame.K_RIGHT and mypc.x < tilemap.width - 1.5:
+                mypc.x += mv_offset
+            elif gdi.key == pygame.K_LEFT and mypc.x > -1:
+                mypc.x -= mv_offset
+            elif gdi.key == pygame.K_UP and mypc.y > -1:
+                mypc.y -= mv_offset
+            elif gdi.key == pygame.K_DOWN and mypc.y < tilemap.height - 1.5:
+                mypc.y += mv_offset
             elif gdi.key == pygame.K_TAB:
                 current_tilemap = 1 - current_tilemap
                 viewer.switch_map(get_maps()[current_tilemap])
 
-        elif gdi.type == pygame.QUIT:
-            keep_going = False
-
-    kengi.quit()
+        # display
+        manager.post(paint_ev)
+        manager.update()
+        kengi.flip()
 
 
 if __name__ == '__main__':
-    game_exec()
+    game_init()
+    while keep_going:
+        game_update()
+    kengi.quit()
