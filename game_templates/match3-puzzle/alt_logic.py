@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..\\..\\")
 import katagames_engine as kengi
-from events import MyEvTypes
+from alt_events import MyEvTypes
 import random
 
 
