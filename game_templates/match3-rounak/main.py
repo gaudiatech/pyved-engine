@@ -1,33 +1,49 @@
-import sys
-import pygame
+import glvars
+import katagames_engine as kengi
+kengi.bootstrap_e()  # need to call this asap, in the main file
 
 from config import W, H, FPS
-from menu import MenuManager
+from mymodes import Home, Win, Lose, InGame
 
-pygame.init()
+
+pygame = kengi.pygame
+GameModeMger = kengi.GameModeMger
 
 
 class Game:
     def __init__(self):
-        self.screen = pygame.display.set_mode((W, H))  # , pygame.SCALED | pygame.FULLSCREEN)
-        self.manager = MenuManager()
+        self.gmode_manager = GameModeMger.instance()
         self.clock = pygame.time.Clock()
 
     def run(self):
-        while True:
+        kengi.init('custom', screen_dim=(W, H))
+        screen = kengi.get_surface()
+        self.gmode_manager.register({
+            'home': Home('home'),
+            'game': InGame('game'),
+            'win': Win('win'),
+            'lose': Lose('lose'),
+        })
+        self.gmode_manager.set_curr_mode('home')
+
+        # - game loop
+        while not glvars.gameover:
             events = pygame.event.get()
-            for e in events:
-                if e.type == pygame.QUIT:
-                    sys.exit(0)
-                if e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_ESCAPE:
-                        sys.exit(0)
-            self.manager.update(events)
-            self.screen.fill('black')
-            self.manager.draw(self.screen)
-            pygame.display.update()
+            for ev in pygame.event.get():
+                if ev.type == pygame.QUIT:
+                    glvars.gameover = True
+                if ev.type == pygame.KEYDOWN:
+                    if ev.key == pygame.K_ESCAPE:
+                        glvars.gameover = True
+            self.gmode_manager.update(events)
+
+            screen.fill('black')
+            self.gmode_manager.draw(screen)
+            kengi.flip()
             self.clock.tick(FPS)
-            # print(self.clock.get_fps())
+
+        kengi.quit()
+        print('bye')  # notice that this was a clean exit
 
 
 if __name__ == '__main__':

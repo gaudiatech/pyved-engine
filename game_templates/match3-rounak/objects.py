@@ -2,18 +2,22 @@ import os.path
 from random import choice, randint, random
 from typing import Union
 
-import pygame
-
+import glvars
+import katagames_engine as kengi
 from config import W, H
 from ui import Button
-from utils import text, load_image
+from utils import load_image
+
+
+pygame = kengi.pygame
+text = kengi.util.drawtext
 
 
 class BaseObject:
     def update(self, events):  #: list[pygame.event.Event]):
         pass
 
-    def draw(self, surf: pygame.Surface):
+    def draw(self, surf):
         pass
 
 
@@ -67,7 +71,7 @@ class Shape(BaseObject):
         diff = Puzzle.box_size - max(self.img.get_width(), self.img.get_height())
         return self.img.get_rect(center=(self.x, self.y)).inflate(diff, diff)
 
-    def draw(self, surf: pygame.Surface):
+    def draw(self, surf):
         # t = text(f'{self.row},{self.col}', 20)
         # self.img = t
         if self.clicked:
@@ -171,7 +175,7 @@ class Sparkle(BaseObject):
         if self.r > 50:
             self.alive = False
 
-    def draw(self, surf: pygame.Surface):
+    def draw(self, surf):
         pygame.draw.circle(surf, 'white', (self.x, self.y), self.r, 5)
 
 
@@ -374,6 +378,9 @@ class Puzzle(BaseObject):
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_r:
                     self.moves_left = 0
+                elif e.key == pygame.K_ESCAPE:
+                    glvars.gameover = True
+
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             self.pop()
         self.active = True
@@ -404,7 +411,7 @@ class Puzzle(BaseObject):
                     if not self.check_swap(events):
                         self.over = True
 
-    def draw(self, surf: pygame.Surface):
+    def draw(self, surf):
         for i in range(self.rows + 1):
             x = self.x + self.cols * self.box_size
             y = self.y + self.box_size * i

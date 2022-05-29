@@ -1,7 +1,10 @@
 import time
-
 from utils import *
-import pygame
+import katagames_engine as kengi
+
+
+pygame = kengi.pygame
+text = kengi.modes.drawtext
 
 
 class Button:

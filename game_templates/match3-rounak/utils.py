@@ -5,9 +5,6 @@ from typing import Literal
 
 import pygame
 
-# FONT = os.path.abspath(os.path.join(ASSETS, 'ARCADECLASSIC.TTF'))
-FONT = 'consolas'
-
 
 def clamp(value, mini, maxi):
     """Clamp value between mini and maxi"""
@@ -40,16 +37,6 @@ def load_image(path: str, alpha: bool = True, scale=1.0, color_key=None):
         return img.convert_alpha()
     else:
         return img.convert()
-
-
-@lru_cache(maxsize=10)
-def font(size):
-    return pygame.font.SysFont(FONT, size)
-
-
-@lru_cache(maxsize=100)
-def text(msg, size=50, color=(255, 255, 255), aliased=False):
-    return font(size).render(msg, aliased, color)
 
 
 class Timer:
