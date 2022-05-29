@@ -22,12 +22,14 @@ from . import _hub
 from .Injector import Injector
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION
-from ._util import underscore_format, camel_case_format
+from .util import underscore_format, camel_case_format
 from .foundation import defs
 from .foundation import shared  # must keep this line /!\ see web vm
 
 from .pygame_iface import PygameIface
 from . import palettes
+
+from .modes import GameModeMger, BaseGameMode
 
 ver = ENGI_VERSION
 pygame = PygameIface()
@@ -62,11 +64,11 @@ def bootstrap_e(info=None):
     one_plus_init = True
     _show_ver_infos()
     if info is None:
-        _ensure_pygame('pygame')
-    else:
-        _ensure_pygame(info)
+        info = 'pygame'
+    _ensure_pygame(info)
+
     # dry import
-    t = get_injector()['pygame']
+    return get_injector()['pygame']
 
 
 def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):

@@ -490,7 +490,7 @@ class StackBasedGameCtrl(EventReceiver):
 
         self.ticker = existing_ticker
         # lets build up all gamestates objects
-        self._st_container = injec.struct.StContainer.instance()
+        self._st_container = injec.struct.StContainer()
 
         # relation avec stcontainer
         self._st_container.setup(gamestates_enum, stmapping, glvars_pymodule)
