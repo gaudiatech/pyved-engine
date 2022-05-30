@@ -9,20 +9,12 @@ Showcasing very basic features for a rpg:
 Technical stuff:
  - multi-state game with a menu screen
 """
-
-# uncommenting these lines is handy...
-# In case you're running the template with no local installation of kengi
-# import sys
-# sys.path.append("..\\..")
-
-
 import katagames_engine as kengi
 kengi.bootstrap_e()
 
-
-from app_overworld import OverworldState
-from app_menu_screen import MenuScreenState
 from app_forest import ForestState
+from app_menu_screen import MenuScreenState
+from app_overworld import OverworldState
 from myrpg_defs import GameStates
 
 
@@ -30,13 +22,14 @@ from myrpg_defs import GameStates
 if __name__ == '__main__':
     kengi.init('hd')
 
-    # this line also changes the type of game controller used
-    kengi.core.declare_states({
-        GameStates.TitleScreen: MenuScreenState,
-        GameStates.Overworld: OverworldState,
-        GameStates.ForestLevel: ForestState
-    })
-
+    kengi.core.declare_states(  # changes the game controller used behind the scene
+        GameStates,
+        {
+            GameStates.TitleScreen: MenuScreenState,
+            GameStates.Overworld: OverworldState,
+            GameStates.ForestLevel: ForestState
+        }
+    )
     t = kengi.core.get_game_ctrl()
     t.turn_on()
     t.loop()

@@ -99,8 +99,8 @@ class MiniModel(kengi.event.CogObj):
 
 
 class MenuScreenState(BaseGameState):
-    def __init__(self, gs_id, name):
-        super().__init__(gs_id, name)
+    def __init__(self, gs_id):
+        super().__init__(gs_id)
         self.v = self.c = None
 
     def enter(self):
