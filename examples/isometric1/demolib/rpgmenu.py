@@ -1,25 +1,26 @@
+import collections
+import glob
+import random
+
 import katagames_engine as kengi
+from defs import MyEvTypes
+
 
 pygame = kengi.pygame  # alias to keep on using pygame, easily
-screen = kengi.core.get_screen()  # new way to retrieve the surface used for display
-
-import glob
-
 Frect = kengi.polarbear.frects.Frect
 ANCHOR_CENTER = kengi.polarbear.frects.ANCHOR_CENTER
 ANCHOR_UPPERLEFT = kengi.polarbear.frects.ANCHOR_UPPERLEFT
-
-import random
-import collections
-
 default_border = kengi.polarbear.default_border
 render_text = kengi.polarbear.render_text
 draw_text = kengi.polarbear.draw_text
 wait_event = kengi.polarbear.wait_event
 TIMEREVENT = kengi.polarbear.TIMEREVENT
 INFO_GREEN = kengi.polarbear.INFO_GREEN
-
 DEFAULT_FONT_SIZE = 11
+MENU_ITEM_COLOR = pygame.Color(150, 145, 130)
+MENU_SELECT_COLOR = pygame.Color(128, 250, 230)
+ReceiverObj = kengi.event.EventReceiver
+EngineEvTypes = kengi.event.EngineEvTypes
 
 
 class MenuItem(object):
@@ -59,7 +60,7 @@ class MenuItem(object):
     def __str__(self):
         return self._msg
 
-    def render(self, dest, selected=False):
+    def render(self, screen, dest, selected=False):
         if selected:
             screen.blit(self.select_image, dest)
         else:
@@ -94,16 +95,15 @@ class DescBox(Frect):
             screen.blit(img, mydest)
 
 
-MENU_ITEM_COLOR = pygame.Color(150, 145, 130)
-MENU_SELECT_COLOR = pygame.Color(128, 250, 230)
-
-
-class Menu(Frect):
+class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from EventReceiver +have a Frect attribute
 
     def __init__(self, dx, dy, w=300, h=100, anchor=ANCHOR_CENTER, menuitem=MENU_ITEM_COLOR,
                  menuselect=MENU_SELECT_COLOR, border=default_border, predraw=None, font=None, padding=0,
                  item_class=MenuItem):
-        super(Menu, self).__init__(dx, dy, w, h, anchor)
+        # lets use multiple inheritance
+        ReceiverObj.__init__(self)
+        Frect.__init__(self, dx, dy, w, h, anchor)
+
         self.menuitem = menuitem
         self.menuselect = menuselect
         self.border = border
@@ -125,6 +125,12 @@ class Menu(Frect):
         # predraw is a function that
         # redraws/clears the screen before the menu is rendered.
         self.predraw = predraw
+
+        self.screen = kengi.get_surface()
+
+        # -> to the model
+        self.no_choice_made = True
+        self.choice = False
 
     def add_item(self, msg, value, desc=None):
         item = self.item_class(msg, value, desc, self)
@@ -169,12 +175,12 @@ class Menu(Frect):
             if self.border:
                 self.border.render(mydest)
 
-        screen.set_clip(mydest)
+        self.screen.set_clip(mydest)
         self.arrange()
         for item_num, area in list(self._item_rects.items()):
-            self.items[item_num].render(area, (item_num == self.selected_item) and do_extras)
+            self.items[item_num].render(self.screen, area, (item_num == self.selected_item) and do_extras)
 
-        screen.set_clip(None)
+        self.screen.set_clip(None)
 
         if self.descobj:
             self.descobj(self.get_current_item())
@@ -195,79 +201,85 @@ class Menu(Frect):
             return False
         elif self.selected_item >= len(self.items):
             self.selected_item = 0
-        no_choice_made = True
-        choice = False
+        self.no_choice_made = True
+        self.choice = False
 
         # Do an initial arrangement of the menu.
         self.arrange()
 
-        while no_choice_made:
-            pc_input = wait_event()
+    def proc_event(self, pc_input, source):
+        """
+        since may 2022,
+        the new way to return "choice" values, is via posting an event
+        """
+        # while no_choice_made:
+        #     pc_input = wait_event()
 
-            if pc_input.type == TIMEREVENT:
-                # Redraw the menu on each timer event.
-                self.render()
-                kengi.flip()
+        # if pc_input.type == TIMEREVENT:
+        #     # Redraw the menu on each timer event.
+        #     self.render()
+        #     kengi.flip()
+        if pc_input.type == EngineEvTypes.PAINT:
+            self.render()
 
-            elif pc_input.type == pygame.KEYDOWN:
-                # A key was pressed, oh happy day! See what key it was and act
-                # accordingly.
-                if pc_input.key == pygame.K_UP:
-                    self.selected_item -= 1
-                    if self.selected_item < 0:
-                        self.selected_item = len(self.items) - 1
-                    if self.selected_item not in self._item_rects:
-                        self.top_item = min(self.selected_item, self._the_highest_top)
-                elif pc_input.key == pygame.K_DOWN:
-                    self.selected_item += 1
-                    if self.selected_item >= len(self.items):
-                        self.selected_item = 0
-                    if self.selected_item not in self._item_rects:
-                        self.top_item = min(self.selected_item, self._the_highest_top)
-                elif pc_input.key == pygame.K_SPACE or pc_input.key == pygame.K_RETURN:
-                    choice = self.items[self.selected_item].value
-                    no_choice_made = False
-                elif (pc_input.key == pygame.K_ESCAPE or pc_input.key == pygame.K_BACKSPACE) and self.can_cancel:
-                    no_choice_made = False
-                elif pc_input.key >= 0 and pc_input.key < 256 and chr(pc_input.key) in self.quick_keys:
-                    choice = self.quick_keys[chr(pc_input.key)]
-                    no_choice_made = False
-                elif pc_input.key > 255 and pc_input.key in self.quick_keys:
-                    choice = self.quick_keys[pc_input.key]
-                    no_choice_made = False
+        elif pc_input.type == pygame.KEYDOWN:
+            # A key was pressed, oh happy day! See what key it was and act
+            # accordingly.
+            if pc_input.key == pygame.K_UP:
+                self.selected_item -= 1
+                if self.selected_item < 0:
+                    self.selected_item = len(self.items) - 1
+                if self.selected_item not in self._item_rects:
+                    self.top_item = min(self.selected_item, self._the_highest_top)
+            elif pc_input.key == pygame.K_DOWN:
+                self.selected_item += 1
+                if self.selected_item >= len(self.items):
+                    self.selected_item = 0
+                if self.selected_item not in self._item_rects:
+                    self.top_item = min(self.selected_item, self._the_highest_top)
+            elif pc_input.key == pygame.K_SPACE or pc_input.key == pygame.K_RETURN:
+                self.pev(MyEvTypes.ConvChoice, value=self.items[self.selected_item].value)
+                self.no_choice_made = False
+            elif (pc_input.key == pygame.K_ESCAPE or pc_input.key == pygame.K_BACKSPACE) and self.can_cancel:
+                self.no_choice_made = False
+            elif pc_input.key >= 0 and pc_input.key < 256 and chr(pc_input.key) in self.quick_keys:
+                self.pev(MyEvTypes.ConvChoice, value=self.quick_keys[chr(pc_input.key)])
+                self.no_choice_made = False
+            elif pc_input.key > 255 and pc_input.key in self.quick_keys:
+                self.pev(MyEvTypes.ConvChoice, value=self.quick_keys[pc_input.key])
+                self.no_choice_made = False
 
-            elif pc_input.type == pygame.MOUSEBUTTONDOWN:
-                if (pc_input.button == 1):
-                    mouse_pos = kengi.core.proj_to_vscreen(pygame.mouse.get_pos())
-
-                    moi = self.get_mouseover_item(mouse_pos)
-                    if moi is not None:
-                        self.set_item_by_position(moi)
-                elif (pc_input.button == 4):
-                    self.top_item = max(self.top_item - 1, 0)
-                elif (pc_input.button == 5):
-                    self.top_item = min(self.top_item + 1, self._the_highest_top)
-
-            elif pc_input.type == pygame.MOUSEBUTTONUP:
+        elif pc_input.type == pygame.MOUSEBUTTONDOWN:
+            print(' xxxxx Menu has detected bt click')
+            if (pc_input.button == 1):
                 mouse_pos = kengi.core.proj_to_vscreen(pygame.mouse.get_pos())
-                if pc_input.button == 1:
-                    moi = self.get_mouseover_item(mouse_pos)
-                    if moi is self.selected_item:
-                        choice = self.items[self.selected_item].value
-                        no_choice_made = False
-                elif pc_input.button == 3 and self.can_cancel:
-                    no_choice_made = False
 
-            elif pc_input.type == pygame.MOUSEMOTION:
-                mouse_pos = kengi.core.proj_to_vscreen(pygame.mouse.get_pos())
                 moi = self.get_mouseover_item(mouse_pos)
                 if moi is not None:
                     self.set_item_by_position(moi)
+            elif (pc_input.button == 4):
+                self.top_item = max(self.top_item - 1, 0)
+            elif (pc_input.button == 5):
+                self.top_item = min(self.top_item + 1, self._the_highest_top)
 
-            elif pc_input.type == pygame.QUIT:
-                no_choice_made = False
+        elif pc_input.type == pygame.MOUSEBUTTONUP:
+            mouse_pos = kengi.core.proj_to_vscreen(pygame.mouse.get_pos())
+            if pc_input.button == 1:
+                moi = self.get_mouseover_item(mouse_pos)
+                if moi is self.selected_item:
+                    self.pev(MyEvTypes.ConvChoice, value=self.items[self.selected_item].value)
+                    self.no_choice_made = False
+            elif pc_input.button == 3 and self.can_cancel:
+                self.no_choice_made = False
 
-        return (choice)
+        elif pc_input.type == pygame.MOUSEMOTION:
+            mouse_pos = kengi.core.proj_to_vscreen(pygame.mouse.get_pos())
+            moi = self.get_mouseover_item(mouse_pos)
+            if moi is not None:
+                self.set_item_by_position(moi)
+
+        elif pc_input.type == pygame.QUIT:
+            self.no_choice_made = False
 
     def sort(self):
         self.items.sort()
