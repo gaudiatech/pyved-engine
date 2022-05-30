@@ -279,6 +279,10 @@ class EventReceiver(CogObj):
         self._manager = gl_unique_manager
         self.sticky = sticky
 
+    @property
+    def active(self):
+        return self._manager.talks_to(self)
+
     def turn_on(self):
         self._manager.add_listener(self)
 
@@ -385,6 +389,9 @@ class ListenerSet:
         self._listener_ids.remove(key)
         del self._corresp[key]
 
+    def test_contains_id(self, k):
+        return k in self._listener_ids
+
     def hard_reset(self):
         del self._listener_ids[:]
         self._corresp.clear()
@@ -425,6 +432,9 @@ class DeadSimpleManager:
             pygame.MOUSEBUTTONUP
         }
         self._ev_queue = deque_obj()
+
+    def talks_to(self, cogobj):
+        return self._ref_ls.test_contains_id(cogobj.get_id())
 
     def get_pressed_keys(self):
         return pygame.key.get_pressed()
