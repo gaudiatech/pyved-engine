@@ -11,23 +11,60 @@ library. It has no other dependencies. So why "Kata"? [Kata.Games](https://kata.
 a new gaming portal for indie game fans!
 
 
-## Get started
-Using the command line, navigate to the `src` folder. To ensure that your python
-distribution meets the requirements and to install the tool type:
+## Game templates
+*How can you create a full game with speed, efficiency while
+having more reliability in your work?*
+
+Using a high-quality game engine +a set of game templates is probably
+the best start one can get get as a game developer.
+It allows you, the game creator to bootstrap a Game Dev project easily and attain
+solid results!
+
+For instance, game templates that ship with `kengi` include a flappy bird clone... 
+
+<img src="flappybird-preview.png" alt="flappybird screenshot" width=600>
+
+Or a match3 puzzle game (screenshot below) and many other.
+
+<img src="match3-preview.png" alt="match3 screenshot" width=600>
+
+There are other templates available! 
+Feel free to study/copy all files available in that folder:
+* [game_templates](https://github.com/gaudiatech/kengi/blob/master/game_templates) 
+
+Save yourself a lot of time for your project, use `kengi` ;-)
+
+To test a game template you would need to install `kengi` (see next section)
+then run the `main.py` file found in the corresponding game template folder.
+
+Alternatively testing demos without installation is possible if you
+open the project with an IDE like PyCharm and configure two root folders:
+the first one is `src/` the second one is `game_templates/`.
+
+
+## Installation
+Clone the repo or download a .zip from Github. Then, while using the command line navigate to the
+root folder of the project. You can use `pip` to install the game engine.
+
+First ensure that your python
+distribution meets the requirements, then go to the `src` folder and proceed with the installation:
 ```shell
 > pip install -r requirements.txt
+> cd src/
 > pip install .
 ```
-In this way, you can use `kengi` from any folder on your system. It is a good
-practice to start all your games with this kind of code snippet:
+In this way, you can use `kengi` from any folder on your system.
+
+It is very common and convenient to start all your games with
+this kind of code snippet:
 ```python
 import katagames_engine as kengi
-kengi.init('hd', caption='my first game')
+kengi.init('hd', caption='its my first video game, hi mom!')
 pygame = kengi.pygame
 ```
 
 
-## First demos
+## Mini tutorial
 If you're familiar with `pygame`, getting used to `kengi` is really easy.
 Navigate to the `src/` folder. There, you see a very basic example that uses only pygame:
 * [demo-a-pygame.py](https://github.com/gaudiatech/kengi/blob/master/src/demo-a-pygame.py)
@@ -51,25 +88,6 @@ of a list of user-defined events. User-defined events can have attributes.
 These events, just like regular pygame events, are processed via a standard method
 `proc_event` that you need to re-define when you sub-class
 `kengi.event.EventReceiver`...
-
-
-## Game templates
-Want to take a glimpse at how one would code a real game that has more features?
-Having a basic set of game templates is a great thing for an engine,
-since it allows you the user to bootstrap your next Game Dev project very fast!
-
-So save yourself a lot of time for your project,
-feel free to study/copy all files available in this folder:
-* [game_templates](https://github.com/gaudiatech/kengi/blob/master/src/game_templates) 
-
-To test a game template simply navigate the corresponding folder. There, type `python main.py`.
-Game templates include a flappy bird clone... 
-
-<img src="flappybird-preview.png" alt="flappybird screenshot" width=600>
-
-Or a match3 puzzle game (screenshot below) and many other.
-
-<img src="match3-preview.png" alt="match3 screenshot" width=600>
 
 
 ## Kengi design principles
@@ -115,15 +133,19 @@ Currently, materials in this repo are all licensed under the LGPL3 license.
 See the `LICENSE` file for more info.
 
 
-## Contributors
-When `kengi` becomes a great tool, we won't forget who made this
-possible! Special acknowledgements:
-* [tank-king](https://github.com/tank-king) wrote a great game template (flappy bird)
+## Contribute
+Feel free to join the developer team. It's a super easy two-step process:
+(a) start by forking `kengi`,
+ (b) join our Discord to discuss, or create a Pull Request directly!
+
+If you spot a bug, create an issue and tell us how to reproduce te bug.
+The documentation is built via the `mkdocs` tool. Feel free to make it more user-friendly! It's as simple as modifying a few text files in the `docs/` folder.
+Pull Requests are much appreciated!
+
+Newcomers are always welcome. When `kengi` becomes a great tool, we won't forget who made
+this  possible!
+Below we register the list of the 10 first contributors –our Hall of fame– ;-)
+* [wkta-tom](https://github.com/wkta) architecture, event system, design patterns
+* [tank-king](https://github.com/tank-king) fancy game templates (flappy bird, match3)
+* [jwvhewitt](https://github.com/jwvhewitt) isometric engine
 * ...
-
-If you spot bugs, create an issue and tell us how to reproduce that bug.
-
-The documentation is built via the `mkdocs` tool. Feel free to make it more user-friendly.
-It's as simple as modifying a few text files in the `docs/` folder.
-
-Fork `kengi`, Pull Requests are much appreciated! New contributors are always welcome. Thank you.
