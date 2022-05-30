@@ -1,23 +1,28 @@
+
 class _Pal:
     def __init__(self, pal_tuple):
-        self.dict = dict()
+        self.ctable = dict()
         self.listing = list()
+        self.names = list()
         for elt in pal_tuple:
             t3 = (elt[1], elt[2], elt[3])
-            self.dict[elt[0]] = t3
+            self.ctable[elt[0]] = t3
             self.listing.append(t3)
+            self.names.append(elt[0])
+
+        self.size = len(pal_tuple)
 
     def __getitem__(self, item):
         if isinstance(item, str):
-            return self.dict[item]
+            return self.ctable[item]
         else:
             return self.listing[item]
 
 
-# -------------------
-#  toutes les definitions
-# -------------------
-_c64pdef = (  # Commodore 64
+# ------------------
+#  Built-in palettes
+# ------------------
+_c64pdef = (
     ('black', 0, 0, 0),
     ('white', 255, 255, 255),
     ('red', 138, 20, 22),
@@ -37,17 +42,62 @@ _c64pdef = (  # Commodore 64
     ('lightgreen', 170, 239, 138),
     ('lightblue', 160, 162, 255),
     ('lightgrey', 170, 170, 170),
-
-    # {101,170,207}
-    # {138,69,170}
-    # {101,170,69}
-    # {69,32,170}	{}	{138,101,32}	{}	{}{}	{}	{138,101,223}
 )
 
-c64 = _Pal(_c64pdef)
+c64 = _Pal(_c64pdef)  # Commodore 64
 
 _cyberpunkdef = (
+    ('black', 0, 0, 0),
+    ('nightblue', 1, 1, 42),
+    ('darkpurple', 50, 20, 80),
     ('darkblue', 40, 40, 68),
+    ('gray', 88, 82, 104),
+    ('lightblue', 4, 218, 246),  # ('cyan', 115, 255, 254),
+    ('cyangreen', 160, 253, 226),
+    ('brightgreen', 0, 255, 65),
+    ('lightgreen', 100, 221, 153),
+    ('green', 106, 126, 105),
+    ('brown', 85, 75, 65),
+    ('lightbrown', 148, 89, 10),
+    ('yellow', 243, 230, 0),
+    ('glowinyellow', 222, 254, 71),
+    ('paleyellow', 255, 230, 157),
+    ('orange', 255, 110, 39),
+    ('paleorange', 255, 150, 96),
+    ('mud', 53, 21, 9),
+    ('bloodstain', 83, 1, 9),
+    ('red', 255, 0, 60),
+    ('flashypink', 251, 16, 163),
+    ('pink', 248, 135, 255),
+    ('lightgray', 183, 192, 221),
+    ('white', 227, 222, 223)
 )
 
-cyberpunk = _Pal(_cyberpunkdef)
+punk = _Pal(_cyberpunkdef)
+
+_japan = (
+    ('black', 0, 0, 0),
+    ('bluegray', 43, 51, 95),
+    ('burgundy', 126, 32, 114),
+    ('cyan', 25, 149, 156),
+    ('brown', 139, 72, 82),
+    ('blue', 57, 92, 152),
+    ('skyblue', 169, 192, 255),
+    ('white', 238, 238, 238),
+    ('red', 212, 24, 108),
+    ('orange', 211, 132, 65),
+    ('yellow', 233, 195, 91),
+    ('green', 112, 198, 169),
+    ('paleblue', 118, 150, 222),
+    ('lightgray', 163, 163, 163),
+    ('pink', 255, 151, 152),
+    ('biscuit', 237, 199, 176)
+)
+
+japan = _Pal(_japan)
+
+ALL_PALETTES = {
+    'c64': c64,
+    'japan': japan,
+    'punk': punk,
+}
