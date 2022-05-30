@@ -145,7 +145,7 @@ class StContainer:
         if stmapping:  # but = charger la classe deja identifiee en memoire
             for state_ident, adhoc_cls in stmapping.items():
                 print('creating state:', adhoc_cls.__name__)
-                obj = adhoc_cls(state_ident, adhoc_cls.__name__)
+                obj = adhoc_cls(state_ident)
 
                 # if needed: enable Kata bios state
                 if -1 == state_ident:

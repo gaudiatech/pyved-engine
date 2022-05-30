@@ -3,9 +3,9 @@ from abc import ABCMeta, abstractmethod
 
 class BaseGameState(metaclass=ABCMeta):
 
-    def __init__(self, state_ident, state_name):
+    def __init__(self, state_ident):
         self.__state_ident = state_ident
-        self.__state_name = state_name
+        self.__state_name = self.__class__.__name__
 
     @abstractmethod
     def enter(self):

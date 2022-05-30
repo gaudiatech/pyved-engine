@@ -1,119 +1,48 @@
 """
-Author: github.com/wkta
-Principles: The ultimate engine
--------------------------------
- * is a wrapper around pygame functions & objects
++-----------------------------------------------------+
+| KENGI [K]atagames [ENGI]ne                          |
+| Motto ~ Never slow down the innovation              |
+|                                                     |
+| Main author: wkta-tom (github.com/wkta)             |
+|                                                     |
+| an open-source project funded by GAUDIA TECH INC.   |
+| https://github.com/gaudiatech/kengi                 |
++-----------------------------------------------------+
 
- * can run within the KataSDK but can also be detached and runs independently
+ * defines a subset of the pygame library (chosen functions & objects)
+  and creates a wrapper around it
 
- * does not know ANYTHING about whether it runs in web ctx or not.
- The engine can be "hacked" but this barely changes the engine's design
+ * allows for a swift implementation of two essential design patterns:
+   Mediator and Model-View-Contoller
 
- * is extensible: engine needs to be able to receive extensions like a GUI manager,
- an isometric engine, etc. without any architecture change.
- To achieve this we will use the same hacking method as previously,
- basically this is like using an Injector (relates to-> Dependency Injection pattern)
- that is:
- if an extension module is called it will be searched/fetched via the Injector.
- This searching is done via __getattr__(name) and the _available_sub_modules dict. structure
+ * provides easy access to data structures useful in game development:
+   stacks, matrices, trees, graphs, finite state machines, cellular automata
 
+ * provides algorithms that may be tricky to code but are super-useful:
+   A-star, Minimax, a FOV algorithm for a 2D grid based world,
+
+ * is extensible: kengi is capable of receiving custom events and custom
+  extensions, for example a custom GUI manager, an isometric engine, or
+  antything similar, without requiring any architectural change
+
+ * can run along with the KataSDK but can also be detached, to run independently
+
+ * does not know ANYTHING about whether your code runs in a web browser or not,
+  although the engine can be hacked to allow such a possibility
+
+ * incentivizes you, the creator, to write clean readable easy-to-refactor &
+  easy-to-reuse code!
 """
-from . import _hub
-from .Injector import Injector
-from ._BaseGameState import BaseGameState
-from .__version__ import ENGI_VERSION
-from .util import underscore_format, camel_case_format
-from .foundation import defs
-from .foundation import shared  # must keep this line /!\ see web vm
 
-from .pygame_iface import PygameIface
-from . import palettes
-
-from .modes import GameModeMger, BaseGameMode
-
-ver = ENGI_VERSION
-pygame = PygameIface()
-one_plus_init = False
-_active_state = False
+from . import implem as _imp
 
 
-def _show_ver_infos():
-    print(f'KENGI - ver {ENGI_VERSION}, built on top of ')
+def __getattr__(attr_name):
 
+    if attr_name in dir(_imp):
+        return getattr(_imp, attr_name)
 
-def bootstrap_e(info=None):
-    """
-    ensure the engine is ready to be used
+    if not _imp.is_ready():
+        raise AttributeError(f"kengi cant use lazy loading, as it hasnt been init yet! (request: {attr_name})")
 
-    :param info:
-    :return:
-    """
-    global pygame, one_plus_init
-    if one_plus_init:
-        return
-
-    del pygame
-
-    def _ensure_pygame(xinfo):
-        # replace iface by genuine pygame lib, use this lib from now on
-        if isinstance(xinfo, str):
-            _hub.kengi_inj.register('pygame', xinfo)
-        else:
-            _hub.kengi_inj.set('pygame', xinfo)  # set the module directly, instead of using lazy load
-
-    one_plus_init = True
-    _show_ver_infos()
-    if info is None:
-        info = 'pygame'
-    _ensure_pygame(info)
-
-    # dry import
-    return get_injector()['pygame']
-
-
-def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
-    global _active_state
-    bootstrap_e()
-    _active_state = True
-    __getattr__('legacy').legacyinit(gfc_mode, caption, maxfps, screen_dim)
-
-
-def get_surface():
-    return __getattr__('core').get_screen()
-
-
-def flip():
-    __getattr__('core').display_update()
-
-
-def quit():
-    global _active_state
-    if _active_state:
-        __getattr__('event').EventManager.instance().hard_reset()
-        __getattr__('legacy').old_cleanup()
-        _active_state = False
-
-
-def get_injector():
-    return _hub.kengi_inj
-
-
-def plugin_bind(plugin_name, pypath):
-    _hub.kengi_inj.register(plugin_name, pypath)
-
-
-def bulk_plugin_bind(darg: dict):
-    """
-    :param darg: association extension(plug-in) name to a pypath
-    :return:
-    """
-    for pname, ppath in darg.items():
-        plugin_bind(ppath, ppath)
-
-
-def __getattr__(targ_sm_name):
-    global one_plus_init
-    if one_plus_init:
-        return getattr(_hub, targ_sm_name)
-    else:
-        raise AttributeError(f"kengi cannot load {targ_sm_name}, the engine is not init yet!")
+    return getattr(_imp.hub, attr_name)
