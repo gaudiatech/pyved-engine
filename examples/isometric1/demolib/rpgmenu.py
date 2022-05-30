@@ -250,16 +250,15 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
                 self.no_choice_made = False
 
         elif pc_input.type == pygame.MOUSEBUTTONDOWN:
-            print(' xxxxx Menu has detected bt click')
-            if (pc_input.button == 1):
+            if pc_input.button == 1:
                 mouse_pos = kengi.core.proj_to_vscreen(pygame.mouse.get_pos())
 
                 moi = self.get_mouseover_item(mouse_pos)
                 if moi is not None:
                     self.set_item_by_position(moi)
-            elif (pc_input.button == 4):
+            elif pc_input.button == 4:
                 self.top_item = max(self.top_item - 1, 0)
-            elif (pc_input.button == 5):
+            elif pc_input.button == 5:
                 self.top_item = min(self.top_item + 1, self._the_highest_top)
 
         elif pc_input.type == pygame.MOUSEBUTTONUP:

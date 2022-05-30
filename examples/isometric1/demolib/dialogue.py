@@ -1,28 +1,24 @@
+import json
+import defs
 import katagames_engine as kengi
-from defs import MyEvTypes
-
-pygame = kengi.pygame  # alias to keep on using pygame, easily
-
-EventReceiver = kengi.event.EventReceiver
-EngineEvTypes = kengi.event.EngineEvTypes
-default_border = kengi.polarbear.default_border
-draw_text = kengi.polarbear.draw_text
-
-import copy
 from . import rpgmenu
 
 
+# - aliases
+frects = kengi.polarbear.frects
+default_border = kengi.polarbear.default_border
+draw_text = kengi.polarbear.draw_text
+pygame = kengi.pygame
 
-import json
+EngineEvTypes = kengi.event.EngineEvTypes
+EventReceiver = kengi.event.EventReceiver
 
 
 class Offer(object):
     # An Offer is a single line spoken by the NPC.
     # "effect" is a callable with no parameters.
     # "replies" is a list of replies.
-    def __init__(
-            self, msg, effect=None, replies=()
-    ):
+    def __init__(self, msg, effect=None, replies=()):
         self.msg = msg
         self.effect = effect
         self.replies = list(replies)
@@ -69,9 +65,6 @@ class Reply(object):
         return cls(msg, destination)
 
 
-frects = kengi.polarbear.frects
-
-
 class ConversationView(EventReceiver):
     # The visualizer is a class used by the conversation when conversing.
     # It has a "text" property and "render", "get_menu" methods.
@@ -92,59 +85,59 @@ class ConversationView(EventReceiver):
         self.existing_menu = None
         self.screen = kengi.get_surface()
 
+    def turn_off(self):  # because the conversation view can be closed from "outside" i.e. the main program
+        if defs.DEBUG:
+            print('Conversation view closed')
+
+        if self.existing_menu:
+            self.existing_menu.turn_off()
+        super().turn_off()
+
     def proc_event(self, ev, source):
         if ev.type == EngineEvTypes.PAINT:
             self.render()
 
         elif ev.type == EngineEvTypes.LOGICUPDATE:
             if self.curr_offer is not None:
-                if not self.dialog_upto_date:
-                    print('updating dialog... curr_offer= ', self.curr_offer)
+                if self.dialog_upto_date:
+                    return
+                if self.existing_menu:
+                    self.existing_menu.turn_off()
 
-                    if self.existing_menu:
-                        self.existing_menu.turn_off()
+                self.dialog_upto_date = True
+                self.text = self.curr_offer.msg
 
-                    self.dialog_upto_date = True
-                    print(' - update du dialog')
-                    self.text = self.curr_offer.msg
+                # create a new Menu inst.
+                mymenu = rpgmenu.Menu(
+                    self.MENU_AREA.dx, self.MENU_AREA.dy, self.MENU_AREA.w, self.MENU_AREA.h,
+                    border=None, predraw=self.render)
+                mymenu.turn_on()
 
-                    # create a new Menu inst.
-                    mymenu = rpgmenu.Menu(
-                        self.MENU_AREA.dx, self.MENU_AREA.dy, self.MENU_AREA.w, self.MENU_AREA.h,
-                        border=None, predraw=self.render)
-                    mymenu.turn_on()
+                self.existing_menu = mymenu
+                for i in self.curr_offer.replies:
+                    i.apply_to_menu(mymenu)
+                if self.text and not mymenu.items:
+                    mymenu.add_item("[Continue]", None)
+                else:
+                    mymenu.sort()
+                nextfx = self.curr_offer.effect
+                if nextfx:
+                    nextfx()
 
-                    self.existing_menu = mymenu
-                    for i in self.curr_offer.replies:
-                        i.apply_to_menu(mymenu)
-                    if self.text and not mymenu.items:
-                        mymenu.add_item("[Continue]", None)
-                    else:
-                        mymenu.sort()
-
-                    nextfx = self.curr_offer.effect
-
-                    if nextfx:
-                        print('nextfx called in ConversationView.converse')
-                        nextfx()
             else:
-                # auto close all
-                self.existing_menu.turn_off()
+                # auto-close everything
                 self.turn_off()
-                self.pev(MyEvTypes.ConvEnds)
+                self.pev(defs.MyEvTypes.ConvEnds)
 
-        elif ev.type == MyEvTypes.ConvChoice:
-            print('conv choice received!')
-            # print(ev.value)
+        elif ev.type == defs.MyEvTypes.ConvChoice:  # ~ iterate over the conversation...
+            if defs.DEBUG:
+                print('ConvChoice event received by', self.__class__.__name__)
             self.dialog_upto_date = False
             self.curr_offer = ev.value
-            # self.curr_offer = self.existing_menu.query()
-            # print('curr_offer= ', self.curr_offer)
 
     def render(self):
-        # TODO commented on may 28th bc it crashes, but we need to fix this
-        # if self.pre_render:
-        #    self.pre_render()
+        if self.pre_render:
+            self.pre_render()
         text_rect = self.TEXT_AREA.get_rect()
         default_border.render(text_rect)
         draw_text(self.font, self.text, text_rect)
