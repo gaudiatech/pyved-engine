@@ -1,4 +1,5 @@
 from ... import _hub as inj
+from ... import event
 
 
 pygame = inj.pygame
@@ -8,7 +9,7 @@ def test_func():
     print("Button clicked!")
 
 
-class Button2(inj.event.EventReceiver):
+class Button2(event.EventReceiver):
     HIDEOUS_PURPLE = (255, 0, 255)
 
     def __init__(self, font, text, position_on_screen, callback=None, draw_background=True):

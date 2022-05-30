@@ -2,14 +2,12 @@ import time
 from abc import abstractmethod
 from collections import deque as deque_obj
 
-from ... import _hub as injec
+from .foundation import defs
+from . import _hub
+from . import struct
 
 
-from ...foundation import defs
-
-
-enum_builder_generic = injec.struct.enum_builder_generic
-pygame = injec.pygame
+enum_builder_generic = struct.enum_builder_generic
 gl_unique_manager = None
 
 
@@ -262,7 +260,7 @@ class CogObj:
             event_obj = self._cached_lu
         elif EngineEvTypes.PAINT == ev_type:
             if self._cached_pt.screen is None:
-                self._cached_pt.screen = injec.core.get_screen()
+                self._cached_pt.screen = _hub.core.get_screen()
             event_obj = self._cached_pt
         else:
             event_obj = CgmEvent(ev_type, **kwargs)
@@ -426,10 +424,12 @@ class DeadSimpleManager:
         self.hard_reset = self._ref_ls.hard_reset
         self.soft_reset = self._ref_ls.soft_reset
 
+        self.pyg = _hub.pygame
+
         self._omega_mouse_events = {
-            pygame.MOUSEMOTION,
-            pygame.MOUSEBUTTONDOWN,
-            pygame.MOUSEBUTTONUP
+            self.pyg.MOUSEMOTION,
+            self.pyg.MOUSEBUTTONDOWN,
+            self.pyg.MOUSEBUTTONUP
         }
         self._ev_queue = deque_obj()
 
@@ -437,13 +437,13 @@ class DeadSimpleManager:
         return self._ref_ls.test_contains_id(cogobj.get_id())
 
     def get_pressed_keys(self):
-        return pygame.key.get_pressed()
+        return _hub.pygame.key.get_pressed()
 
     def post(self, ev):
         self._ev_queue.appendleft(ev)
 
     def update(self):
-        for alien_ev in pygame.event.get():
+        for alien_ev in _hub.pygame.event.get():
             self._ev_queue.appendleft(alien_ev)
 
         n = len(self._ev_queue)
@@ -457,19 +457,20 @@ class DeadSimpleManager:
 
 # ------ avant ct runners.py
 class GameTicker(EventReceiver):
-    def __init__(self, xmaxfps):
+    def __init__(self, xmaxfps=None):
         super().__init__(explicit_id=1)
 
         self._running = True
-        self._clock = pygame.time.Clock()
-        self._maxfps = xmaxfps
+        self.pyg = _hub.pygame
+        self._clock = self.pyg.time.Clock()
+        self.maxfps = xmaxfps
 
     @property
     def running(self):
         return self._running
 
     def proc_event(self, ev, source):
-        if ev.type == pygame.QUIT or ev.type == EngineEvTypes.GAMEENDS:
+        if ev.type == self.pyg.QUIT or ev.type == EngineEvTypes.GAMEENDS:
             self.halt()
 
     def halt(self):
@@ -485,9 +486,9 @@ class GameTicker(EventReceiver):
             self.pev(EngineEvTypes.PAINT)
 
             self._manager.update()
-            injec.core.display_update()
+            _hub.core.display_update()
 
-            self._clock.tick(self._maxfps)
+            self._clock.tick(self.maxfps)
 
 
 # -  --  - - --
@@ -500,7 +501,7 @@ class StackBasedGameCtrl(EventReceiver):
 
         self.ticker = existing_ticker
         # lets build up all gamestates objects
-        self._st_container = injec.struct.StContainer()
+        self._st_container = struct.StContainer()
 
         # relation avec stcontainer
         self._st_container.setup(gamestates_enum, stmapping, glvars_pymodule)
@@ -510,7 +511,7 @@ class StackBasedGameCtrl(EventReceiver):
         else:
             self.first_state_id = 0
 
-        self.__state_stack = injec.struct.Stack()
+        self.__state_stack = struct.Stack()
 
     # redefinition
     def halt(self):
@@ -522,7 +523,7 @@ class StackBasedGameCtrl(EventReceiver):
         return self.__state_stack.peek()
 
     def proc_event(self, ev, source):
-        if ev.type == pygame.QUIT or ev.type == EngineEvTypes.GAMEENDS:
+        if ev.type == _hub.pygame.QUIT or ev.type == EngineEvTypes.GAMEENDS:
             self.halt()
 
         elif ev.type == EngineEvTypes.PUSHSTATE:

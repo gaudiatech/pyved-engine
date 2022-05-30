@@ -16,6 +16,5 @@ syntax
 
 from . import anim
 from . import core
-from . import struct
 from . import console
 from . import terrain

@@ -1,8 +1,9 @@
 from ... import _hub as inj
+from ... import event
 
 
 pygame = inj.pygame
-EventReceiver = inj.event.EventReceiver
+EventReceiver = event.EventReceiver
 
 
 class ButtonPanel(EventReceiver):

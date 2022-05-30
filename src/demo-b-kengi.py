@@ -9,7 +9,7 @@ kengi.init('old_school')
 pygame = kengi.pygame
 StackBasedGameCtrl = kengi.event.StackBasedGameCtrl
 EngineEvTypes = kengi.event.EngineEvTypes
-
+ReceiverObj = kengi.event.EventReceiver
 
 # constants
 BG_COLOR_ROOM1 = 'salmon'
@@ -24,7 +24,7 @@ GameStates = kengi.struct.enum(
 )
 
 
-class Room1Manager(kengi.event.EventReceiver):
+class Room1Manager(ReceiverObj):
     def __init__(self):
         super().__init__()
         self.pl_pos = [44, 77]
@@ -55,8 +55,8 @@ class Room1Manager(kengi.event.EventReceiver):
 
 
 class Room1(kengi.BaseGameState):
-    def __init__(self, stid, name):
-        super().__init__(stid, name)
+    def __init__(self, stid):
+        super().__init__(stid)
         self.saved_pos = [None, None]
         self.ctrl = None
 
@@ -76,7 +76,7 @@ class Room1(kengi.BaseGameState):
         self.ctrl = None
 
 
-class Room2Manager(kengi.event.EventReceiver):
+class Room2Manager(ReceiverObj):
     def __init__(self):
         super().__init__()
         self.av_pos = list(INIT_PL_POS)
@@ -96,14 +96,15 @@ class Room2Manager(kengi.event.EventReceiver):
 
         elif ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_LEFT or ev.key == pygame.K_RETURN:
+                print('pop state')
                 self.pev(EngineEvTypes.POPSTATE)
             elif ev.key == pygame.K_ESCAPE:
                 self.pev(EngineEvTypes.GAMEENDS)
 
 
 class Room2(kengi.BaseGameState):
-    def __init__(self, stid, name):
-        super().__init__(stid, name)
+    def __init__(self, stid):
+        super().__init__(stid)
         self.saved_pos = [None, None]
         self.ctrl = None
 
@@ -117,7 +118,7 @@ class Room2(kengi.BaseGameState):
 
 def play_game():
     game_ctrl = StackBasedGameCtrl(
-        kengi.core.get_game_ctrl(),
+        kengi.get_game_ctrl(),
         GameStates,
         None,  # glvars
         {
@@ -132,6 +133,8 @@ def play_game():
 if __name__ == '__main__':
     print(" KENGI implem of ~~~ Demo B | controls:")
     print(" - RIGHT/LEFT arrow (change state)\n - ENTER (go back)\n - ESCAPE")
+    print()
+    print('press right first')
     pygame.init()
     pygame.display.set_caption('demo-b uses pygame only')
     play_game()

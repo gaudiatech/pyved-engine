@@ -86,7 +86,7 @@ def run_game():
     kengi.init('old_school', caption='tower defence', maxfps=30)
 
     # - set up stuff for using the event system (no ticker)
-    gctrl = kengi.core.get_game_ctrl()
+    gctrl = kengi.get_game_ctrl()
     gctrl.turn_on()
 
     # my game objects

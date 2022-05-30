@@ -13,7 +13,6 @@ kengi_inj = Injector({
     'terrain': '._sm_shelf.terrain',
     'console': '._sm_shelf.console',
     'core': '._sm_shelf.core',
-    'event': '._sm_shelf.event',
     'gui': '._sm_shelf.gui',
     'isometric': '._sm_shelf.isometric',
     'legacy': '._sm_shelf.legacy',
@@ -21,8 +20,6 @@ kengi_inj = Injector({
 
     # nota bene: pygame is dynamically added to this dict,
     # its done elsewhere
-
-    'struct': '._sm_shelf.struct',
     'tmx': '._sm_shelf.tmx',
 })
 

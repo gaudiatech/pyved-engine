@@ -3,7 +3,7 @@
 
 # - avoid relative import for brython -
 # from .... import engine as kataen
-from ..util import underscore_format
+from .util import underscore_format
 
 
 def enum_builder_generic(to_upper, starting_index, *sequential, **named):

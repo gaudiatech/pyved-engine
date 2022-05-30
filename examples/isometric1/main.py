@@ -233,7 +233,7 @@ def _init_specific_stuff():
 
 def run_game():
     _init_specific_stuff()
-    gctrl = kengi.core.get_game_ctrl()
+    gctrl = kengi.get_game_ctrl()
     gctrl.turn_on()
     gctrl.loop()
     kengi.quit()

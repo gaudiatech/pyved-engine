@@ -3,21 +3,22 @@ sub-module dedicated to GUI management/creation,
  belongs to the kata engine
 """
 
-from ... import _hub as inj
-from .TextBlock import TextBlock
 from .Button import Button
 from .Button import ButtonPanel
 from .Button2 import Button2
+from .Label import Label
+from .TextBlock import TextBlock
 from .Trigger import Trigger
 from .WidgetBo import WidgetBo
-from .Label import Label
 from .text import ImgBasedFont
+from ... import _hub as inj
+from ... import event
 
 
 pygame = inj.pygame
-
 # TODO doublon Label , Etiquette
 #  à regler
+
 
 # ---------- pr GUI
 class Etiquette:
@@ -44,7 +45,7 @@ class Etiquette:
         self.img = self.ft_obj.render(self._text, True, self._color)
 
 
-class TextInput(inj.event.EventReceiver):
+class TextInput(event.EventReceiver):
     """
     Simple text entry component.
     """

@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from .. import _hub as injec
+from .. import _hub
 from ..__version__ import ENGI_VERSION
 from ..foundation import defs as engi_defs
 from ..foundation import shared
@@ -16,7 +16,7 @@ def get_upscaling():
 
 def conv_to_vscreen(x, y):
     ups = shared.stored_upscaling
-    return int(x/ups), int(y/ups)
+    return int(x / ups), int(y / ups)
 
 
 def set_canvas_rendering(jsobj):
@@ -40,7 +40,7 @@ def set_virtual_screen(ref_surface, upscaling):
 
 # --------- avant ca ct gfx_updater.py
 def display_update():
-    pyg = injec.pygame
+    pyg = _hub.pygame
     if not shared.RUNS_IN_WEB_CTX:
         # ---------------
         #  runs in ctx Win/Mac
@@ -76,51 +76,12 @@ def proj_to_vscreen(org_screen_pos):
     return conv_to_vscreen(*org_screen_pos)
 
 
-def declare_states(gsdefinition, assoc_gscode_cls, mod_glvars=None):
-    global _multistate, state_stack, _stack_based_ctrl, _loaded_states
-
-    # verif
-    # for ke in assoc_code_gs_cls.keys():
-    #     if ke in _loaded_states.keys():
-    #         print('[Warning] gamestate code {} was already taken. Overriding state(risky)...'.format(ke))
-    #         del _loaded_states[ke]
-    #
-    # for ke, cls in assoc_code_gs_cls.items():
-    #     print(cls)
-    #     _loaded_states[ke] = cls(ke)
-    x = gsdefinition
-    y = mod_glvars
-
-    _multistate = True
-    state_stack = injec.struct.Stack()
-    _stack_based_ctrl = injec.event.StackBasedGameCtrl(
-        game_ticker, x, y, assoc_gscode_cls
-    )
-
-
-def get_game_ctrl():
-    global init2_done, _multistate, _stack_based_ctrl, game_ticker
-    assert init2_done
-    if _multistate:
-        print('retour stack based ctrl ***')
-        return _stack_based_ctrl
-    else:
-        return game_ticker
-
-
-def get_manager():  # saves some time
-    return injec.event.EventManager.instance()
-
-
 # -------------------------------- below the line you find
 # # ----------------------------  legacy code, maybe I can simplify this more
 
 init2_done = False
 headless_mode = False
-game_ticker = None
 SCR_SIZE = None  # virtual scr size
-_multistate = False
-_stack_based_ctrl = None
 _loaded_states = dict()
 _curr_state = None
 state_stack = None
@@ -128,13 +89,13 @@ state_stack = None
 
 # TODO
 # - deprecated, I should find a better way to init directly from katagames_engine.implem
-def init_e2(chosen_mode, caption, maxfps, screen_dim=None):
-    global init2_done, game_ticker, SCR_SIZE
+def init_e2(chosen_mode, caption, screen_dim=None):
+    global init2_done, SCR_SIZE
 
     if init2_done:
         raise ValueError('legacyinit called while engine_is_init==True')
 
-    pygame_module = injec.pygame
+    pygame_module = _hub.pygame
 
     pygame_module.init()
     if not shared.RUNS_IN_WEB_CTX:
@@ -173,7 +134,7 @@ def init_e2(chosen_mode, caption, maxfps, screen_dim=None):
             else:
                 pgscreen = pygame_module.display.set_mode(engi_defs.STD_SCR_SIZE)
             pygame_surf_dessin = pygame_module.surface.Surface(taille_surf_dessin)
-            injec.core.set_realpygame_screen(pgscreen)
+            _hub.core.set_realpygame_screen(pgscreen)
 
         result = upscaling[chosen_mode]
         set_virtual_screen(pygame_surf_dessin, upscaling[chosen_mode])
@@ -187,8 +148,6 @@ def init_e2(chosen_mode, caption, maxfps, screen_dim=None):
             caption = f'untitled demo, uses KENGI ver {ENGI_VERSION}'
         pygame_module.display.set_caption(caption)
 
-        injec.event.create_manager()
-        game_ticker = injec.event.GameTicker(maxfps)
         # - }}
         return result  # can be None, if no upscaling applied
 
@@ -196,7 +155,7 @@ def init_e2(chosen_mode, caption, maxfps, screen_dim=None):
 def _new_state(gs_code):
     """
     manually change the state.
-    /!\ this is probably deprecated as it overrides what the StContainer is doing...
+    /! this is probably deprecated as it overrides what the StContainer is doing...
     """
     global _curr_state, state_stack, _loaded_states
 

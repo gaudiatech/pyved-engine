@@ -44,11 +44,16 @@ from .foundation import shared  # must keep this line /!\ see web vm
 from .ifaces.pygame import PygameIface
 from .modes import GameModeMger, BaseGameMode
 from .util import underscore_format, camel_case_format
+from . import struct
+from . import event
 
 
 ver = ENGI_VERSION
 one_plus_init = False
 _active_state = False
+_gameticker = None
+_multistate_flag = False
+_stack_based_ctrl = None
 
 
 class Objectifier:
@@ -72,7 +77,7 @@ def bootstrap_e(info=None):
     :param info:
     :return:
     """
-    global pygame, one_plus_init
+    global pygame, one_plus_init, _gameticker
     if one_plus_init:
         return
 
@@ -91,6 +96,9 @@ def bootstrap_e(info=None):
         info = 'pygame'
     _ensure_pygame(info)
 
+    event.create_manager()
+    _gameticker = event.GameTicker()
+
     # dry import
     return get_injector()['pygame']
 
@@ -99,7 +107,8 @@ def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
     global _active_state
     bootstrap_e()
     _active_state = True
-    get_injector()['core'].init_e2(gfc_mode, caption, maxfps, screen_dim)
+    get_injector()['core'].init_e2(gfc_mode, caption, screen_dim)
+    _gameticker.maxfps = maxfps
 
 
 def get_surface():
@@ -111,6 +120,40 @@ def get_surface():
     return get_injector()['core'].get_screen()
 
 
+def declare_states(gsdefinition, assoc_gscode_cls, mod_glvars=None):
+    global _multistate_flag, state_stack, _stack_based_ctrl, _loaded_states
+    _multistate_flag = True
+
+    # verif
+    # for ke in assoc_code_gs_cls.keys():
+    #     if ke in _loaded_states.keys():
+    #         print('[Warning] gamestate code {} was already taken. Overriding state(risky)...'.format(ke))
+    #         del _loaded_states[ke]
+    #
+    # for ke, cls in assoc_code_gs_cls.items():
+    #     print(cls)
+    #     _loaded_states[ke] = cls(ke)
+    x = gsdefinition
+    y = mod_glvars
+
+    state_stack = struct.Stack()
+    _stack_based_ctrl = event.StackBasedGameCtrl(
+        _gameticker, x, y, assoc_gscode_cls
+    )
+
+
+def get_game_ctrl():
+    global _multistate_flag, _stack_based_ctrl, _gameticker
+    if _multistate_flag:
+        return _stack_based_ctrl
+    else:
+        return _gameticker
+
+
+def get_manager():  # saves some time
+    return event.EventManager.instance()
+
+
 def flip():
     return get_injector()['core'].display_update()
 
@@ -119,11 +162,11 @@ def quit():  # we keep the "quit" name bc of pygame
     global _active_state
 
     if _active_state:
-        get_injector()['event'].EventManager.instance().hard_reset()
+        event.EventManager.instance().hard_reset()
 
-        get_injector()['event'].CogObj.reset_class_state()
+        event.CogObj.reset_class_state()
 
-        get_injector()['core'].init2_done = False
+        event.init2_done = False
 
         pyg = get_injector()['pygame']
         pyg.mixer.quit()

@@ -1,13 +1,14 @@
 import collections
 from ... import _hub
 from .isosm_config import SCROLL_STEP, NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG
+from ... import event
 
 
 pygame = _hub.pygame
-EngineEvTypes = _hub.event.EngineEvTypes
+EngineEvTypes = event.EngineEvTypes
 
 
-class IsometricMapViewer(_hub.event.EventReceiver):
+class IsometricMapViewer(event.EventReceiver):
     def __init__(self, isometric_map, screen, postfx=None, cursor=None,
                  left_scroll_key=None, right_scroll_key=None, up_scroll_key=None, down_scroll_key=None):
         super().__init__()

@@ -1,5 +1,5 @@
 from .. import _hub
-from ..foundation import shared
+from ..foundation import defs
 
 
 # - constants
@@ -144,8 +144,8 @@ def set_char_size(v):
         _KFont.inst.cached_letters.clear()  # reset cache!
 
     # refresh gl variables
-    _last_col = -1 + shared.CONST_SCR_SIZE[0] // _char_size
-    _last_row = -1 + shared.CONST_SCR_SIZE[1] // _char_size
+    _last_col = -1 + defs.STD_SCR_SIZE[0] // _char_size
+    _last_row = -1 + defs.STD_SCR_SIZE[1] // _char_size
 
 
 # -------------------------------------------------
@@ -217,5 +217,5 @@ _curr_spritesheet = None
 _pyg = _hub.pygame
 _alphabet = _KFont()
 _screen = _matrix = None
-_lastcol = -1 + shared.CONST_SCR_SIZE[0] // _char_size
-_lastrow = -1 + shared.CONST_SCR_SIZE[1] // _char_size
+_lastcol = -1 + defs.STD_SCR_SIZE[0] // _char_size
+_lastrow = -1 + defs.STD_SCR_SIZE[1] // _char_size

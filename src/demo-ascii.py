@@ -6,7 +6,7 @@ kengi.bootstrap_e()
 CAR_SIZE = 20  # 20, 16, 12, 10, 8 fonctionnent tous!
 IDX_CURSOR = 254
 MAXFPS = 50
-PAL = kengi.palettes.c64
+PAL = kengi.pal.c64
 
 
 # - variables

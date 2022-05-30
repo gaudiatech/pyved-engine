@@ -22,7 +22,7 @@ from myrpg_defs import GameStates
 if __name__ == '__main__':
     kengi.init('hd')
 
-    kengi.core.declare_states(  # changes the game controller used behind the scene
+    kengi.declare_states(  # changes the game controller used behind the scene
         GameStates,
         {
             GameStates.TitleScreen: MenuScreenState,
@@ -30,7 +30,7 @@ if __name__ == '__main__':
             GameStates.ForestLevel: ForestState
         }
     )
-    t = kengi.core.get_game_ctrl()
+    t = kengi.get_game_ctrl()
     t.turn_on()
     t.loop()
 

@@ -82,7 +82,7 @@ class DemoCtrl(kengi.event.EventReceiver):
 
         elif ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_ESCAPE:
-                kengi.core.get_game_ctrl().halt()
+                kengi.get_game_ctrl().halt()
             elif ev.key == pygame.K_SPACE:
                 self.state.switch_avatar_color()
             elif ev.key == pygame.K_UP:
@@ -101,7 +101,7 @@ def play_game():
     using the built-in event manager + game controller to execute the game
     """
     game_st = GameState()
-    game_ctrl = kengi.core.get_game_ctrl()
+    game_ctrl = kengi.get_game_ctrl()
     receivers = [game_ctrl, DemoCtrl(game_st), GameView(game_st)]
     for r in receivers:
         r.turn_on()  # listen to incoming events
