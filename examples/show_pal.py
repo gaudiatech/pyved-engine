@@ -24,7 +24,7 @@ pos2label = dict()
 pos2size = dict()
 
 curr_offset_y = 0
-for name, pal in kengi.palettes.ALL_PALETTES.items():
+for name, pal in kengi.pal.ALL_PALETTES.items():
     best_tile_size = (BAR_LENGTH-pal.size+1) / pal.size
     t = BAR_LENGTH
     curr_offset_x = 0

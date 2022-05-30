@@ -8,7 +8,7 @@ from .foundation import defs
 from .foundation import shared  # must keep this line /!\ see web vm
 
 from .ifaces.pygame import PygameIface
-from . import palettes
+from . import pal
 
 from .modes import GameModeMger, BaseGameMode
 
