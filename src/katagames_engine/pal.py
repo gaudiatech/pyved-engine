@@ -1,3 +1,5 @@
+import random as _rand
+
 
 class _Pal:
     def __init__(self, pal_tuple):
@@ -10,7 +12,50 @@ class _Pal:
             self.listing.append(t3)
             self.names.append(elt[0])
 
-        self.size = len(pal_tuple)
+        self._size = len(pal_tuple)
+
+    @property
+    def size(self):
+        return self._size
+
+    def get_name(self, rgb):
+        for nam, desc in self.ctable.items():
+            if rgb[0] == desc[0] and rgb[1] == desc[1] and rgb[2] == desc[2]:
+                return nam
+
+    def get_rank(self, rgb):
+        return self.listing.index(rgb)
+
+    def at_random(self, excl_set=None):
+        """
+        excl_set can be {0, 3, 8} for example,
+        but can also be {'black', 'white', 'orange', 'blue'} for example
+        """
+        picknumber, exclusion = True, False
+        if excl_set:
+            if len(excl_set) > self._size:
+                raise ValueError('excl_set cannot exclude that many colours!')
+
+            e = None
+            for e in excl_set:
+                exclusion = True
+                break
+            if exclusion:
+                if not isinstance(e, int):
+                    picknumber = False
+        else:
+            excl_set = set()
+
+        if picknumber:
+            omega = list(range(self._size))
+            for exck in excl_set:
+                omega.remove(exck)
+            return self.listing[_rand.choice(omega)]
+
+        omega = list(self.names)
+        for exck in excl_set:
+            omega.remove(exck)
+        return self.ctable[_rand.choice(omega)]
 
     def __getitem__(self, item):
         if isinstance(item, str):

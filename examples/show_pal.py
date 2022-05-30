@@ -47,6 +47,25 @@ for name, pal in kengi.pal.ALL_PALETTES.items():
 
     curr_offset_y += TILE_HEIGHT
 
+print('-- util. methods tests --')
+
+n = 7
+print(f'pick any color {n} times (japan pal)')
+for _ in range(n):
+    rcolor = kengi.pal.japan.at_random()
+    print(rcolor, kengi.pal.japan.get_name(rcolor))
+print()
+n = 10
+print(f'pick a color {n} times, but no black or white or violet')
+for _ in range(n):
+    rcolor = kengi.pal.c64.at_random(excl_set={'black', 'white', 'violet'})
+    print(rcolor, kengi.pal.c64.get_name(rcolor))
+n = 10
+print(f'pick a color {n} times, but not 3 or 8 or 9 or 10')
+for _ in range(n):
+    rcolor = kengi.pal.c64.at_random(excl_set={3, 8, 9, 10})
+    print(rcolor, kengi.pal.c64.get_rank(rcolor))
+
 
 # - main program
 def run_game():
