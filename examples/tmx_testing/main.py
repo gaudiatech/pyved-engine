@@ -1,5 +1,6 @@
 
 import katagames_engine as kengi
+kengi.bootstrap_e()
 
 # - aliases
 pygame = kengi.pygame
@@ -11,7 +12,7 @@ OFFSET = 5
 dj, di = 0, 0  # variation
 stop_the_test = False
 
-kengi.core.init('old_school')
+kengi.init('old_school')
 
 clock = pygame.time.Clock()
 #scr = pygame.display.set_mode(SCR_SIZE)
