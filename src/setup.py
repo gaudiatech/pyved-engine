@@ -10,7 +10,7 @@ setup(
     packages=[
         "katagames_engine",
         "katagames_engine.foundation",
-        "katagames_engine._sm_shelf.event",
+        "katagames_engine.ifaces",
         "katagames_engine._sm_shelf.gui",
         "katagames_engine._sm_shelf.isometric",
         "katagames_engine._sm_shelf.tmx",
