@@ -166,7 +166,7 @@ def quit():  # we keep the "quit" name bc of pygame
 
         event.CogObj.reset_class_state()
 
-        event.init2_done = False
+        get_injector()['core'].init2_done = False
 
         pyg = get_injector()['pygame']
         pyg.mixer.quit()
