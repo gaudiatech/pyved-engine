@@ -16,7 +16,6 @@ kengi_inj = Injector({
     'gui': '._sm_shelf.gui',
     'isometric': '._sm_shelf.isometric',
     'legacy': '._sm_shelf.legacy',
-    'network': '._sm_shelf.network',
 
     # nota bene: pygame is dynamically added to this dict,
     # its done elsewhere
