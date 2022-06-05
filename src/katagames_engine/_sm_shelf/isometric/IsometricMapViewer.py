@@ -2,7 +2,7 @@ import collections
 from ... import _hub
 from .isosm_config import SCROLL_STEP, NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG
 from ... import event
-
+import math
 
 pygame = _hub.pygame
 EngineEvTypes = event.EngineEvTypes
@@ -45,7 +45,7 @@ class IsometricMapViewer(event.EventReceiver):
         self._focused_object_y0 = 0
 
         self.debug_sprite = None
-        #image.Image("assets/floor-tile.png")
+        # image.Image("assets/floor-tile.png")
         self.lastmousepos = None
 
         self.visible_area = None
@@ -181,7 +181,7 @@ class IsometricMapViewer(event.EventReceiver):
 
     def focus(self, x, y):
         """Move the camera to point at the requested map tile. x,y can be ints or floats."""
-        if self.isometric_map.on_the_map(int(x+0.99), int(y+0.99)) and not self.camera_updated_this_frame:
+        if self.isometric_map.on_the_map(int(x + 0.99), int(y + 0.99)) and not self.camera_updated_this_frame:
             self.x_off = self.screen.get_width() // 2 - self.relative_x(x, y)
             self.y_off = self.screen.get_height() // 2 - self.relative_y(x, y) + self.tile_height
             self.camera_updated_this_frame = True
@@ -259,8 +259,9 @@ class IsometricMapViewer(event.EventReceiver):
         # inflate replaced by the followin hack
         self.visible_area.x += 64
         self.visible_area.y -= 64
-        self.visible_area.w += 64
-        self.visible_area.h += 64 * 2
+        self.visible_area.w += 128
+        self.visible_area.h += 128 + self.isometric_map.tile_height + self.half_tile_height - self.isometric_map.layers[
+            -1].offsety
 
     def proc_event(self, ev, source=None):
         if self.is_drawing:
@@ -279,13 +280,29 @@ class IsometricMapViewer(event.EventReceiver):
                 if self.visible_area is None:
                     self._init_visible_area_init(ev.screen)
                 # frameskip (temporary)
-                self.tfrskip = (self.tfrskip+1) % 3
+                self.tfrskip = (self.tfrskip + 1) % 3
                 if not self.tfrskip:
                     ev.screen.fill('black')
                     self._paint_all()
 
     def _paint_all(self):
+        del self.line_cache[:]
+        self.objgroup_contents.clear()
 
+        # Record all of the objectgroup contents for display when their tile comes up
+        # Also, clamp all object positions. If this is an infinite scrolling map, objects can move off one side to the
+        # map to the other. However, in their data, we want the objects to stay within the bounds of the map.
+        for k, v in self.isometric_map.objectgroups.items():
+            self.objgroup_contents[k] = collections.defaultdict(list)
+            for ob in v.contents:
+                ob.x, ob.y = self.isometric_map.clamp_pos((ob.x, ob.y))
+                sx, sy = self.screen_coords(ob.x, ob.y, v.offsetx, v.offsety)
+                obkey = (self.map_x(sx, sy, return_int=True)%self.isometric_map.width, self.map_y(sx, sy, return_int=True)%self.isometric_map.height)
+                self.objgroup_contents[k][obkey].append(ob)
+
+        #TODO: These are sometimes cases where the focus and the focused object print position don't match. I had to
+        # adjust the print positions below to account for the seams of endless maps; those same adjustments may need to
+        # be done here.
         self.camera_updated_this_frame = False
         if self._focused_object and (self._focused_object_x0 != self._focused_object.x or
                                      self._focused_object_y0 != self._focused_object.y):
@@ -301,17 +318,6 @@ class IsometricMapViewer(event.EventReceiver):
         painting_tiles = True
         line_number = 1
 
-        del self.line_cache[:]
-        self.objgroup_contents.clear()
-
-        # Record all of the objectgroup contents for display when their tile comes up
-        for k, v in self.isometric_map.objectgroups.items():
-            self.objgroup_contents[k] = collections.defaultdict(list)
-            for ob in v.contents:
-                sx, sy = self.screen_coords(ob.x, ob.y, k.offsetx + v.offsetx, k.offsety + v.offsety)
-                obkey = (self.map_x(sx, sy, return_int=True), self.map_y(sx, sy, return_int=True))
-                self.objgroup_contents[k][obkey].append(ob)
-
         while painting_tiles:
             # In order to allow smooth sub-tile movement of stuff, we have
             # to draw everything in a particular order.
@@ -322,6 +328,33 @@ class IsometricMapViewer(event.EventReceiver):
 
             for layer_num, layer in enumerate(self.isometric_map.layers):
                 if current_line >= 0:
+                    if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
+                        # After drawing the terrain last time, draw any objects in the previous cell.
+                        for x, y in self.line_cache[current_line - 1]:
+                            ox,oy = x%self.isometric_map.width, y%self.isometric_map.height
+                            if (ox, oy) in self.objgroup_contents[layer]:
+                                self.objgroup_contents[layer][(ox, oy)].sort(key=self._model_depth)
+                                for ob in self.objgroup_contents[layer][(ox, oy)]:
+                                    # The following bit of math makes sure that the clamped object positions will
+                                    # print at the correct screen positions. Otherwise, if the player/focus is on the
+                                    # other side of the map seam, this object will be printed in the wrong position.
+                                    fx = math.modf(ob.x)[0]
+                                    if fx > 0:
+                                        fx = x - 1 + fx
+                                    else:
+                                        fx = x
+                                    fy = math.modf(ob.y)[0]
+                                    if fy > 0:
+                                        fy = y - 1 + fy
+                                    else:
+                                        fy = y
+                                    sx, sy = self.screen_coords(
+                                        fx, fy,
+                                        self.isometric_map.objectgroups[layer].offsetx,
+                                        self.isometric_map.objectgroups[layer].offsety
+                                    )
+                                    ob(self.screen, sx, sy, self.isometric_map)
+
                     if self.line_cache[current_line]:
                         for x, y in self.line_cache[current_line]:
                             gid = layer[x, y]
@@ -336,19 +369,6 @@ class IsometricMapViewer(event.EventReceiver):
                             if self.cursor and self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
                                 self.cursor.render(self)
 
-                    if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
-                        # After drawing the terrain, draw any objects in the previous cell.
-                        for x, y in self.line_cache[current_line - 1]:
-
-                            if (x, y) in self.objgroup_contents[layer]:
-                                self.objgroup_contents[layer][(x, y)].sort(key=self._model_depth)
-                                for ob in self.objgroup_contents[layer][(x, y)]:
-                                    sx, sy = self.screen_coords(
-                                        ob.x, ob.y,
-                                        layer.offsetx + self.isometric_map.objectgroups[layer].offsetx,
-                                        layer.offsety + self.isometric_map.objectgroups[layer].offsety
-                                    )
-                                    ob(self.screen, sx, sy, self.isometric_map)
 
                     elif self.line_cache[current_line] is None and layer == self.isometric_map.layers[-1]:
                         painting_tiles = False
@@ -360,20 +380,20 @@ class IsometricMapViewer(event.EventReceiver):
             line_number += 1
 
         # draw cursor org size
-        #if self.lastmousepos:
-            # mx = self.map_x(self.lastmousepos[0], self.lastmousepos[1])
-            # my = self.map_y(self.lastmousepos[0], self.lastmousepos[1])
-            # if self.isometric_map.on_the_map(mx, my):
-               ## mydest = self.debug_sprite.bitmap.get_rect(midbottom=self.screen_coords(mx, my))
-               ## mydest = self.debug_sprite.get_rect(midbottom=self.screen_coords(mx, my))
-               # ev.screen.blit(self.debug_sprite, self.screen_coords(mx, my)) # self.debug_sprite.render(mydest, 0)
+        # if self.lastmousepos:
+        # mx = self.map_x(self.lastmousepos[0], self.lastmousepos[1])
+        # my = self.map_y(self.lastmousepos[0], self.lastmousepos[1])
+        # if self.isometric_map.on_the_map(mx, my):
+        ## mydest = self.debug_sprite.bitmap.get_rect(midbottom=self.screen_coords(mx, my))
+        ## mydest = self.debug_sprite.get_rect(midbottom=self.screen_coords(mx, my))
+        # ev.screen.blit(self.debug_sprite, self.screen_coords(mx, my)) # self.debug_sprite.render(mydest, 0)
         # Call this function every time your game loop gets an event.
 
-        #if self.cursor:
+        # if self.cursor:
         #    self.cursor.update(self, pygame.event.Event(pygame.USEREVENT))
 
         self.phase = (self.phase + 1) % 300
-        #if self.postfx:
+        # if self.postfx:
         #    self.postfx()
 
     def scroll_to(self, directioncode):
