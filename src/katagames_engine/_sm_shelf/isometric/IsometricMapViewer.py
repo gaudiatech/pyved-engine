@@ -303,6 +303,9 @@ class IsometricMapViewer(event.EventReceiver):
         #TODO: These are sometimes cases where the focus and the focused object print position don't match. I had to
         # adjust the print positions below to account for the seams of endless maps; those same adjustments may need to
         # be done here.
+        # Possible solution: Refactor things to reduce the amount of conversion between coordinate systems that needs to
+        # be done. Change the focus point so that it is stored as a map coordinate rather than pixel values. This may
+        # not solve the problem directly, but it will probably make the problem clear, which is nearly the same thing.
         self.camera_updated_this_frame = False
         if self._focused_object and (self._focused_object_x0 != self._focused_object.x or
                                      self._focused_object_y0 != self._focused_object.y):
