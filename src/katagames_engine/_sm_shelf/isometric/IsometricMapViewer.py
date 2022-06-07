@@ -285,9 +285,26 @@ class IsometricMapViewer(event.EventReceiver):
                     ev.screen.fill('black')
                     self._paint_all()
 
+    def fill_wallpaper(self):
+        screen_rect = self.screen.get_rect()
+        wp_width, wp_height = self.isometric_map.wallpaper.get_size()
+        grid_w = screen_rect.w // wp_width + 2
+        grid_h = screen_rect.h // wp_height + 2
+        my_rect = pygame.Rect(0, 0, wp_width, wp_height)
+
+        for x in range(-1, grid_w):
+            my_rect.x = screen_rect.x + x * wp_width
+            for y in range(-1, grid_h):
+                my_rect.y = screen_rect.y + y * wp_height + self.phase
+                self.screen.blit(self.isometric_map.wallpaper, my_rect)
+
     def _paint_all(self):
         del self.line_cache[:]
         self.objgroup_contents.clear()
+
+        # Prep the screen.
+        if self.isometric_map.wallpaper:
+            self.fill_wallpaper()
 
         # Record all of the objectgroup contents for display when their tile comes up
         # Also, clamp all object positions. If this is an infinite scrolling map, objects can move off one side to the
@@ -395,7 +412,7 @@ class IsometricMapViewer(event.EventReceiver):
         # if self.cursor:
         #    self.cursor.update(self, pygame.event.Event(pygame.USEREVENT))
 
-        self.phase = (self.phase + 1) % 300
+        self.phase = (self.phase + 1) % 640
         # if self.postfx:
         #    self.postfx()
 
