@@ -49,7 +49,7 @@ class IsometricMapViewer(event.EventReceiver):
         self.lastmousepos = None
 
         self.visible_area = None
-        self.tfrskip = 2
+        self.animated_wp = False
 
         # util for the drawing of tiles
         self.line_cache = list()
@@ -279,11 +279,9 @@ class IsometricMapViewer(event.EventReceiver):
             if ev.type == EngineEvTypes.PAINT:
                 if self.visible_area is None:
                     self._init_visible_area_init(ev.screen)
-                # frameskip (temporary)
-                self.tfrskip = (self.tfrskip + 1) % 3
-                if not self.tfrskip:
-                    ev.screen.fill('black')
-                    self._paint_all()
+
+                ev.screen.fill('black')
+                self._paint_all()
 
     def fill_wallpaper(self):
         screen_rect = self.screen.get_rect()
@@ -295,7 +293,9 @@ class IsometricMapViewer(event.EventReceiver):
         for x in range(-1, grid_w):
             my_rect.x = screen_rect.x + x * wp_width
             for y in range(-1, grid_h):
-                my_rect.y = screen_rect.y + y * wp_height + self.phase
+                my_rect.y = screen_rect.y + y * wp_height
+                if self.animated_wp:
+                    my_rect.y += self.phase
                 self.screen.blit(self.isometric_map.wallpaper, my_rect)
 
     def _paint_all(self):
