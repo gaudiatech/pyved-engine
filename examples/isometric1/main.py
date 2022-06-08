@@ -4,7 +4,7 @@ kengi.bootstrap_e()
 import demolib.animobs as animobs
 import demolib.dialogue as dialogue
 import demolib.pathfinding as pathfinding
-import isometric_maps
+# import isometric_maps
 from defs import MyEvTypes, MAXFPS, DEBUG
 
 
@@ -30,7 +30,7 @@ screen = kengi.get_surface()  # retrieve the surface used for display
 tilemap_height = tilemap_width = 0
 
 
-class Character(isometric_maps.IsometricMapObject):
+class Character(kengi.isometric.model.IsometricMapObject):
     def __init__(self, x, y):
         super().__init__()
         self.x = x
@@ -98,7 +98,7 @@ class MovementPath:
                 return True
 
 
-class NPC(isometric_maps.IsometricMapObject):
+class NPC(kengi.isometric.model.IsometricMapObject):
     def __init__(self, x, y):
         super().__init__()
         self.x = x
@@ -184,10 +184,10 @@ class PathCtrl(kengi.event.EventReceiver):
 def _load_maps():
     global maps, tilemap_width, tilemap_height
     maps.append(
-        isometric_maps.IsometricMap.load('assets/test_map.tmx')
+        kengi.isometric.model.IsometricMap.load(['assets', ], 'test_map.tmx')
     )
     maps.append(
-        isometric_maps.IsometricMap.load('assets/test_map2.tmx')
+        kengi.isometric.model.IsometricMap.load(['assets', ], 'test_map2.tmx')
     )
     tilemap_width, tilemap_height = maps[0].width, maps[0].height
 
@@ -212,7 +212,7 @@ def _init_specific_stuff():
     global map_viewer, maps
 
     _load_maps()
-    map_viewer = kengi.isometric.IsometricMapViewer(
+    map_viewer = kengi.isometric.IsometricMapViewer0(  # TODO unify
         maps[0], screen,
         up_scroll_key=pygame.K_UP, down_scroll_key=pygame.K_DOWN,
         left_scroll_key=pygame.K_LEFT, right_scroll_key=pygame.K_RIGHT
@@ -221,7 +221,7 @@ def _init_specific_stuff():
 
     cursor_image = pygame.image.load("assets/half-floor-tile.png").convert_alpha()
     cursor_image.set_colorkey((255, 0, 255))
-    map_viewer.cursor = isometric_maps.IsometricMapQuarterCursor(0, 0, cursor_image, maps[0].layers[1])
+    map_viewer.cursor = kengi.isometric.extras.IsometricMapQuarterCursor(0, 0, cursor_image, maps[0].layers[1])
     pctrl = PathCtrl()
 
     map_viewer.turn_on()
