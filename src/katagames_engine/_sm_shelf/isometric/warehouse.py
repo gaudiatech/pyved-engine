@@ -539,26 +539,38 @@ class IsometricMap():
             nupos[0] = int(i) % self.width + f
         else:
             if pos[0] < 0:
-                pos[0] = 0
+                nupos[0] = 0
             elif pos[0] >= self.width:
-                pos[0] = self.width-1
+                nupos[0] = self.width-1
         if self.wrap_y:
             f, i = math.modf(pos[1])
             nupos[1] = int(i) % self.height + f
         else:
             if pos[1] < 0:
-                pos[1] = 0
+                nupos[1] = 0
             elif pos[1] >= self.height:
-                pos[1] = self.height-1
+                nupos[1] = self.height-1
         return tuple(nupos)
 
     def clamp_pos_int(self, pos):
         # For infinite scroll maps, clamp the x and/or y values
-        nupos = list(pos)
-        f, i = math.modf(pos[0])
-        nupos[0] = int(i) % self.width
-        f, i = math.modf(pos[1])
-        nupos[1] = int(i) % self.height
+        nupos = [int(math.floor(c)) for c in pos]
+        if self.wrap_x:
+            f, i = math.modf(pos[0])
+            nupos[0] = int(i) % self.width
+        else:
+            if pos[0] < 0:
+                nupos[0] = 0
+            elif pos[0] >= self.width:
+                nupos[0] = self.width-1
+        if self.wrap_y:
+            f, i = math.modf(pos[1])
+            nupos[1] = int(i) % self.height
+        else:
+            if pos[1] < 0:
+                nupos[1] = 0
+            elif pos[1] >= self.height:
+                nupos[1] = self.height-1
         return tuple(nupos)
 
 
