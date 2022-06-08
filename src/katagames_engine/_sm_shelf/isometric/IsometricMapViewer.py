@@ -263,6 +263,9 @@ class IsometricMapViewer(event.EventReceiver):
                     if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
                         # After drawing the terrain last time, draw any objects in the previous cell.
                         for x, y in self.line_cache[current_line - 1]:
+                            if self.cursor and self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
+                                self.cursor.render(self)
+
                             ox,oy = x%self.isometric_map.width, y%self.isometric_map.height
                             if (ox, oy) in self.objgroup_contents[layer]:
                                 self.objgroup_contents[layer][(ox, oy)].sort(key=self._model_depth)
@@ -290,9 +293,6 @@ class IsometricMapViewer(event.EventReceiver):
                                 sx, sy = self.screen_coords(x, y)
                                 my_tile(self.screen, sx, sy + layer.offsety + self.isometric_map.tile_height, gid & FLIPPED_HORIZONTALLY_FLAG,
                                         gid & FLIPPED_VERTICALLY_FLAG)
-
-                            if self.cursor and self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
-                                self.cursor.render(self)
 
 
                     elif self.line_cache[current_line] is None and layer == self.isometric_map.layers[-1]:
