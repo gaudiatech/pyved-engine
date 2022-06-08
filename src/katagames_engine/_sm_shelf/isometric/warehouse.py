@@ -1,12 +1,9 @@
 """ Barebones isometric_map handling for an isometric RPG. For game-specific data,
     either subclass the Scene or just declare whatever extra bits are needed.
 """
-
-import katagames_engine as kengi
-
-pygame = kengi.pygame
-
-Tilesets = kengi.tmx.data.Tilesets
+from ... import _hub
+pygame = _hub.pygame
+Tilesets = _hub.tmx.data.Tilesets
 
 import json
 
@@ -17,22 +14,18 @@ from xml.etree import ElementTree
 
 import struct
 import os
-
-import collections
-
 import math
 
-SCROLL_STEP = 8
 
+SCROLL_STEP = 8
 FLIPPED_HORIZONTALLY_FLAG = 0x80000000
 FLIPPED_VERTICALLY_FLAG = 0x40000000
 FLIPPED_DIAGONALLY_FLAG = 0x20000000
 ROTATED_HEXAGONAL_120_FLAG = 0x10000000
-
 NOT_ALL_FLAGS = 0x0FFFFFFF
 
 
-class IsometricTile():
+class IsometricTile:
     def __init__(self, id, tile_surface, hflip, vflip):
         self.id = id
         self.tile_surface = tile_surface
@@ -605,7 +598,7 @@ class IsometricMapQuarterCursor(object):
 
     def update(self, view, ev):
         if ev.type == pygame.MOUSEMOTION:
-            mouse_x, mouse_y = kengi.core.proj_to_vscreen(pygame.mouse.get_pos())
+            mouse_x, mouse_y = _hub.core.proj_to_vscreen(pygame.mouse.get_pos())
             self.set_position(view, view.map_x(mouse_x, mouse_y, return_int=False),
                               view.map_y(mouse_x, mouse_y, return_int=False))
         elif ev.type == pygame.KEYDOWN:
