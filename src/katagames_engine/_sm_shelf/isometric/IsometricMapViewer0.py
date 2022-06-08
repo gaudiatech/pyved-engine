@@ -14,11 +14,15 @@ class IsometricMapViewer0(event.EventReceiver):
                  left_scroll_key=None, right_scroll_key=None, up_scroll_key=None, down_scroll_key=None):
         super().__init__()
         self.is_drawing = True
-
         self.isometric_map = isometric_map
         self.screen = screen
-        self.x_off = 600
-        self.y_off = -200
+
+        # The focus is defined by map coordinates, so a lot of the back and forth between screen and map coords
+        # can be cut.
+        self._focus_x = 0
+        self._focus_y = 0
+        self._focused_object_x0 = 0
+        self._focused_object_y0 = 0
         self.phase = 0
 
         self.tile_width = isometric_map.tile_width
@@ -29,32 +33,22 @@ class IsometricMapViewer0(event.EventReceiver):
         # _mouse_tile contains the actual tile the mouse is hovering over. However, in most cases what we really want
         # is the location of the mouse cursor. Time to make a property!
         self._mouse_tile = (-1, -1)
-
         self.postfx = postfx
-
         self.cursor = cursor
-
         self.left_scroll_key = left_scroll_key
         self.right_scroll_key = right_scroll_key
         self.up_scroll_key = up_scroll_key
         self.down_scroll_key = down_scroll_key
-
-        self.camera_updated_this_frame = False
-
         self._focused_object = None
-        self._focused_object_x0 = 0
-        self._focused_object_y0 = 0
-
         self.debug_sprite = None
-        #image.Image("assets/floor-tile.png")
         self.lastmousepos = None
-
         self.visible_area = None
-        self.tfrskip = 2
+        self.animated_wp = False
 
         # util for the drawing of tiles
         self.line_cache = list()
         self.objgroup_contents = dict()
+        self.objgroup_modified_mappos = dict()
 
     def _check_mouse_scroll(self, screen_area, mouse_x, mouse_y):
         # Check for map scrolling, depending on mouse position.
@@ -150,7 +144,6 @@ class IsometricMapViewer0(event.EventReceiver):
             self.camera_updated_this_frame = True
 
     def _paint_all(self):
-
         self.camera_updated_this_frame = False
         if self._focused_object and (self._focused_object_x0 != self._focused_object.x or
                                      self._focused_object_y0 != self._focused_object.y):
@@ -198,8 +191,9 @@ class IsometricMapViewer0(event.EventReceiver):
                                 my_tile(self.screen, sx, sy + layer.offsety, gid & FLIPPED_HORIZONTALLY_FLAG,
                                         gid & FLIPPED_VERTICALLY_FLAG)
 
-                            if self.cursor and self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
-                                self.cursor.render(self)
+                            if self.cursor:
+                                if self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
+                                    self.cursor.render(self)
 
                     if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
                         # After drawing the terrain, draw any objects in the previous cell.
@@ -224,7 +218,22 @@ class IsometricMapViewer0(event.EventReceiver):
                     current_y_offset = layer.offsety
             line_number += 1
 
-        self.phase = (self.phase + 1) % 300
+        self.phase = (self.phase + 1) % 640
+
+    def fill_wallpaper(self):
+        screen_rect = self.screen.get_rect()
+        wp_width, wp_height = self.isometric_map.wallpaper.get_size()
+        grid_w = screen_rect.w // wp_width + 1
+        grid_h = screen_rect.h // wp_height + 1
+        my_rect = pygame.Rect(0, 0, wp_width, wp_height)
+
+        for x in range(-1, grid_w):
+            my_rect.x = screen_rect.x + x * wp_width
+            for y in range(-1, grid_h):
+                my_rect.y = screen_rect.y + y * wp_height
+                if self.animated_wp:
+                    my_rect.y += self.phase
+                self.screen.blit(self.isometric_map.wallpaper, my_rect)
 
     def focus(self, x, y):
         """Move the camera to point at the requested map tile. x,y can be ints or floats."""
@@ -232,27 +241,6 @@ class IsometricMapViewer0(event.EventReceiver):
             self.x_off = self.screen.get_width() // 2 - self.relative_x(x, y)
             self.y_off = self.screen.get_height() // 2 - self.relative_y(x, y) + self.tile_height
             self.camera_updated_this_frame = True
-
-    def proc_event(self, ev, source=None):
-        if self.is_drawing:
-            # if ev.type == pygame.MOUSEMOTION:
-            #     # - temp disabled for speed
-            #     return
-            #     mouse_x, mouse_y = _hub.core.proj_to_vscreen(ev.pos)
-            #     self.lastmousepos = (mouse_x, mouse_y)
-            #     #  was in the __call__ method, previously {{
-            #     self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
-            #     if self.cursor:
-            #         self.cursor.update(self, ev)
-            #     # }}
-            if ev.type == EngineEvTypes.PAINT:
-                if self.visible_area is None:
-                    self._init_visible_area_init(ev.screen)
-                # frameskip (temporary)
-                self.tfrskip = (self.tfrskip+1) % 3
-                if not self.tfrskip:
-                    ev.screen.fill('black')
-                    self._paint_all()
 
     def map_x(self, sx, sy, xoffset_override=None, yoffset_override=None, return_int=True):
         """Return the map x row for the given screen coordinates."""
@@ -290,8 +278,21 @@ class IsometricMapViewer0(event.EventReceiver):
     def pause_draw(self):
         self.is_drawing = False
 
-    def resume_draw(self):
-        self.is_drawing = True
+    def proc_event(self, ev, source=None):
+        if not self.is_drawing:
+            return
+        if ev.type == EngineEvTypes.PAINT:
+            if self.visible_area is None:
+                self._init_visible_area_init(ev.screen)
+            ev.screen.fill('black')
+            self._paint_all()
+            return
+        if ev.type == pygame.MOUSEMOTION:
+            mouse_x, mouse_y = _hub.core.proj_to_vscreen(ev.pos)
+            self.lastmousepos = (mouse_x, mouse_y)
+            self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
+            if self.cursor:
+                self.cursor.update(self, ev)
 
     def relative_x(self, x, y):
         """Return the relative x position of this tile, ignoring offset."""
@@ -300,6 +301,9 @@ class IsometricMapViewer0(event.EventReceiver):
     def relative_y(self, x, y):
         """Return the relative y position of this tile, ignoring offset."""
         return (y * self.half_tile_height) + (x * self.half_tile_height)
+
+    def resume_draw(self):
+        self.is_drawing = True
 
     def screen_coords(self, x, y, extra_x_offset=0, extra_y_offset=0):
         return (self.relative_x(x - 1, y - 1) + self.x_off + extra_x_offset,

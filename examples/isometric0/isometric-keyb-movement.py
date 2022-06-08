@@ -18,7 +18,7 @@ def get_maps():
     return tilemap, tilemap2
 
 
-class Character(isometric_maps.IsometricMapObject):
+class Character(isometric_maps.model.IsometricMapObject):
     def __init__(self, x, y):
         super().__init__()
         self.x = x
@@ -44,14 +44,14 @@ def game_init():
     screen = kengi.core.get_screen()
 
     # model
-    tilemap = isometric_maps.IsometricMap.load(['xassets', ], 'test_map.tmx')
-    tilemap2 = isometric_maps.IsometricMap.load(['xassets', ], 'test_map2.tmx')
+    tilemap = isometric_maps.model.IsometricMap.load(['xassets', ], 'test_map.tmx')
+    tilemap2 = isometric_maps.model.IsometricMap.load(['xassets', ], 'test_map2.tmx')
     mypc = Character(10.5, 10.5)
     list(tilemap.objectgroups.values())[0].contents.append(mypc)
     list(tilemap2.objectgroups.values())[0].contents.append(mypc)
 
     # view
-    viewer = isometric_maps.IsometricMapViewer(
+    viewer = isometric_maps.IsometricMapViewer0(  # TODO unify
         tilemap, screen,
         up_scroll_key=pygame.K_UP,
         down_scroll_key=pygame.K_DOWN,
@@ -62,7 +62,7 @@ def game_init():
 
     cursor_image = pygame.image.load("xassets/half-floor-tile.png").convert_alpha()
     cursor_image.set_colorkey((255, 0, 255))
-    viewer.cursor = isometric_maps.IsometricMapQuarterCursor(0, 0, cursor_image, tilemap.layers[1])
+    viewer.cursor = isometric_maps.extras.IsometricMapQuarterCursor(0, 0, cursor_image, tilemap.layers[1])
     viewer.set_focused_object(mypc)
 
     # Chunk originally from PBGE. Also it sets key repeat freq.

@@ -1,7 +1,7 @@
 import collections
 import math
 
-from .isosm_config import NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG
+from .isosm_config import NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG, SCROLL_STEP
 from ... import _hub
 from ... import event
 
@@ -50,6 +50,48 @@ class IsometricMapViewer(event.EventReceiver):
         self.objgroup_contents = dict()
         self.objgroup_modified_mappos = dict()
 
+    def _check_mouse_scroll(self, screen_area, mouse_x, mouse_y):
+        # Check for map scrolling, depending on mouse position.
+        if mouse_x < 20:
+            dx = SCROLL_STEP
+        elif mouse_x > (screen_area.right - 20):
+            dx = -SCROLL_STEP
+        else:
+            dx = 0
+
+        if mouse_y < 20:
+            dy = SCROLL_STEP
+        elif mouse_y > (screen_area.bottom - 20):
+            dy = -SCROLL_STEP
+        else:
+            dy = 0
+
+        if dx or dy:
+            self._update_camera(dx, dy)
+
+    def _check_origin(self):
+        """Make sure the offset point is within map boundaries."""
+        mx = self.map_x(self.screen.get_width() // 2, self.screen.get_height() // 2)
+        my = self.map_y(self.screen.get_width() // 2, self.screen.get_height() // 2)
+
+        if not self.isometric_map.on_the_map(mx, my):
+            if mx < 0:
+                mx = 0
+            elif mx >= self.isometric_map.width:
+                mx = self.isometric_map.width - 1
+            if my < 0:
+                my = 0
+            elif my >= self.isometric_map.height:
+                my = self.isometric_map.height - 1
+            self.focus(mx, my)
+
+    def _default_offsets_case(self, a, b):
+        if a is None:
+            a = self.x_off
+        if b is None:
+            b = self.y_off
+        return a, b
+
     def _get_horizontal_line(self, x0, y0, line_number, visible_area):
         mylist = list()
         x = x0 + line_number // 2
@@ -85,6 +127,22 @@ class IsometricMapViewer(event.EventReceiver):
 
     def _model_depth(self, model):
         return self.relative_y(model.x, model.y)
+
+    def _update_camera(self, dx, dy):
+        # If the mouse and the arrow keys conflict, only one of them should win.
+        if self.camera_updated_this_frame:
+            return
+
+        nu_x_off = self.x_off + dx
+        nu_y_off = self.y_off + dy
+
+        mx = self.map_x(self.screen.get_width() // 2, self.screen.get_height() // 2, nu_x_off, nu_y_off)
+        my = self.map_y(self.screen.get_width() // 2, self.screen.get_height() // 2, nu_x_off, nu_y_off)
+
+        if self.isometric_map.on_the_map(mx, my):
+            self.x_off = nu_x_off
+            self.y_off = nu_y_off
+            self.camera_updated_this_frame = True
 
     def _paint_all(self):
         del self.line_cache[:]
@@ -245,22 +303,20 @@ class IsometricMapViewer(event.EventReceiver):
         self.is_drawing = False
 
     def proc_event(self, ev, source=None):
-        if self.is_drawing:
-            # if ev.type == pygame.MOUSEMOTION:
-            #     # - temp disabled for speed
-            #     return
-            #     mouse_x, mouse_y = _hub.core.proj_to_vscreen(ev.pos)
-            #     self.lastmousepos = (mouse_x, mouse_y)
-            #     #  was in the __call__ method, previously {{
-            #     self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
-            #     if self.cursor:
-            #         self.cursor.update(self, ev)
-            #     # }}
-            if ev.type == EngineEvTypes.PAINT:
-                if self.visible_area is None:
-                    self._init_visible_area_init(ev.screen)
-                ev.screen.fill('black')
-                self._paint_all()
+        if not self.is_drawing:
+            return
+        if ev.type == EngineEvTypes.PAINT:
+            if self.visible_area is None:
+                self._init_visible_area_init(ev.screen)
+            ev.screen.fill('black')
+            self._paint_all()
+            return
+        if ev.type == pygame.MOUSEMOTION:
+            mouse_x, mouse_y = _hub.core.proj_to_vscreen(ev.pos)
+            self.lastmousepos = (mouse_x, mouse_y)
+            self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
+            if self.cursor:
+                self.cursor.update(self, ev)
 
     def relative_x(self, x, y):
         """Return the relative x position of this tile, ignoring offset."""
@@ -290,6 +346,46 @@ class IsometricMapViewer(event.EventReceiver):
             self.focus(fo.x, fo.y)
         else:
             self._focused_object = None
+
+    @staticmethod
+    def static_map_x(rx, ry, tile_width, tile_height, half_tile_width, half_tile_height, return_int=True):
+        # Return the map coordinates for the relative_x, relative_y coordinates. All x,y offsets- including both
+        # the view offset and the layer offset- should already have been applied. This method is needed for calculating
+        # the layer coords of objects imported from Tiled, which have pixel coords.
+        #
+        # Calculate the x position of map_x tile -1 at ry. There is no tile -1, but this is the origin from which we
+        # measure everything.
+        ox = float(-ry * half_tile_width) / half_tile_height - tile_width
+
+        # Now that we have that x origin, we can determine this screen position's x coordinate by dividing by the
+        # tile width. Fantastic.
+        if return_int:
+            # Because of the way Python handles division, we need to apply a little nudge right here.
+            if rx - ox < 0:
+                ox += tile_width
+            return int((rx - ox) / tile_width) + 1
+        else:
+            return (rx - ox) / tile_width + 1
+
+    @staticmethod
+    def static_map_y(rx, ry, tile_width, tile_height, half_tile_width, half_tile_height, return_int=True):
+        # Return the map coordinates for the relative_x, relative_y coordinates. All x,y offsets- including both
+        # the view offset and the layer offset- should already have been applied. This method is needed for calculating
+        # the layer coords of objects imported from Tiled, which have pixel coords.
+        #
+        # Calculate the x position of map_x tile -1 at ry. There is no tile -1, but this is the origin from which we
+        # measure everything.
+        oy = float(rx * half_tile_height) / half_tile_width - tile_height
+
+        # Now that we have that x origin, we can determine this screen position's x coordinate by dividing by the
+        # tile width. Fantastic.
+        if return_int:
+            # Because of the way Python handles division, we need to apply a little nudge right here.
+            if ry - oy < 0:
+                oy += tile_height
+            return int((ry - oy) / tile_height) + 1
+        else:
+            return (ry - oy) / tile_height + 1
 
     def switch_map(self, isometric_map):
         self.isometric_map = isometric_map
