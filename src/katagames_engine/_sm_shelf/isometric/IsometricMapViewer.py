@@ -16,8 +16,12 @@ class IsometricMapViewer(event.EventReceiver):
 
         self.isometric_map = isometric_map
         self.screen = screen
-        self.x_off = 600
-        self.y_off = -200
+
+        # The focus is defined by map coordinates, so a lot of the back and forth between screen and map coords
+        # can be cut.
+        self._focus_x = 0
+        self._focus_y = 0
+
         self.phase = 0
 
         self.tile_width = isometric_map.tile_width
@@ -38,14 +42,9 @@ class IsometricMapViewer(event.EventReceiver):
         self.up_scroll_key = up_scroll_key
         self.down_scroll_key = down_scroll_key
 
-        self.camera_updated_this_frame = False
-
         self._focused_object = None
-        self._focused_object_x0 = 0
-        self._focused_object_y0 = 0
 
         self.debug_sprite = None
-        # image.Image("assets/floor-tile.png")
         self.lastmousepos = None
 
         self.visible_area = None
@@ -54,12 +53,14 @@ class IsometricMapViewer(event.EventReceiver):
         # util for the drawing of tiles
         self.line_cache = list()
         self.objgroup_contents = dict()
+        self.objgroup_modified_mappos = dict()
 
     def set_focused_object(self, fo):
         if fo:
             self._focused_object = fo
             self._focused_object_x0 = fo.x
             self._focused_object_y0 = fo.y
+            self.focus(fo.x, fo.y)
         else:
             self._focused_object = None
 
@@ -69,7 +70,8 @@ class IsometricMapViewer(event.EventReceiver):
         self.tile_height = isometric_map.tile_height
         self.half_tile_width = isometric_map.tile_width // 2
         self.half_tile_height = isometric_map.tile_height // 2
-        self._check_origin()
+        self._focus_x = 0
+        self._focus_y = 0
 
     @property
     def mouse_tile(self):
@@ -80,121 +82,75 @@ class IsometricMapViewer(event.EventReceiver):
 
     def relative_x(self, x, y):
         """Return the relative x position of this tile, ignoring offset."""
-        return (x * self.half_tile_width) - (y * self.half_tile_width)
+        return int((x * float(self.half_tile_width)) - (y * float(self.half_tile_width)))
 
     def relative_y(self, x, y):
         """Return the relative y position of this tile, ignoring offset."""
-        return (y * self.half_tile_height) + (x * self.half_tile_height)
+        return int(y * float(self.half_tile_height) + x * float(self.half_tile_height))
+
+    def screen_offset(self):
+        return (self.screen.get_width()//2 - self.relative_x(self._focus_x, self._focus_y) + self.half_tile_width,
+                self.screen.get_height()//2 - self.relative_y(self._focus_x, self._focus_y) + self.half_tile_height)
 
     def screen_coords(self, x, y, extra_x_offset=0, extra_y_offset=0):
-        return (self.relative_x(x - 1, y - 1) + self.x_off + extra_x_offset,
-                self.relative_y(x - 1, y - 1) + self.y_off + extra_y_offset)
+        x_off, y_off = self.screen_offset()
+        return (self.relative_x(x, y) + x_off + extra_x_offset,
+                self.relative_y(x, y) + y_off + extra_y_offset)
 
-    def _default_offsets_case(self, a, b):
-        if a is None:
-            a = self.x_off
-        if b is None:
-            b = self.y_off
-        return a, b
+    def map_x(self, sx, sy, return_int=True):
+        """Return the map x row for the given screen coordinates."""
+        x_off, y_off = self.screen_offset()
 
-    @staticmethod
-    def static_map_x(rx, ry, tile_width, tile_height, half_tile_width, half_tile_height, return_int=True):
-        # Return the map coordinates for the relative_x, relative_y coordinates. All x,y offsets- including both
-        # the view offset and the layer offset- should already have been applied. This method is needed for calculating
-        # the layer coords of objects imported from Tiled, which have pixel coords.
-        #
-        # Calculate the x position of map_x tile -1 at ry. There is no tile -1, but this is the origin from which we
-        # measure everything.
-        ox = float(-ry * half_tile_width) / half_tile_height - tile_width
+        # We're going to use the relative coordinates of the tiles instead of the screen coordinates.
+        rx = sx - x_off
+        ry = sy - y_off
+
+        # Calculate the x position of map_x tile 0 at ry.
+        ox = float(-ry * self.half_tile_width) / float(self.half_tile_height)
 
         # Now that we have that x origin, we can determine this screen position's x coordinate by dividing by the
         # tile width. Fantastic.
         if return_int:
             # Because of the way Python handles division, we need to apply a little nudge right here.
             if rx - ox < 0:
-                ox += tile_width
-            return int((rx - ox) / tile_width) + 1
+                ox += self.tile_width
+            return int(math.floor((rx - ox) / self.tile_width))
         else:
-            return (rx - ox) / tile_width + 1
+            return (rx - ox) / self.tile_width
 
-    def map_x(self, sx, sy, xoffset_override=None, yoffset_override=None, return_int=True):
-        """Return the map x row for the given screen coordinates."""
-        x_off, y_off = self._default_offsets_case(xoffset_override, yoffset_override)
-
-        # I was having a lot of trouble with this function, I think because GearHead coordinates use the top left
-        # of a square 64x64px cell and for this viewer the map coordinates refer to the midbottom of an arbitrarily
-        # sized image. So I broke out some paper and rederived the equations from scratch.
+    def map_y(self, sx, sy, return_int=True):
+        """Return the map y row for the given screen coordinates."""
+        x_off, y_off = self.screen_offset()
 
         # We're going to use the relative coordinates of the tiles instead of the screen coordinates.
         rx = sx - x_off
         ry = sy - y_off
 
-        return self.static_map_x(rx, ry, self.tile_width, self.tile_height, self.half_tile_width, self.half_tile_height,
-                                 return_int=return_int)
-
-    @staticmethod
-    def static_map_y(rx, ry, tile_width, tile_height, half_tile_width, half_tile_height, return_int=True):
-        # Return the map coordinates for the relative_x, relative_y coordinates. All x,y offsets- including both
-        # the view offset and the layer offset- should already have been applied. This method is needed for calculating
-        # the layer coords of objects imported from Tiled, which have pixel coords.
-        #
-        # Calculate the x position of map_x tile -1 at ry. There is no tile -1, but this is the origin from which we
-        # measure everything.
-        oy = float(rx * half_tile_height) / half_tile_width - tile_height
+        oy = float(rx * self.half_tile_height) / float(self.half_tile_width)
 
         # Now that we have that x origin, we can determine this screen position's x coordinate by dividing by the
         # tile width. Fantastic.
         if return_int:
             # Because of the way Python handles division, we need to apply a little nudge right here.
             if ry - oy < 0:
-                oy += tile_height
-            return int((ry - oy) / tile_height) + 1
+                oy += self.tile_height
+            return int(math.floor((ry - oy) / self.tile_height))
         else:
-            return (ry - oy) / tile_height + 1
-
-    def map_y(self, sx, sy, xoffset_override=None, yoffset_override=None, return_int=True):
-        """Return the map y row for the given screen coordinates."""
-        x_off, y_off = self._default_offsets_case(xoffset_override, yoffset_override)
-
-        # We're going to use the relative coordinates of the tiles instead of the screen coordinates.
-        rx = sx - x_off
-        ry = sy - y_off
-
-        return self.static_map_y(rx, ry, self.tile_width, self.tile_height, self.half_tile_width, self.half_tile_height,
-                                 return_int=return_int)
-
-    def _check_origin(self):
-        """Make sure the offset point is within map boundaries."""
-        mx = self.map_x(self.screen.get_width() // 2, self.screen.get_height() // 2)
-        my = self.map_y(self.screen.get_width() // 2, self.screen.get_height() // 2)
-
-        if not self.isometric_map.on_the_map(mx, my):
-            if mx < 0:
-                mx = 0
-            elif mx >= self.isometric_map.width:
-                mx = self.isometric_map.width - 1
-            if my < 0:
-                my = 0
-            elif my >= self.isometric_map.height:
-                my = self.isometric_map.height - 1
-            self.focus(mx, my)
+            return (ry - oy) / self.tile_height
 
     def focus(self, x, y):
         """Move the camera to point at the requested map tile. x,y can be ints or floats."""
-        if self.isometric_map.on_the_map(int(x + 0.99), int(y + 0.99)) and not self.camera_updated_this_frame:
-            self.x_off = self.screen.get_width() // 2 - self.relative_x(x, y)
-            self.y_off = self.screen.get_height() // 2 - self.relative_y(x, y) + self.tile_height
-            self.camera_updated_this_frame = True
+        self._focus_x, self._focus_y = self.isometric_map.clamp_pos((x,y))
 
     def _get_horizontal_line(self, x0, y0, line_number, visible_area):
         mylist = list()
         x = x0 + line_number // 2
         y = y0 + (line_number + 1) // 2
 
-        if self.relative_y(x, y) + self.y_off > visible_area.bottom:
+        if self.screen_coords(x, y)[1] > visible_area.bottom:
             return None
 
-        while self.relative_x(x - 1, y - 1) + self.x_off < visible_area.right:
+        while self.screen_coords(x, y)[0] < visible_area.right:
             if self.isometric_map.on_the_map(x, y):
                 mylist.append((x, y))
             x += 1
@@ -203,41 +159,6 @@ class IsometricMapViewer(event.EventReceiver):
 
     def _model_depth(self, model):
         return self.relative_y(model.x, model.y)
-
-    def _update_camera(self, dx, dy):
-        # If the mouse and the arrow keys conflict, only one of them should win.
-        if self.camera_updated_this_frame:
-            return
-
-        nu_x_off = self.x_off + dx
-        nu_y_off = self.y_off + dy
-
-        mx = self.map_x(self.screen.get_width() // 2, self.screen.get_height() // 2, nu_x_off, nu_y_off)
-        my = self.map_y(self.screen.get_width() // 2, self.screen.get_height() // 2, nu_x_off, nu_y_off)
-
-        if self.isometric_map.on_the_map(mx, my):
-            self.x_off = nu_x_off
-            self.y_off = nu_y_off
-            self.camera_updated_this_frame = True
-
-    def _check_mouse_scroll(self, screen_area, mouse_x, mouse_y):
-        # Check for map scrolling, depending on mouse position.
-        if mouse_x < 20:
-            dx = SCROLL_STEP
-        elif mouse_x > (screen_area.right - 20):
-            dx = -SCROLL_STEP
-        else:
-            dx = 0
-
-        if mouse_y < 20:
-            dy = SCROLL_STEP
-        elif mouse_y > (screen_area.bottom - 20):
-            dy = -SCROLL_STEP
-        else:
-            dy = 0
-
-        if dx or dy:
-            self._update_camera(dx, dy)
 
     def pause_draw(self):
         self.is_drawing = False
@@ -286,8 +207,8 @@ class IsometricMapViewer(event.EventReceiver):
     def fill_wallpaper(self):
         screen_rect = self.screen.get_rect()
         wp_width, wp_height = self.isometric_map.wallpaper.get_size()
-        grid_w = screen_rect.w // wp_width + 2
-        grid_h = screen_rect.h // wp_height + 2
+        grid_w = screen_rect.w // wp_width + 1
+        grid_h = screen_rect.h // wp_height + 1
         my_rect = pygame.Rect(0, 0, wp_width, wp_height)
 
         for x in range(-1, grid_w):
@@ -301,6 +222,7 @@ class IsometricMapViewer(event.EventReceiver):
     def _paint_all(self):
         del self.line_cache[:]
         self.objgroup_contents.clear()
+        self.objgroup_modified_mappos.clear()
 
         # Prep the screen.
         if self.isometric_map.wallpaper:
@@ -314,24 +236,14 @@ class IsometricMapViewer(event.EventReceiver):
             for ob in v.contents:
                 ob.x, ob.y = self.isometric_map.clamp_pos((ob.x, ob.y))
                 sx, sy = self.screen_coords(ob.x, ob.y, v.offsetx, v.offsety)
-                obkey = (self.map_x(sx, sy, return_int=True)%self.isometric_map.width, self.map_y(sx, sy, return_int=True)%self.isometric_map.height)
+                mx, my = self.map_x(sx,sy,return_int=False), self.map_y(sx,sy,return_int=False)
+                obkey = self.isometric_map.clamp_pos_int((mx,my))
                 self.objgroup_contents[k][obkey].append(ob)
+                # Also save the mofidied map pos, which will come in handy later.
+                self.objgroup_modified_mappos[ob] = (mx,my)
 
-        #TODO: These are sometimes cases where the focus and the focused object print position don't match. I had to
-        # adjust the print positions below to account for the seams of endless maps; those same adjustments may need to
-        # be done here.
-        # Possible solution: Refactor things to reduce the amount of conversion between coordinate systems that needs to
-        # be done. Change the focus point so that it is stored as a map coordinate rather than pixel values. This may
-        # not solve the problem directly, but it will probably make the problem clear, which is nearly the same thing.
-        self.camera_updated_this_frame = False
-        if self._focused_object and (self._focused_object_x0 != self._focused_object.x or
-                                     self._focused_object_y0 != self._focused_object.y):
+        if self._focused_object:
             self.focus(self._focused_object.x, self._focused_object.y)
-            self._focused_object_x0 = self._focused_object.x
-            self._focused_object_y0 = self._focused_object.y
-        # hack disable temporarely the scroll via mouse.To enable-> uncomment 2 lines below
-        # else:
-        #    self._check_mouse_scroll(screen_area, mouse_x, mouse_y)
 
         x, y = self.map_x(0, 0) - 2, self.map_y(0, 0) - 1
         x0, y0 = x, y
@@ -358,16 +270,9 @@ class IsometricMapViewer(event.EventReceiver):
                                     # The following bit of math makes sure that the clamped object positions will
                                     # print at the correct screen positions. Otherwise, if the player/focus is on the
                                     # other side of the map seam, this object will be printed in the wrong position.
-                                    fx = math.modf(ob.x)[0]
-                                    if fx > 0:
-                                        fx = x - 1 + fx
-                                    else:
-                                        fx = x
-                                    fy = math.modf(ob.y)[0]
-                                    if fy > 0:
-                                        fy = y - 1 + fy
-                                    else:
-                                        fy = y
+                                    mmx, mmy = self.objgroup_modified_mappos[ob]
+                                    fx = x + math.modf(mmx)[0]
+                                    fy = y + math.modf(mmy)[0]
                                     sx, sy = self.screen_coords(
                                         fx, fy,
                                         self.isometric_map.objectgroups[layer].offsetx,
@@ -383,7 +288,7 @@ class IsometricMapViewer(event.EventReceiver):
                                 my_tile = self.isometric_map.tilesets[tile_id]
 
                                 sx, sy = self.screen_coords(x, y)
-                                my_tile(self.screen, sx, sy + layer.offsety, gid & FLIPPED_HORIZONTALLY_FLAG,
+                                my_tile(self.screen, sx, sy + layer.offsety + self.isometric_map.tile_height, gid & FLIPPED_HORIZONTALLY_FLAG,
                                         gid & FLIPPED_VERTICALLY_FLAG)
 
                             if self.cursor and self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
@@ -416,19 +321,3 @@ class IsometricMapViewer(event.EventReceiver):
         # if self.postfx:
         #    self.postfx()
 
-    def scroll_to(self, directioncode):
-        """
-        :param directioncode: 0 - 3 such as 0 north, 1 east, 2 south, 3 west
-        """
-        dx = dy = 0
-        if 0 == directioncode:
-            dy = SCROLL_STEP
-        elif 2 == directioncode:
-            dy = -SCROLL_STEP
-        elif 3 == directioncode:
-            dx = SCROLL_STEP
-        elif 1 == directioncode:
-            dx = -SCROLL_STEP
-        else:
-            raise ValueError('invalid directioncode: ', directioncode)
-        self._update_camera(dx, dy)
