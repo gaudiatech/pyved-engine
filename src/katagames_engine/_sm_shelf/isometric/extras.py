@@ -5,9 +5,12 @@ pygame = _hub.pygame
 Tilesets = _hub.tmx.data.Tilesets
 
 
-class IsometricMapCursor(object):
-    # I haven't updated this for the new map system yet... I will do that ASAP, even though the QuarterCursor is
-    # the one that will be useful for Niobepolis.
+class IsometricMapCursor:
+    """
+    I haven't updated this for the new map system yet... I will do that ASAP, even though the QuarterCursor is
+    the one that will be useful for Niobepolis.
+    """
+
     def __init__(self, x, y, image, frame=0, visible=True):
         self.x = x
         self.y = y
@@ -53,11 +56,13 @@ class IsometricMapCursor(object):
                 view.focus(self.x, self.y)
 
 
-class IsometricMapQuarterCursor(object):
+class IsometricMapQuarterCursor:
+    new_coord_system = False
+
     # A cursor that only takes up one quarter of a tile.
     def __init__(self, x, y, surf, layer, visible=True):
-        self._doublex = int(x*2)
-        self._doubley = int(y*2)
+        self._doublex = int(x * 2)
+        self._doubley = int(y * 2)
         self.surf = surf
         self.layer_name = layer.name
         self.visible = visible
@@ -66,23 +71,31 @@ class IsometricMapQuarterCursor(object):
         if self.visible:
             sx, sy = view.screen_coords(*self.get_pos())
             mylayer = view.isometric_map.get_layer_by_name(self.layer_name)
-            mydest = self.surf.get_rect(midbottom=(sx+mylayer.offsetx, sy+mylayer.offsety-2))
+            if self.__class__.new_coord_system:
+                # a newer version might be:
+                mydest = self.surf.get_rect(midtop=(sx + mylayer.offsetx, sy + mylayer.offsety - 1))
+            else:
+                mydest = self.surf.get_rect(midbottom=(sx + mylayer.offsetx, sy + mylayer.offsety - 2))
             view.screen.blit(self.surf, mydest)
 
     def set_position(self, view, x, y):
-        self._doublex = int(x*2)
-        self._doubley = int(y*2)
+        self._doublex = int(x * 2)
+        self._doubley = int(y * 2)
 
     @property
     def x(self):
-        return self._doublex//2
+        return self._doublex // 2
 
     @property
     def y(self):
-        return self._doubley//2
+        return self._doubley // 2
 
     def get_pos(self):
-        return float(self._doublex-1)/2, float(self._doubley-1)/2
+        # a newer version might be:
+        if self.__class__.new_coord_system:
+            return float(self._doublex) / 2.0, float(self._doubley) / 2.0
+        else:
+            return float(self._doublex - 1) / 2, float(self._doubley - 1) / 2
 
     def focus(self, view):
         view.focus(float(self._doublex - 1) / 2.0, float(self._doubley - 1) / 2.0)

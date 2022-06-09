@@ -1,13 +1,12 @@
-import json
-import math
-import os
-import struct
-from base64 import b64decode
-from xml.etree import ElementTree
-from zlib import decompress
-
-from .isosm_config import NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG
 from ... import _hub
+import json
+import os
+from xml.etree import ElementTree
+from .flags import *
+from zlib import decompress
+from base64 import b64decode
+import struct
+import math
 
 
 pygame = _hub.pygame
@@ -144,7 +143,7 @@ class IsometricTileset:
                 with open(os.path.join(os.pathsep.join(folders), srcc)) as f:
                     print('opened ', srcc)
                     tag = ElementTree.fromstring(f.read())
-                    return cls.fromxml(tag, firstgid)
+                    return cls.fromxml(folders, tag, firstgid)
             elif srcc.endswith(("tsj", "json")):
                 with open(os.path.join(os.pathsep.join(folders), srcc)) as f:
                     jdict = json.load(f)
@@ -241,54 +240,6 @@ class IsometricMapObject:
         return myob
 
 
-class ObjectGroup:
-    def __init__(self, name, visible, offsetx, offsety):
-        self.name = name
-        self.visible = visible
-        self.offsetx = offsetx
-        self.offsety = offsety
-
-        self.contents = list()
-
-    @classmethod
-    def fromxml(cls, tag, givenlayer, object_fun=None):
-        mygroup = cls(
-            tag.attrib['name'], int(tag.attrib.get('visible', 1)),
-            int(tag.attrib.get('offsetx', 0)), int(tag.attrib.get('offsety', 0))
-        )
-
-        for t in tag:
-            if t.tag == "object":
-                if object_fun:
-                    pass
-                    # mygroup.contents.append(IsometricMapObject.fromxml(t))
-                elif "gid" in t.attrib:
-                    mygroup.contents.append(IsometricMapObject.fromxml(
-                        t, mygroup, givenlayer
-                    ))
-
-        return mygroup
-
-    @classmethod
-    def fromjson(cls, folders, jdict, givenlayer, object_fun=None):
-        mygroup = cls(
-            jdict.get('name'), jdict.get('visible', True),
-            jdict.get('offsetx', 0), jdict.get('offsety', 0)
-        )
-
-        if "objects" in jdict:
-            for t in jdict["objects"]:
-                if object_fun:
-                    pass
-                    # mygroup.contents.append(IsometricMapObject.fromxml(t))
-                elif "gid" in t.attrib:
-                    mygroup.contents.append(IsometricMapObject.fromjson(
-                        folders, t, mygroup, givenlayer
-                    ))
-
-        return mygroup
-
-
 class IsometricLayer:
     flag_csv = False
 
@@ -349,7 +300,6 @@ class IsometricLayer:
 
     @classmethod
     def fromjson(cls, jdict, givenmap):
-
         layer = cls(
             jdict['name'], jdict.get('visible', True), givenmap,
             jdict.get('offsetx', 0), jdict.get('offsety', 0)
@@ -387,19 +337,71 @@ class IsometricLayer:
         return self.height * self.width
 
     def _pos_to_index(self, x, y):
+        # loop map feat.
+        y = y % self.height
+        x = x % self.width
         return y * self.width + x
 
     def __getitem__(self, key):
         x, y = key
         i = self._pos_to_index(x, y)
-        if 0 <= x < self.width and 0 <= y < self.height:
-            return self.cells[i]
+        # no test of boundaries bc of the loop map feat.
+        # if 0 <= x < self.width and 0 <= y < self.height:
+        return self.cells[i]
 
     def __setitem__(self, pos, value):
         x, y = pos
         i = self._pos_to_index(x, y)
-        if 0 <= x < self.width and 0 <= y < self.height:
-            self.cells[i] = value
+        # if 0 <= x < self.width and 0 <= y < self.height:
+        self.cells[i] = value
+
+
+class ObjectGroup:
+    def __init__(self, name, visible, offsetx, offsety):
+        self.name = name
+        self.visible = visible
+        self.offsetx = offsetx
+        self.offsety = offsety
+
+        self.contents = list()
+
+    @classmethod
+    def fromxml(cls, tag, givenlayer, object_fun=None):
+        mygroup = cls(
+            tag.attrib['name'], int(tag.attrib.get('visible', 1)),
+            int(tag.attrib.get('offsetx', 0)), int(tag.attrib.get('offsety', 0))
+        )
+
+        for t in tag:
+            if t.tag == "object":
+                if object_fun:
+                    pass
+                    # mygroup.contents.append(IsometricMapObject.fromxml(t))
+                elif "gid" in t.attrib:
+                    mygroup.contents.append(IsometricMapObject.fromxml(
+                        t, mygroup, givenlayer
+                    ))
+
+        return mygroup
+
+    @classmethod
+    def fromjson(cls, folders, jdict, givenlayer, object_fun=None):
+        mygroup = cls(
+            jdict.get('name'), jdict.get('visible', True),
+            jdict.get('offsetx', 0), jdict.get('offsety', 0)
+        )
+
+        if "objects" in jdict:
+            for t in jdict["objects"]:
+                if object_fun:
+                    pass
+                    # mygroup.contents.append(IsometricMapObject.fromxml(t))
+                elif "gid" in t.attrib:
+                    mygroup.contents.append(IsometricMapObject.fromjson(
+                        folders, t, mygroup, givenlayer
+                    ))
+
+        return mygroup
 
 
 class IsometricMap:
@@ -415,15 +417,23 @@ class IsometricMap:
         self.wrap_x = False
         self.wrap_y = False
 
+        self.floor_layer = None
+        self.wall_layer = None
+
         self.wallpaper = None
+
+    def seek_floor_and_wall(self):
+        for n, layer in enumerate(self.layers):
+            if layer.name == "Floor Layer":
+                self.floor_layer = n
+            elif layer.name == "Wall Layer":
+                self.wall_layer = n
 
     @classmethod
     def load_tmx(cls, folders, filename, object_fun=None):
         # object_fun is a function that can parse a dict describing an object.
         # If None, the only objects that can be loaded are terrain objects.
         with open(os.path.join(os.pathsep.join(folders), filename)) as f:
-            #res = cls.parse_tmx_data(f.read())
-            #return res
             tminfo_tree = ElementTree.fromstring(f.read())
 
         # get most general map informations and create a surface
@@ -464,6 +474,15 @@ class IsometricMap:
         return tilemap
 
     @classmethod
+    def load_json(cls, folders, filename, object_fun=None):
+        # object_fun is a function that can parse a dict describing an object.
+        # If None, the only objects that can be loaded are terrain objects.
+
+        with open(os.path.join(os.pathsep.join(folders), filename)) as f:
+            jdict = json.load(f)
+        return cls.from_json_dict(folders, jdict, object_fun)
+
+    @classmethod
     def from_json_dict(cls, folders, jdict, object_fun=None):
         # get most general map informations and create a surface
         tilemap = cls()
@@ -482,8 +501,11 @@ class IsometricMap:
                 elif tag["name"] == "wallpaper":
                     tilemap.wallpaper = pygame.image.load(os.path.join("assets", tag.get("value"))).convert_alpha()
 
+
         for tag in jdict['tilesets']:
-            tilemap.tilesets.add(IsometricTileset.fromjson(folders, tag))
+            tilemap.tilesets.add(
+                IsometricTileset.fromjson(folders, tag)
+            )
 
         for tag in jdict["layers"]:
             if tag["type"] == 'tilelayer':
@@ -493,25 +515,43 @@ class IsometricMap:
                 if not tilemap.layers:
                     # See above comment for why I'm adding an empty layer. TLDR: the objects need a reference frame.
                     tilemap.layers.append(IsometricLayer.emptylayer("The Mysterious Empty Layer", tilemap))
-                tilemap.objectgroups[tilemap.layers[-1]] = ObjectGroup.fromjson(folders, tag, tilemap.layers[-1],
-                                                                                object_fun)
+                tilemap.objectgroups[tilemap.layers[-1]] = ObjectGroup.fromjson(
+                    folders, tag, tilemap.layers[-1], object_fun
+                )
         return tilemap
 
-    @classmethod
-    def load_json(cls, folders, filename, object_fun=None):
-        # object_fun is a function that can parse a dict describing an object.
-        # If None, the only objects that can be loaded are terrain objects.
 
-        with open(os.path.join(os.pathsep.join(folders), filename)) as f:
-            jdict = json.load(f)
-        return cls.from_json_dict(folders, jdict, object_fun)
 
     @classmethod
     def load(cls, folders, filename, object_fun=None):
         if filename.endswith(("tmx", "xml")):
-            return cls.load_tmx(folders, filename, object_fun)
+            mymap = cls.load_tmx(folders, filename, object_fun)
         elif filename.endswith(("tmj", "json")):
-            return cls.load_json(folders, filename, object_fun)
+            mymap = cls.load_json(folders, filename, object_fun)
+        else:
+            raise NotImplementedError("No decoder for {}".format(filename))
+        mymap.seek_floor_and_wall()
+        return mymap
+
+    def on_the_map(self, x, y):
+        # Returns true if (x,y) is on the map, false otherwise
+        return (self.wrap_x or ((x >= 0) and (x < self.width))) and (self.wrap_y or ((y >= 0) and (y < self.height)))
+
+    def get_layer_by_name(self, layer_name):
+        # The Layers type in Kengi supports indexing layers by name, but it
+        # doesn't support accessing layers by
+        # negative indices. I'm not sure that it supports slicing either. Anyhow, for now, only the map cursor needs
+        # to look up layers by name so this function should be good enough for the time being.
+        for lay in self.layers:
+            if lay.name == layer_name:
+                return lay
+
+    def get_object_by_name(self, object_name):
+        # Return the first object found with the provided name.
+        for obgroup in self.objectgroups.values():
+            for ob in obgroup.contents:
+                if ob.name == object_name:
+                    return ob
 
     def clamp_pos(self, pos):
         # For infinite scroll maps, clamp the x and/or y values
@@ -536,7 +576,7 @@ class IsometricMap:
 
     def clamp_pos_int(self, pos):
         # For infinite scroll maps, clamp the x and/or y values
-        nupos = [int(math.floor(p)) for p in pos]
+        nupos = [int(math.floor(c)) for c in pos]
         if self.wrap_x:
             f, i = math.modf(pos[0])
             nupos[0] = int(i) % self.width
@@ -555,22 +595,11 @@ class IsometricMap:
                 nupos[1] = self.height-1
         return tuple(nupos)
 
-    def on_the_map(self, x, y):
-        # Returns true if (x,y) is on the map, false otherwise
-        return (self.wrap_x or ((x >= 0) and (x < self.width))) and (self.wrap_y or ((y >= 0) and (y < self.height)))
-
-    def get_layer_by_name(self, layer_name):
-        # The Layers type in Kengi supports indexing layers by name, but it
-        # doesn't support accessing layers by
-        # negative indices. I'm not sure that it supports slicing either. Anyhow, for now, only the map cursor needs
-        # to look up layers by name so this function should be good enough for the time being.
-        for l in self.layers:
-            if l.name == layer_name:
-                return l
-
-    def get_object_by_name(self, object_name):
-        # Return the first object found with the provided name.
-        for obgroup in self.objectgroups.values():
-            for ob in obgroup.contents:
-                if ob.name == object_name:
-                    return ob
+    def tile_is_blocked(self, x, y):
+        pos = self.clamp_pos_int((x,y))
+        if self.floor_layer is not None and self.layers[self.floor_layer][pos] == 0:
+            return True
+        if self.wall_layer is not None and self.layers[self.wall_layer][pos] != 0:
+            return True
+        else:
+            return False
