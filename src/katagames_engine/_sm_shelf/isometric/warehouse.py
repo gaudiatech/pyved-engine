@@ -414,7 +414,17 @@ class IsometricMap():
         self.wrap_x = False
         self.wrap_y = False
 
+        self.floor_layer = None
+        self.wall_layer = None
+
         self.wallpaper = None
+
+    def seek_floor_and_wall(self):
+        for n, layer in enumerate(self.layers):
+            if layer.name == "Floor Layer":
+                self.floor_layer = n
+            elif layer.name == "Wall Layer":
+                self.wall_layer = n
 
     @classmethod
     def load_tmx(cls, filename, object_fun=None):
@@ -507,9 +517,13 @@ class IsometricMap():
     @classmethod
     def load(cls, filename, object_fun=None):
         if filename.endswith(("tmx", "xml")):
-            return cls.load_tmx(filename, object_fun)
+            mymap = cls.load_tmx(filename, object_fun)
         elif filename.endswith(("tmj", "json")):
-            return cls.load_json(filename, object_fun)
+            mymap = cls.load_json(filename, object_fun)
+        else:
+            raise NotImplementedError("No decoder for {}".format(filename))
+        mymap.seek_floor_and_wall()
+        return mymap
 
     def on_the_map(self, x, y):
         # Returns true if (x,y) is on the map, false otherwise
@@ -572,6 +586,15 @@ class IsometricMap():
             elif pos[1] >= self.height:
                 nupos[1] = self.height-1
         return tuple(nupos)
+
+    def tile_is_blocked(self, x, y):
+        pos = self.clamp_pos_int((x,y))
+        if self.floor_layer is not None and self.layers[self.floor_layer][pos] == 0:
+            return True
+        if self.wall_layer is not None and self.layers[self.wall_layer][pos] != 0:
+            return True
+        else:
+            return False
 
 
 class IsometricMapQuarterCursor(object):
