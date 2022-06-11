@@ -186,6 +186,7 @@ class IsometricMapObject:
         self.height = 0
         self.gid = 0
         self.visible = 1
+        self.properties = dict()
         super().__init__(**keywords)
 
     def __call__(self, dest_surface, sx, sy, mymap):
@@ -214,7 +215,7 @@ class IsometricMapObject:
         return mx, my
 
     @classmethod
-    def fromxml(cls, tag, objectgroup, givenlayer):
+    def fromxml(cls, tag, givenlayer):
         myob = cls()
         myob.name = tag.attrib.get("name")
         myob.type = tag.attrib.get("type")
@@ -224,10 +225,15 @@ class IsometricMapObject:
         myob.x, myob.y = cls._deweirdify_coordinates(x, y, givenlayer)
         myob.gid = int(tag.attrib.get("gid"))
         myob.visible = int(tag.attrib.get("visible", 1))
+        for t in tag:
+            if t.tag == "properties":
+                for p in t:
+                    if p.tag == "property":
+                        myob.properties[p.attrib.get("name", "property")] = p.attrib.get("value")
         return myob
 
     @classmethod
-    def fromjson(cls, jdict, objectgroup, givenlayer):
+    def fromjson(cls, jdict, givenlayer):
         myob = cls()
         myob.name = jdict.get("name")
         myob.type = jdict.get("type")
@@ -237,6 +243,9 @@ class IsometricMapObject:
         myob.x, myob.y = cls._deweirdify_coordinates(x, y, givenlayer)
         myob.gid = jdict.get("gid")
         myob.visible = jdict.get("visible")
+        if "properties" in jdict:
+            for p in jdict["properties"]:
+                myob.properties[p.get("name", "property")] = p.get("value")
         return myob
 
 
@@ -366,7 +375,7 @@ class ObjectGroup:
         self.contents = list()
 
     @classmethod
-    def fromxml(cls, tag, givenlayer, object_fun=None):
+    def fromxml(cls, tag, givenlayer, object_classes=None):
         mygroup = cls(
             tag.attrib['name'], int(tag.attrib.get('visible', 1)),
             int(tag.attrib.get('offsetx', 0)), int(tag.attrib.get('offsety', 0))
@@ -374,18 +383,18 @@ class ObjectGroup:
 
         for t in tag:
             if t.tag == "object":
-                if object_fun:
-                    pass
-                    # mygroup.contents.append(IsometricMapObject.fromxml(t))
-                elif "gid" in t.attrib:
-                    mygroup.contents.append(IsometricMapObject.fromxml(
-                        t, mygroup, givenlayer
-                    ))
+                if object_classes and t.attrib.get("type") in object_classes:
+                    myclass = object_classes[t.attrib.get("type")]
+                else:
+                    myclass = IsometricMapObject
+                mygroup.contents.append(IsometricMapObject.fromxml(
+                    t, givenlayer
+                ))
 
         return mygroup
 
     @classmethod
-    def fromjson(cls, folders, jdict, givenlayer, object_fun=None):
+    def fromjson(cls, folders, jdict, givenlayer, object_classes=None):
         mygroup = cls(
             jdict.get('name'), jdict.get('visible', True),
             jdict.get('offsetx', 0), jdict.get('offsety', 0)
@@ -393,13 +402,13 @@ class ObjectGroup:
 
         if "objects" in jdict:
             for t in jdict["objects"]:
-                if object_fun:
-                    pass
-                    # mygroup.contents.append(IsometricMapObject.fromxml(t))
-                elif "gid" in t.attrib:
-                    mygroup.contents.append(IsometricMapObject.fromjson(
-                        folders, t, mygroup, givenlayer
-                    ))
+                if object_classes and t.get("type") in object_classes:
+                    myclass = object_classes[t.get("type")]
+                else:
+                    myclass = IsometricMapObject
+                mygroup.contents.append(IsometricMapObject.fromjson(
+                    t, givenlayer
+                ))
 
         return mygroup
 
@@ -430,8 +439,8 @@ class IsometricMap:
                 self.wall_layer = n
 
     @classmethod
-    def load_tmx(cls, folders, filename, object_fun=None):
-        # object_fun is a function that can parse a dict describing an object.
+    def load_tmx(cls, folders, filename, object_classes=None):
+        # object_classes is a function that can parse a dict describing an object.
         # If None, the only objects that can be loaded are terrain objects.
         with open(os.path.join(os.pathsep.join(folders), filename)) as f:
             tminfo_tree = ElementTree.fromstring(f.read())
@@ -461,7 +470,7 @@ class IsometricMap:
                     # to be important information. So, we add an empty layer with no offsets to act as this
                     # objectgroup's frame of reference.
                     tilemap.layers.append(IsometricLayer.emptylayer("The Mysterious Empty Layer", tilemap))
-                tilemap.objectgroups[tilemap.layers[-1]] = ObjectGroup.fromxml(tag, tilemap.layers[-1], object_fun)
+                tilemap.objectgroups[tilemap.layers[-1]] = ObjectGroup.fromxml(tag, tilemap.layers[-1], object_classes)
             elif tag.tag == "properties":
                 for ptag in tag.findall("property"):
                     if ptag.get("name") == "wrap_x":
@@ -474,16 +483,16 @@ class IsometricMap:
         return tilemap
 
     @classmethod
-    def load_json(cls, folders, filename, object_fun=None):
-        # object_fun is a function that can parse a dict describing an object.
+    def load_json(cls, folders, filename, object_classes=None):
+        # object_classes is a function that can parse a dict describing an object.
         # If None, the only objects that can be loaded are terrain objects.
 
         with open(os.path.join(os.pathsep.join(folders), filename)) as f:
             jdict = json.load(f)
-        return cls.from_json_dict(folders, jdict, object_fun)
+        return cls.from_json_dict(folders, jdict, object_classes)
 
     @classmethod
-    def from_json_dict(cls, folders, jdict, object_fun=None):
+    def from_json_dict(cls, folders, jdict, object_classes=None):
         # get most general map informations and create a surface
         tilemap = cls()
 
@@ -516,18 +525,18 @@ class IsometricMap:
                     # See above comment for why I'm adding an empty layer. TLDR: the objects need a reference frame.
                     tilemap.layers.append(IsometricLayer.emptylayer("The Mysterious Empty Layer", tilemap))
                 tilemap.objectgroups[tilemap.layers[-1]] = ObjectGroup.fromjson(
-                    folders, tag, tilemap.layers[-1], object_fun
+                    folders, tag, tilemap.layers[-1], object_classes
                 )
         return tilemap
 
 
 
     @classmethod
-    def load(cls, folders, filename, object_fun=None):
+    def load(cls, folders, filename, object_classes=None):
         if filename.endswith(("tmx", "xml")):
-            mymap = cls.load_tmx(folders, filename, object_fun)
+            mymap = cls.load_tmx(folders, filename, object_classes)
         elif filename.endswith(("tmj", "json")):
-            mymap = cls.load_json(folders, filename, object_fun)
+            mymap = cls.load_json(folders, filename, object_classes)
         else:
             raise NotImplementedError("No decoder for {}".format(filename))
         mymap.seek_floor_and_wall()
