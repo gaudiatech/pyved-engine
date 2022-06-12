@@ -384,7 +384,6 @@ class ObjectGroup:
         for t in tag:
             if t.tag == "object":
                 if object_classes and t.attrib.get("type") in object_classes:
-                    print("Using {}".format(t.attrib.get("type")))
                     myclass = object_classes[t.attrib.get("type")]
                 else:
                     myclass = IsometricMapObject
