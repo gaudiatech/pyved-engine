@@ -384,10 +384,11 @@ class ObjectGroup:
         for t in tag:
             if t.tag == "object":
                 if object_classes and t.attrib.get("type") in object_classes:
+                    print("Using {}".format(t.attrib.get("type")))
                     myclass = object_classes[t.attrib.get("type")]
                 else:
                     myclass = IsometricMapObject
-                mygroup.contents.append(IsometricMapObject.fromxml(
+                mygroup.contents.append(myclass.fromxml(
                     t, givenlayer
                 ))
 
@@ -406,7 +407,7 @@ class ObjectGroup:
                     myclass = object_classes[t.get("type")]
                 else:
                     myclass = IsometricMapObject
-                mygroup.contents.append(IsometricMapObject.fromjson(
+                mygroup.contents.append(myclass.fromjson(
                     t, givenlayer
                 ))
 
