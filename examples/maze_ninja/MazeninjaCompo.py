@@ -1,20 +1,11 @@
 """
-mvc Components
+this file contains 3 basic mvc COMPOnents
+that can implement a rogue-like
 """
-# from coremon_main import CogObject
-# from defs3 import MyEvTypes
-# from matricks.BoolMatrix import BoolMatrix
-# from matricks.RandomMaze import RandomMaze
-# from matricks.rpas import
-# import coremon_main
-# from coremon_main import EventReceiver, EngineEvTypes
-# import pygame
-# from defs3 import MyEvTypes
-# from gameobjects.SpriteSheet import SpriteSheet
 import os  # for loading assets
 import katagames_engine as kengi
 
-kengi.bootstrap_e()
+
 pygame = kengi.pygame
 EngineEvTypes = kengi.event.EngineEvTypes
 CogObject = kengi.event.CogObj
@@ -31,7 +22,7 @@ MyEvTypes = kengi.event.enum_ev_types(
 
 
 # ------------------------------------
-#  THE VIEW
+#  THE MODEL
 # ------------------------------------
 class NinjamazeMod(CogObject):
     VISION_RANGE = 4  # cells
@@ -83,14 +74,14 @@ class NinjamazeMod(CogObject):
     def get_terrain(self):
         return self.rm.getMatrix()
 
-    def push_player(self, dir):
+    def push_player(self, direction):
         deltas = {
             0: (+1, 0),
             1: (0, -1),
             2: (-1, 0),
             3: (0, +1)
         }
-        delta = deltas[dir]
+        delta = deltas[direction]
         dest = list(self.player_pos)
         dest[0] += delta[0]
         dest[1] += delta[1]
@@ -99,7 +90,6 @@ class NinjamazeMod(CogObject):
             return
         if t.get_val(*dest) is None:  # wall
             return
-
         self.player_pos = dest
         self._update_vision(*dest)
         self.pev(MyEvTypes.PlayerMoves, new_pos=dest)
@@ -193,28 +183,3 @@ class NinjamazeCtrl(ReceiverObj):
                 self.mod.reset_level()
             elif ev.key == pygame.K_ESCAPE:
                 self.pev(EngineEvTypes.GAMEENDS)
-
-
-def print_tuto():
-    print()
-    print('demo showcasing capabilities of kengi.rogue submodule')
-    print('you can easily generate a RANDOM MAZE')
-    print('you can also use a field-of-view generic algorithm')
-    print('to simulate the "fog of war"/unknown parts of the map...')
-    print()
-    print('CONTROLS: SPACE to regen maze | ESCAPE to quit ')
-
-
-if __name__ == '__main__':
-    kengi.init()
-    m = NinjamazeMod()
-    all_recv = [
-        NinjamazeView(m),
-        NinjamazeCtrl(m),
-        kengi.get_game_ctrl()
-    ]
-    for recv_obj in all_recv:
-        recv_obj.turn_on()
-    all_recv[-1].loop()
-    kengi.quit()
-    print('bye!')

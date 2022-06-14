@@ -283,6 +283,7 @@ class EventReceiver(CogObj):
 
     def turn_on(self):
         self._manager.add_listener(self)
+        return self
 
     def turn_off(self):
         self._manager.remove_listener(self)
