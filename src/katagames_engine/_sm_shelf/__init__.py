@@ -18,3 +18,4 @@ from . import anim
 from . import core
 from . import console
 from . import terrain
+from . import rogue

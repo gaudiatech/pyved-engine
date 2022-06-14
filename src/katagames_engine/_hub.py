@@ -10,7 +10,6 @@ kengi_inj = Injector({
     'anim': '._sm_shelf.anim',
     'ascii': '._sm_shelf.ascii',
     'polarbear': '._sm_shelf.polarbear',
-    'terrain': '._sm_shelf.terrain',
     'console': '._sm_shelf.console',
     'core': '._sm_shelf.core',
     'gui': '._sm_shelf.gui',
@@ -20,6 +19,9 @@ kengi_inj = Injector({
     # nota bene: pygame is dynamically added to this dict,
     # its done elsewhere
     'tmx': '._sm_shelf.tmx',
+
+    'rogue': '._sm_shelf.rogue',
+    'terrain': '._sm_shelf.terrain',
 })
 
 

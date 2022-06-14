@@ -5,7 +5,7 @@ from .. import _hub as inj
 pygame = inj.pygame
 
 
-class _Spritesheet:
+class Spritesheet:
     """
     This class handles sprite sheets,
     source-code inspired by: www.scriptefun.com/transcript-2-using
@@ -21,19 +21,48 @@ class _Spritesheet:
                 self.sheet, (self.sheet.get_width() * scale, self.sheet.get_height() * scale)
             )
 
-    def image_at(self, rectangle, colorkey):
+        # can be init later
+        self.tilesize = None
+        self.img_count_per_line = 0
+        self.total_img_count = 0
+        self.colorkey = None
+
+    def set_tilesize(self, v):
+        self.tilesize = v
+        # also need to compute the nb of img and how many img per line
+        self.img_count_per_line = self.sheet.get_width() // v[0]
+        tmp = self.img_count_per_line
+        tmp *= self.sheet.get_height() // v[1]
+        self.total_img_count *= tmp
+
+    def image_by_rank(self, kval):
+        if self.tilesize is None:
+            raise ValueError('calling image_by_rank but the tilesize hasnt been initialized!')
+        else:
+            # we need to map kval to a rect
+            i, j = kval % self.img_count_per_line, int(kval / self.img_count_per_line)
+            tw, th = self.tilesize
+            r = pygame.Rect(i*tw, j*th, tw, th)
+            return self.image_at(r)
+
+    def image_at(self, rectangle, colorkey=None):
         """
         Loads a specific image from a specific rectangle
         :param rectangle: a given (x,y, x+offset,y+offset)
         :param colorkey:  for handling transparency (color identified by colorkey is not drawn)
         :return: pygame surface
         """
+        if colorkey is None:
+            if self.colorkey is not None:
+                colorkey = self.colorkey
+
         rect = pygame.Rect(rectangle)
         # convert() converts to the same pixel format as the display Surface
         image = pygame.Surface(rect.size).convert()
         image.blit(self.sheet, (0, 0), rect)  # blits sheet's rect to (0,0) in image
         if colorkey is not None:
             image.set_colorkey(colorkey)
+
         return image
 
     def images_at(self, rects, colorkey):
@@ -94,7 +123,8 @@ class AnimatedSprite(pygame.sprite.Sprite):
             self._twidth, self._theight = infos_obj['tilesize']
             self._ck_desc = infos_obj['colorkey']
             padding = int(infos_obj['padding'])
-            self.total_nb_img = 12
+
+            self.total_nb_img = 12  # TODO is this a bug ?
 
             # -- algorithm:
             # 1) find how many lines & colums
@@ -107,7 +137,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
             colork = pygame.color.Color(self._ck_desc)
             for lrank in range(nlines):
                 tmp.extend(
-                    _Spritesheet(fullsheet, 1).load_strip(
+                    Spritesheet(fullsheet, 1).load_strip(
                         (0, lrank * self._theight, self._twidth, self._theight), ncolumns, colork
                     )
                 )
