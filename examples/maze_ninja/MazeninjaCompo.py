@@ -28,11 +28,19 @@ class NinjamazeMod(CogObject):
     VISION_RANGE = 4  # cells
     fov_computer = None
 
+    SPELL_PHASING, SPELL_FIREBALL, SPELL_BASH = range(23, 23+3)  # spell codes
+
     def __init__(self):
         super().__init__()
         self.rm = None
         self.player_pos = None
         self.visibility_m = None
+
+        self.enemies_pos2type = dict()
+        # spell casting
+        self.equiped_spell = None
+        self.owned_spells = set()
+
         self.reset_level()
 
     def _update_vision(self, i, j):
@@ -67,6 +75,11 @@ class NinjamazeMod(CogObject):
 
         self.pev(MyEvTypes.NewLevel)
         self.pev(MyEvTypes.PlayerMoves, new_pos=self.player_pos)
+
+        # enemies generation
+        for _ in range(5):
+            c = self.rm.pick_walkable_cell()
+            self.enemies_pos2type[tuple(c)] = 1  # all enemies type=1
 
     def can_see(self, cell):
         return self.visibility_m.get_val(*cell)
@@ -120,6 +133,10 @@ class NinjamazeView(ReceiverObj):
         self.planche_avatar.set_tilesize(grid_rez)
         self.planche_avatar.colorkey = (255, 0, 255)
 
+        self.monster_img = pygame.image.load(os.path.join('assets', 'monster.png')).convert()
+        self.monster_img = pygame.transform.scale(self.monster_img, (32, 32))
+        self.monster_img.set_colorkey((255, 0, 255))
+
         self.mod = ref_mod
         self.avatar_apparence = self.planche_avatar.image_by_rank(0)
         self.pos_avatar = ref_mod.get_av_pos()
@@ -158,6 +175,12 @@ class NinjamazeView(ReceiverObj):
         # draw avatar process
         av_i, av_j = self.pos_avatar[0] * self.CELL_SIDE, self.pos_avatar[1] * self.CELL_SIDE
         scr.blit(self.avatar_apparence, (av_i, av_j, 32, 32))
+
+        # draw enemies
+        for enemy_info in self.mod.enemies_pos2type.items():
+            pos, t = enemy_info
+            en_i, en_j = pos[0] * self.CELL_SIDE, pos[1] * self.CELL_SIDE
+            scr.blit(self.monster_img, (en_i, en_j, 32, 32))
 
 
 # ------------------------------------
