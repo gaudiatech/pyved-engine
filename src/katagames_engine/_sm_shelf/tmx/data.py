@@ -598,11 +598,12 @@ class Tileset:
         if not image:
             print("Error creating new Tileset: file %s not found" % file)
             raise FileNotFoundError
+
         ident = self.firstgid
-        for line in range(image.get_height() // self.tile_height):
-            for column in range(image.get_width() // self.tile_width):
-                pos = pygame.Rect(column * self.tile_width, line * self.tile_height,
-                           self.tile_width, self.tile_height)
+        tile_w, tile_h = self.tile_width, self.tile_height
+        for line in range(image.get_height() // tile_h):
+            for column in range(image.get_width() // tile_w):
+                pos = pygame.Rect(column * tile_w, line * tile_h, tile_w, tile_h)
                 self.tiles.append(Tile(ident, image.subsurface(pos), self))
                 ident += 1
 
