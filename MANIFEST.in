@@ -1,0 +1,1 @@
+include src/katagames_engine/_sm_shelf/*.py

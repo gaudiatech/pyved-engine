@@ -22,11 +22,11 @@ solid results!
 
 For instance, game templates that ship with `kengi` include a flappy bird clone... 
 
-<img src="flappybird-preview.png" alt="flappybird screenshot" width=600>
+<img src="docs/flappybird-preview.png" alt="flappybird screenshot" width=600>
 
 Or a match3 puzzle game (screenshot below) and many other.
 
-<img src="match3-preview.png" alt="match3 screenshot" width=600>
+<img src="docs/match3-preview.png" alt="match3 screenshot" width=600>
 
 There are other templates available! 
 Feel free to study/copy all files available in that folder:
