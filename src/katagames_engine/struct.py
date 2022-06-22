@@ -1,8 +1,3 @@
-# import sys
-# import traceback
-
-# - avoid relative import for brython -
-# from .... import engine as kataen
 from .util import underscore_format
 
 
@@ -250,14 +245,11 @@ class StContainer:
             self.assoc_id_state_obj[id_choisi] = obj
 
         except ImportError as exc:
+            print('ERR: Cannot import State Cls!')
+            print()
             print('adhoc module name(conv. to underscore format)={}'.format(pymodule_name))
             print('full path for finding class={}'.format(pythonpath))
             print('target class={}'.format(nom_cls))
-
-            print('WEB CONTEXT WARNING: make sure you dont have a file named app.py in your project!')
-            # avoid trouble with Brython...
-            # sys.stderr.write("Error: failed to import class {} (info= {})\n".format(nom_cl, exc))
-            # traceback.print_last()
 
     def retrieve(self, identifiant):
         """

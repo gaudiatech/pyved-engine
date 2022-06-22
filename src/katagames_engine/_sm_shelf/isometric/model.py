@@ -318,26 +318,23 @@ class IsometricLayer:
         if data is None:
             raise ValueError('layer %s does not contain <data>' % layer.name)
 
-        # Tom: may 21th.
-        # we need to use uncompressed data like CSV,
-        # in order to match with KataSDK because of compat. issues right now,
-        # As there's a bug in the brython{zlib} lib...
+        # Remark: (june 2022)
+        # we need to support uncompressed data like CSV, for instance,
+        # for specific use cases where the zlib module cannot be used
+        # (hacking in the web ctx for example)
 
-        # - default = compressed data
-        if not cls.flag_csv:
+        if not cls.flag_csv:  # default mode -> data is compressed
             data = data.strip()
             data = data.encode()  # Convert to bytes
             # Decode from base 64 and decompress via zlib
             data = decompress(b64decode(data))
-
-            # I ran a test today and there's a slight speed advantage in leaving the cells as a list. It's not a big
-            # advantage, but it's just as easy for now to leave the data as it is.
-            #
-            # I'm changing to a list from a tuple in case destructible terrain or modifiable terrain (such as doors) are
-            # wanted in the future.
+            # I ran a test today and there's a slight speed advantage in leaving the cells as a list.
+            # It's not a big advantage, but it's just as easy for now to leave the data as it is.
+            # I'm changing to a list from a tuple in case destructible terrain or modifiable terrain
+            # (such as doors) ar wanted in the future
             layer.cells = list(struct.unpack('<%di' % (len(data) / 4,), data))
             assert len(layer.cells) == layer.width * layer.height
-        else:
+        else:  # uncompressed data
             layer.cells = data
 
         return layer

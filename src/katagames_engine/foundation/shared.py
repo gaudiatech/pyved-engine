@@ -1,16 +1,9 @@
 
-# const
-RUNS_IN_WEB_CTX = '__BRYTHON__' in globals()
-
-# variables
-screen = None  # ref to Surface
-
-real_pygamescreen = None
-
-canvas_emuvram = None
+# - shared variables
 ctx_emuvram = None
-
+canvas_emuvram = None
 canvas_rendering = None
-ctx_rendering = None
-
+real_pygamescreen = None
+screen = None
+special_flip = 0  # flag, set it to 1 when using web ctx
 stored_upscaling = 1

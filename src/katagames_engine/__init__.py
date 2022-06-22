@@ -33,9 +33,12 @@
  * incentivizes you, the creator, to write clean readable easy-to-refactor &
   easy-to-reuse code!
 """
+from collections import defaultdict
 
 from . import _hub as hub
+from . import event
 from . import pal
+from . import struct
 from .Injector import Injector
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION
@@ -44,8 +47,6 @@ from .foundation import shared  # must keep this line /!\ see web vm
 from .ifaces.pygame import PygameIface
 from .modes import GameModeMger, BaseGameMode
 from .util import underscore_format, camel_case_format
-from . import struct
-from . import event
 
 
 ver = ENGI_VERSION
@@ -100,14 +101,47 @@ def bootstrap_e(info=None):
     _gameticker = event.GameTicker()
 
     # dry import
-    return get_injector()['pygame']
+    return hub.pygame
 
 
 def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
-    global _active_state
+    global _active_state, _gameticker
     bootstrap_e()
     _active_state = True
-    get_injector()['core'].init_e2(gfc_mode, caption, screen_dim)
+
+    pygm = hub.pygame
+    pygm.init()
+    pygm.mixer.init()
+    if gfc_mode not in defs.OMEGA_DISP_CODES:
+        raise ValueError(f'display requested is {gfc_mode}, but this isnt a valid disp. mode in Kengi!')
+    else:
+        bw, bh = defs.STD_SCR_SIZE
+        drawspace_dim = {
+            defs.HD_DISP: (bw, bh),
+            defs.OLD_SCHOOL_DISP: (bw // 2, bh // 2),
+            defs.SUPER_RETRO_DISP: (bw // 3, bh // 3),
+            defs.CUSTOM_DISP: screen_dim
+        }
+        upscaling = defaultdict(lambda: 1.0)
+        upscaling[defs.SUPER_RETRO_DISP] = 3.0
+        upscaling[defs.OLD_SCHOOL_DISP] = 2.0
+        if gfc_mode == defs.CUSTOM_DISP and (screen_dim is None):
+            raise ValueError('custom mode for gfx, but no screen_dim found!')
+        taille_surf_dessin = drawspace_dim[gfc_mode]
+        if shared.stored_upscaling is None:  # the upscaling is not relevant <= webctx
+            pygame_surf_dessin = pygm.display.set_mode(taille_surf_dessin)
+        else:
+            if gfc_mode == defs.CUSTOM_DISP:
+                pgscreen = pygm.display.set_mode(taille_surf_dessin)
+            else:
+                pgscreen = pygm.display.set_mode(defs.STD_SCR_SIZE)
+            pygame_surf_dessin = pygm.surface.Surface(taille_surf_dessin)
+            hub.core.set_realpygame_screen(pgscreen)
+        hub.core.set_virtual_screen(pygame_surf_dessin, upscaling[gfc_mode])
+        if caption is None:
+            caption = f'untitled demo, uses KENGI ver {ENGI_VERSION}'
+        pygm.display.set_caption(caption)
+
     _gameticker.maxfps = maxfps
 
 
