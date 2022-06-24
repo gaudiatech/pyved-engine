@@ -215,7 +215,7 @@ def _add_map_entities(gviewer):
 
     gviewer.set_focused_object(mypc)
     # force: center on avatar op.
-    mypc.x += 0.5
+    #mypc.x += 0.5
 
 
 def _init_specific_stuff():

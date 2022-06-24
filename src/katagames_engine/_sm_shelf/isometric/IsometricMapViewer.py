@@ -21,6 +21,10 @@ class IsometricMapViewer(event.EventReceiver):
         # can be cut.
         self._focus_x = 0
         self._focus_y = 0
+        self._focused_object_x0 = 0
+        self._focused_object_y0 = 0
+        self._focused_object = None
+
         self.phase = 0
 
         self.tile_width = isometric_map.tile_width
@@ -37,7 +41,6 @@ class IsometricMapViewer(event.EventReceiver):
         self.right_scroll_key = right_scroll_key
         self.up_scroll_key = up_scroll_key
         self.down_scroll_key = down_scroll_key
-        self._focused_object = None
         self.debug_sprite = None
         self.lastmousepos = None
         self.visible_area = None
@@ -51,18 +54,19 @@ class IsometricMapViewer(event.EventReceiver):
 
     def _check_mouse_scroll(self, screen_area, mouse_x, mouse_y):
         # Check for map scrolling, depending on mouse position.
+        print("checking scroll")
         if not self._camera_updated_this_frame:
             if mouse_x < 20:
-                dx = SCROLL_STEP
-            elif mouse_x > (screen_area.right - 20):
                 dx = -SCROLL_STEP
+            elif mouse_x > (screen_area.right - 20):
+                dx = +SCROLL_STEP
             else:
                 dx = 0
 
             if mouse_y < 20:
-                dy = SCROLL_STEP
-            elif mouse_y > (screen_area.bottom - 20):
                 dy = -SCROLL_STEP
+            elif mouse_y > (screen_area.bottom - 20):
+                dy = +SCROLL_STEP
             else:
                 dy = 0
 
@@ -107,10 +111,10 @@ class IsometricMapViewer(event.EventReceiver):
 
     def _update_camera(self, dx, dy):
         # If the mouse and the arrow keys conflict, only one of them should win.
-        if self.camera_updated_this_frame:
+        if self._camera_updated_this_frame:
             return
 
-        self.x_off, self.y_off = self.isometric_map.clamp_pos(self.x_off + dx, self.y_off + dy)
+        self._focus_x, self._focus_y = self.isometric_map.clamp_pos([self._focus_x + dx, self._focus_y + dy])
 
 
     def _paint_all(self):
@@ -123,12 +127,15 @@ class IsometricMapViewer(event.EventReceiver):
             self.fill_wallpaper()
 
         # Check the map scrolling.
-        if self._focused_object:
+        self._camera_updated_this_frame = False
+        if self._focused_object and (self._focused_object.x != self._focused_object_x0 or self._focused_object.y != self._focused_object_y0):
             self.focus(self._focused_object.x, self._focused_object.y)
-            self._camera_updated_this_frame = True
-        else:
-            self._camera_updated_this_frame = False
-            self._check_mouse_scroll(self.visible_area, *self.lastmousepos)
+            self._focused_object_x0 = self._focused_object.x
+            self._focused_object_y0 = self._focused_object.y
+
+        # Disabling mouse scrolling because the right and bottom edges of the screen don't seem to be working.
+        #if self.lastmousepos:
+        #    self._check_mouse_scroll(self.visible_area, *self.lastmousepos)
 
         # Record all of the objectgroup contents for display when their tile comes up
         # Also, clamp all object positions. If this is an infinite scrolling map, objects can move off one side to the
