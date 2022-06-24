@@ -213,7 +213,7 @@ def _add_map_entities(gviewer):
     list(tm.objectgroups.values())[0].contents.append(mynpc)
     list(tm2.objectgroups.values())[0].contents.append(mynpc)
 
-    #gviewer.set_focused_object(mypc)
+    gviewer.set_focused_object(mypc)
     # force: center on avatar op.
     mypc.x += 0.5
 
