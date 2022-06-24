@@ -57,8 +57,6 @@ class IsometricMapCursor:
 
 
 class IsometricMapQuarterCursor:
-    new_coord_system = False
-
     # A cursor that only takes up one quarter of a tile.
     def __init__(self, x, y, surf, layer, visible=True):
         self._doublex = int(x * 2)
@@ -71,11 +69,7 @@ class IsometricMapQuarterCursor:
         if self.visible:
             sx, sy = view.screen_coords(*self.get_pos())
             mylayer = view.isometric_map.get_layer_by_name(self.layer_name)
-            if self.__class__.new_coord_system:
-                # a newer version might be:
-                mydest = self.surf.get_rect(midtop=(sx + mylayer.offsetx, sy + mylayer.offsety - 1))
-            else:
-                mydest = self.surf.get_rect(midbottom=(sx + mylayer.offsetx, sy + mylayer.offsety - 2))
+            mydest = self.surf.get_rect(midtop=(sx + mylayer.offsetx, sy + mylayer.offsety - 2))
             view.screen.blit(self.surf, mydest)
 
     def set_position(self, view, x, y):
@@ -91,14 +85,10 @@ class IsometricMapQuarterCursor:
         return self._doubley // 2
 
     def get_pos(self):
-        # a newer version might be:
-        if self.__class__.new_coord_system:
-            return float(self._doublex) / 2.0, float(self._doubley) / 2.0
-        else:
-            return float(self._doublex - 1) / 2, float(self._doubley - 1) / 2
+        return float(self._doublex) / 2.0, float(self._doubley) / 2.0
 
     def focus(self, view):
-        view.focus(float(self._doublex - 1) / 2.0, float(self._doubley - 1) / 2.0)
+        view.focus(*self.get_pos())
 
     def update(self, view, ev):
         if ev.type == pygame.MOUSEMOTION:

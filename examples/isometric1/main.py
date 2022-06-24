@@ -6,6 +6,7 @@ import demolib.dialogue as dialogue
 import demolib.pathfinding as pathfinding
 # import isometric_maps
 from defs import MyEvTypes, MAXFPS, DEBUG
+import math
 
 
 kengi.init('old_school', maxfps=MAXFPS)
@@ -48,32 +49,36 @@ class MovementPath:
         self.mapob = mapob
         self.dest = dest
         self.goal = None
-        blocked_tiles = set()
+        self.mymap = mymap
+        self.blocked_tiles = set()
         obgroup = list(mymap.objectgroups.values())[0]
         for ob in obgroup.contents:
             if ob is not mapob:
-                blocked_tiles.add((ob.x, ob.y))
+                self.blocked_tiles.add((ob.x, ob.y))
                 if self.pos_to_index((ob.x, ob.y)) == self.pos_to_index(dest):
                     self.goal = ob
         self.path = pathfinding.AStarPath(
-            mymap, self.pos_to_index((mapob.x, mapob.y)), self.pos_to_index(dest), self.tile_is_blocked, blocked_tiles
+            mymap, self.pos_to_index((mapob.x, mapob.y)), self.pos_to_index(dest), self.tile_is_blocked,
+            mymap.clamp_pos_int, blocked_tiles = self.blocked_tiles
         )
+        if not self.path.results:
+            print("No path found!")
         if self.path.results:
             self.path.results.pop(0)
-        self.all_the_way_to_dest = not (dest in blocked_tiles or self.tile_is_blocked(mymap, *self.pos_to_index(dest)))
+        self.all_the_way_to_dest = not (dest in self.blocked_tiles or self.tile_is_blocked(mymap, *self.pos_to_index(dest)))
         if self.path.results and not self.all_the_way_to_dest:
             self.path.results.pop(-1)
         self.animob = None
 
     @staticmethod
     def pos_to_index(pos):
-        x = int(pos[0] + 0.99)
-        y = int(pos[1] + 0.99)
+        x = math.floor(pos[0])
+        y = math.floor(pos[1])
         return x, y
 
     @staticmethod
     def tile_is_blocked(mymap, x, y):
-        return not (mymap.on_the_map(x, y) and mymap.layers[1][x, y] == 0)
+        return mymap.tile_is_blocked(x, y)
 
     def __call__(self):
         # Called once per update; returns True when the action is completed.
@@ -84,12 +89,17 @@ class MovementPath:
         if not self.animob:
             if self.path.results:
                 if len(self.path.results) == 1 and self.all_the_way_to_dest:
-                    nugoal = self.dest
+                    nx, ny = self.dest
                     self.path.results = []
                 else:
-                    nugoal = self.path.results.pop(0)
+                    nx, ny = self.path.results.pop(0)
+
+                # De-clamp the nugoal coordinates.
+                nx = min([nx, nx-self.mymap.width, nx+self.mymap.width], key=lambda x: abs(x-self.mapob.x))
+                ny = min([ny, ny-self.mymap.height, ny+self.mymap.height], key=lambda y: abs(y-self.mapob.y))
+
                 self.animob = animobs.MoveModel(
-                    self.mapob, start=(self.mapob.x, self.mapob.y), dest=nugoal, speed=0.25
+                    self.mapob, dest=(nx,ny), speed=0.25
                 )
             else:
                 # print((self.mapob.x,self.mapob.y))
@@ -203,7 +213,7 @@ def _add_map_entities(gviewer):
     list(tm.objectgroups.values())[0].contents.append(mynpc)
     list(tm2.objectgroups.values())[0].contents.append(mynpc)
 
-    gviewer.set_focused_object(mypc)
+    #gviewer.set_focused_object(mypc)
     # force: center on avatar op.
     mypc.x += 0.5
 
@@ -212,7 +222,7 @@ def _init_specific_stuff():
     global map_viewer, maps
 
     _load_maps()
-    map_viewer = kengi.isometric.IsometricMapViewer0(  # TODO unify
+    map_viewer = kengi.isometric.IsometricMapViewer(  # TODO unify
         maps[0], screen,
         up_scroll_key=pygame.K_UP, down_scroll_key=pygame.K_DOWN,
         left_scroll_key=pygame.K_LEFT, right_scroll_key=pygame.K_RIGHT

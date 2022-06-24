@@ -19,20 +19,27 @@ class PriorityQueue:
 
 class AStarPath(object):
     DELTA8 = ((-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1))
+    #DELTA4 = ((0, -1), (-1, 0), (1, 0), (0, 1))
 
-    def __init__(self, mymap, start, goal, blocked_fun, blocked_tiles=()):
-        # blocked_fun is a function that takes mymap, x, y and returns True if movement into that tile is blocked.
+    def __init__(self, mymap, start, goal, blocked_fun, clamp_fun, wrap_x=False, wrap_y=False, blocked_tiles=()):
+        # blocked_fun is a function that takes mymap, x, y and returns True if movement into that tile is blocked.y
+        # clamp_fun is a function that takes (x,y) and clamps the values if needed.
+        start = clamp_fun(start)
         self.start = start
+        goal = clamp_fun(goal)
         self.goal = goal
         self.blocked_tiles = set(blocked_tiles)
         self.mymap = mymap
         self.blocked_fun = blocked_fun
+        self.clamp_fun = clamp_fun
+        self.wrap_x = wrap_x
+        self.wrap_y = wrap_y
         frontier = PriorityQueue()
-        frontier.put(start, 0)
+        frontier.put(self.start, 0)
         self.came_from = {}
         self.cost_to_tile = {}
-        self.came_from[start] = None
-        self.cost_to_tile[start] = 0
+        self.came_from[self.start] = None
+        self.cost_to_tile[self.start] = 0
 
         while not frontier.empty():
             current = frontier.get()
@@ -64,15 +71,29 @@ class AStarPath(object):
     def neighbors(self, mymap, pos):
         x, y = pos
         for dx, dy in self.DELTA8:
-            x2, y2 = x + dx, y + dy
+            #x2, y2 = x + dx, y + dy
+            x2, y2 = self.clamp_fun((x + dx, y + dy))
+            #x2, y2 = int(x2), int(y2)
             if not ((x2, y2) in self.blocked_tiles or self.blocked_fun(mymap, x2, y2)):
                 yield (x2, y2)
             elif (x2, y2) == self.goal:
                 yield self.goal
 
     def movecost(self, a, b):
-        return 1 + abs(a[0] - b[0]) + abs(a[1] - b[1])
+        xcost = abs(a[0] - b[0])
+        ycost = abs(a[1] - b[1])
+        if self.wrap_x:
+            xcost = min(xcost, self.mymap.width - xcost)
+        if self.wrap_y:
+            ycost = min(ycost, self.mymap.height - ycost)
+        return 1 + xcost + ycost
 
     def heuristic(self, a, b):
         # Manhattan distance on a square grid
-        return (abs(a[0] - b[0]) + abs(a[1] - b[1])) * 10
+        dx = abs(a[0] - b[0])
+        dy = abs(a[1] - b[1])
+        if self.wrap_x:
+            dx = min(dx, self.mymap.width - dx)
+        if self.wrap_y:
+            dy = min(dy, self.mymap.height - dy)
+        return (dx + dy)

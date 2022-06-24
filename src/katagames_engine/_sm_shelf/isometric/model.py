@@ -210,8 +210,8 @@ class IsometricMapObject:
         # delete this long rant of a comment. Or leave it as a warning to others. I am just glad to finally understand
         # what's going on.
 
-        mx = tx / float(givenlayer.tile_height) - 1.5
-        my = ty / float(givenlayer.tile_height) - 1.5
+        mx = tx / float(givenlayer.tile_height)
+        my = ty / float(givenlayer.tile_height)
         return mx, my
 
     @classmethod
@@ -411,6 +411,11 @@ class ObjectGroup:
 
 
 class IsometricMap:
+    # Customization:
+    # If a layer named "Move Layer" exists, the PC can only move into tiles that exist on this layer. The layer may be
+    #   invisible.
+    # If a layer named "Block Layer" exists, the PC cannot move into tiles that exist on this layer. The layer may be
+    #   invisible.
     def __init__(self):
         self.tile_width = 0
         self.tile_height = 0
@@ -430,9 +435,9 @@ class IsometricMap:
 
     def seek_floor_and_wall(self):
         for n, layer in enumerate(self.layers):
-            if layer.name == "Floor Layer":
+            if layer.name == "Move Layer":
                 self.floor_layer = n
-            elif layer.name == "Wall Layer":
+            elif layer.name == "Block Layer":
                 self.wall_layer = n
 
     @classmethod

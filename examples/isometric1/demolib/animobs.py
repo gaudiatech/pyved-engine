@@ -66,7 +66,7 @@ class MoveModel(object):
         self.needs_deletion = False
         self.children = list()
         if not start:
-            start = model.pos
+            start = (model.x, model.y)
         self.itinerary = get_fline(start, dest, speed)
 
     def update(self):

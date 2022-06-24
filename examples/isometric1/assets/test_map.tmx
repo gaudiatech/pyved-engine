@@ -10,12 +10,12 @@
    eJxjY2BgYANiTiTMRkNML3tw2U1vO0fxKB7Fo3gUDzwmVO/Qql4iZOZA1YcDFQcDFe/0tBtmHwAG3Q5N
   </data>
  </layer>
- <layer id="1" name="Tile Layer 1" width="30" height="20">
+ <layer id="1" name="Block Layer" width="30" height="20">
   <data encoding="base64" compression="zlib">
    eJxjZmBgYGagPuAiQg0t7CXGThimt73I9Eixl552cw2Qveh2UcNeYvIPzK6BSs8DaS+9wUDZC7N7IOwcbvayAzErA0MDPrtpAVhpZO4oGNyACYgBexQBEg==
   </data>
  </layer>
- <objectgroup id="5" name="Object Layer 1" offsetx="0" offsety="-8"/>
+ <objectgroup id="5" name="Object Layer 1" offsetx="0" offsety="4"/>
  <layer id="2" name="Tile Layer 2" width="30" height="20" offsetx="0" offsety="-16">
   <data encoding="base64" compression="zlib">
    eJxjYKAN4KKRudQCjKP2Dju70dPcUA5rUvPPUPbrKBicgGnU3lEwCsgGoPQEACY7AC8=
