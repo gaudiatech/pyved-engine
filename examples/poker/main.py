@@ -1,4 +1,5 @@
 import katagames_engine as kengi
+from pokerdefs import MyEvTypes
 from tabletop import StdCard, PokerHand
 
 
@@ -13,6 +14,7 @@ pygame = kengi.pygame
 BACKGROUND_IMG_PATH = 'img/bg0.jpg'
 CARD_SIZE_PX = (82, 120)
 CHIP_SIZE_PX = (62, 62)
+POS_CASH = (1192, 1007)
 
 CARD_SLOTS_POS = {  # coords in pixel so cards/chips & BG image do match; cards img need an anchor at the middle.
     'dealer1': (905, 329),
@@ -25,8 +27,8 @@ CARD_SLOTS_POS = {  # coords in pixel so cards/chips & BG image do match; cards 
     'turn': (846, 473),
     'river': (744, 471),
 
-    'player1': (1015, 1000),
-    'player2': (881, 1007),
+    'player1': (1125, 878),
+    'player2': (1041, 880),
 
     'bet': (955, 774),
     'blind': (1061, 778),
@@ -39,11 +41,11 @@ CARD_SLOTS_POS = {  # coords in pixel so cards/chips & BG image do match; cards 
     'raise6': (986, 876)
 }
 PLAYER_CHIPS = {
-    '2a': (825, 1011),
-    '2b': (905, 1011),
-    '5': (985, 1011),
-    '10': (1065, 1011),
-    '20': (1145, 1011)
+    '2a': (825, 1000),
+    '2b': (905, 1000),
+    '5': (985, 1000),
+    '10': (1065, 1000),
+    '20': (1145, 1000)
 }
 
 # - glvars
@@ -53,21 +55,77 @@ alea_xx = lambda_hand = epic_hand = list()
 # --------------
 #  game components
 # --------------
-class UthControl(ReceiverObj):
+class UthModel(kengi.event.CogObj):
+    """
+    Uth: Ultimate Texas Holdem
+
+    STAGES ARE
+
+    0: "eden state" -> cards not dealt, no money spent
+    1: cards dealt yes, both ante and blind have been paid, you pick one option: check/bet 3x/ bet 4x
+      if bet 4x you go straight to the last state
+      if check you go to state 2
+    2: flop revealed, your pick one option: check/bet 2x
+      if bet 2x you go to the last state
+      if check you go to state 3
+    3: turn & river revealed you pick one option: fold/ bet 1x
+      if bet you go to the final state
+      if fold you loose everything except whats in bonus state 5
+    4(final):
+      all remaining cards are returned, if any then player is paid. Current round halts
+    5:
+      pay bonus only, current round halts
+    """
     def __init__(self):
         super().__init__()
+        self.cash = 200  # usd
+        self.stage = 0
+        self.revealed = {
+            'dealer1': False,
+            'dealer2': False,
+            'flop3': False,
+            'flop2': False,
+            'flop1': False,
+            'turn': False,
+            'river': False,
+            'player1': False,
+            'player2': False
+        }
+        self.ante = self.blind = 0
+
+    def deal_cards(self, ante_val):
+        if self.stage:
+            raise ValueError('calling deal_cards while stage !=0')
+        else:
+            self.revealed['player2'] = self.revealed['player1'] = True
+            self.ante = self.blind = ante_val
+            self.cash -= 2 * ante_val
+            self.stage = 1
+            self.pev(MyEvTypes.CardsReveal)
+            self.pev(MyEvTypes.CashChanges, value=self.cash)
+
+    def is_player_broke(self):
+        return self.cash <= 0
+
+
+class UthControl(ReceiverObj):
+    def __init__(self, model):
+        super().__init__()
+        self._mod = model
 
     def proc_event(self, ev, source):
         global alea_xx
         if ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
             self.pev(EngineEvTypes.GAMEENDS)
         elif ev.type == pygame.KEYDOWN and ev.key == pygame.K_SPACE:
-            alea_xx = PokerHand([StdCard.draw_card() for _ in range(5)])  # not from a deck -> raw 1/52 chance
+            # alea_xx = PokerHand([StdCard.draw_card() for _ in range(5)])  # not from a deck -> raw 1/52 chance
             # TODO blit the type of hand (Two pair, Full house etc) + the score val.
+            if self._mod.stage == 0:
+                self._mod.deal_cards(6)  # bet 6
 
 
 class UthView(ReceiverObj):
-    def __init__(self):
+    def __init__(self, model):
         super().__init__()
         self._assets_rdy = False
 
@@ -76,6 +134,12 @@ class UthView(ReceiverObj):
 
         self.card_images = dict()
         self.chip_spr = dict()
+
+        self._mod = model
+        self.ft = pygame.font.Font(None, 72)
+
+        # draw cash amount
+        self.cash_etq = self.ft.render(str(self._mod.cash)+'$ ', True, (0, 0, 28), (133, 133, 133))
 
     def _load_assets(self):
         self._assets_rdy = True
@@ -107,28 +171,51 @@ class UthView(ReceiverObj):
     def proc_event(self, ev, source):
         global alea_xx, lambda_hand, epic_hand
         if ev.type == EngineEvTypes.PAINT:
-            scr = ev.screen
-            if self._assets_rdy:
-                scr.blit(self.bg, (0, 0))
-                for i in range(5):
-                    scr.blit(self.card_images[alea_xx[i].code], (25 + 110 * i, 10))
-                for i in range(5):
-                    scr.blit(self.card_images[lambda_hand[i].code], (25 + 110 * i, 158))
-                for i in range(5):
-                    scr.blit(self.card_images[epic_hand[i].code], (25 + 110 * i, 296))
-                for k, v in enumerate((2, 5, 10, 20)):
-                    adhoc_spr = self.chip_spr[str(v)]
-                    if v == 2:
-                        adhoc_spr.rect.center = PLAYER_CHIPS['2b']
-                    scr.blit(adhoc_spr.image, adhoc_spr.rect.topleft)
-                self.chip_spr['2'].rect.center = PLAYER_CHIPS['2a']
-                scr.blit(self.chip_spr['2'].image, self.chip_spr['2'].rect.topleft)
-
-                kengi.flip()
-            else:
+            if not self._assets_rdy:
                 self._load_assets()
+            self._paint(ev.screen)
+        elif ev.type == MyEvTypes.CashChanges:
+            # RE-draw cash value
+            self.cash_etq = self.ft.render(str(ev.value) + '$ ', True, (0, 0, 28), (133, 133, 133))
+
+    @staticmethod
+    def centerblit(refscr, surf, p):
+        w, h = surf.get_size()
+        refscr.blit(surf, (p[0]-w//2, p[1]-h//2))
+
+    def _paint(self, scr):
+        scr.blit(self.bg, (0, 0))
+
+        if self._mod.stage == 0:
+            # draw cards location
+            where_to_draw = (
+                'dealer1', 'dealer2', 'player1', 'player2'
+            )
+            for loc in where_to_draw:
+                UthView.centerblit(scr, self.card_back_img, CARD_SLOTS_POS[loc])
+
+        for i in range(5):
+            scr.blit(self.card_images[alea_xx[i].code], (25 + 110 * i, 10))
+        for i in range(5):
+            scr.blit(self.card_images[lambda_hand[i].code], (25 + 110 * i, 158))
+        for i in range(5):
+            scr.blit(self.card_images[epic_hand[i].code], (25 + 110 * i, 296))
+        for k, v in enumerate((2, 5, 10, 20)):
+            adhoc_spr = self.chip_spr[str(v)]
+            if v == 2:
+                adhoc_spr.rect.center = PLAYER_CHIPS['2b']
+            scr.blit(adhoc_spr.image, adhoc_spr.rect.topleft)
+        self.chip_spr['2'].rect.center = PLAYER_CHIPS['2a']
+        scr.blit(self.chip_spr['2'].image, self.chip_spr['2'].rect.topleft)
+
+        scr.blit(self.cash_etq, POS_CASH)
+
+        kengi.flip()
 
 
+# --------------
+#  functions only
+# --------------
 def _init_and_tests():
     """
     ----------------------------------------------
@@ -183,9 +270,10 @@ def run_game():
     kengi.init('custom', screen_dim=(1920, 1080))
 
     # >>> the game loop
+    mod = UthModel()
     receivers = [
-        UthView(),
-        UthControl(),
+        UthView(mod),
+        UthControl(mod),
         kengi.get_game_ctrl()
     ]
     for robj in receivers:
