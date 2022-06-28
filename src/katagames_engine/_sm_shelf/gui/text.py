@@ -16,15 +16,10 @@ def clip(surf, x, y, x_size, y_size):
 
 
 def swap_color(img, old_c, new_c):
-    global e_colorkey
     img.set_colorkey(old_c)
     surf = img.copy()
-
-    # TODO theres a BUG when interactin with KataSDK, you need to comment these
-    #  two line so ktg-webapp does not crash. Fix the bug Asap!
-    # surf.fill(new_c)
-    # surf.blit(img, (0, 0))
-
+    surf.fill(new_c)
+    surf.blit(img, (0, 0))
     return surf
 
 
@@ -32,12 +27,19 @@ def load_font_img(path, font_color):
     fg_color = (255, 0, 0)
     bg_color = (0, 0, 0)
     font_img = pygame.image.load(path).convert()
-    font_img = swap_color(font_img, fg_color, font_color)
+
+    # N.B. theres a BUG when interactin with KataSDK, thats why I have
+    # commetend the line below.
+    # Hence ktg-webapp does not crash but it cannot swap color.
+    # TODO: fix the bug Asap!
+
+    # font_img = swap_color(font_img, fg_color, font_color)
     last_x = 0
     letters = []
     letter_spacing = []
     for x in range(font_img.get_width()):
-        if font_img.get_at((x, 0))[0] == 127:
+        colorinfos = font_img.get_at((x, 0))
+        if colorinfos[0] == 127:
             tmpw = x - last_x
             tmph = font_img.get_height()
             letters.append(
@@ -48,6 +50,11 @@ def load_font_img(path, font_color):
         x += 1
     for letter in letters:
         letter.set_colorkey(bg_color)
+    card_l = len(letters)
+    print('*debug ImgBasedText*')
+    print(f' ... source={path}')
+    print(f' ... num of letters={card_l}')
+    print(f' ... letter_spacings {letter_spacing}')
     return letters, letter_spacing, font_img.get_height()
 
 
@@ -110,7 +117,6 @@ class ImgBasedFont:
                     x += self.letter_spacing[self.font_order.index(char)] + self.base_spacing
             line_offset = 0
             for i, space in enumerate(spaces):
-                print(line_width)
                 if (space[0] - line_offset) > line_width:
                     line_offset += spaces[i - 1][0] - line_offset
                     if i != 0:
