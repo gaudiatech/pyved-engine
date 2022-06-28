@@ -12,7 +12,7 @@ use the:
 syntax
 """
 
-# N.b need to import for setup.py can detect files
+# N.b need to import so setup.py can detect all files
 
 from . import anim
 from . import core

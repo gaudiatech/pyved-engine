@@ -1,9 +1,6 @@
 import random
 import math
-from .. import _hub
-
-
-IntegerMatrx = _hub.terrain.IntegerMatrix
+from .. import struct
 
 
 # ----------------------------
@@ -60,7 +57,7 @@ class RandomMaze:
     via la méthode RandomMaze.getMatrix
     """
     def __init__(self, w, h, min_room_size, max_room_size, density_factor=140):
-        self.int_matrix = IntegerMatrx((w, h))
+        self.int_matrix = struct.IntegerMatrix((w, h))
         self.int_matrix.set_all(None)  # super important! Otherwise the algorithm wont work
 
         self.room_possib_size = list()

@@ -11,7 +11,7 @@ EngineEvTypes = kengi.event.EngineEvTypes
 CogObject = kengi.event.CogObj
 ReceiverObj = kengi.event.EventReceiver
 Sprsheet = kengi.anim.Spritesheet
-BoolMatrx = kengi.terrain.BoolMatrix
+BoolMatrx = kengi.struct.BoolMatrix
 
 
 # game-specific declarations
