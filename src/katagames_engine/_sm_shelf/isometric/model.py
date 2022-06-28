@@ -45,6 +45,19 @@ class IsometricTile:
             surf = self.vflip_surface
         else:
             surf = self.tile_surface
+
+        # dirty patch (tom):
+        # TODO check if bugfix needed
+        if surf is None:
+            if self.hvflip_surface:
+                surf = self.hvflip_surface
+            elif self.hflip_surface:
+                surf = self.hflip_surface
+            elif self.vflip_surface:
+                surf = self.vflip_surface
+            else:
+                print('*warning cannot use tile')
+                return
         mydest = surf.get_rect(midbottom=(x, y))
         dest_surface.blit(surf, mydest)
 
