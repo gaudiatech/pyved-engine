@@ -1,147 +1,9 @@
 import operator
 import random
+from abc import ABCMeta, abstractmethod
 
 
-class PokerHand:
-    """
-    From highest to lowest
-    > Royal flush: A, K, Q, J, 10, all the same suit
-    > Straight flush: Five cards in a sequence, all in the same suit
-    > Four of a kind: All four cards of the same rank
-    > Full house: Three of a kind with a pair
-    > Flush: Any five cards of the same suit, but not in a sequence
-    > Straight: Five cards in a sequence, but not of the same suit
-    > Three of a kind: Three cards of the same rank
-    > Two pair: Two different pairs
-    > One Pair: Two cards of the same rank
-    > High card: When you haven't made any of the hands above
-    """
-
-    def __init__(self, hand):
-        self.hand = hand  # list of cards
-
-    def __str__(self):
-        out = ""
-        for card in self.hand:
-            out += str(card) + ", "
-        return out
-
-    def __getitem__(self, index):
-        return self.hand[index]
-
-    def __len__(self):
-        return len(self.hand)
-
-    def is_straight(self):
-        """
-        a hand is a straight if, when sorted, the current card's rank + 1 is the same as the next card
-        """
-        values = list()
-        for card in self.hand:
-            values.append(int(PokerHand.adhoc_mapping(card.rank)))
-        values.sort()
-
-        for n in range(0, 4):
-            if values[n] + 1 != values[n+1]:
-                return False
-        return True
-
-    def is_flush(self):
-        """a hand is a flush if all the cards are of the same suit
-        """
-        for suit in StdCard.OMEGA_SUIT:
-            # - debug by tom
-            # print(f'test [{suit}]')
-            # print(f'  [{self.hand[0].suit}]')
-            # print(f'  [{self.hand[1].suit}]')
-            # print(f'  [{self.hand[2].suit}]')
-            # print(f'  [{self.hand[3].suit}]')
-            # print(f'  [{self.hand[4].suit}]')
-            if all((
-                suit == self.hand[0].suit,
-                suit == self.hand[1].suit,
-                suit == self.hand[2].suit,
-                suit == self.hand[3].suit,
-                suit == self.hand[4].suit
-            )):
-                return True
-        return False
-
-    @staticmethod
-    def adhoc_mapping(xx):
-        tmp = {
-            'T': 10,
-            'J': 11,
-            'Q': 12,
-            'K': 13,
-            'A': 14
-        }
-        if xx in tmp:
-            rez = str(tmp[xx])
-        else:
-            rez = xx.zfill(2)
-        return rez
-
-    @property
-    def score(self):
-        """
-        The first digits represents the type of hand and the rest represent the cards in the hands
-        returns an integer that represents a score given to the hand.
-        """
-        card_count = dict()  # the count of each card rank (we ignore the suit for now)
-        for tsym in StdCard.OMEGA_SYM:
-            card_count[tsym] = 0
-
-        for card in self.hand:
-            x = card.code[0]
-            card_count[x] += 1
-
-        # count number of unique cards
-        unique_count = 0
-        for rankCount in card_count.values():
-            if rankCount > 0:
-                unique_count += 1
-
-        straight = self.is_straight()
-        flush = self.is_flush()
-        points = 0
-
-        if straight and flush:
-            points = max(points, 9)  # straight flush
-        elif flush and not straight:
-            points = max(points, 6)  # flush
-        elif not flush and straight:
-            points = max(points, 5)  # straight
-
-        elif unique_count == 2:
-            if max(card_count.values()) == 4:
-                points = 8  # four of a kind (2 uniques and 4 are the same)
-            elif max(card_count.values()) == 3:
-                points = 7  # full house (2 unique and 3 are the same)
-
-        elif unique_count == 3:
-            if max(card_count.values()) == 3:
-                points = 4  # three of a kind (3 unique and 3 are the same)
-            elif max(card_count.values()) == 2:
-                points = 3  # two pair (3 uniques and 2 are the same)
-
-        elif unique_count == 4:
-            if max(card_count.values()) == 2:
-                points = 2  # one pair (4 uniques and 2 are the same)
-
-        elif unique_count == 5:
-            points = 1  # high card
-
-        # print out the values of the cards in order from greatest to least with 2 digits for each card
-        # in order to generate a point value
-        sorted_card_count = sorted(list(card_count.items()), key=operator.itemgetter(1, 0), reverse=True)
-        for keyval in sorted_card_count:
-            if keyval[1] != 0:
-                points = int(str(points) + str(keyval[1] * PokerHand.adhoc_mapping(keyval[0])))
-        return points
-
-
-class StdCard:
+class StandardCard:
     OMEGA_SYM = ('2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A')
     OMEGA_SUIT = ('c', 'd', 'h', 's')
 
@@ -164,7 +26,7 @@ class StdCard:
         return res
 
     @classmethod
-    def draw_card(cls, excluded_set=None):
+    def at_random(cls, excluded_set=None):
         if excluded_set is None:
             excluded_set = set()
         if len(excluded_set) >= 52:
@@ -222,14 +84,209 @@ class StdCard:
         return self.rank_text + ' of ' + self.suit_text
 
 
-class CardDeck:
+class BaseHandOfCards(metaclass=ABCMeta):
+    def __init__(self):
+        self.content = []
 
-    def shuffle(self):
-        random.shuffle(self.contenu)
+    @property
+    def value(self):
+        return self.compute_value()
+
+    @abstractmethod
+    def compute_value(self):
+        raise NotImplementedError
+
+
+class PokerHand(BaseHandOfCards):
+    """
+    A list of 5 cards + its score
+
+    ranked from highest to lowest we have:
+    < 1> Royal flush: A, K, Q, J, 10, all the same suit
+    < 2> Straight flush: Five cards in a sequence, all in the same suit
+    < 3> Four of a kind: All four cards of the same rank
+    < 4> Full house: Three of a kind with a pair
+    < 5> Flush: Any five cards of the same suit, but not in a sequence
+    < 6> Straight: Five cards in a sequence, but not of the same suit
+    < 7> Three of a kind: Three cards of the same rank
+    < 8> Two pair: Two different pairs
+    < 9> One Pair: Two cards of the same rank
+    <10> High card: When you haven't made any of the hands above
+    """
+
+    def __init__(self, hand):
+        super().__init__()
+        self.content = hand  # list of cards
+
+    def __str__(self):
+        out = ""
+        for card in self.content:
+            out += str(card) + ", "
+        return out
+
+    def __getitem__(self, index):
+        return self.content[index]
+
+    def __len__(self):
+        return len(self.content)
+
+    def is_straight(self):
+        """
+        a hand is a straight if, when sorted, the current card's rank + 1 is the same as the next card
+        """
+        values = list()
+        for card in self.content:
+            values.append(int(PokerHand.adhoc_mapping(card.rank)))
+        values.sort()
+
+        for n in range(0, 4):
+            if values[n] + 1 != values[n+1]:
+                return False
+        return True
+
+    def is_flush(self):
+        """a hand is a flush if all the cards are of the same suit
+        """
+        for suit in StandardCard.OMEGA_SUIT:
+            # - debug by tom
+            # print(f'test [{suit}]')
+            # print(f'  [{self.hand[0].suit}]')
+            # print(f'  [{self.hand[1].suit}]')
+            # print(f'  [{self.hand[2].suit}]')
+            # print(f'  [{self.hand[3].suit}]')
+            # print(f'  [{self.hand[4].suit}]')
+            if all((
+                suit == self.content[0].suit,
+                suit == self.content[1].suit,
+                suit == self.content[2].suit,
+                suit == self.content[3].suit,
+                suit == self.content[4].suit
+            )):
+                return True
+        return False
+
+    @staticmethod
+    def adhoc_mapping(xx):
+        tmp = {
+            'T': 10,
+            'J': 11,
+            'Q': 12,
+            'K': 13,
+            'A': 14
+        }
+        if xx in tmp:
+            rez = str(tmp[xx])
+        else:
+            rez = xx.zfill(2)
+        return rez
+
+    # redef
+    def compute_value(self):
+        """
+        The first digits represents the type of hand and the rest represent the cards in the hands
+        returns an integer that represents a score given to the hand.
+        """
+        card_count = dict()  # the count of each card rank (we ignore the suit for now)
+        for tsym in StandardCard.OMEGA_SYM:
+            card_count[tsym] = 0
+
+        for card in self.content:
+            x = card.code[0]
+            card_count[x] += 1
+
+        # count number of unique cards
+        unique_count = 0
+        for rankCount in card_count.values():
+            if rankCount > 0:
+                unique_count += 1
+
+        straight = self.is_straight()
+        flush = self.is_flush()
+        points = 0
+
+        if straight and flush:
+            points = max(points, 9)  # straight flush
+        elif flush and not straight:
+            points = max(points, 6)  # flush
+        elif not flush and straight:
+            points = max(points, 5)  # straight
+
+        elif unique_count == 2:
+            if max(card_count.values()) == 4:
+                points = 8  # four of a kind (2 uniques and 4 are the same)
+            elif max(card_count.values()) == 3:
+                points = 7  # full house (2 unique and 3 are the same)
+
+        elif unique_count == 3:
+            if max(card_count.values()) == 3:
+                points = 4  # three of a kind (3 unique and 3 are the same)
+            elif max(card_count.values()) == 2:
+                points = 3  # two pair (3 uniques and 2 are the same)
+
+        elif unique_count == 4:
+            if max(card_count.values()) == 2:
+                points = 2  # one pair (4 uniques and 2 are the same)
+
+        elif unique_count == 5:
+            points = 1  # high card
+
+        # print out the values of the cards in order from greatest to least with 2 digits for each card
+        # in order to generate a point value
+        sorted_card_count = sorted(list(card_count.items()), key=operator.itemgetter(1, 0), reverse=True)
+        for keyval in sorted_card_count:
+            if keyval[1] != 0:
+                points = int(str(points) + str(keyval[1] * PokerHand.adhoc_mapping(keyval[0])))
+        return points
+
+
+class BlackjackHand(BaseHandOfCards):
+    def __init__(self):
+        super().__init__()
+
+    # redefinition
+    def compute_value(self):
+        """ Checks the value of the cards in the player's or dealer's hand. """
+        total_value = 0
+
+        for card in self.content:
+            value = card[1:]
+
+            # Jacks, kings and queens are all worth 10, and ace is worth 11
+            if value == 'j' or value == 'q' or value == 'k':
+                value = 10
+            elif value == 'a':
+                value = 11
+            else:
+                value = int(value)
+
+            total_value += value
+
+        if total_value > 21:
+            for card in self.content:
+                # If the player would bust and he has an ace in his hand, the ace's value is diminished by 10
+                # In situations where there are multiple aces in the hand, this checks to see if the total value
+                # would still be over 21 if the second ace wasn't changed to a value of one.
+                # if it's under 21, there's no need
+                # to change the value of the second ace, so the loop breaks.
+                if card[1] == 'a':
+                    total_value -= 10
+                if total_value <= 21:
+                    break
+        return total_value
+
+
+class CardDeck:
+    """
+    By default this should create a deck which contains all 52 cards and returns it
+    BUT this should be the most GENERIC class,
+
+    > For example what if I need to model 78-card Tarot Deck,
+    if a class for TarotCard is known, this should be easy, etc.
+
+    > Or for example what if I design a new game where 3 jokers are used?
+    """
 
     def __init__(self, contenu_init=None):
-        """ Creates a default deck which contains all 52 cards and returns it. """
-
         if contenu_init is None:
             contenu = ['sj', 'sq', 'sk', 'sa']  # spades
             contenu.extend(['hj', 'hq', 'hk', 'ha'])  # hearts
@@ -309,34 +366,3 @@ class CardDeck:
         hand.contenu.append(deck[0])
         del deck[0]
         return dealt_deck, hand
-
-    @classmethod
-    def bj_value(cls, hand):
-        """ Checks the value of the cards in the player's or dealer's hand. """
-        total_value = 0
-
-        for card in hand.contenu:
-            value = card[1:]
-
-            # Jacks, kings and queens are all worth 10, and ace is worth 11    
-            if value == 'j' or value == 'q' or value == 'k':
-                value = 10
-            elif value == 'a':
-                value = 11
-            else:
-                value = int(value)
-
-            total_value += value
-
-        if total_value > 21:
-            for card in hand.contenu:
-                # If the player would bust and he has an ace in his hand, the ace's value is diminished by 10    
-                # In situations where there are multiple aces in the hand, this checks to see if the total value
-                # would still be over 21 if the second ace wasn't changed to a value of one.
-                # if it's under 21, there's no need
-                # to change the value of the second ace, so the loop breaks. 
-                if card[1] == 'a':
-                    total_value -= 10
-                if total_value <= 21:
-                    break
-        return total_value

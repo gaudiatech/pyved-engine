@@ -1,6 +1,6 @@
 import katagames_engine as kengi
 from pokerdefs import MyEvTypes
-from tabletop import StdCard, PokerHand
+from tabletop import StandardCard, PokerHand
 
 print(PokerHand)
 EngineEvTypes = kengi.event.EngineEvTypes
@@ -47,6 +47,7 @@ class UthModel(kengi.event.CogObj):
         }
         self.ante = self.blind = 0
         self.bet = 0
+        self.delta_money = 0
 
         self.autoplay_flag = False
 
@@ -85,29 +86,28 @@ class UthModel(kengi.event.CogObj):
         if self.stage != UthModel.INIT_ST_CODE:
             raise ValueError('calling deal_cards while model isnt in the initial state')
         self.revealed['player2'] = self.revealed['player1'] = True
-        self.ante = self.blind = ante_val
-        self.cash -= 2 * ante_val
         # TODO should be deck.draw_cards(2) or smth
         self.dealer_hand.extend((
-            StdCard.draw_card(), StdCard.draw_card()
+            StandardCard.at_random(), StandardCard.at_random()
         ))
         self.player_hand.extend((
-            StdCard.draw_card(), StdCard.draw_card()
+            StandardCard.at_random(), StandardCard.at_random()
         ))
-        self.pev(MyEvTypes.CashChanges, value=self.cash)
+        self.pay_to_play(ante_val)
+
         self.set_stage(self.DISCOV_ST_CODE)
 
     def go_flop(self):
         print('GO FLOP STATE')
         for k in range(1, 3 + 1):
             self.revealed[f'flop{k}'] = True
-        self.flop_cards.extend([StdCard.draw_card() for _ in range(3)])
+        self.flop_cards.extend([StandardCard.at_random() for _ in range(3)])
         self.set_stage(self.FLOP_ST_CODE)
 
     def go_tr_state(self):
         print('GO TR STATE')
         # betting => betx2, or check
-        self.turnriver_cards.extend([StdCard.draw_card(), StdCard.draw_card()])
+        self.turnriver_cards.extend([StandardCard.at_random(), StandardCard.at_random()])
         self.revealed['turn'] = self.revealed['river'] = True
         self.set_stage(self.TR_ST_CODE)
 
@@ -122,11 +122,24 @@ class UthModel(kengi.event.CogObj):
         # manage money:
         # TODO could use .pev here, if animations are needed
         #  it can be nice. To do so one would use the controller instead of lines below
-        has_won = False
-        if has_won:
-            self.earn_money()
+
+        # imagine we only consider the flop for now:
+        dealer_vhand = PokerHand(self.dealer_hand + self.flop_cards)
+        player_vhand = PokerHand(self.player_hand + self.flop_cards)
+        if dealer_vhand.value == player_vhand.value:
+            self.claim_back_money()
+            print('EGALITE')
+
         else:
-            self.loose_money()
+            if player_vhand.value > dealer_vhand.value:
+                print('JE BATS DEALER')
+                self.earn_money()
+            else:
+                print('JAI PERDU')
+                self.loose_money()
+            print('player hand val= ', player_vhand.value)
+            print(' > ')
+            print('dealer hand val= ', dealer_vhand.value)
 
     def new_round(self):  # like a reset
         for lname in self.revealed.keys():
@@ -165,10 +178,36 @@ class UthModel(kengi.event.CogObj):
         if self.cash <= 0:
             self.pev(EngineEvTypes.GAMEENDS)
 
+    def pay_to_play(self, x):
+        self.ante = self.blind = x
+        self.cash -= 2 * x
+        self.pev(MyEvTypes.CashChanges, value=self.cash)
+
+    def claim_back_money(self):
+        self.cash += self.ante + self.blind + self.bet
+        self.ante = self.blind = self.bet = 0  # reset-like
+        self.pev(MyEvTypes.CashChanges, value=self.cash)
+
     def earn_money(self):
+        # TODO delta_money doit dependre de la main victorieuse
+        # Gain relatif à la blinde
+        # ------------------------
+        # Royal flush- 500 pour 1
+        # Straigth flush- 50 pour 1
+        # Four of a kind - 10 pour 1
+        # Full house - 3 pour 1
+        # Flush - 1.5 pour 1
+        # Suite - 1 pour 1
+        # autres mains: égalité
         # to be called when we're in the very last state
         # test win/loose conditions
-        pass
+        self.cash += self.ante + self.blind + self.bet
+        self.delta_money = self.blind  # paye une extra- blind en cas de victoire
+        self.cash += self.delta_money
+        self.ante = self.blind = self.bet = 0  # reset-like
+        self.pev(MyEvTypes.CashChanges, value=self.cash)
 
     def loose_money(self):
-        pass
+        self.delta_money = -self.ante - self.blind - self.bet
+        self.ante = self.blind = self.bet = 0  # reset-like
+        self.pev(MyEvTypes.CashChanges, value=self.cash)

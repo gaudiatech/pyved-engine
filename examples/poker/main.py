@@ -1,7 +1,7 @@
 import katagames_engine as kengi
 kengi.bootstrap_e()
 
-from UthModel import UthModel, StdCard, PokerHand
+from UthModel import UthModel, StandardCard, PokerHand
 from UthView import UthView
 from UthCtrl import UthCtrl
 
@@ -28,7 +28,7 @@ def _init_and_tests():
     deja_pioche = set()
     future_main = list()
     for _ in range(5):
-        card = StdCard.draw_card(deja_pioche)
+        card = StandardCard.at_random(deja_pioche)
         print(card, '|', card.code)
         deja_pioche.add(card.code)
         future_main.append(card)
@@ -41,7 +41,7 @@ def _init_and_tests():
     # TODO implem fct. manquante
     print('flush? ', ma_main.is_flush())
     print('straight? ', ma_main.is_straight())
-    print('score= ' + str(ma_main.score))
+    print('score= ' + str(ma_main.value))
 
     print('-- fin tests base modele --')
     print()
@@ -54,19 +54,19 @@ def run_game():
     # ---- extra tests on model ----
     print('ex. de scores:')
     alea_xx = PokerHand([
-        StdCard('2h'), StdCard('5s'), StdCard('9d'), StdCard('Kd'), StdCard('Tc')
+        StandardCard('2h'), StandardCard('5s'), StandardCard('9d'), StandardCard('Kd'), StandardCard('Tc')
     ])
-    print('   _', alea_xx.score)
+    print('   _', alea_xx.value)
 
     lambda_hand = PokerHand([
-        StdCard('Ah'), StdCard('Jc'), StdCard('Ts'), StdCard('5s'), StdCard('3d')
+        StandardCard('Ah'), StandardCard('Jc'), StandardCard('Ts'), StandardCard('5s'), StandardCard('3d')
     ])
-    print('   _', lambda_hand.score)
+    print('   _', lambda_hand.value)
     # - royal flush
     epic_hand = PokerHand([
-        StdCard('Ad'), StdCard('Qd'), StdCard('Kd'), StdCard('Td'), StdCard('Jd')
+        StandardCard('Ad'), StandardCard('Qd'), StandardCard('Kd'), StandardCard('Td'), StandardCard('Jd')
     ])
-    print('   _', epic_hand.score)
+    print('   _', epic_hand.value)
 
     # ------- init kengi ------
     kengi.init('custom', screen_dim=(1920, 1080))

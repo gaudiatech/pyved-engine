@@ -1,5 +1,5 @@
 import katagames_engine as kengi
-from UthModel import StdCard, PokerHand, MyEvTypes, UthModel
+from UthModel import StandardCard, PokerHand, MyEvTypes, UthModel
 
 
 # - aliases
@@ -76,7 +76,7 @@ class UthView(ReceiverObj):
         self.card_back_img = pygame.image.load('img/back.png').convert_alpha()
         self.card_back_img = pygame.transform.scale(self.card_back_img, CARD_SIZE_PX)
 
-        for card_cod in StdCard.all_card_codes():
+        for card_cod in StandardCard.all_card_codes():
             y = PokerHand.adhoc_mapping(card_cod[0]).lstrip('0') + card_cod[1].upper()  # convert card code to path
             img_path = f'img/{y}.png'
             tempimg = pygame.image.load(img_path).convert_alpha()
@@ -158,7 +158,6 @@ class UthView(ReceiverObj):
             # draw hidden cards' back, at adhoc location
             for loc in ('turn', 'river'):
                 UthView.centerblit(scr, self.card_back_img, CARD_SLOTS_POS[loc])
-
             for k, c in enumerate(self._mod.flop_cards):
                 slotname = 'flop'+str(k+1)
                 UthView.centerblit(scr, self.card_images[c.code], CARD_SLOTS_POS[slotname])
@@ -168,21 +167,11 @@ class UthView(ReceiverObj):
             UthView.centerblit(scr, self.card_images[self._mod.turnriver_cards[1].code], CARD_SLOTS_POS['river'])
 
         if self._mod.stage == UthModel.OUTCOME_ST_CODE:
-            # show what has the dealerV
-            loc = 'dealer1'
-            UthView.centerblit(scr, self.card_images[self._mod.dealer_hand[0].code], CARD_SLOTS_POS[loc])
-            loc = 'dealer2'
-            UthView.centerblit(scr, self.card_images[self._mod.dealer_hand[1].code], CARD_SLOTS_POS[loc])
+            # show what the dealer has
+            UthView.centerblit(scr, self.card_images[self._mod.dealer_hand[0].code], CARD_SLOTS_POS['dealer1'])
+            UthView.centerblit(scr, self.card_images[self._mod.dealer_hand[1].code], CARD_SLOTS_POS['dealer2'])
 
-        # ---------- draw tests
-        # for i in range(5):
-        #     scr.blit(self.card_images[alea_xx[i].code], (25 + 110 * i, 10))
-        # for i in range(5):
-        #     scr.blit(self.card_images[lambda_hand[i].code], (25 + 110 * i, 158))
-        # for i in range(5):
-        #     scr.blit(self.card_images[epic_hand[i].code], (25 + 110 * i, 296))
-
-        # ------- draw chips & cash amount
+        # -- draw chips & cash amount
         for k, v in enumerate((2, 5, 10, 20)):
             adhoc_spr = self.chip_spr[str(v)]
             if v == 2:
@@ -192,11 +181,10 @@ class UthView(ReceiverObj):
         scr.blit(self.chip_spr['2'].image, self.chip_spr['2'].rect.topleft)
         scr.blit(self.cash_etq, POS_CASH)
 
-        # show help messages
+        # -- display prompt messages
         if self.info_msg0:
             scr.blit(self.info_msg0, (24, 16))
         if self.info_msg1:
             scr.blit(self.info_msg1, (24, 90))
 
-        # commit gfx changes
         kengi.flip()

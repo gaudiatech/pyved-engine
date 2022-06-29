@@ -11,7 +11,7 @@ ReceiverObj = kengi.event.EventReceiver
 
 
 class UthCtrl(ReceiverObj):
-    AUTOPLAY_DELAY = 1.333  # sec
+    AUTOPLAY_DELAY = 0.8  # sec
 
     def __init__(self, model):
         super().__init__()
