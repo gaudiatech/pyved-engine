@@ -1,8 +1,9 @@
 import katagames_engine as kengi
 kengi.bootstrap_e()
 
-from uth_model import UthModel, StdCard, PokerHand
-from uth_ux import UthView, UthControl
+from UthModel import UthModel, StdCard, PokerHand
+from UthView import UthView
+from UthCtrl import UthCtrl
 
 
 # - aliases
@@ -74,7 +75,7 @@ def run_game():
     mod = UthModel()
     receivers = [
         UthView(mod),
-        UthControl(mod),
+        UthCtrl(mod),
         kengi.get_game_ctrl()
     ]
     for robj in receivers:

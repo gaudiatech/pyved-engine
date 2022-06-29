@@ -1,5 +1,6 @@
 import katagames_engine as kengi
-from uth_model import StdCard, PokerHand, MyEvTypes, UthModel
+from UthModel import StdCard, PokerHand, MyEvTypes, UthModel
+
 
 # - aliases
 pygame = kengi.pygame
@@ -45,6 +46,9 @@ PLAYER_CHIPS = {
 
 
 class UthView(ReceiverObj):
+    TEXTCOLOR = (5, 5, 28)
+    ASK_SELECTION_MSG = 'SELECT ONE OPTION: '
+
     def __init__(self, model):
         super().__init__()
         self._assets_rdy = False
@@ -57,6 +61,10 @@ class UthView(ReceiverObj):
 
         self._mod = model
         self.ft = pygame.font.Font(None, 72)
+        self.small_ft = pygame.font.Font(None, 33)
+
+        self.info_msg0 = None
+        self.info_msg1 = None  # will be used to tell the player what he/she has to do!
 
         # draw cash amount
         self.cash_etq = self.ft.render(str(self._mod.cash)+'$ ', True, (0, 0, 28), (133, 133, 133))
@@ -89,16 +97,37 @@ class UthView(ReceiverObj):
             self.chip_spr[chip_val_info] = spr
 
     def proc_event(self, ev, source):
-        global alea_xx, lambda_hand, epic_hand
         if ev.type == EngineEvTypes.PAINT:
             if not self._assets_rdy:
                 self._load_assets()
             self._paint(ev.screen)
-        elif ev.type == MyEvTypes.CardsReveal:
-            pass  # TODO maybe we could use an inner set of flags to say what flags are meant to be draw?
+        elif ev.type == MyEvTypes.StageChanges:
+            msg = None
+            if self._mod.stage == UthModel.INIT_ST_CODE:
+                msg = '_'
+            elif self._mod.stage == UthModel.DISCOV_ST_CODE:
+                msg = ' CHECK, BET x3, BET x4'
+            elif self._mod.stage == UthModel.FLOP_ST_CODE and (not self._mod.autoplay_flag):
+                msg = ' CHECK, BET x2'
+            elif self._mod.stage == UthModel.TR_ST_CODE and (not self._mod.autoplay_flag):
+                msg = ' FOLD, BET x1'
+            else:
+                self.info_msg0 = None
+                self.info_msg1 = None
+
+            if msg:
+                if msg == '_':
+                    self.info_msg0 = None
+                    self.info_msg1 = self.small_ft.render('Press SPACE once to start', True, self.TEXTCOLOR)
+                else:
+                    self.info_msg0 = self.ft.render(self.ASK_SELECTION_MSG, True, self.TEXTCOLOR)
+                    self.info_msg1 = self.small_ft.render(msg, True, self.TEXTCOLOR)
+
+            # TODO maybe we should use a set of flags to say what flags are meant to be draw?
+
         elif ev.type == MyEvTypes.CashChanges:
             # RE-draw cash value
-            self.cash_etq = self.ft.render(str(ev.value) + '$ ', True, (0, 0, 28), (133, 133, 133))
+            self.cash_etq = self.ft.render(str(ev.value) + '$ ', True, self.TEXTCOLOR, (133, 133, 133))
 
     @staticmethod
     def centerblit(refscr, surf, p):
@@ -163,24 +192,11 @@ class UthView(ReceiverObj):
         scr.blit(self.chip_spr['2'].image, self.chip_spr['2'].rect.topleft)
         scr.blit(self.cash_etq, POS_CASH)
 
+        # show help messages
+        if self.info_msg0:
+            scr.blit(self.info_msg0, (24, 16))
+        if self.info_msg1:
+            scr.blit(self.info_msg1, (24, 90))
+
         # commit gfx changes
         kengi.flip()
-
-
-class UthControl(ReceiverObj):
-    def __init__(self, model):
-        super().__init__()
-        self._mod = model
-
-    def proc_event(self, ev, source):
-        if ev.type == pygame.KEYDOWN:
-            if ev.key == pygame.K_ESCAPE:
-                self.pev(EngineEvTypes.GAMEENDS)
-            elif ev.key == pygame.K_SPACE:
-                # alea_xx = PokerHand([StdCard.draw_card() for _ in range(5)])  # not from a deck -> raw 1/52 chance
-                # TODO blit the type of hand (Two pair, Full house etc) + the score val.
-                self._mod.deal_cards(6)  # bet 6
-            elif ev.key == pygame.K_RETURN:
-                self._mod.input_init_choice(0)
-            elif ev.key == pygame.K_BACKSPACE:
-                self._mod.input_choice(0)  # choix au turn & a la river
