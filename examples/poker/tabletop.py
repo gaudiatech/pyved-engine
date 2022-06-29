@@ -180,6 +180,31 @@ class PokerHand(BaseHandOfCards):
             rez = xx.zfill(2)
         return rez
 
+    @property
+    def description(self):
+        """
+        returns an accurate poker term to describe the current poker hand
+        """
+        score = self.value
+        if str(score)[0] == '1':
+            return "High Card"
+        elif str(score)[0] == '2':
+            return "One Pair"
+        elif str(score)[0] == '3':
+            return "Two Pair"
+        elif str(score)[0] == '4':
+            return "Three of a Kind"
+        elif str(score)[0] == '5':
+            return "Straight"
+        elif str(score)[0] == '6':
+            return "Flush"
+        elif str(score)[0] == '7':
+            return "Full House"
+        elif str(score)[0] == '8':
+            return "Four of a Kind"
+        elif str(score)[0] == '9':
+            return "Straight Flush"
+
     # redef
     def compute_value(self):
         """

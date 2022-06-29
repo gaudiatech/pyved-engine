@@ -6,12 +6,26 @@ print(PokerHand)
 EngineEvTypes = kengi.event.EngineEvTypes
 
 
+class MoneyInfo(kengi.event.CogObj):
+    """
+    created a 2nd class (model) so it will be easier to manage
+    earning & loosing
+
+    earning := prize due to "Ante" + prize due to "Bet" + prize due to "Blind"
+
+    right now this class isnt used, but it should become active
+    """
+    def __init__(self):
+        super().__init__()
+        self.cash = 200  # starting cash
+        # TODO complete the implem & use this class!
+
+
 class UthModel(kengi.event.CogObj):
-    INIT_ST_CODE, DISCOV_ST_CODE, FLOP_ST_CODE, TR_ST_CODE, OUTCOME_ST_CODE = range(1, 5 + 1)
+    INIT_ST_CODE, DISCOV_ST_CODE, FLOP_ST_CODE, TR_ST_CODE, OUTCOME_ST_CODE, WAIT_STATE = range(1, 6 + 1)
 
     """
     Uth: Ultimate Texas Holdem
-
     STAGES ARE
 
     0: "eden state" -> cards not dealt, no money spent
@@ -47,9 +61,13 @@ class UthModel(kengi.event.CogObj):
         }
         self.ante = self.blind = 0
         self.bet = 0
+        self.bet_factor = 0
+
         self.delta_money = 0
+        self.folded = False
 
         self.autoplay_flag = False
+        self.dealer_vhand = self.player_vhand = None
 
         # stored lists of cards
         self.dealer_hand = []
@@ -68,16 +86,20 @@ class UthModel(kengi.event.CogObj):
     # -----------------------
     #  state transitions
     # -----------------------
-    def evolve_state(self):
+    def evolve_state(self, with_fold=None):
+        if with_fold is None:
+            with_fold = self.folded
         if self.DISCOV_ST_CODE == self.stage:
             self.go_flop()
         elif self.FLOP_ST_CODE == self.stage:
             self.go_tr_state()
         elif self.TR_ST_CODE == self.stage:
-            self.go_outcome_state()
+            self.go_outcome_state(with_fold)
+        elif self.OUTCOME_ST_CODE == self.stage:
+            self.go_wait_state()
 
     def set_stage(self, sid):
-        assert 1 <= sid <= 5
+        assert 1 <= sid <= 6
         self._stage = sid
         print(f' --new state-- >>> {sid}')
         self.pev(MyEvTypes.StageChanges)
@@ -111,65 +133,111 @@ class UthModel(kengi.event.CogObj):
         self.revealed['turn'] = self.revealed['river'] = True
         self.set_stage(self.TR_ST_CODE)
 
-    def go_outcome_state(self):
+    def describe_pl_hand(self):
+        return self.player_vhand.description
+        #print(f'  player has {player_vhand.description}   (score: {player_vhand.value}')
+        #print(' > ')
+
+    def describe_dealers_hand(self):
+        return self.dealer_vhand.description
+        # print(f'  dealer has {dealer_vhand.description}   (score: {dealer_vhand.value}')
+
+    def go_outcome_state(self, with_fold):
+        # performs computations to know & save what's the outcome
         print('GO OUTCOME STATE')
-        # TODO blit the type of hand (Two pair, Full house etc) + the score val.
-        self.revealed['dealer1'] = self.revealed['dealer2'] = True
-        self.autoplay_flag = False
-        print('autoplay OFF!')
+        self.folded = with_fold
+        if not self.folded:
+            # imagine we only consider the flop, for now
+            # TODO complete this part
+            self.player_vhand = PokerHand(self.player_hand + self.flop_cards)
+            self.dealer_vhand = PokerHand(self.dealer_hand + self.flop_cards)
+            if self.player_vhand.value > self.dealer_vhand.value:
+                self.compute_gain()
+            else:
+                # compute loss
+                self.delta_money = -self.ante - self.blind - self.bet
+        else:
+            self.delta_money = 0
+
         self.set_stage(self.OUTCOME_ST_CODE)
 
+    def go_wait_state(self):
+        # state dedicated to blit the type of hand (Two pair, Full house etc) + the outcome
+        print('autoplay OFF!')
+        self.autoplay_flag = False
+        if not self.folded:
+            self.revealed['dealer1'] = self.revealed['dealer2'] = True
+        self.set_stage(self.WAIT_STATE)
+
+    def new_round(self):  # like a reset
         # manage money:
         # TODO could use .pev here, if animations are needed
         #  it can be nice. To do so one would use the controller instead of lines below
-
-        # imagine we only consider the flop for now:
-        dealer_vhand = PokerHand(self.dealer_hand + self.flop_cards)
-        player_vhand = PokerHand(self.player_hand + self.flop_cards)
-        if dealer_vhand.value == player_vhand.value:
-            self.claim_back_money()
-            print('EGALITE')
-
+        if self.folded:
+            self.loose_money()
         else:
-            if player_vhand.value > dealer_vhand.value:
+            a, b = self.player_vhand.value, self.dealer_vhand.value
+            if a <= b:
+                if a == b:
+                    print('EGALITé')
+                    self.refund_money()
+                else:
+                    print('JAI PERDU')
+                    self.loose_money()
+            else:
                 print('JE BATS DEALER')
                 self.earn_money()
-            else:
-                print('JAI PERDU')
-                self.loose_money()
-            print('player hand val= ', player_vhand.value)
-            print(' > ')
-            print('dealer hand val= ', dealer_vhand.value)
+        # reset folded flag
+        self.folded = False
 
-    def new_round(self):  # like a reset
+        # HIDE cards
         for lname in self.revealed.keys():
-            self.revealed[lname] = False  # hide all
+            self.revealed[lname] = False
+
         # remove all cards previously dealt
         del self.dealer_hand[:]
         del self.player_hand[:]
         del self.flop_cards[:]
         del self.turnriver_cards[:]
+
         self.set_stage(self.INIT_ST_CODE)
 
-    def input_choice(self, bullish_choice):  # accepted values: {0, 1, 2}
-        if bullish_choice > 0:
-            if self.stage == self.INIT_ST_CODE:
-                self.go_discov(4)  # 4 is the arbitrary val chosen for 'Ante', need to pick a val that can be
-                # paid via chips available on the virtual game table. value 5 would'nt work!
-            else:
-                self.pev(MyEvTypes.PlayerBets)
+    def input_bet(self, small_or_big):  # accepted values: {0, 1}
+        bullish_choice = small_or_big + 1
+        if self.stage == self.INIT_ST_CODE:
+            self.go_discov(4)  # 4 is the arbitrary val chosen for 'Ante', need to pick a val that can be
+            # paid via chips available on the virtual game table. value 5 would'nt work!
         else:
             if self.stage == self.DISCOV_ST_CODE:
-                self.go_flop()
-
+                if bullish_choice == 1:
+                    self.bet_factor = 3
+                    self.bet = self.bet_factor*self.ante
+                else:
+                    self.bet_factor = 4
+                    self.bet = self.bet_factor*self.ante
             elif self.stage == self.FLOP_ST_CODE:
-                self.go_tr_state()
-
+                self.bet_factor = 2
+                self.bet = self.bet_factor*self.ante
             elif self.stage == self.TR_ST_CODE:
-                self.new_round()
+                self.bet_factor = 1
+                self.bet = self.ante
+            self.cash -= self.bet
+            self.pev(MyEvTypes.CashChanges, value=self.cash)
+            self.pev(MyEvTypes.EndRoundRequested, folded=False)
 
-            if self.stage == self.OUTCOME_ST_CODE:
-                self.new_round()
+    def input_check(self):
+        # doing the CHECK only
+        if self.stage == self.DISCOV_ST_CODE:
+            self.go_flop()
+
+        elif self.stage == self.FLOP_ST_CODE:
+            self.go_tr_state()
+
+        elif self.stage == self.TR_ST_CODE:
+            self.pev(MyEvTypes.EndRoundRequested, folded=True)
+
+        elif self.stage == self.WAIT_STATE:
+            self.new_round()
 
     # ---------------------------------
     #  money handling
@@ -183,28 +251,36 @@ class UthModel(kengi.event.CogObj):
         self.cash -= 2 * x
         self.pev(MyEvTypes.CashChanges, value=self.cash)
 
-    def claim_back_money(self):
-        self.cash += self.ante + self.blind + self.bet
-        self.ante = self.blind = self.bet = 0  # reset-like
-        self.pev(MyEvTypes.CashChanges, value=self.cash)
-
-    def earn_money(self):
-        # TODO delta_money doit dependre de la main victorieuse
-        # Gain relatif à la blinde
-        # ------------------------
+    def compute_gain(self):
+        # calcul gain spécifique & relatif à la blinde
+        # -------------------------------------------
         # Royal flush- 500 pour 1
         # Straigth flush- 50 pour 1
         # Four of a kind - 10 pour 1
         # Full house - 3 pour 1
         # Flush - 1.5 pour 1
         # Suite - 1 pour 1
-        # autres mains: égalité
-        # to be called when we're in the very last state
-        # test win/loose conditions
+        # autres mains y a pas eu victore mais simple égalité!
+        multiplicateur = {
+            'High Card': 0,
+            'One Pair': 0,
+            'Two Pair': 0,
+            'Straight': 1,
+            'Flush': 1.5,
+            'Full House': 3,
+            'Four of a Kind': 10,
+            'Straight Flush': 50
+        }[self.describe_pl_hand()]
+        self.delta_money = self.blind * multiplicateur
+
+    def refund_money(self):
         self.cash += self.ante + self.blind + self.bet
-        self.delta_money = self.blind  # paye une extra- blind en cas de victoire
-        self.cash += self.delta_money
         self.ante = self.blind = self.bet = 0  # reset-like
+        self.pev(MyEvTypes.CashChanges, value=self.cash)
+
+    def earn_money(self):
+        self.refund_money()
+        self.cash += self.delta_money
         self.pev(MyEvTypes.CashChanges, value=self.cash)
 
     def loose_money(self):
