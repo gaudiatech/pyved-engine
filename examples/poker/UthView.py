@@ -53,6 +53,8 @@ class UthView(ReceiverObj):
 
     def __init__(self, model):
         super().__init__()
+        self.temp_delta_money = 0
+
         self._assets_rdy = False
 
         self.bg = None
@@ -118,7 +120,7 @@ class UthView(ReceiverObj):
                 self.info_msg0 = None
                 self.info_msg1 = self.small_ft.render('Press SPACE once to start', True, self.TEXTCOLOR)
             elif msg in ('y', 'n'):
-                y = self._mod.delta_money
+                y = self.temp_delta_money
                 if self._mod.folded:
                     self.info_msg0 = self.ft.render('Player folded', True, self.TEXTCOLOR)
                     self.info_msg1 = None
@@ -136,11 +138,29 @@ class UthView(ReceiverObj):
                 self.info_msg1 = self.small_ft.render(msg, True, self.TEXTCOLOR)
         # TODO maybe we should use a set of flags to say what flags are meant to be draw?
 
+    #     message_table = defaultdict(
+    #         default_factory=lambda: None, {
+    #             UthModel.INIT_ST_CODE: 'press SPACE to play',
+    #             UthModel.DISCOV_ST_CODE: 'CHECK, BET x3, BET x4',
+    #             UthModel.FLOP_ST_CODE: 'CHECK, BET x2',
+    #             UthModel.TR_ST_CODE: 'FOLD, BET x1'
+    #         }
+    #     )
+    #     elif ev.type == MyEvTypes.PlayerWins:
+    #     self.delta_money = ev.amount
+    #     self.info_msg0 = self.ft.render('Victory', True, self.TEXTCOLOR)
+    #
+    # elif ev.type == MyEvTypes.PlayerLooses:
+    # # TODO disp. amount lost
+    # self.info_msg0 = self.ft.render('Defeat', True, self.TEXTCOLOR)
+
     def proc_event(self, ev, source):
         if ev.type == EngineEvTypes.PAINT:
             if not self._assets_rdy:
                 self._load_assets()
             self._paint(ev.screen)
+        elif ev.type == MyEvTypes.PlayerWins:
+            self.temp_delta_money = ev.amount
 
         elif ev.type == MyEvTypes.StageChanges:
             self._update_displayed_status()
@@ -192,7 +212,7 @@ class UthView(ReceiverObj):
             UthView.centerblit(scr, self.card_images[self._mod.dealer_hand[1].code], CARD_SLOTS_POS['dealer2'])
 
         # -- draw amounts for ante, blind and the bet
-        for info_e in [(self._mod.ante, 'ante'), (self._mod.blind, 'blind'), (self._mod.bet, 'bet')]:
+        for info_e in self._mod.money_info:
             x, name = info_e
             lbl_surf = self.small_ft.render(f'{x}$ ', True, self.TEXTCOLOR, self.BG_TEXTCOLOR)
             scr.blit(lbl_surf, CARD_SLOTS_POS[name])

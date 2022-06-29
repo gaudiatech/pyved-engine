@@ -8,5 +8,8 @@ MAXFPS = 45
 MyEvTypes = kengi.event.enum_ev_types(
     'CashChanges',  # contains int "value"
     'StageChanges',
-    'EndRoundRequested'  # contains bool "folded"
+    'EndRoundRequested',  # contains bool "folded"
+    'PlayerWins',  # amount
+    'PlayerTies',
+    'PlayerLooses'
 )

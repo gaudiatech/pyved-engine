@@ -12,13 +12,93 @@ class MoneyInfo(kengi.event.CogObj):
     earning & loosing
 
     earning := prize due to "Ante" + prize due to "Bet" + prize due to "Blind"
-
     right now this class isnt used, but it should become active
+
+    ------
+    * Si le Croupier a la meilleure combinaison, il récupère toutes les mises des cases « Blinde »,
+    « Mise (Ante) » et « Jouer » (cas particulier pour le Bonus, voir ci-dessous)
+
+    * en cas d’égalité, les mises restent aux joueurs sans gain ni perte (cas particulier pour le Bonus, voir ci-dessous)
+
+    * Si un joueur a une meilleure combinaison que le Croupier,
+    il récupère l’intégralité de ses mises de départ et ses enjeux seront payés en fonction du tableau de paiement :
     """
-    def __init__(self):
+    def __init__(self, init_amount=200):
         super().__init__()
-        self.cash = 200  # starting cash
+        self._cash = init_amount  # starting cash
         # TODO complete the implem & use this class!
+        self.ante = self.blind = self.playcost = 0
+        self._latest_bfactor = None
+
+        self.recorded_outcome = None  # -1 loss, 0 tie, 1 victory
+        self.recorded_prize = 0
+
+    def get_cash_amount(self):
+        return self._cash
+
+    def init_play(self, value):
+        self.ante = self.blind = value
+        self._cash -= 2 * value
+        self.pev(MyEvTypes.CashChanges, value=self._cash)
+
+    def bet(self, bet_factor):
+        self.playcost = bet_factor * self.ante
+        self._cash -= self.playcost
+        self.pev(MyEvTypes.CashChanges, value=self._cash)
+        self._latest_bfactor = bet_factor
+
+    def update_money_info(self):
+        if self.recorded_outcome == 1:
+            self._cash += self.recorded_prize
+        if self.recorded_outcome > -1:
+            self._cash += self.ante + self.blind + self.playcost  # recup toutes les mises
+
+        self.ante = self.blind = self.playcost = 0  # reset play
+        self.pev(MyEvTypes.CashChanges, value=self._cash)
+
+    def announce_victory(self, blind_multiplier):
+        prize = self.ante + self.playcost  # la banque paye à égalité sur ante & playcost
+        prize += blind_multiplier * self.blind
+        self.pev(MyEvTypes.PlayerWins, amount=prize)
+
+        self.recorded_outcome = 1
+        self.recorded_prize = prize
+
+    def announce_tie(self):
+        self.recorded_outcome = 0
+        self.pev(MyEvTypes.PlayerTies)
+
+    def announce_defeat(self):
+        self.recorded_outcome = -1
+        self.pev(MyEvTypes.PlayerLooses)
+
+    @property
+    def is_player_broke(self):
+        return self._cash <= 0
+        # useful method because someone may want to call .pev(EngineEvTypes.GAMEENDS) when player's broke
+
+    @staticmethod
+    def compute_blind_multiplier(winning_hand):
+        # calcul gain spécifique & relatif à la blinde
+        # -------------------------------------------
+        # Royal flush- 500 pour 1
+        # Straigth flush- 50 pour 1
+        # Four of a kind - 10 pour 1
+        # Full house - 3 pour 1
+        # Flush - 1.5 pour 1
+        # Suite - 1 pour 1
+        # autres mains y a pas eu victore mais simple égalité!
+        multiplicateur = {
+            'High Card': 0,
+            'One Pair': 0,
+            'Two Pair': 0,
+            'Straight': 1,
+            'Flush': 1.5,
+            'Full House': 3,
+            'Four of a Kind': 10,
+            'Straight Flush': 50
+        }[winning_hand.description]
+        return multiplicateur
 
 
 class UthModel(kengi.event.CogObj):
@@ -46,7 +126,7 @@ class UthModel(kengi.event.CogObj):
 
     def __init__(self):
         super().__init__()
-        self.cash = 200  # usd
+        self.wallet = MoneyInfo()
 
         self.revealed = {
             'dealer1': False,
@@ -59,13 +139,8 @@ class UthModel(kengi.event.CogObj):
             'player1': False,
             'player2': False
         }
-        self.ante = self.blind = 0
-        self.bet = 0
-        self.bet_factor = 0
 
-        self.delta_money = 0
         self.folded = False
-
         self.autoplay_flag = False
         self.dealer_vhand = self.player_vhand = None
 
@@ -82,6 +157,20 @@ class UthModel(kengi.event.CogObj):
     @property
     def stage(self):
         return self._stage
+
+    @property
+    def cash(self):
+        return self.wallet.get_cash_amount()
+
+    @property
+    def money_info(self):
+        # returns smth in the format
+        # [(self._mod.ante, 'ante'), (self._mod.blind, 'blind'), (self._mod.bet, 'bet')]
+        return [
+            (self.wallet.ante, 'ante'),
+            (self.wallet.blind, 'blind'),
+            (self.wallet.playcost, 'bet')
+        ]
 
     # -----------------------
     #  state transitions
@@ -115,8 +204,7 @@ class UthModel(kengi.event.CogObj):
         self.player_hand.extend((
             StandardCard.at_random(), StandardCard.at_random()
         ))
-        self.pay_to_play(ante_val)
-
+        self.wallet.init_play(ante_val)
         self.set_stage(self.DISCOV_ST_CODE)
 
     def go_flop(self):
@@ -135,30 +223,26 @@ class UthModel(kengi.event.CogObj):
 
     def describe_pl_hand(self):
         return self.player_vhand.description
-        #print(f'  player has {player_vhand.description}   (score: {player_vhand.value}')
-        #print(' > ')
 
     def describe_dealers_hand(self):
         return self.dealer_vhand.description
-        # print(f'  dealer has {dealer_vhand.description}   (score: {dealer_vhand.value}')
 
     def go_outcome_state(self, with_fold):
-        # performs computations to know & save what's the outcome
         print('GO OUTCOME STATE')
-        self.folded = with_fold
-        if not self.folded:
-            # imagine we only consider the flop, for now
-            # TODO complete this part
-            self.player_vhand = PokerHand(self.player_hand + self.flop_cards)
-            self.dealer_vhand = PokerHand(self.dealer_hand + self.flop_cards)
-            if self.player_vhand.value > self.dealer_vhand.value:
-                self.compute_gain()
-            else:
-                # compute loss
-                self.delta_money = -self.ante - self.blind - self.bet
+        if self.folded:
+            self.wallet.notice_defeat()
         else:
-            self.delta_money = 0
-
+            # TODO complete this part(we only consider the flop for now)
+            self.dealer_vhand = PokerHand(self.dealer_hand + self.flop_cards)
+            self.player_vhand = PokerHand(self.player_hand + self.flop_cards)
+            dealrscore = self.dealer_vhand.value
+            playrscore = self.player_vhand.value
+            if dealrscore > playrscore:
+                self.wallet.announce_defeat()
+            elif dealrscore == playrscore:
+                self.wallet.announce_tie()
+            else:
+                self.wallet.announce_victory(MoneyInfo.compute_blind_multiplier(self.player_vhand))
         self.set_stage(self.OUTCOME_ST_CODE)
 
     def go_wait_state(self):
@@ -173,20 +257,22 @@ class UthModel(kengi.event.CogObj):
         # manage money:
         # TODO could use .pev here, if animations are needed
         #  it can be nice. To do so one would use the controller instead of lines below
-        if self.folded:
-            self.loose_money()
-        else:
-            a, b = self.player_vhand.value, self.dealer_vhand.value
-            if a <= b:
-                if a == b:
-                    print('EGALITé')
-                    self.refund_money()
-                else:
-                    print('JAI PERDU')
-                    self.loose_money()
-            else:
-                print('JE BATS DEALER')
-                self.earn_money()
+        # if self.folded:
+        #     self.loose_money()
+        # else:
+        #     a, b = self.player_vhand.value, self.dealer_vhand.value
+        #     if a <= b:
+        #         if a == b:
+        #             print('EGALITé')
+        #             self.refund_money()
+        #         else:
+        #             print('JAI PERDU')
+        #             self.loose_money()
+        #     else:
+        #         print('JE BATS DEALER')
+        #         self.earn_money()
+        self.wallet.update_money_info()
+
         # reset folded flag
         self.folded = False
 
@@ -210,19 +296,14 @@ class UthModel(kengi.event.CogObj):
         else:
             if self.stage == self.DISCOV_ST_CODE:
                 if bullish_choice == 1:
-                    self.bet_factor = 3
-                    self.bet = self.bet_factor*self.ante
+                    self.wallet.bet(3)
                 else:
-                    self.bet_factor = 4
-                    self.bet = self.bet_factor*self.ante
+                    self.wallet.bet(4)
             elif self.stage == self.FLOP_ST_CODE:
-                self.bet_factor = 2
-                self.bet = self.bet_factor*self.ante
+                self.wallet.bet(2)
             elif self.stage == self.TR_ST_CODE:
-                self.bet_factor = 1
-                self.bet = self.ante
-            self.cash -= self.bet
-            self.pev(MyEvTypes.CashChanges, value=self.cash)
+                self.wallet.bet(1)
+
             self.pev(MyEvTypes.EndRoundRequested, folded=False)
 
     def input_check(self):
@@ -238,52 +319,3 @@ class UthModel(kengi.event.CogObj):
 
         elif self.stage == self.WAIT_STATE:
             self.new_round()
-
-    # ---------------------------------
-    #  money handling
-    # ---------------------------------
-    def test_if_players_broke(self):
-        if self.cash <= 0:
-            self.pev(EngineEvTypes.GAMEENDS)
-
-    def pay_to_play(self, x):
-        self.ante = self.blind = x
-        self.cash -= 2 * x
-        self.pev(MyEvTypes.CashChanges, value=self.cash)
-
-    def compute_gain(self):
-        # calcul gain spécifique & relatif à la blinde
-        # -------------------------------------------
-        # Royal flush- 500 pour 1
-        # Straigth flush- 50 pour 1
-        # Four of a kind - 10 pour 1
-        # Full house - 3 pour 1
-        # Flush - 1.5 pour 1
-        # Suite - 1 pour 1
-        # autres mains y a pas eu victore mais simple égalité!
-        multiplicateur = {
-            'High Card': 0,
-            'One Pair': 0,
-            'Two Pair': 0,
-            'Straight': 1,
-            'Flush': 1.5,
-            'Full House': 3,
-            'Four of a Kind': 10,
-            'Straight Flush': 50
-        }[self.describe_pl_hand()]
-        self.delta_money = self.blind * multiplicateur
-
-    def refund_money(self):
-        self.cash += self.ante + self.blind + self.bet
-        self.ante = self.blind = self.bet = 0  # reset-like
-        self.pev(MyEvTypes.CashChanges, value=self.cash)
-
-    def earn_money(self):
-        self.refund_money()
-        self.cash += self.delta_money
-        self.pev(MyEvTypes.CashChanges, value=self.cash)
-
-    def loose_money(self):
-        self.delta_money = -self.ante - self.blind - self.bet
-        self.ante = self.blind = self.bet = 0  # reset-like
-        self.pev(MyEvTypes.CashChanges, value=self.cash)
