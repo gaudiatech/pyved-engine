@@ -116,6 +116,7 @@ class PokerHand(BaseHandOfCards):
 
     def __init__(self, hand):
         super().__init__()
+        assert len(hand) == 5
         self.content = hand  # list of cards
 
     def __str__(self):
@@ -262,6 +263,39 @@ class PokerHand(BaseHandOfCards):
             if keyval[1] != 0:
                 points = int(str(points) + str(keyval[1] * PokerHand.adhoc_mapping(keyval[0])))
         return points
+
+
+# ----------------
+#  util function that finds the best possible 5-hand poker hand amongst 7 cards
+# ----------------
+def find_best_ph(possib_cards: list):
+    """
+    returns an instance of PokerHand
+    """
+    assert len(possib_cards) == 7
+    # There are 21 possible 5 card combinations in a deck of 7
+    # for texas hold'em this is a static problem so we can define every possibility below and use the list
+    # to build the algorithm
+    perms = """\
+01234,01235,01236,01245,01246,01256,01345,\
+01346,01356,01456,02345,02346,02356,02456,\
+03456,12345,12346,12356,12456,13456,23456\
+""".split(',')
+    best_ph_sofar = None
+    best_ph_score = None
+
+    for sigma in perms:
+        tmpe = list(sigma)
+        indices = list(map(int, tmpe))  # content CONVERTED to ints
+
+        chosen_cards = list()
+        for i in indices:
+            chosen_cards.append(possib_cards[i])
+        ph = PokerHand(chosen_cards)
+        if (best_ph_sofar is None) or (best_ph_score < ph.value):
+            best_ph_sofar = ph
+            best_ph_score = ph.value
+    return best_ph_sofar
 
 
 class BlackjackHand(BaseHandOfCards):

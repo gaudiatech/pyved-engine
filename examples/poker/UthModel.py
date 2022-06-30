@@ -1,6 +1,6 @@
 import katagames_engine as kengi
 from pokerdefs import MyEvTypes
-from tabletop import StandardCard, PokerHand, CardDeck
+from tabletop import StandardCard, find_best_ph, PokerHand, CardDeck
 
 print(PokerHand)
 EngineEvTypes = kengi.event.EngineEvTypes
@@ -243,11 +243,14 @@ class UthModel(kengi.event.CogObj):
             self.wallet.announce_defeat()
             self.revealed['dealer1'] = self.revealed['dealer2'] = False
         else:
-            # TODO complete this part(we only consider the flop for now)
-            self.dealer_vhand = PokerHand(self.dealer_hand + self.flop_cards)
-            self.player_vhand = PokerHand(self.player_hand + self.flop_cards)
+            # - vhand like virtual hand,
+            # because it contains 7 cards and the program should find the best possible 5-card hand
+            self.dealer_vhand = find_best_ph(self.dealer_hand + self.flop_cards + self.turnriver_cards)
+            self.player_vhand = find_best_ph(self.player_hand + self.flop_cards + self.turnriver_cards)
+
             dealrscore = self.dealer_vhand.value
             playrscore = self.player_vhand.value
+
             if dealrscore > playrscore:
                 self.wallet.announce_defeat()
             elif dealrscore == playrscore:
