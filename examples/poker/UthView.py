@@ -26,9 +26,9 @@ CARD_SLOTS_POS = {  # coords in pixel so cards/chips & BG image do match; cards 
     'player1': (1125, 878),
     'player2': (1041, 880),
 
-    'ante': (942, 770),
-    'bet': (942, 855),
-    'blind': (1045, 770),
+    'ante': (935, 757),
+    'bet': (935, 850),
+    'blind': (1040, 757),
 
     'raise1': (955, 870),
     'raise2': (961, 871),
@@ -47,14 +47,12 @@ PLAYER_CHIPS = {
 
 
 class UthView(ReceiverObj):
-    TEXTCOLOR = (5, 5, 28)
+    TEXTCOLOR = (5, 58, 7)
     BG_TEXTCOLOR = (133, 133, 133)
     ASK_SELECTION_MSG = 'SELECT ONE OPTION: '
 
     def __init__(self, model):
         super().__init__()
-        self.temp_delta_money = 0
-
         self._assets_rdy = False
 
         self.bg = None
@@ -65,13 +63,14 @@ class UthView(ReceiverObj):
 
         self._mod = model
         self.ft = pygame.font.Font(None, 72)
-        self.small_ft = pygame.font.Font(None, 33)
+        self.small_ft = pygame.font.Font(None, 23)
 
         self.info_msg0 = None
         self.info_msg1 = None  # will be used to tell the player what he/she has to do!
+        self.info_msg2 = None
 
         # draw cash amount
-        self.cash_etq = self.ft.render(str(self._mod.cash)+'$ ', True, (0, 0, 28), (133, 133, 133))
+        self.cash_etq = self.ft.render(str(self._mod.cash)+'$ ', True, self.TEXTCOLOR, self.BG_TEXTCOLOR)
 
     def _load_assets(self):
         self._assets_rdy = True
@@ -101,42 +100,23 @@ class UthView(ReceiverObj):
             self.chip_spr[chip_val_info] = spr
 
     def _update_displayed_status(self):
-        msg = None
+
         if self._mod.stage == UthModel.INIT_ST_CODE:
-            msg = '_'
-        elif self._mod.stage == UthModel.DISCOV_ST_CODE:
+            self.info_msg0 = self.ft.render('Press ENTER to begin', True, self.TEXTCOLOR)
+            self.info_msg1 = None
+            self.info_msg2 = None
+            return
+
+        msg = None
+        if self._mod.stage == UthModel.DISCOV_ST_CODE:
             msg = ' CHECK, BET x3, BET x4'
         elif self._mod.stage == UthModel.FLOP_ST_CODE and (not self._mod.autoplay_flag):
             msg = ' CHECK, BET x2'
         elif self._mod.stage == UthModel.TR_ST_CODE and (not self._mod.autoplay_flag):
             msg = ' FOLD, BET x1'
-        elif self._mod.stage == UthModel.WAIT_STATE:
-            msg = 'y' if (not self._mod.folded) else 'n'
-        else:
-            self.info_msg0 = None
-            self.info_msg1 = None
         if msg:
-            if msg == '_':
-                self.info_msg0 = None
-                self.info_msg1 = self.small_ft.render('Press SPACE once to start', True, self.TEXTCOLOR)
-            elif msg in ('y', 'n'):
-                y = self.temp_delta_money
-                if self._mod.folded:
-                    self.info_msg0 = self.ft.render('Player folded', True, self.TEXTCOLOR)
-                    self.info_msg1 = None
-                else:
-                    round_outcome = 'Victory/Neutral' if y >= 0 else 'Defeat.'
-                    self.info_msg0 = self.ft.render(round_outcome, True, self.TEXTCOLOR)
-                    infoh_player, infoh_dealer = self._mod.describe_pl_hand(), self._mod.describe_dealers_hand()
-                    self.info_msg1 = self.small_ft.render(
-                        f"Player: {infoh_player}; Dealer: {infoh_dealer}; Result {y}$",
-                        True,
-                        self.TEXTCOLOR
-                    )
-            else:
-                self.info_msg0 = self.ft.render(self.ASK_SELECTION_MSG, True, self.TEXTCOLOR)
-                self.info_msg1 = self.small_ft.render(msg, True, self.TEXTCOLOR)
-        # TODO maybe we should use a set of flags to say what flags are meant to be draw?
+            self.info_msg0 = self.ft.render(self.ASK_SELECTION_MSG, True, self.TEXTCOLOR)
+            self.info_msg1 = self.small_ft.render(msg, True, self.TEXTCOLOR)
 
     #     message_table = defaultdict(
     #         default_factory=lambda: None, {
@@ -159,8 +139,6 @@ class UthView(ReceiverObj):
             if not self._assets_rdy:
                 self._load_assets()
             self._paint(ev.screen)
-        elif ev.type == MyEvTypes.PlayerWins:
-            self.temp_delta_money = ev.amount
 
         elif ev.type == MyEvTypes.StageChanges:
             self._update_displayed_status()
@@ -168,6 +146,45 @@ class UthView(ReceiverObj):
         elif ev.type == MyEvTypes.CashChanges:
             # RE-draw cash value
             self.cash_etq = self.ft.render(str(ev.value) + '$ ', True, self.TEXTCOLOR, self.BG_TEXTCOLOR)
+
+        elif ev.type == MyEvTypes.Victory:
+            print('victory event received')
+            result = ev.amount
+            infoh_player = self._mod.player_vhand.description
+            infoh_dealer = self._mod.dealer_vhand.description
+            msg = f"Player: {infoh_player}; Dealer: {infoh_dealer}; Change {result}$"
+            self.info_msg0 = self.ft.render('Victory!', True, self.TEXTCOLOR)
+            self.info_msg1 = self.small_ft.render(msg, True, self.TEXTCOLOR)
+            self.info_msg2 = self.small_ft.render('Press BACKSPACE to restart', True, self.TEXTCOLOR)
+
+        elif ev.type == MyEvTypes.Tie:
+            print('tie event received')
+            self.info_msg0 = self.ft.render('Its a Tie.', True, self.TEXTCOLOR)
+            infoh_player = self._mod.player_vhand.description
+            infoh_dealer = self._mod.dealer_vhand.description
+            self.info_msg1 = self.small_ft.render(
+                f"Player: {infoh_player}; Dealer: {infoh_dealer}; Change {0}$",
+                True, self.TEXTCOLOR
+            )
+            self.info_msg2 = self.small_ft.render('Press BACKSPACE to restart', True, self.TEXTCOLOR)
+
+        elif ev.type == MyEvTypes.Defeat:
+            print('defeat event received')
+            if self._mod.folded:
+                msg = 'Player folded.'
+            else:
+                msg = 'Defeat.'
+            self.info_msg0 = self.ft.render(msg, True, self.TEXTCOLOR)
+            result = ev.loss
+            if self._mod.folded:
+                self.info_msg1 = self.small_ft.render(f"You've lost {result}$", True, self.TEXTCOLOR)
+            else:
+                infoh_dealer = self._mod.dealer_vhand.description
+                infoh_player = self._mod.player_vhand.description
+                self.info_msg1 = self.small_ft.render(
+                    f"Player: {infoh_player}; Dealer: {infoh_dealer}; You've lost {result}$", True, self.TEXTCOLOR
+                )
+            self.info_msg2 = self.small_ft.render('Press BACKSPACE to restart', True, self.TEXTCOLOR)
 
     @staticmethod
     def centerblit(refscr, surf, p):
@@ -214,7 +231,7 @@ class UthView(ReceiverObj):
         # -- draw amounts for ante, blind and the bet
         for info_e in self._mod.money_info:
             x, name = info_e
-            lbl_surf = self.small_ft.render(f'{x}$ ', True, self.TEXTCOLOR, self.BG_TEXTCOLOR)
+            lbl_surf = self.ft.render(f'{x}', True, self.TEXTCOLOR, self.BG_TEXTCOLOR)
             scr.blit(lbl_surf, CARD_SLOTS_POS[name])
 
         # -- draw chips & the total cash amount
@@ -227,10 +244,9 @@ class UthView(ReceiverObj):
         scr.blit(self.chip_spr['2'].image, self.chip_spr['2'].rect.topleft)
         scr.blit(self.cash_etq, POS_CASH)
 
-        # -- display prompt messages
-        if self.info_msg0:
-            scr.blit(self.info_msg0, (24, 16))
-        if self.info_msg1:
-            scr.blit(self.info_msg1, (24, 90))
+        # -- display all 3 prompt messages
+        for rank, e in enumerate((self.info_msg0, self.info_msg1, self.info_msg2)):
+            if e is not None:
+                scr.blit(e, (24, 10+50*rank))
 
         kengi.flip()

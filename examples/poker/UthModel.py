@@ -56,29 +56,17 @@ class MoneyInfo(kengi.event.CogObj):
         self.ante = self.blind = self.playcost = 0  # reset play
         self.pev(MyEvTypes.CashChanges, value=self._cash)
 
-    def announce_victory(self, blind_multiplier):
-        prize = self.ante + self.playcost  # la banque paye à égalité sur ante & playcost
-        prize += blind_multiplier * self.blind
-        self.pev(MyEvTypes.PlayerWins, amount=prize)
-
-        self.recorded_outcome = 1
-        self.recorded_prize = prize
-
-    def announce_tie(self):
-        self.recorded_outcome = 0
-        self.pev(MyEvTypes.PlayerTies)
-
-    def announce_defeat(self):
-        self.recorded_outcome = -1
-        self.pev(MyEvTypes.PlayerLooses)
-
     @property
     def is_player_broke(self):
         return self._cash <= 0
         # useful method because someone may want to call .pev(EngineEvTypes.GAMEENDS) when player's broke
 
+    # ---------------------
+    #  the 4 methods below compute future gain/loss
+    #  but without applying it
+    # ---------------------
     @staticmethod
-    def compute_blind_multiplier(winning_hand):
+    def compute_blind_multiplier(givenhand):
         # calcul gain spécifique & relatif à la blinde
         # -------------------------------------------
         # Royal flush- 500 pour 1
@@ -92,13 +80,32 @@ class MoneyInfo(kengi.event.CogObj):
             'High Card': 0,
             'One Pair': 0,
             'Two Pair': 0,
+            'Three of a Kind': 0,
             'Straight': 1,
             'Flush': 1.5,
             'Full House': 3,
             'Four of a Kind': 10,
             'Straight Flush': 50
-        }[winning_hand.description]
+        }[givenhand.description]
         return multiplicateur
+
+    def announce_victory(self, winning_hand):
+        prize = self.ante + self.playcost  # la banque paye à égalité sur ante & playcost
+        blind_multiplier = MoneyInfo.compute_blind_multiplier(winning_hand)
+        prize += blind_multiplier * self.blind
+        self.recorded_prize = prize
+
+        self.recorded_outcome = 1
+
+        self.pev(MyEvTypes.Victory, amount=prize)
+
+    def announce_tie(self):
+        self.recorded_outcome = 0
+        self.pev(MyEvTypes.Tie)
+
+    def announce_defeat(self):
+        self.recorded_outcome = -1
+        self.pev(MyEvTypes.Defeat, loss=-1*(self.ante+self.blind+self.playcost))
 
 
 class UthModel(kengi.event.CogObj):
@@ -175,15 +182,13 @@ class UthModel(kengi.event.CogObj):
     # -----------------------
     #  state transitions
     # -----------------------
-    def evolve_state(self, with_fold=None):
-        if with_fold is None:
-            with_fold = self.folded
+    def evolve_state(self):
         if self.DISCOV_ST_CODE == self.stage:
             self.go_flop()
         elif self.FLOP_ST_CODE == self.stage:
             self.go_tr_state()
         elif self.TR_ST_CODE == self.stage:
-            self.go_outcome_state(with_fold)
+            self.go_outcome_state()
         elif self.OUTCOME_ST_CODE == self.stage:
             self.go_wait_state()
 
@@ -227,10 +232,18 @@ class UthModel(kengi.event.CogObj):
     def describe_dealers_hand(self):
         return self.dealer_vhand.description
 
-    def go_outcome_state(self, with_fold):
+    def go_outcome_state(self):
         print('GO OUTCOME STATE')
+        self.set_stage(self.OUTCOME_ST_CODE)
+
+    def go_wait_state(self):
+        # state dedicated to blit the type of hand (Two pair, Full house etc) + the outcome
+        print('autoplay OFF!')
+        self.autoplay_flag = False
+
         if self.folded:
-            self.wallet.notice_defeat()
+            self.wallet.announce_defeat()
+            self.revealed['dealer1'] = self.revealed['dealer2'] = False
         else:
             # TODO complete this part(we only consider the flop for now)
             self.dealer_vhand = PokerHand(self.dealer_hand + self.flop_cards)
@@ -242,14 +255,7 @@ class UthModel(kengi.event.CogObj):
             elif dealrscore == playrscore:
                 self.wallet.announce_tie()
             else:
-                self.wallet.announce_victory(MoneyInfo.compute_blind_multiplier(self.player_vhand))
-        self.set_stage(self.OUTCOME_ST_CODE)
-
-    def go_wait_state(self):
-        # state dedicated to blit the type of hand (Two pair, Full house etc) + the outcome
-        print('autoplay OFF!')
-        self.autoplay_flag = False
-        if not self.folded:
+                self.wallet.announce_victory(self.player_vhand)
             self.revealed['dealer1'] = self.revealed['dealer2'] = True
         self.set_stage(self.WAIT_STATE)
 
@@ -315,7 +321,8 @@ class UthModel(kengi.event.CogObj):
             self.go_tr_state()
 
         elif self.stage == self.TR_ST_CODE:
-            self.pev(MyEvTypes.EndRoundRequested, folded=True)
+            self.folded = True
+            self.pev(MyEvTypes.EndRoundRequested)
 
         elif self.stage == self.WAIT_STATE:
             self.new_round()
