@@ -1,6 +1,6 @@
 import katagames_engine as kengi
 from pokerdefs import MyEvTypes
-from tabletop import StandardCard, PokerHand
+from tabletop import StandardCard, PokerHand, CardDeck
 
 print(PokerHand)
 EngineEvTypes = kengi.event.EngineEvTypes
@@ -26,6 +26,7 @@ class MoneyInfo(kengi.event.CogObj):
     def __init__(self, init_amount=200):
         super().__init__()
         self._cash = init_amount  # starting cash
+
         # TODO complete the implem & use this class!
         self.ante = self.blind = self.playcost = 0
         self._latest_bfactor = None
@@ -134,6 +135,7 @@ class UthModel(kengi.event.CogObj):
     def __init__(self):
         super().__init__()
         self.wallet = MoneyInfo()
+        self.deck = CardDeck()
 
         self.revealed = {
             'dealer1': False,
@@ -203,12 +205,8 @@ class UthModel(kengi.event.CogObj):
             raise ValueError('calling deal_cards while model isnt in the initial state')
         self.revealed['player2'] = self.revealed['player1'] = True
         # TODO should be deck.draw_cards(2) or smth
-        self.dealer_hand.extend((
-            StandardCard.at_random(), StandardCard.at_random()
-        ))
-        self.player_hand.extend((
-            StandardCard.at_random(), StandardCard.at_random()
-        ))
+        self.dealer_hand.extend(self.deck.deal(2))
+        self.player_hand.extend(self.deck.deal(2))
         self.wallet.init_play(ante_val)
         self.set_stage(self.DISCOV_ST_CODE)
 
@@ -216,13 +214,13 @@ class UthModel(kengi.event.CogObj):
         print('GO FLOP STATE')
         for k in range(1, 3 + 1):
             self.revealed[f'flop{k}'] = True
-        self.flop_cards.extend([StandardCard.at_random() for _ in range(3)])
+        self.flop_cards.extend(self.deck.deal(3))
         self.set_stage(self.FLOP_ST_CODE)
 
     def go_tr_state(self):
         print('GO TR STATE')
         # betting => betx2, or check
-        self.turnriver_cards.extend([StandardCard.at_random(), StandardCard.at_random()])
+        self.turnriver_cards.extend(self.deck.deal(2))
         self.revealed['turn'] = self.revealed['river'] = True
         self.set_stage(self.TR_ST_CODE)
 
@@ -279,7 +277,8 @@ class UthModel(kengi.event.CogObj):
         #         self.earn_money()
         self.wallet.update_money_info()
 
-        # reset folded flag
+        # reset stuff
+        self.deck.reset()
         self.folded = False
 
         # HIDE cards

@@ -311,25 +311,52 @@ class CardDeck:
     > Or for example what if I design a new game where 3 jokers are used?
     """
 
-    def __init__(self, contenu_init=None):
-        if contenu_init is None:
-            contenu = ['sj', 'sq', 'sk', 'sa']  # spades
-            contenu.extend(['hj', 'hq', 'hk', 'ha'])  # hearts
-            contenu.extend(['cj', 'cq', 'ck', 'ca'])  # clubs
-            contenu.extend(['dj', 'dq', 'dk', 'da'])  # diamonds
-            values = range(2, 11)
-            for x in values:
-                spades = "s" + str(x)
-                hearts = "h" + str(x)
-                clubs = "c" + str(x)
-                diamonds = "d" + str(x)
-                contenu.append(spades)
-                contenu.append(hearts)
-                contenu.append(clubs)
-                contenu.append(diamonds)
-            self.contenu = contenu
-        else:
-            self.contenu = contenu_init
+    def __init__(self):
+        # by default we create a full deck, it contains every single standard card
+        self.content = list()
+        self.reset()
+
+        # if contenu_init is None:
+        #     contenu = ['sj', 'sq', 'sk', 'sa']  # spades
+        #     contenu.extend(['hj', 'hq', 'hk', 'ha'])  # hearts
+        #     contenu.extend(['cj', 'cq', 'ck', 'ca'])  # clubs
+        #     contenu.extend(['dj', 'dq', 'dk', 'da'])  # diamonds
+        #     values = range(2, 11)
+        #     for x in values:
+        #         spades = "s" + str(x)
+        #         hearts = "h" + str(x)
+        #         clubs = "c" + str(x)
+        #         diamonds = "d" + str(x)
+        #         contenu.append(spades)
+        #         contenu.append(hearts)
+        #         contenu.append(clubs)
+        #         contenu.append(diamonds)
+        #     self.contenu = contenu
+        # else:
+        #     self.contenu = contenu_init
+
+    def reset(self):
+        del self.content[:]
+        for c in StandardCard.all_card_codes():
+            self.content.append(StandardCard(c))
+        random.shuffle(self.content)
+
+    def deal(self, n=1):
+        k = self.size
+        if n > k:
+            raise ValueError(f'cannot deal {n} cards! Only {k} are available in deck')
+        res = list()
+        while n > 0:
+            res.append(self.content.pop(0))
+            n -= 1
+        return res
+
+    def __getitem__(self, item):
+        return self.content[item]
+
+    @property
+    def size(self):
+        return len(self.content)
 
     # anciennement def returnFromDead(self, deadDeck):
     def recois(self, autre_deck):
@@ -343,9 +370,6 @@ class CardDeck:
 
         return self.__class__([])
 
-    @property
-    def size(self):
-        return len(self.contenu)
 
     def get_info_card(self, ind):
         return self.contenu[ind]
@@ -391,3 +415,21 @@ class CardDeck:
         hand.contenu.append(deck[0])
         del deck[0]
         return dealt_deck, hand
+
+
+if __name__ == '__main__':
+    d = CardDeck()
+    print(d.size)
+    print(d)
+
+    print(d[0])
+    print(d[1])
+    print(d[2])
+    print('deal 3 cards')
+    tmp = d.deal(3)
+    print('   ', tmp[0])
+    print('   ', tmp[1])
+    print('   ', tmp[2])
+    print(tmp)
+    print(d[0])
+    print(d[13])
