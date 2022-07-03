@@ -71,8 +71,11 @@ class Border(object):
         self.r = r
         self.transparent = transparent
 
-    def render(self, dest):
+    def render(self, dest, scr=None):
         """Draw this decorative border at dest on screen."""
+        if scr is None:
+            scr = _hub.core.get_screen()
+
         # We're gonna draw a decorative border to surround the provided area.
         if self.border == None:
             self.border = image.Image(self.border_name, self.border_width, self.border_width)
@@ -96,17 +99,17 @@ class Border(object):
             (fdest.x + fdest.width - self.border_width // 2, fdest.y + fdest.height - self.border_width // 2), self.br)
 
         fdest = dest.inflate(self.padding - self.border_width, self.padding + self.border_width)
-        my_state.screen.set_clip(fdest)
+        scr.set_clip(fdest)
         for x in range(0, fdest.w // self.border_width + 2):
             self.border.render((fdest.x + x * self.border_width, fdest.y), self.t)
             self.border.render((fdest.x + x * self.border_width, fdest.y + fdest.height - self.border_width), self.b)
 
         fdest = dest.inflate(self.padding + self.border_width, self.padding - self.border_width)
-        my_state.screen.set_clip(fdest)
+        scr.set_clip(fdest)
         for y in range(0, fdest.h // self.border_width + 2):
             self.border.render((fdest.x, fdest.y + y * self.border_width), self.l)
             self.border.render((fdest.x + fdest.width - self.border_width, fdest.y + y * self.border_width), self.r)
-        my_state.screen.set_clip(None)
+        scr.set_clip(None)
 
 
 # Monkey Type these definitions to fit your game/assets.
@@ -333,7 +336,11 @@ def render_text(font, text, width, color=TEXT_COLOR, justify=-1, antialias=True)
 
 def draw_text(font, text, rect, color=TEXT_COLOR, justify=-1, antialias=True, dest_surface=None):
     # Draw some text to the screen with the provided options.
-    dest_surface = dest_surface or my_state.screen
+    if dest_surface:
+        dsu = dest_surface
+    else:
+        dsu = _hub.core.get_screen()
+
     myimage = render_text(font, text, rect.width, color, justify, antialias)
     if justify == 0:
         myrect = myimage.get_rect(midtop=rect.midtop)
@@ -341,9 +348,9 @@ def draw_text(font, text, rect, color=TEXT_COLOR, justify=-1, antialias=True, de
         myrect = myimage.get_rect(topleft=rect.topleft)
     else:
         myrect = rect
-    dest_surface.set_clip(rect)
-    dest_surface.blit(myimage, myrect)
-    dest_surface.set_clip(None)
+    dsu.set_clip(rect)
+    dsu.blit(myimage, myrect)
+    dsu.set_clip(None)
 
 
 def wait_event():
