@@ -14,9 +14,9 @@ syntax
 
 # N.b need to import so setup.py can detect all files
 
-from . import anim
 from . import core
 from . import console
+from . import gfx
 from . import terrain
 from . import rogue
 from . import tabletop

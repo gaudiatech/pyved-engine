@@ -2,7 +2,33 @@ import json
 from .. import _hub as inj
 
 
+# aliases
 pygame = inj.pygame
+
+# constants
+ENUM_FRAMES_ENTRY = 'seq'
+DELAY_ENTRY = 'delay'
+
+
+class JsonBasedSprSheet:
+    def __init__(self, filename_no_ext):
+        self.sheet_surf = pygame.image.load(filename_no_ext+'.png')
+        json_def_filepath = filename_no_ext+'.json'
+
+        with open(json_def_filepath, 'r') as json_def_file:
+            jsondata = json.load(json_def_file)
+            assoc_tmp = dict()
+            self.all_names = set()
+            for infos in jsondata['frames']:
+                gname = infos['filename']
+                self.all_names.add(gname)
+                assoc_tmp[gname] = self.sheet_surf.subsurface(
+                    pygame.Rect(infos['frame']['x'], infos['frame']['y'], infos['frame']['w'], infos['frame']['h'])
+                ).copy()
+            self.assoc_name_spr = assoc_tmp
+
+    def __getitem__(self, item):
+        return self.assoc_name_spr[item]
 
 
 class Spritesheet:
@@ -81,13 +107,11 @@ class Spritesheet:
         return self.images_at(tups, colorkey)
 
 
-ENUM_FRAMES_ENTRY = 'seq'
-DELAY_ENTRY = 'delay'
-
-
 class AnimatedSprite(pygame.sprite.Sprite):
     def __init__(self, srcpath):
         super().__init__()
+        self.image = None
+
         self.img_source = srcpath + '.png'
         self.infospath = srcpath + '.json'
 
@@ -167,7 +191,6 @@ class AnimatedSprite(pygame.sprite.Sprite):
         else:
             return obj
 
-
     def _load_anims(self, obj):
         """
         being given a JSON-like structure, example:
@@ -199,7 +222,6 @@ class AnimatedSprite(pygame.sprite.Sprite):
         self._curr_anim_name = anim_name
         self._curr_img_list, self.delay_per_frame = self._animations[anim_name]
         self._curr_nb_frames = len(self._curr_img_list)
-
         self.image = self._curr_img_list[0]
         if self.rect is None:
             self.rect = self.image.get_rect()

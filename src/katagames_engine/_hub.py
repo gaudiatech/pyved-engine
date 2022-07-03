@@ -9,7 +9,7 @@ from .Injector import Injector
 kengi_inj = Injector({
     'ai': '._sm_shelf.ai',
 
-    'anim': '._sm_shelf.anim',
+    'gfx': '._sm_shelf.gfx',
     'ascii': '._sm_shelf.ascii',
     'polarbear': '._sm_shelf.polarbear',
     'console': '._sm_shelf.console',
