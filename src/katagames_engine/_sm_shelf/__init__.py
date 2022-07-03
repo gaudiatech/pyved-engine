@@ -19,3 +19,4 @@ from . import core
 from . import console
 from . import terrain
 from . import rogue
+from . import tabletop
