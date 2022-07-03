@@ -107,7 +107,8 @@ class CustomConsole:
         self.c_draw_pos = 0
         self.c_scroll = 0
 
-        self.parent_screen = screen
+        #self.parent_screen = screen
+
         self.rect = pygame.Rect(rect)
         self.size = self.rect.size
 
@@ -156,7 +157,7 @@ class CustomConsole:
         self.c_out.extend(self.message_of_the_day)
 
     def screen(self):
-        return self.parent_screen
+        return inj.core.get_screen()
 
     def add_functions_calls(self, functions):
         if isinstance(functions, dict):
@@ -257,7 +258,7 @@ class CustomConsole:
 
                 self.changed = False
 
-            self.parent_screen.blit(self.bg_layer, self.rect)
+            self.screen().blit(self.bg_layer, self.rect)
 
     def process_input(self, eventlist):
         if not self.active:
