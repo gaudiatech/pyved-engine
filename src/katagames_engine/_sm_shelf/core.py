@@ -25,11 +25,15 @@ def set_canvas_emu_vram(jsobj):
 
 
 def set_realpygame_screen(ref_surf):
+    if shared.real_pygamescreen:
+        print('warning: set_realpygame_scneen called a 2nd time. Ignoring request')
+        return
     shared.real_pygamescreen = ref_surf
 
 
 def set_virtual_screen(ref_surface, upscaling):
     shared.screen = ref_surface
+    shared.screen_rank += 1
     if upscaling != 1.0:
         shared.stored_upscaling = int(upscaling)
 

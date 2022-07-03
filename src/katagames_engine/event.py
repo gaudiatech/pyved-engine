@@ -2,7 +2,7 @@ import time
 from abc import abstractmethod
 from collections import deque as deque_obj
 
-from .foundation import defs
+from .foundation import defs, shared
 from . import _hub
 from . import struct
 
@@ -245,6 +245,7 @@ class CogObj:
 
         self._cached_lu = CgmEvent(EngineEvTypes.LOGICUPDATE, curr_t=None)
         self._cached_pt = CgmEvent(EngineEvTypes.PAINT, screen=None)
+        self.latest_rank = None
 
     @classmethod
     def reset_class_state(cls):
@@ -258,10 +259,15 @@ class CogObj:
         if EngineEvTypes.LOGICUPDATE == ev_type:
             self._cached_lu.curr_t = time.time()
             event_obj = self._cached_lu
+
         elif EngineEvTypes.PAINT == ev_type:
-            if self._cached_pt.screen is None:
+            c1 = self._cached_pt.screen is None
+            c2 = self.latest_rank is not None and self.latest_rank != shared.screen_rank
+            if c1 or c2:  # need to update the cached screen in the PAINT event
+                self.latest_rank = shared.screen_rank
                 self._cached_pt.screen = _hub.core.get_screen()
             event_obj = self._cached_pt
+
         else:
             event_obj = CgmEvent(ev_type, **kwargs)
         gl_unique_manager.post(event_obj)

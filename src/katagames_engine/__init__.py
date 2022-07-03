@@ -104,16 +104,11 @@ def bootstrap_e(info=None):
     return hub.pygame
 
 
-def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
-    global _active_state, _gameticker
-    bootstrap_e()
-    _active_state = True
+def screen_param(gf_mode, screen_dim=None):
+    print('RE -PARAMETRAGE ecran --> ', gf_mode)
 
-    pygm = hub.pygame
-    pygm.init()
-    pygm.mixer.init()
-    if gfc_mode not in defs.OMEGA_DISP_CODES:
-        raise ValueError(f'display requested is {gfc_mode}, but this isnt a valid disp. mode in Kengi!')
+    if gf_mode not in defs.OMEGA_DISP_CODES:
+        raise ValueError(f'display requested is {gf_mode}, but this isnt a valid disp. mode in Kengi!')
     else:
         bw, bh = defs.STD_SCR_SIZE
         drawspace_dim = {
@@ -125,22 +120,36 @@ def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
         upscaling = defaultdict(lambda: 1.0)
         upscaling[defs.SUPER_RETRO_DISP] = 3.0
         upscaling[defs.OLD_SCHOOL_DISP] = 2.0
-        if gfc_mode == defs.CUSTOM_DISP and (screen_dim is None):
+        if gf_mode == defs.CUSTOM_DISP and (screen_dim is None):
             raise ValueError('custom mode for gfx, but no screen_dim found!')
-        taille_surf_dessin = drawspace_dim[gfc_mode]
-        if shared.stored_upscaling is None:  # the upscaling is not relevant <= webctx
-            pygame_surf_dessin = pygm.display.set_mode(taille_surf_dessin)
-        else:
-            if gfc_mode == defs.CUSTOM_DISP:
-                pgscreen = pygm.display.set_mode(taille_surf_dessin)
+        taille_surf_dessin = drawspace_dim[gf_mode]
+
+        if shared.stored_upscaling is not None:
+            if gf_mode == defs.CUSTOM_DISP:
+                pgscreen = hub.pygame.display.set_mode(taille_surf_dessin)
             else:
-                pgscreen = pygm.display.set_mode(defs.STD_SCR_SIZE)
-            pygame_surf_dessin = pygm.surface.Surface(taille_surf_dessin)
+                pgscreen = hub.pygame.display.set_mode(defs.STD_SCR_SIZE)
+            pygame_surf_dessin = hub.pygame.surface.Surface(taille_surf_dessin)
             hub.core.set_realpygame_screen(pgscreen)
-        hub.core.set_virtual_screen(pygame_surf_dessin, upscaling[gfc_mode])
-        if caption is None:
-            caption = f'untitled demo, uses KENGI ver {ENGI_VERSION}'
-        pygm.display.set_caption(caption)
+        else:
+            # the upscaling is not relevant <= webctx
+            pygame_surf_dessin = hub.pygame.display.set_mode(taille_surf_dessin)
+
+        hub.core.set_virtual_screen(pygame_surf_dessin, upscaling[gf_mode])
+
+
+def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
+    global _active_state, _gameticker
+    bootstrap_e()
+    _active_state = True
+
+    pygm = hub.pygame
+    pygm.init()
+    pygm.mixer.init()
+    screen_param(gfc_mode, screen_dim)
+    if caption is None:
+        caption = f'untitled demo, uses KENGI ver {ENGI_VERSION}'
+    pygm.display.set_caption(caption)
 
     _gameticker.maxfps = maxfps
 
