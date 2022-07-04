@@ -17,23 +17,12 @@ class IsometricTile:
     def __init__(self, tile_id, tile_surface, hflip, vflip):
         self.id = tile_id
         self.tile_surface = tile_surface
-        if hflip:
-            self.hflip_surface = pygame.transform.flip(tile_surface, True, False).convert_alpha()
-            self.hflip_surface.set_colorkey(tile_surface.get_colorkey(), tile_surface.get_flags())
-        else:
-            self.hflip_surface = None
-
-        if vflip:
-            self.vflip_surface = pygame.transform.flip(tile_surface, False, True).convert_alpha()
-            self.vflip_surface.set_colorkey(tile_surface.get_colorkey(), tile_surface.get_flags())
-        else:
-            self.vflip_surface = None
-
-        if hflip and vflip:
-            self.hvflip_surface = pygame.transform.flip(tile_surface, True, True).convert_alpha()
-            self.hvflip_surface.set_colorkey(tile_surface.get_colorkey(), tile_surface.get_flags())
-        else:
-            self.hvflip_surface = None
+        self.hflip_surface = pygame.transform.flip(tile_surface, True, False).convert_alpha()
+        self.hflip_surface.set_colorkey(tile_surface.get_colorkey(), tile_surface.get_flags())
+        self.vflip_surface = pygame.transform.flip(tile_surface, False, True).convert_alpha()
+        self.vflip_surface.set_colorkey(tile_surface.get_colorkey(), tile_surface.get_flags())
+        self.hvflip_surface = pygame.transform.flip(tile_surface, True, True).convert_alpha()
+        self.hvflip_surface.set_colorkey(tile_surface.get_colorkey(), tile_surface.get_flags())
 
     def __call__(self, dest_surface, x, y, hflip=False, vflip=False):
         """Draw this tile on the dest_surface at the provided x,y coordinates."""
