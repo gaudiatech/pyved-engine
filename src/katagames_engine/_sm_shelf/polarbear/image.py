@@ -1,16 +1,97 @@
-# Load one image file, use it for multiple images.
-
-import pygame
 import weakref
-from . import render_text, TEXT_COLOR
-import katagames_engine as kengi
+from itertools import chain
 
+from ... import _hub
+
+
+DEFAULT_COLOR_KEY = (255, 0, 255)
+TEXT_COLOR = (240, 240, 50)
+
+pygame = _hub.pygame
 
 # Keep a list of already-loaded images, to save memory when multiple objects
 # need to use the same image file.
 pre_loaded_images = weakref.WeakValueDictionary()
 
-DEFAULT_COLOR_KEY = (255, 0, 255)
+
+def truncline(text, font, maxwidth):
+    real = len(text)
+    stext = text
+    l = font.size(text)[0]
+    cut = 0
+    a = 0
+    done = 1
+    old = None
+    while l > maxwidth:
+        a = a + 1
+        n = text.rsplit(None, a)[0]
+        if stext == n:
+            cut += 1
+            stext = n[:-cut]
+        else:
+            stext = n
+        l = font.size(stext)[0]
+        real = len(stext)
+        done = 0
+    return real, done, stext
+
+
+def wrapline(text, font, maxwidth):
+    done = 0
+    wrapped = []
+    while not done:
+        nl, done, stext = truncline(text, font, maxwidth)
+        wrapped.append(stext.strip())
+        text = text[nl:]
+    return wrapped
+
+
+def wrap_multi_line(text, font, maxwidth):
+    """ returns text taking new lines into account.
+    """
+    lines = chain(*(wrapline(line, font, maxwidth) for line in text.splitlines()))
+    return list(lines)
+
+
+def render_text(font, text, width, color=TEXT_COLOR, justify=-1, antialias=True):
+    # Return an image with prettyprinted text.
+    lines = wrap_multi_line(text, font, width)
+
+    imgs = [font.render(l, antialias, color) for l in lines]
+    h = sum(i.get_height() for i in imgs)
+    s = pygame.surface.Surface((width, h))
+    s.fill((0, 0, 0))
+    o = 0
+    for i in imgs:
+        if justify == 0:
+            x = width // 2 - i.get_width() // 2
+        elif justify > 0:
+            x = width - i.get_width()
+        else:
+            x = 0
+        s.blit(i, (x, o))
+        o += i.get_height()
+    s.set_colorkey((0, 0, 0), pygame.RLEACCEL)
+    return s
+
+
+def draw_text(font, text, rect, color=TEXT_COLOR, justify=-1, antialias=True, dest_surface=None):
+    # Draw some text to the screen with the provided options.
+    if dest_surface:
+        dsu = dest_surface
+    else:
+        dsu = _hub.core.get_screen()
+
+    myimage = render_text(font, text, rect.width, color, justify, antialias)
+    if justify == 0:
+        myrect = myimage.get_rect(midtop=rect.midtop)
+    elif justify > 0:
+        myrect = myimage.get_rect(topleft=rect.topleft)
+    else:
+        myrect = rect
+    dsu.set_clip(rect)
+    dsu.blit(myimage, myrect)
+    dsu.set_clip(None)
 
 
 class Image(object):
@@ -72,7 +153,7 @@ class Image(object):
         # Render this Image onto the provided surface.
         # Start by determining the correct sub-area of the image.
         area = self._get_frame_area(frame)
-        dest_surface = dest_surface or kengi.core.get_screen()  # new way to retrieve the surface used for display
+        dest_surface = dest_surface or _hub.core.get_screen()  # new way to retrieve the surface used for display
 
         dest_surface.blit(self.bitmap, dest, area)
 
@@ -82,7 +163,7 @@ class Image(object):
 
         dest_c = self.get_rect(frame)
         dest_c.center = dest
-        dest_surface = dest_surface or kengi.core.get_screen()  # new way to retrieve the surface used for display
+        dest_surface = dest_surface or _hub.core.get_screen()  # new way to retrieve the surface used for display
 
         dest_surface.blit(self.bitmap, dest_c, area)
 
@@ -112,7 +193,7 @@ class Image(object):
                        self.color_key, self.transparent)
 
     def tile(self, dest=None, frame=0, dest_surface=None, x_offset=0, y_offset=0):
-        dest_surface = dest_surface or kengi.core.get_screen()  # new way to retrieve the surface used for display
+        dest_surface = dest_surface or _hub.core.get_screen()  # new way to retrieve the surface used for display
 
         if not dest:
             dest = dest_surface.get_rect()

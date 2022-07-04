@@ -11,6 +11,7 @@ kengi_inj = Injector({
 
     'gfx': '._sm_shelf.gfx',
     'ascii': '._sm_shelf.ascii',
+    'demolib': '._sm_shelf.demolib',
     'polarbear': '._sm_shelf.polarbear',
     'console': '._sm_shelf.console',
     'core': '._sm_shelf.core',

@@ -37,6 +37,10 @@ EngineEvTypes = _enum_engine_ev_types(
 
     'BtClick',
 
+    'ConvChoice',  # contains value (used in rpgs like niobepolis, conv means conversation)
+    'ConvStarts',  # contains convo_obj, portrait
+    'ConvEnds',
+
     'FocusCh',
     'FieldCh',
     'DoAuth',
