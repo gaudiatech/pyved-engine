@@ -1,4 +1,5 @@
 from .. import _hub
+from .. import struct
 from ..foundation import defs
 
 
@@ -50,7 +51,7 @@ def increm_char_size():
     set_char_size(loop[pos])
 
 
-def init():
+def init(upscaling_int=None):
     global _screen, _matrix
     _screen = _hub.core.get_screen()
     scrw, scrh = _hub.core.get_screen().get_size()
@@ -60,7 +61,7 @@ def init():
         raise ValueError('div tombe pas juste pour calculer w')
     if adhoch != scrh / _char_size:
         raise ValueError('div tombe pas juste pour calculer h')
-    _matrix = _hub.terrain.IntegerMatrix((adhocw, adhoch))
+    _matrix = struct.IntegerMatrix((adhocw, adhoch))
 
 
 def reset():
