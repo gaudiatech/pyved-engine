@@ -1,6 +1,6 @@
-import katagames_engine as kengi
+from ... import _hub
 
-pygame = kengi.pygame  # alias to keep on using pygame, easily
+pygame = _hub.pygame  # alias to keep on using pygame, easily
 
 import math
 
