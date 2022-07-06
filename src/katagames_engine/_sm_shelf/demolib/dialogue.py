@@ -72,12 +72,12 @@ class ConversationView(EventReceiver):
 
     DEBUG = True
 
-    def __init__(self, root_offer, chosen_font, portrait_fn=None, pre_render=None):
+    def __init__(self, root_offer, chosen_font, ft_size, portrait_fn=None, pre_render=None):
         super().__init__()
         self.text = ''
         self.root_offer = root_offer
         self.pre_render = pre_render
-        self.font = pygame.font.Font(chosen_font, 13)
+        self.font = pygame.font.Font(chosen_font, ft_size)
         if portrait_fn:
             self.portrait = pygame.image.load(portrait_fn).convert_alpha()
         else:
