@@ -112,7 +112,7 @@ class ConversationView(EventReceiver):
                 # create a new Menu inst.
                 mymenu = rpgmenu.Menu(
                     self.MENU_AREA.dx, self.MENU_AREA.dy, self.MENU_AREA.w, self.MENU_AREA.h,
-                    border=None, predraw=self.render)
+                    border=None, predraw=self.render, font=self.font)
                 mymenu.turn_on()
 
                 self.existing_menu = mymenu
