@@ -548,10 +548,12 @@ class StackBasedGameCtrl(EventReceiver):
             state_obj = self._st_container.retrieve(ev.state_ident)
             self._change_state(state_obj)
 
-    def loop(self):
+    def init_state0(self):
         self.__state_stack.push(self.first_state_id)
         self._st_container.retrieve(self.first_state_id).enter()
 
+    def loop(self):
+        self.init_state0()
         print('stack based ctrl loop STARTS!')
         self.ticker.loop()
 
