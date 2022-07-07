@@ -7,3 +7,9 @@ from .IsometricMapViewer import IsometricMapViewer
 from .IsometricMapViewer0 import IsometricMapViewer0
 from . import extras
 from . import model
+
+
+def set_tiled_version(vernum):
+    if float(vernum) < 1.9:
+        model.info_type_obj = 'type'
+        print('*LEGACY isometric model ON*')

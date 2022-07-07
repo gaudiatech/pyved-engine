@@ -12,6 +12,8 @@ import math
 pygame = _hub.pygame
 Tilesets = _hub.tmx.data.Tilesets
 
+info_type_obj = 'class'
+
 
 class IsometricTile:
     def __init__(self, tile_id, tile_surface, hflip, vflip):
@@ -220,7 +222,7 @@ class IsometricMapObject:
     def fromxml(cls, tag, givenlayer):
         myob = cls()
         myob.name = tag.attrib.get("name")
-        myob.type = tag.attrib.get("type")
+        myob.type = tag.attrib.get(info_type_obj)
         # Convert the x,y pixel coordinates to x,y map coordinates.
         x = float(tag.attrib.get("x", 0))
         y = float(tag.attrib.get("y", 0))
@@ -238,7 +240,7 @@ class IsometricMapObject:
     def fromjson(cls, jdict, givenlayer):
         myob = cls()
         myob.name = jdict.get("name")
-        myob.type = jdict.get("type")
+        myob.type = jdict.get(info_type_obj)
         # Convert the x,y pixel coordinates to x,y map coordinates.
         x = jdict.get("x", 0)
         y = jdict.get("y", 0)
@@ -382,8 +384,8 @@ class ObjectGroup:
 
         for t in tag:
             if t.tag == "object":
-                if object_classes and t.attrib.get("type") in object_classes:
-                    myclass = object_classes[t.attrib.get("type")]
+                if object_classes and t.attrib.get(info_type_obj) in object_classes:
+                    myclass = object_classes[t.attrib.get(info_type_obj)]
                 else:
                     myclass = IsometricMapObject
                 mygroup.contents.append(myclass.fromxml(
@@ -401,8 +403,8 @@ class ObjectGroup:
 
         if "objects" in jdict:
             for t in jdict["objects"]:
-                if object_classes and t.get("type") in object_classes:
-                    myclass = object_classes[t.get("type")]
+                if object_classes and t.get(info_type_obj) in object_classes:
+                    myclass = object_classes[t.get(info_type_obj)]
                 else:
                     myclass = IsometricMapObject
                 mygroup.contents.append(myclass.fromjson(
@@ -514,7 +516,6 @@ class IsometricMap:
                 elif tag["name"] == "wallpaper":
                     tilemap.wallpaper = pygame.image.load(os.path.join("assets", tag.get("value"))).convert_alpha()
 
-
         for tag in jdict['tilesets']:
             tilemap.tilesets.add(
                 IsometricTileset.fromjson(folders, tag)
@@ -532,8 +533,6 @@ class IsometricMap:
                     folders, tag, tilemap.layers[-1], object_classes
                 )
         return tilemap
-
-
 
     @classmethod
     def load(cls, folders, filename, object_classes=None):
