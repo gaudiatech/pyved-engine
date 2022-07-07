@@ -70,6 +70,7 @@ def is_ready():
     global one_plus_init
     return one_plus_init
 
+_cached_eff_pygame = None
 
 def bootstrap_e(info=None):
     """
@@ -78,7 +79,7 @@ def bootstrap_e(info=None):
     :param info:
     :return:
     """
-    global pygame, one_plus_init, _gameticker
+    global pygame, one_plus_init, _gameticker, _cached_eff_pygame
     if one_plus_init:
         return
 
@@ -101,7 +102,7 @@ def bootstrap_e(info=None):
     _gameticker = event.GameTicker()
 
     # dry import
-    return hub.pygame
+    _cached_eff_pygame = hub.pygame
 
 
 def screen_param(gf_mode, screen_dim=None):
@@ -198,7 +199,17 @@ def get_manager():  # saves some time
 
 
 def flip():
-    return get_injector()['core'].display_update()
+    if shared.special_flip:  # flag can be off if the extra blit/transform has to disabled (web ctx)
+        _cached_eff_pygame.display.update()
+
+    else:
+        pyg = _cached_eff_pygame
+        realscreen = pyg.display.get_surface()
+        if 1 == shared.stored_upscaling:
+            realscreen.blit(shared.screen, (0, 0))
+        else:
+            pyg.transform.scale(shared.screen, defs.STD_SCR_SIZE, realscreen)
+        pyg.display.update()
 
 
 def quit():  # we keep the "quit" name bc of pygame

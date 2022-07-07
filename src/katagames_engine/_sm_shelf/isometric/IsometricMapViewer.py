@@ -73,15 +73,16 @@ class IsometricMapViewer(event.EventReceiver):
             if dx or dy:
                 self._update_camera(dx, dy)
 
-    def _get_horizontal_line(self, x0, y0, line_number, visible_area):
-        mylist = list()
+    def _get_horizontal_line(self, x0, y0, line_number):
         x = x0 + line_number // 2
         y = y0 + (line_number + 1) // 2
 
-        if self.screen_coords(x, y)[1] > visible_area.bottom:
+        _, py = self.screen_coords(x, y)
+        if py > self.visible_area.bottom:
             return None
 
-        while self.screen_coords(x, y)[0] < visible_area.right:
+        mylist = list()
+        while self.screen_coords(x, y)[0] < self.visible_area.right:
             if self.isometric_map.on_the_map(x, y):
                 mylist.append((x, y))
             x += 1
@@ -89,22 +90,9 @@ class IsometricMapViewer(event.EventReceiver):
         return mylist
 
     def _init_visible_area_init(self, scr):
-        # The visible area describes the region of the map we need to draw.
-        # It is bigger than the physical screen
-        # because we probably have to draw cells that are not fully on the map.
-        self.visible_area = scr.get_rect()
-
-        # - temp disabled inflate op. (web ctx issues)
-        # visible_area.inflate_ip(self.tile_width, self.isometric_map.tile_height)
-        # incremv = self.isometric_map.tile_height + self.half_tile_height - self.isometric_map.layers[-1].offsety
-        # visible_area.h += incremv
-        # BUT
-        # inflate replaced by the followin hack
-        self.visible_area.x += 64
-        self.visible_area.y -= 64
-        self.visible_area.w += 128
-        self.visible_area.h += 128 + self.isometric_map.tile_height + self.half_tile_height - self.isometric_map.layers[
-            -1].offsety
+        # The visible area describes the region of the map we need to draw
+        w, h = scr.get_size()
+        self.visible_area = pygame.Rect(0, 0, w+self.half_tile_width, h+self.tile_height)  # x, y doesnt matter actually
 
     def _model_depth(self, model):
         return self.relative_y(model.x, model.y)
@@ -113,9 +101,7 @@ class IsometricMapViewer(event.EventReceiver):
         # If the mouse and the arrow keys conflict, only one of them should win.
         if self._camera_updated_this_frame:
             return
-
         self._focus_x, self._focus_y = self.isometric_map.clamp_pos([self._focus_x + dx, self._focus_y + dy])
-
 
     def _paint_all(self):
         del self.line_cache[:]
@@ -156,11 +142,10 @@ class IsometricMapViewer(event.EventReceiver):
         painting_tiles = True
         line_number = 1
 
-
         while painting_tiles:
             # In order to allow smooth sub-tile movement of stuff, we have
             # to draw everything in a particular order.
-            nuline = self._get_horizontal_line(x0, y0, line_number, self.visible_area)
+            nuline = self._get_horizontal_line(x0, y0, line_number)
             self.line_cache.append(nuline)
             current_y_offset = self.isometric_map.layers[0].offsety
             current_line = len(self.line_cache) - 1

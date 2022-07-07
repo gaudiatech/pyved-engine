@@ -38,19 +38,6 @@ def set_virtual_screen(ref_surface, upscaling):
         shared.stored_upscaling = int(upscaling)
 
 
-def display_update():
-    pyg = _hub.pygame
-    realscreen = pyg.display.get_surface()
-
-    if not shared.special_flip:  # flag can be off if the extra blit/transform has to disabled (web ctx)
-        if 1 == shared.stored_upscaling:
-            realscreen.blit(shared.screen, (0, 0))
-        else:
-            pyg.transform.scale(shared.screen, engi_defs.STD_SCR_SIZE, realscreen)
-
-    pyg.display.update()
-
-
 def get_screen():
     return shared.screen
 
