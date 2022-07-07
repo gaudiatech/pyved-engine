@@ -108,6 +108,8 @@ class Image(object):
             self.bitmap.fill(color_key)
             self.bitmap.set_colorkey(color_key, flags)
 
+        self.scrref = _hub.core.get_screen()
+
         self.fname = fname
         self.flags = flags
         self.transparent = transparent
@@ -153,7 +155,7 @@ class Image(object):
         # Render this Image onto the provided surface.
         # Start by determining the correct sub-area of the image.
         area = self._get_frame_area(frame)
-        dest_surface = dest_surface or _hub.core.get_screen()  # new way to retrieve the surface used for display
+        dest_surface = dest_surface or self.scrref  # new way to retrieve the surface used for display
 
         dest_surface.blit(self.bitmap, dest, area)
 
@@ -193,7 +195,7 @@ class Image(object):
                        self.color_key, self.transparent)
 
     def tile(self, dest=None, frame=0, dest_surface=None, x_offset=0, y_offset=0):
-        dest_surface = dest_surface or _hub.core.get_screen()  # new way to retrieve the surface used for display
+        dest_surface = dest_surface or self.scrref  # new way to retrieve the surface used for display
 
         if not dest:
             dest = dest_surface.get_rect()

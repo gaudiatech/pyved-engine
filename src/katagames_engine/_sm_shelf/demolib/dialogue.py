@@ -74,6 +74,8 @@ class ConversationView(EventReceiver):
 
     def __init__(self, root_offer, chosen_font, ft_size, portrait_fn=None, pre_render=None):
         super().__init__()
+        self.zombie = False
+
         self.text = ''
         self.root_offer = root_offer
         self.pre_render = pre_render
@@ -87,53 +89,59 @@ class ConversationView(EventReceiver):
         self.dialog_upto_date = False
         self.existing_menu = None
 
-    def turn_off(self):  # because the conversation view can be closed from "outside" i.e. the main program
-        if self.DEBUG:
-            print('Conversation view closed')
+    # def turn_off(self):  # because the conversation view can be closed from "outside" i.e. the main program
+    #     if self.DEBUG:
+    #         print('Conversation view closed')
+    #
+    #     if self.existing_menu:
+    #         self.existing_menu.turn_off()
+    #     super().turn_off()
 
-        if self.existing_menu:
-            self.existing_menu.turn_off()
-        super().turn_off()
+    def update_dialog(self):
+        if self.zombie:
+            return
+
+        if self.curr_offer is None:
+            # auto-close everything
+            self.pev(EngineEvTypes.CONVENDS)
+            self.turn_off()
+            self.zombie = True
+            return
+
+        if self.dialog_upto_date:
+            return
+        self.dialog_upto_date = True
+        self.text = self.curr_offer.msg
+
+        # create a new Menu inst.
+        self.existing_menu = rpgmenu.Menu(
+            self.MENU_AREA.dx, self.MENU_AREA.dy, self.MENU_AREA.w, self.MENU_AREA.h,
+            border=None, predraw=None, font=self.font)  # predraw: self.render
+
+        mymenu = self.existing_menu
+        for i in self.curr_offer.replies:
+            i.apply_to_menu(mymenu)
+        if self.text and not mymenu.items:
+            mymenu.add_item("[Continue]", None)
+        else:
+            mymenu.sort()
+
+        nextfx = self.curr_offer.effect
+        if nextfx:
+            nextfx()
 
     def proc_event(self, ev, source):
+        if self.existing_menu:
+            self.existing_menu.proc_event(ev, None)  # forward event to menu if it exists
+
         if ev.type == EngineEvTypes.PAINT:
             self.render(ev.screen)
 
         elif ev.type == EngineEvTypes.LOGICUPDATE:
-            if self.curr_offer is not None:
-                if self.dialog_upto_date:
-                    return
-                if self.existing_menu:
-                    self.existing_menu.turn_off()
-
-                self.dialog_upto_date = True
-                self.text = self.curr_offer.msg
-
-                # create a new Menu inst.
-                mymenu = rpgmenu.Menu(
-                    self.MENU_AREA.dx, self.MENU_AREA.dy, self.MENU_AREA.w, self.MENU_AREA.h,
-                    border=None, predraw=self.render, font=self.font)
-                mymenu.turn_on()
-
-                self.existing_menu = mymenu
-                for i in self.curr_offer.replies:
-                    i.apply_to_menu(mymenu)
-                if self.text and not mymenu.items:
-                    mymenu.add_item("[Continue]", None)
-                else:
-                    mymenu.sort()
-                nextfx = self.curr_offer.effect
-                if nextfx:
-                    nextfx()
-
-            else:
-                # auto-close everything
-                self.turn_off()
-                self.pev(EngineEvTypes.CONVENDS)
+            self.update_dialog()
 
         elif ev.type == EngineEvTypes.CONVCHOICE:  # ~ iterate over the conversation...
-            if self.DEBUG:
-                print('ConvChoice event received by', self.__class__.__name__)
+            print('ConvChoice event received by', self.__class__.__name__)
             self.dialog_upto_date = False
             self.curr_offer = ev.value
 
@@ -146,5 +154,9 @@ class ConversationView(EventReceiver):
         dborder.render(text_rect)
         draw_text(self.font, self.text, text_rect)
         dborder.render(self.MENU_AREA.get_rect())
+
+        if self.existing_menu:
+            self.existing_menu.render(scr)
+
         if self.portrait:
             scr.blit(self.portrait, self.PORTRAIT_AREA.get_rect())

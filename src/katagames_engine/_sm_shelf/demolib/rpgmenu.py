@@ -94,13 +94,13 @@ class DescBox(Frect):
             screen.blit(img, mydest)
 
 
-class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from EventReceiver +have a Frect attribute
+class Menu(event.CogObj, Frect):  # N.B (tom) it would be better to inherit from CogObj +have a Frect attribute
 
     def __init__(self, dx, dy, w=300, h=100, anchor=ANCHOR_CENTER, menuitem=MENU_ITEM_COLOR,
                  menuselect=MENU_SELECT_COLOR, border=default_border, predraw=None, font=None, padding=0,
                  item_class=MenuItem):
-        # lets use multiple inheritance
-        ReceiverObj.__init__(self)
+        # usin multiple inheritance
+        event.CogObj.__init__(self)
         Frect.__init__(self, dx, dy, w, h, anchor)
 
         self.menuitem = menuitem
@@ -124,7 +124,6 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
         # predraw is a function that
         # redraws/clears the screen before the menu is rendered.
         self.predraw = predraw
-        print('  PREDRAW func --> ', predraw)
 
         # -> to the model
         self.no_choice_made = True
@@ -218,10 +217,8 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
         #     # Redraw the menu on each timer event.
         #     self.render()
         #     kengi.flip()
-        if pc_input.type == EngineEvTypes.PAINT:
-            self.render(pc_input.screen)
 
-        elif pc_input.type == pygame.KEYDOWN:
+        if pc_input.type == pygame.KEYDOWN:
             # A key was pressed, oh happy day! See what key it was and act
             # accordingly.
             if pc_input.key == pygame.K_UP:
@@ -254,6 +251,7 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
 
                 moi = self.get_mouseover_item(mouse_pos)
                 if moi is not None:
+
                     self.set_item_by_position(moi)
             elif pc_input.button == 4:
                 self.top_item = max(self.top_item - 1, 0)
@@ -265,6 +263,7 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
             if pc_input.button == 1:
                 moi = self.get_mouseover_item(mouse_pos)
                 if moi is self.selected_item:
+
                     self.pev(EngineEvTypes.CONVCHOICE, value=self.items[self.selected_item].value)
                     self.no_choice_made = False
             elif pc_input.button == 3 and self.can_cancel:
