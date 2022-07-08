@@ -20,7 +20,7 @@ OMEGA_DISP_CODES = (
     HD_DISP, OLD_SCHOOL_DISP, SUPER_RETRO_DISP, CUSTOM_DISP
 )
 
-USEREVENT = 27
+USEREVENT = 32850  # pygame userevent 2.1.1
 
 FIRST_ENGIN_TYPE = USEREVENT + 1
 FIRST_CUSTO_TYPE = FIRST_ENGIN_TYPE + 20  # therefore, 20 is the maximal amount of engine events
