@@ -3,10 +3,11 @@ import json
 from . import rpgmenu
 from ... import _hub as kengi
 from ... import event
-
+from ... import pal
 
 # - aliases
 frects = kengi.polarbear.frects
+kengi.polarbear.draw_text
 draw_text = kengi.polarbear.draw_text
 pygame = kengi.pygame
 
@@ -70,10 +71,60 @@ class ConversationView(EventReceiver):
     MENU_AREA = frects.Frect(-75, 30, 300, 80)
     PORTRAIT_AREA = frects.Frect(-240, -110, 150, 225)
 
+    BGCOL = pal.punk['nightblue'] # '#221031'
+
     DEBUG = True
+
+    @property
+    def primitive_style(self):
+        return self._primitive_style
+
+    @primitive_style.setter
+    def primitive_style(self, v):
+        self._primitive_style = v
+
+        # modify locations as we know that (Primitive style => upscaling is set to x3)
+        x = 48 #58
+        w = 192
+        self.refxxx = x
+
+        self.TEXT_AREA = frects.Frect(-x, -66, w, 80)
+        self.MENU_AREA = frects.Frect(-x, 33, w, 80)
+        self.PORTRAIT_AREA = frects.Frect(-x-100, -66, 90, 128)
+
+        # optim:
+        self.dim_menux = w+104
+
+        self.text_rect = self.TEXT_AREA.get_rect()
+        self.menu_rect = self.MENU_AREA.get_rect()
+        self.portrait_rect = self.PORTRAIT_AREA.get_rect()
+        self.taquet_portrait = self.portrait_rect[0]
+        self.glob_rect = pygame.Rect(self.portrait_rect[0], 53, self.dim_menux, 182)
+
+
+    def _primitiv_render(self, refscreen):
+        pygame.draw.rect(refscreen, self.BGCOL, self.glob_rect)  # fond de fenetre
+
+        pygame.draw.rect(refscreen, self.BGCOL, self.text_rect)
+        draw_text(self.font, self.text, self.text_rect)
+
+        if self.portrait:
+            refscreen.blit(self.portrait, self.portrait_rect)
+
+        pygame.draw.rect(refscreen, self.BGCOL, self.menu_rect)
+        if self.existing_menu:
+            self.existing_menu.render(refscreen)
+        # pourtour menu
+        pygame.draw.rect(refscreen, pal.punk['darkpurple'], (self.taquet_portrait, 148, self.dim_menux, 92), 2)
 
     def __init__(self, root_offer, chosen_font, ft_size, portrait_fn=None, pre_render=None):
         super().__init__()
+        # - slight optim:
+        self.text_rect = None
+        self.menu_rect = None
+        self.portrait_rect = None
+
+        self._primitive_style = False  # can be used to make things faster for webctx
         self.zombie = False
 
         self.text = ''
@@ -145,7 +196,7 @@ class ConversationView(EventReceiver):
             self.dialog_upto_date = False
             self.curr_offer = ev.value
 
-    def render(self, scr):
+    def _reg_render(self, refscreen):
         if self.pre_render:
             self.pre_render()
         text_rect = self.TEXT_AREA.get_rect()
@@ -156,7 +207,13 @@ class ConversationView(EventReceiver):
         dborder.render(self.MENU_AREA.get_rect())
 
         if self.existing_menu:
-            self.existing_menu.render(scr)
+            self.existing_menu.render(refscreen)
 
         if self.portrait:
-            scr.blit(self.portrait, self.PORTRAIT_AREA.get_rect())
+            refscreen.blit(self.portrait, self.PORTRAIT_AREA.get_rect())
+
+    def render(self, scr):
+        if self.primitive_style:
+            self._primitiv_render(scr)
+        else:
+            self._reg_render(scr)
