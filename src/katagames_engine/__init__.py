@@ -55,6 +55,7 @@ _active_state = False
 _gameticker = None
 _multistate_flag = False
 _stack_based_ctrl = None
+state_stack = None
 
 
 class Objectifier:
@@ -167,22 +168,9 @@ def get_surface():
 def declare_states(gsdefinition, assoc_gscode_cls, mod_glvars=None):
     global _multistate_flag, state_stack, _stack_based_ctrl, _loaded_states
     _multistate_flag = True
-
-    # verif
-    # for ke in assoc_code_gs_cls.keys():
-    #     if ke in _loaded_states.keys():
-    #         print('[Warning] gamestate code {} was already taken. Overriding state(risky)...'.format(ke))
-    #         del _loaded_states[ke]
-    #
-    # for ke, cls in assoc_code_gs_cls.items():
-    #     print(cls)
-    #     _loaded_states[ke] = cls(ke)
-    x = gsdefinition
-    y = mod_glvars
-
     state_stack = struct.Stack()
     _stack_based_ctrl = event.StackBasedGameCtrl(
-        _gameticker, x, y, assoc_gscode_cls
+        _gameticker, gsdefinition, mod_glvars, assoc_gscode_cls
     )
 
 
@@ -213,9 +201,13 @@ def flip():
 
 
 def quit():  # we keep the "quit" name bc of pygame
-    global _active_state
+    global _active_state, _multistate_flag, _stack_based_ctrl
 
     if _active_state:
+        if _multistate_flag:
+            _multistate_flag = False
+            _stack_based_ctrl = None
+
         event.EventManager.instance().hard_reset()
 
         event.CogObj.reset_class_state()
@@ -225,7 +217,6 @@ def quit():  # we keep the "quit" name bc of pygame
         pyg = get_injector()['pygame']
         pyg.mixer.quit()
         pyg.quit()
-
         _active_state = False
 
 
