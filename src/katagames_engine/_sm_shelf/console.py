@@ -77,6 +77,7 @@ class CustomConsole:
            k is a function in the form console_func(console, match) that calls console.output(...)
         """
         self.message_of_the_day = ["no Motd"]
+        self.scrref = None
 
         self.bg_color = '#06170e'  # very dark green
 
@@ -156,9 +157,6 @@ class CustomConsole:
         self.message_of_the_day = msg.splitlines()
         self.c_out.extend(self.message_of_the_day)
 
-    def screen(self):
-        return inj.core.get_screen()
-
     def add_functions_calls(self, functions):
         if isinstance(functions, dict):
             self.func_calls.update(functions)
@@ -237,28 +235,32 @@ class CustomConsole:
         self.c_hist_pos = len(self.c_hist) - 1
 
     def draw(self):
-        if self.active:
-            if self.changed:
+        if not self.active:
+            return
+        if self.scrref is None:
+            self.scrref = inj.core.get_screen()
+        if self.changed:  # update text layer
+            # creation du txt layer
+            self.txt_layer.fill(self.bg_color)
+            lines = self.c_out[-(self.max_lines + self.c_scroll):len(self.c_out) - self.c_scroll]
+            y_pos = self.size[1]-(self.font_height*(len(lines)+1))
+            for line in lines:
+                tmp_surf = self.font.render(line, False, self.txt_color_o, (0, 0, 0))
+                self.txt_layer.blit(tmp_surf, (1, y_pos+self.line_disp_yoffset)) #, 0, 0))
+                y_pos += self.font_height
 
-                # creation du txt layer
-                self.txt_layer.fill(self.bg_color)
-                lines = self.c_out[-(self.max_lines + self.c_scroll):len(self.c_out) - self.c_scroll]
-                y_pos = self.size[1]-(self.font_height*(len(lines)+1))
-                for line in lines:
-                    tmp_surf = self.font.render(line, False, self.txt_color_o, (0, 0, 0))
-                    self.txt_layer.blit(tmp_surf, (1, y_pos+self.line_disp_yoffset)) #, 0, 0))
-                    y_pos += self.font_height
+            tmp_surf = self.font.render(self.format_input_line(), False, self.txt_color_i)
+            self.txt_layer.blit(tmp_surf, (1, self.size[1] - self.font_height + self.line_disp_yoffset))#, 0, 0))
 
-                tmp_surf = self.font.render(self.format_input_line(), False, self.txt_color_i)
-                self.txt_layer.blit(tmp_surf, (1, self.size[1] - self.font_height + self.line_disp_yoffset))#, 0, 0))
+            # refresh bg_layer qui contiendra aussi txt_layer...
+            # self.bg_layer = pygame.Surface(self.size)
+            # self.bg_layer.blit(self.txt_layer, (0, 0)) #, 0, 0))
+            self.changed = False
 
-                # refresh bg_layer qui contiendra aussi txt_layer...
-                self.bg_layer.fill(self.bg_color)
-                self.bg_layer.blit(self.txt_layer, (0, 0)) #, 0, 0))
-
-                self.changed = False
-
-            self.screen().blit(self.bg_layer, self.rect)
+        self.bg_layer.fill(self.bg_color)
+        self.scrref.blit(self.bg_layer, (0, 0))
+        self.scrref.blit(self.txt_layer, self.rect)
+        # self.screen().blit(self.bg_layer, self.rect)
 
     def process_input(self, eventlist):
         if not self.active:
