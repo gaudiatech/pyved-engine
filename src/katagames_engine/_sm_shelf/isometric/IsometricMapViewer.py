@@ -315,12 +315,15 @@ class IsometricMapViewer(event.EventReceiver):
         else:
             self._focused_object = None
 
-
     def switch_map(self, isometric_map):
         self.isometric_map = isometric_map
         self.tile_width = isometric_map.tile_width
         self.tile_height = isometric_map.tile_height
         self.half_tile_width = isometric_map.tile_width // 2
         self.half_tile_height = isometric_map.tile_height // 2
-        self._focus_x = 0
-        self._focus_y = 0
+        if self._focused_object:
+            fo = self._focused_object
+            self.focus(fo.x, fo.y)
+        else:
+            self._focus_x = 0
+            self._focus_y = 0
