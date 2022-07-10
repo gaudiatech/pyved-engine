@@ -35,6 +35,7 @@
 """
 from collections import defaultdict
 
+from .vscreen import flip
 from . import _hub as hub
 from . import event
 from . import pal
@@ -43,7 +44,7 @@ from .Injector import Injector
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION
 from .foundation import defs
-from .foundation import shared  # must keep this line /!\ see web vm
+from . import vscreen  # important import! As this is called by web_vm
 from .ifaces.pygame import PygameIface
 from .modes import GameModeMger, BaseGameMode
 from .util import underscore_format, camel_case_format
@@ -106,12 +107,16 @@ def bootstrap_e(info=None):
     _cached_eff_pygame = hub.pygame
 
 
-def screen_param(gf_mode, screen_dim=None):
+def screen_param(gf_mode, paintev=None, screen_dim=None):
+    global _active_state
     print('RE -PARAMETRAGE ecran --> ', gf_mode)
 
     if gf_mode not in defs.OMEGA_DISP_CODES:
         raise ValueError(f'display requested is {gf_mode}, but this isnt a valid disp. mode in Kengi!')
     else:
+        if gf_mode == defs.CUSTOM_DISP and (screen_dim is None):
+            raise ValueError('custom mode for gfx, but no screen_dim found!')
+
         bw, bh = defs.STD_SCR_SIZE
         drawspace_dim = {
             defs.HD_DISP: (bw, bh),
@@ -122,28 +127,35 @@ def screen_param(gf_mode, screen_dim=None):
         upscaling = defaultdict(lambda: 1.0)
         upscaling[defs.SUPER_RETRO_DISP] = 3.0
         upscaling[defs.OLD_SCHOOL_DISP] = 2.0
-        if gf_mode == defs.CUSTOM_DISP and (screen_dim is None):
-            raise ValueError('custom mode for gfx, but no screen_dim found!')
+
         taille_surf_dessin = drawspace_dim[gf_mode]
+        adhoc_upscaling = upscaling[gf_mode]
 
-        if shared.stored_upscaling is not None:
-            if gf_mode == defs.CUSTOM_DISP:
-                pgscreen = hub.pygame.display.set_mode(taille_surf_dessin)
-            else:
-                pgscreen = hub.pygame.display.set_mode(defs.STD_SCR_SIZE)
-            pygame_surf_dessin = hub.pygame.surface.Surface(taille_surf_dessin)
-            hub.core.set_realpygame_screen(pgscreen)
-        else:
-            # the upscaling is not relevant <= webctx
+        if vscreen.stored_upscaling is None:  # the upscaling is not relevant <= webctx
+            _active_state = True
             pygame_surf_dessin = hub.pygame.display.set_mode(taille_surf_dessin)
+            hub.core.set_virtual_screen(pygame_surf_dessin)
+            return
 
-        hub.core.set_virtual_screen(pygame_surf_dessin, upscaling[gf_mode])
+        pygame_surf_dessin = hub.pygame.surface.Surface(taille_surf_dessin)
+        hub.core.set_virtual_screen(pygame_surf_dessin)
+        vscreen.set_upscaling(adhoc_upscaling)
+        if paintev:
+            paintev.screen = pygame_surf_dessin
+        if _active_state:
+            return
+        _active_state = True
+
+        if gf_mode == defs.CUSTOM_DISP:
+            pgscreen = hub.pygame.display.set_mode(taille_surf_dessin)
+        else:
+            pgscreen = hub.pygame.display.set_mode(defs.STD_SCR_SIZE)
+        hub.core.set_realpygame_screen(pgscreen)
 
 
 def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
-    global _active_state, _gameticker
+    global _gameticker
     bootstrap_e()
-    _active_state = True
 
     pygm = hub.pygame
     pygm.init()
@@ -184,20 +196,6 @@ def get_game_ctrl():
 
 def get_manager():  # saves some time
     return event.EventManager.instance()
-
-
-def flip():
-    if shared.special_flip:  # flag can be off if the extra blit/transform has to disabled (web ctx)
-        _cached_eff_pygame.display.update()
-
-    else:
-        pyg = _cached_eff_pygame
-        realscreen = pyg.display.get_surface()
-        if 1 == shared.stored_upscaling:
-            realscreen.blit(shared.screen, (0, 0))
-        else:
-            pyg.transform.scale(shared.screen, defs.STD_SCR_SIZE, realscreen)
-        pyg.display.update()
 
 
 def quit():  # we keep the "quit" name bc of pygame

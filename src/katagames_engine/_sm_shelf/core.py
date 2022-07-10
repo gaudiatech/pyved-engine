@@ -1,7 +1,6 @@
 from .. import _hub
 from ..foundation import defs as engi_defs
-from ..foundation import shared
-
+from .. import vscreen as shared
 
 _curr_state = None
 _loaded_states = dict()
@@ -11,7 +10,8 @@ state_stack = None
 
 
 def conv_to_vscreen(x, y):
-    ups = shared.stored_upscaling
+    dw, dh = shared.screen.get_size()
+    ups = int(960/dw)
     return int(x / ups), int(y / ups)
 
 
@@ -31,11 +31,9 @@ def set_realpygame_screen(ref_surf):
     shared.real_pygamescreen = ref_surf
 
 
-def set_virtual_screen(ref_surface, upscaling):
+def set_virtual_screen(ref_surface):
     shared.screen = ref_surface
     shared.screen_rank += 1
-    if upscaling != 1.0:
-        shared.stored_upscaling = int(upscaling)
 
 
 def get_screen():
