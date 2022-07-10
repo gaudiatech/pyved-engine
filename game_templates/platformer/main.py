@@ -17,7 +17,7 @@ discover cool stuff that saves time if youre already a pygame user.
 # sys.path.append("..\\..\\")
 
 import katagames_engine as kengi
-kengi.init('old_school')
+kengi.init(2)
 
 pygame = kengi.pygame
 Spr = pygame.sprite.Sprite

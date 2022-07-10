@@ -9,9 +9,9 @@ from defs import MyEvTypes, MAXFPS, DEBUG
 import math
 
 
-kengi.init('old_school', maxfps=MAXFPS)
-# IMPORTANT: polarbear component can crash the game if this line isnt added, after kengi.init
-kengi.polarbear.my_state.screen = kengi.get_surface()
+kengi.init(2, maxfps=MAXFPS)
+# will polarbear crash the game if this line isnt added, after kengi.init?
+# kengi.polarbear.my_state.screen = kengi.get_surface()
 
 # - aliases
 pygame = kengi.pygame  # alias to keep on using pygame, easily

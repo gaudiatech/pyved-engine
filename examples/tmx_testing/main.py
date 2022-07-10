@@ -12,7 +12,7 @@ OFFSET = 5
 dj, di = 0, 0  # variation
 stop_the_test = False
 
-kengi.init('old_school')
+kengi.init(2)
 
 clock = pygame.time.Clock()
 #scr = pygame.display.set_mode(SCR_SIZE)
@@ -79,10 +79,9 @@ while not stop_the_test:
     scr.blit(bg.image, bg.rect.topleft)
 
     viewport.draw(scr)
-    #pygame.display.flip()
-    kengi.core.display_update()
-
+    # pygame.display.flip()
+    kengi.flip()
     clock.tick(50)
 
 print('bye!')
-kengi.core.cleanup()
+kengi.quit()

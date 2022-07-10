@@ -12,14 +12,6 @@ a pixel-to-pixel mapping just like the 'hd' option
 """
 STD_SCR_SIZE = (960, 720)
 
-HD_DISP = 'hd'
-OLD_SCHOOL_DISP = 'old_school'
-SUPER_RETRO_DISP = 'super_retro'
-CUSTOM_DISP = 'custom'
-OMEGA_DISP_CODES = (
-    HD_DISP, OLD_SCHOOL_DISP, SUPER_RETRO_DISP, CUSTOM_DISP
-)
-
 USEREVENT = 32850  # pygame userevent 2.1.1
 
 FIRST_ENGIN_TYPE = USEREVENT + 1

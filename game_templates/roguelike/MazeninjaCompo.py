@@ -10,7 +10,7 @@ pygame = kengi.pygame
 EngineEvTypes = kengi.event.EngineEvTypes
 CogObject = kengi.event.CogObj
 ReceiverObj = kengi.event.EventReceiver
-Sprsheet = kengi.anim.Spritesheet
+Sprsheet = kengi.gfx.Spritesheet
 BoolMatrx = kengi.struct.BoolMatrix
 
 

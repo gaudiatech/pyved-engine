@@ -83,7 +83,7 @@ class Logger(GameObject):
 
 # - main program
 def run_game():
-    kengi.init('old_school', caption='tower defence', maxfps=30)
+    kengi.init(2, caption='tower defence', maxfps=30)
 
     # - set up stuff for using the event system (no ticker)
     gctrl = kengi.get_game_ctrl()

@@ -13,7 +13,7 @@ import sys
 sys.path.append("..\\..")
 
 import katagames_engine as kengi
-kengi.init('hd', 'Flappy Bird demo with KENGI')
+kengi.init(1, 'Flappy Bird demo with KENGI')
 pygame = kengi.pygame
 
 

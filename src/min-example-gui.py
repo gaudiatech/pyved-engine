@@ -1,5 +1,5 @@
 import katagames_engine as kengi
-kengi.init('old_school')
+kengi.init(2)
 
 pygame = kengi.pygame
 screen = kengi.get_surface()

@@ -1,6 +1,6 @@
 import katagames_engine as kengi
 
-kengi.init('old_school', caption='demo-pathfinding uses kengi')
+kengi.init(2, caption='demo-pathfinding uses kengi')
 pygame = kengi.pygame
 
 
@@ -33,7 +33,7 @@ end_pos = list(MAP_DIM)
 end_pos[0] -= 1
 end_pos[1] -= 1
 demo_instructions[-1] = demo_instructions[-1].format(start_pos, end_pos)
-the_map = kengi.terrain.BoolMatrix(MAP_DIM)
+the_map = kengi.struct.BoolMatrix(MAP_DIM)
 the_map.set_all(False)  # False means non-blocking
 print(the_map)
 

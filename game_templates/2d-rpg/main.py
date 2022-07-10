@@ -20,7 +20,7 @@ from myrpg_defs import GameStates
 
 # launch the game!
 if __name__ == '__main__':
-    kengi.init('hd')
+    kengi.init()
 
     kengi.declare_states(  # changes the game controller used behind the scene
         GameStates,

@@ -1,5 +1,5 @@
 import katagames_engine as kengi
-kengi.init('old_school', caption='demo-a uses kengi / events+mvc variant')
+kengi.init(2, caption='demo-a uses kengi / events+mvc variant')
 pygame = kengi.pygame
 EngineEvTypes = kengi.event.EngineEvTypes
 

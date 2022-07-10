@@ -40,7 +40,7 @@ current_tilemap = 0
 def game_init():
     global screen, tilemap, tilemap2, viewer, manager, mypc, paint_ev, mv_offset
     # aliases
-    kengi.init('old_school')
+    kengi.init(2)
     screen = kengi.core.get_screen()
 
     # model

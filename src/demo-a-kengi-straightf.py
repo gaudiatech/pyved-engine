@@ -1,5 +1,5 @@
 import katagames_engine as kengi
-kengi.init('old_school', caption='demo-a uses kengi / straightforward variant')
+kengi.init(2, caption='demo-a uses kengi / straightforward variant')
 pygame = kengi.pygame
 
 

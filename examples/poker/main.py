@@ -69,7 +69,7 @@ def run_game():
     print('   _', epic_hand.value)
 
     # ------- init kengi ------
-    kengi.init('custom', screen_dim=(1920, 1080))
+    kengi.init(0, screen_dim=(1920, 1080))
 
     # >>> the game loop
     mod = UthModel()

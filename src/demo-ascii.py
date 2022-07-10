@@ -21,7 +21,7 @@ tpos = [0, 0]
 
 
 # -- main program
-kengi.init('hd')
+kengi.init()
 _scr = kengi.core.get_screen()
 asc_canvas.init()
 

@@ -16,7 +16,7 @@ class Game:
         self.clock = pygame.time.Clock()
 
     def run(self):
-        kengi.init('custom', screen_dim=(W, H))
+        kengi.init(0, screen_dim=(W, H))
         screen = kengi.get_surface()
         self.gmode_manager.register({
             'home': Home('home'),

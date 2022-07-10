@@ -107,60 +107,58 @@ def bootstrap_e(info=None):
     _cached_eff_pygame = hub.pygame
 
 
-def screen_param(gf_mode, paintev=None, screen_dim=None):
+def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
     global _active_state
-    print('RE -PARAMETRAGE ecran --> ', gf_mode)
+    if isinstance(gfx_mode_code, int) and -1 < gfx_mode_code <= 3:
+        if gfx_mode_code == 0 and screen_dim is None:
+            ValueError(f'graphic mode 0 required an extra valid screen_dim argument(provided by user: {screen_dim})')
 
-    if gf_mode not in defs.OMEGA_DISP_CODES:
-        raise ValueError(f'display requested is {gf_mode}, but this isnt a valid disp. mode in Kengi!')
-    else:
-        if gf_mode == defs.CUSTOM_DISP and (screen_dim is None):
-            raise ValueError('custom mode for gfx, but no screen_dim found!')
-
-        bw, bh = defs.STD_SCR_SIZE
-        drawspace_dim = {
-            defs.HD_DISP: (bw, bh),
-            defs.OLD_SCHOOL_DISP: (bw // 2, bh // 2),
-            defs.SUPER_RETRO_DISP: (bw // 3, bh // 3),
-            defs.CUSTOM_DISP: screen_dim
-        }
-        upscaling = defaultdict(lambda: 1.0)
-        upscaling[defs.SUPER_RETRO_DISP] = 3.0
-        upscaling[defs.OLD_SCHOOL_DISP] = 2.0
-
-        taille_surf_dessin = drawspace_dim[gf_mode]
-        adhoc_upscaling = upscaling[gf_mode]
-
-        if vscreen.stored_upscaling is None:  # the upscaling is not relevant <= webctx
+        # from here, we know that the gfx_mode_code is 100% valid
+        conventionw, conventionh = defs.STD_SCR_SIZE
+        if gfx_mode_code != 0:
+            adhoc_upscaling = gfx_mode_code
+            taille_surf_dessin = int(conventionw/gfx_mode_code), int(conventionh/gfx_mode_code)
+        else:
+            adhoc_upscaling = 1
+            taille_surf_dessin = screen_dim
+            print(adhoc_upscaling, taille_surf_dessin)
+        # ---------------------------------
+        #  legacy code, not modified in july22. It's complex but
+        # it works so dont modify unless you really know what you're doing ;)
+        # ---------------------------------
+        if vscreen.stored_upscaling is None:  # stored_upscaling isnt relevant <= webctx
             _active_state = True
             pygame_surf_dessin = hub.pygame.display.set_mode(taille_surf_dessin)
             hub.core.set_virtual_screen(pygame_surf_dessin)
-            return
-
-        pygame_surf_dessin = hub.pygame.surface.Surface(taille_surf_dessin)
-        hub.core.set_virtual_screen(pygame_surf_dessin)
-        vscreen.set_upscaling(adhoc_upscaling)
-        if paintev:
-            paintev.screen = pygame_surf_dessin
-        if _active_state:
-            return
-        _active_state = True
-
-        if gf_mode == defs.CUSTOM_DISP:
-            pgscreen = hub.pygame.display.set_mode(taille_surf_dessin)
         else:
-            pgscreen = hub.pygame.display.set_mode(defs.STD_SCR_SIZE)
-        hub.core.set_realpygame_screen(pgscreen)
+            print(taille_surf_dessin)
+            pygame_surf_dessin = hub.pygame.surface.Surface(taille_surf_dessin)
+            hub.core.set_virtual_screen(pygame_surf_dessin)
+            vscreen.set_upscaling(adhoc_upscaling)
+            if paintev:
+                paintev.screen = pygame_surf_dessin
+            if _active_state:
+                return
+            _active_state = True
+
+            if gfx_mode_code:
+                pgscreen = hub.pygame.display.set_mode(defs.STD_SCR_SIZE)
+            else:
+                pgscreen = hub.pygame.display.set_mode(taille_surf_dessin)
+            hub.core.set_realpygame_screen(pgscreen)
+    else:
+        e_msg = f'graphic mode requested({gfx_mode_code}: {type(gfx_mode_code)}) isnt a valid one! Expected type: int'
+        raise ValueError(e_msg)
 
 
-def init(gfc_mode='hd', caption=None, maxfps=60, screen_dim=None):
+def init(gfc_mode=1, caption=None, maxfps=60, screen_dim=None):
     global _gameticker
     bootstrap_e()
 
     pygm = hub.pygame
     pygm.init()
     pygm.mixer.init()
-    screen_param(gfc_mode, screen_dim)
+    screen_param(gfc_mode, screen_dim=screen_dim)
     if caption is None:
         caption = f'untitled demo, uses KENGI ver {ENGI_VERSION}'
     pygm.display.set_caption(caption)

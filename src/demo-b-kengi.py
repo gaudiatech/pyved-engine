@@ -5,7 +5,7 @@ see demo-b-pygame for comparison.
 """
 
 import katagames_engine as kengi
-kengi.init('old_school')
+kengi.init(2)
 pygame = kengi.pygame
 StackBasedGameCtrl = kengi.event.StackBasedGameCtrl
 EngineEvTypes = kengi.event.EngineEvTypes
