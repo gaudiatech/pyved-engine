@@ -32,6 +32,9 @@ _EMB_TILEMAPS_PNGF = {
 }
 
 
+_sm_ready = False
+
+
 # -------------------------------------------------
 #  PUBLIC module-level functions
 # -------------------------------------------------
@@ -52,7 +55,8 @@ def increm_char_size():
 
 
 def init(upscaling_int=None):
-    global _screen, _matrix
+    global _screen, _matrix, _sm_ready
+    _sm_ready = True
     _screen = _hub.core.get_screen()
     scrw, scrh = _hub.core.get_screen().get_size()
     adhocw = scrw // _char_size
@@ -64,8 +68,15 @@ def init(upscaling_int=None):
     _matrix = struct.IntegerMatrix((adhocw, adhoch))
 
 
+def is_ready():
+    global _sm_ready
+    return _sm_ready
+
+
 def reset():
-    pass  # TODO permettre de remettre a zero le buffer
+    global _sm_ready
+    _sm_ready = False
+    # TODO permettre de remettre a zero le buffer
 
 
 def flush():

@@ -203,6 +203,8 @@ def quit():  # we keep the "quit" name bc of pygame
         if _multistate_flag:
             _multistate_flag = False
             _stack_based_ctrl = None
+        if hub.ascii.is_ready():
+            hub.ascii.reset()
 
         event.EventManager.instance().hard_reset()
 
