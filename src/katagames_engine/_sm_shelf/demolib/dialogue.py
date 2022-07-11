@@ -115,7 +115,7 @@ class ConversationView(EventReceiver):
         if self.existing_menu:
             self.existing_menu.render(refscreen)
         # pourtour menu
-        pygame.draw.rect(refscreen, pal.punk['darkpurple'], (self.taquet_portrait, 148, self.dim_menux, 92), 2)
+        pygame.draw.rect(refscreen, pal.punk['darkpurple'], (self.taquet_portrait, 148, self.dim_menux, 88), 2)
 
     def __init__(self, root_offer, chosen_font, ft_size, portrait_fn=None, pre_render=None):
         super().__init__()

@@ -92,7 +92,7 @@ class IsometricMapViewer(event.EventReceiver):
     def _init_visible_area_init(self, scr):
         # The visible area describes the region of the map we need to draw
         w, h = scr.get_size()
-        self.visible_area = pygame.Rect(0, 0, w+self.half_tile_width, h+self.tile_height)  # x, y doesnt matter actually
+        self.visible_area = pygame.Rect(0, 0, w+self.half_tile_width, h+4*self.tile_height)  # x, y doesnt matter actually
 
     def _model_depth(self, model):
         return self.relative_y(model.x, model.y)
