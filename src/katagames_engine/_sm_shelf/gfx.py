@@ -40,56 +40,84 @@ class Spritesheet:
     (x, y, x + offset, y + offset)
     """
 
-    def __init__(self, ressource_pygame_ratio11, scale=1):
-        self.sheet = ressource_pygame_ratio11  # .convert()
+    def __init__(self, resource_info, scale=1):
+        """
+        :param ressource_pygame_ratio11: either pygame.Surface or filepath
+        :param scale:
+        """
+        if isinstance(resource_info, str):
+            pygsurf = pygame.image.load(resource_info).convert()
+        else:
+            pygsurf = resource_info
+
+        self.sheet = pygsurf
         if scale != 1:
             self.sheet = pygame.transform.scale(
                 self.sheet, (self.sheet.get_width() * scale, self.sheet.get_height() * scale)
             )
 
-        # can be init later
+        # to be init later
         self.tilesize = None
         self.img_count_per_line = 0
         self.total_img_count = 0
+
         self.colorkey = None
 
-    def set_tilesize(self, v):
-        self.tilesize = v
-        # also need to compute the nb of img and how many img per line
-        self.img_count_per_line = self.sheet.get_width() // v[0]
-        tmp = self.img_count_per_line
-        tmp *= self.sheet.get_height() // v[1]
-        self.total_img_count *= tmp
+        # util
+        self.tilescache = dict()
+
+    def set_tilesize(self, pair_wh):
+        print('set tilesize ', pair_wh)
+        self.tilesize = pair_wh
+
+        # compute the nb of img and how many img per line
+        tw, th = pair_wh
+        self.img_count_per_line = self.sheet.get_width() // tw
+        self.total_img_count = self.img_count_per_line * (self.sheet.get_height() // th)
+        print(self.img_count_per_line)
+        print(self.total_img_count)
+
+    def __getitem__(self, item):
+        return self.image_by_rank(item)
+
+    @property
+    def card(self):
+        return self.total_img_count
 
     def image_by_rank(self, kval):
         if self.tilesize is None:
-            raise ValueError('calling image_by_rank but the tilesize hasnt been initialized!')
-        else:
-            # we need to map kval to a rect
+            raise ValueError('SpriteSheet.image_by_rank called, but tilesize is unknown yet (no set_tilesize call)')
+        try:
+            return self.tilescache[kval]
+        except KeyError:
+            # map kval -> to a rect
             i, j = kval % self.img_count_per_line, int(kval / self.img_count_per_line)
             tw, th = self.tilesize
-            r = pygame.Rect(i*tw, j*th, tw, th)
-            return self.image_at(r)
+            rect_obj = pygame.Rect(i*tw, j*th, tw, th)
+            # crop from spr sheet, save & return result
+            y = self.tilescache[kval] = self.image_at(rect_obj)
+            return y
 
-    def image_at(self, rectangle, colorkey=None):
-        """
-        Loads a specific image from a specific rectangle
-        :param rectangle: a given (x,y, x+offset,y+offset)
-        :param colorkey:  for handling transparency (color identified by colorkey is not drawn)
-        :return: pygame surface
-        """
-        if colorkey is None:
-            if self.colorkey is not None:
-                colorkey = self.colorkey
+    # was working perfectly fine, but incompatible with early stage backend2 Web ctx
+    # def image_at(self, rectangle, colorkey=None):
+    #     """
+    #     Loads a specific image from a specific rectangle
+    #     :param rectangle: a given (x,y, x+offset,y+offset)
+    #     :param colorkey:  for handling transparency (color identified by colorkey is not drawn)
+    #     :return: pygame surface
+    #     """
+    #     if colorkey is None:
+    #         if self.colorkey is not None:
+    #             colorkey = self.colorkey
+    #     rect = pygame.Rect(rectangle)
+    #     image = pygame.Surface(rect.size).convert()  # convert() converts to the same pixel format as the display Surface
+    #     image.blit(self.sheet, (0, 0), rect)  # blits sheet's rect to (0,0) in image
+    #     if colorkey is not None:
+    #         image.set_colorkey(colorkey)
+    #     return image
 
-        rect = pygame.Rect(rectangle)
-        # convert() converts to the same pixel format as the display Surface
-        image = pygame.Surface(rect.size).convert()
-        image.blit(self.sheet, (0, 0), rect)  # blits sheet's rect to (0,0) in image
-        if colorkey is not None:
-            image.set_colorkey(colorkey)
-
-        return image
+    def image_at(self, rectangle):
+        return self.sheet.subsurface(rectangle).copy()
 
     def images_at(self, rects, colorkey):
         """
