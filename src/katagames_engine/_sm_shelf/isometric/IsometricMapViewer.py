@@ -50,9 +50,11 @@ class IsometricMapViewer(event.EventReceiver):
     def __init__(self, isometric_map, screen, postfx=None, cursor=None,
                  left_scroll_key=None, right_scroll_key=None, up_scroll_key=None, down_scroll_key=None):
         super().__init__()
-        self.is_drawing = True
+        self.block_wallpaper = False
+
         self.isometric_map = isometric_map
-        # self.scrollable_floor = pygame.image.load('assets/city.png')
+        self.scrollable_floor = pygame.image.load('assets/city.png')
+        self.scrollable_floor.set_colorkey((255, 0, 255))
 
         self.screen = screen
         self.mid = (
@@ -61,7 +63,7 @@ class IsometricMapViewer(event.EventReceiver):
         # self.prevx = float('NaN')
         # self.prevy = float('NaN')
 
-        # self.floor_rect = pygame.Rect(1633, 240, self.screen.get_width(), self.screen.get_height())
+        self.floor_rect = pygame.Rect(0, 0, self.screen.get_width(), self.screen.get_height())
 
         # The focus is defined by map coordinates, so a lot of the back and forth between screen and map coords
         # can be cut.
@@ -155,21 +157,31 @@ class IsometricMapViewer(event.EventReceiver):
         self._focus_x, self._focus_y = self.isometric_map.clamp_pos([self._focus_x + dx, self._focus_y + dy])
 
     def _paint_all(self):
-        # TODO optimize such as the ground layer is blit as one single image, we just move a rect to cut
+        # TODO idea 1 optimize such as the ground layer is blit as one single image, we just move a rect to cut
         # properly from the very large image stored in memory
 
-        # if self._focus_x==self.prevx and self._focus_y==self.prevy:
-        #     self.screen.blit(self.clonedessin, (0,0))
-        #     return
+        # ------------------------------------- check this out <<<
+        # --- OPTIM blit large image for the ground level (1/3)---
+        #a, b = self.screen_offset()
+        #self.floor_rect.topleft = 1635 +304-a, 248 - 128 - b
+        #
+        # TOM REMARK: but i cannot use this optimization right now, it makes
+        # the floor "wiggle" compared to buildings or portals :(
 
-        # TODO optimize such as if player+cursor have not moved, all graphic elements are blit as the second image:
-        #  2nd img:  all_layers>0 + all_objects
+        # TODO maybe?
+        #  idea 2 optimize such as if player+cursor are not moving, all graphic elements are saved onto a "texture"
+        #  and we just blit this texture instead of computing new stuff
 
         # Prep the screen.
         if self.isometric_map.wallpaper:
-            self.fill_wallpaper()
+            if not self.block_wallpaper:
+                self.fill_wallpaper()
+            else:
+                self.screen.fill('navyblue')
 
-        #self.screen.blit(self.scrollable_floor, (0,0), area=self.floor_rect)
+        # ------------------------------------- check this out <<<
+        # --- OPTIM blit large image for the ground level (2/3)---
+        # self.screen.blit(self.scrollable_floor, (0,0), area=self.floor_rect)
 
         # Check the map scrolling.
         self._camera_updated_this_frame = False
@@ -211,12 +223,10 @@ class IsometricMapViewer(event.EventReceiver):
             current_line = len(self.line_cache) - 1
 
             for layer_num, layer in enumerate(self.isometric_map.layers):
-                # ---optim surf caching for the ground level (1/2)---
-                #if layer_num == 0:
+                # ------------------------------------- check this out <<<
+                # --- OPTIM blit large image for the ground level (3/3)---
+                # if layer_num == 0:
                 #    continue
-                #     if self.prevx == self._focus_x and self.prevy == self._focus_y:
-                #         self.screen.blit(self.clonedessin, (0, 0))
-                #         continue
 
                 if current_line >= 0:
                     if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
@@ -260,15 +270,8 @@ class IsometricMapViewer(event.EventReceiver):
 
                     elif self.line_cache[current_line] is None:  # and layer == self.isometric_map.layers[-1]:
                         painting_tiles = False
-
-                    # ---optim surf caching for the ground level (2/2)---
-                    # if layer_num == 0:
-                    #     self.clonedessin = self.screen.copy()
-                    #     self.prevx = self._focus_x
-                    #     self.prevy = self._focus_y
                 else:
                     break
-
                 if layer.offsety < current_y_offset:
                     current_line -= 1
                     current_y_offset = layer.offsety
@@ -298,6 +301,9 @@ class IsometricMapViewer(event.EventReceiver):
     def focus(self, x, y):
         """Move the camera to point at the requested map tile. x,y can be ints or floats."""
         self._focus_x, self._focus_y = self.isometric_map.clamp_pos((x, y))
+
+        # self.floor_rect.x = a
+        # self.floor_rect.y = b
 
     def map_x(self, sx, sy, return_int=True):
         """Return the map x row for the given screen coordinates."""
@@ -347,9 +353,6 @@ class IsometricMapViewer(event.EventReceiver):
         else:
             return self._mouse_tile
 
-    def pause_draw(self):
-        self.is_drawing = False
-
     def proc_event(self, ev, source=None):
         if ev.type == EngineEvTypes.PAINT:
             self._paint_all()
@@ -360,9 +363,6 @@ class IsometricMapViewer(event.EventReceiver):
             self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
             if self.cursor:
                 self.cursor.update(self, ev)
-
-    def resume_draw(self):
-        self.is_drawing = True
 
     def screen_coords(self, x, y, extra_x_offset=0, extra_y_offset=0):
         x_off, y_off = self.screen_offset()
