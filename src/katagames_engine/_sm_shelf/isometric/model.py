@@ -19,6 +19,7 @@ class IsometricTile:
     def __init__(self, tile_id, tile_surface, hflip, vflip):
         self.id = tile_id
         self.tile_surface = tile_surface
+
         self.hflip_surface = pygame.transform.flip(tile_surface, True, False).convert_alpha()
         self.hflip_surface.set_colorkey(tile_surface.get_colorkey(), tile_surface.get_flags())
         self.vflip_surface = pygame.transform.flip(tile_surface, False, True).convert_alpha()
@@ -26,7 +27,7 @@ class IsometricTile:
         self.hvflip_surface = pygame.transform.flip(tile_surface, True, True).convert_alpha()
         self.hvflip_surface.set_colorkey(tile_surface.get_colorkey(), tile_surface.get_flags())
 
-    def __call__(self, dest_surface, x, y, hflip=False, vflip=False):
+    def paint_tile(self, dest_surface, x, y, hflip=False, vflip=False):
         """Draw this tile on the dest_surface at the provided x,y coordinates."""
         if hflip and vflip:
             surf = self.hvflip_surface
@@ -36,19 +37,6 @@ class IsometricTile:
             surf = self.vflip_surface
         else:
             surf = self.tile_surface
-
-        # dirty patch (tom):
-        # TODO check if bugfix needed
-        if surf is None:
-            if self.hvflip_surface:
-                surf = self.hvflip_surface
-            elif self.hflip_surface:
-                surf = self.hflip_surface
-            elif self.vflip_surface:
-                surf = self.vflip_surface
-            else:
-                print('*warning cannot use tile')
-                return
         mydest = surf.get_rect(midbottom=(x, y))
         dest_surface.blit(surf, mydest)
 
@@ -199,7 +187,7 @@ class IsometricMapObject:
             tile_id = self.gid & NOT_ALL_FLAGS
             if tile_id > 0:
                 my_tile = mymap.tilesets[tile_id]
-                my_tile(dest_surface, sx, sy, self.gid & FLIPPED_HORIZONTALLY_FLAG,
+                my_tile.paint_tile(dest_surface, sx, sy, self.gid & FLIPPED_HORIZONTALLY_FLAG,
                         self.gid & FLIPPED_VERTICALLY_FLAG)
 
     @staticmethod

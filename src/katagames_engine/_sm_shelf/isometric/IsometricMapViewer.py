@@ -8,6 +8,43 @@ from ... import event
 pygame = _hub.pygame
 EngineEvTypes = event.EngineEvTypes
 
+# --------------------------------------------
+# optimization
+_gl_halftile_w = _gl_halftile_h = None
+_buffer_relx = dict()
+_buffer_rely = dict()
+
+
+def relative_x(x, y):
+    """Return the relative x position of this tile, ignoring offset."""
+    try:
+        return _buffer_relx[x][y]
+    except KeyError:
+        if x not in _buffer_relx:
+            _buffer_relx[x] = dict()
+        _buffer_relx[x][y] = int(x*_gl_halftile_w - y*_gl_halftile_w)
+        return _buffer_relx[x][y]
+
+
+def relative_y(x, y):
+    """Return the relative y position of this tile, ignoring offset."""
+    try:
+        return _buffer_rely[x][y]
+    except KeyError:
+        if x not in _buffer_rely:
+            _buffer_rely[x] = dict()
+        _buffer_rely[x][y] = int(y*_gl_halftile_h + x*_gl_halftile_h)
+        return _buffer_rely[x][y]
+
+
+def rel_set_info(halftile_w, halftile_h):
+    global _gl_halftile_w, _gl_halftile_h, _buffer_relx, _buffer_rely
+    _gl_halftile_w = float(halftile_w)
+    _gl_halftile_h = float(halftile_h)
+    _buffer_relx.clear()
+    _buffer_rely.clear()
+# ----------------------------------------------
+
 
 class IsometricMapViewer(event.EventReceiver):
     def __init__(self, isometric_map, screen, postfx=None, cursor=None,
@@ -15,7 +52,16 @@ class IsometricMapViewer(event.EventReceiver):
         super().__init__()
         self.is_drawing = True
         self.isometric_map = isometric_map
+        # self.scrollable_floor = pygame.image.load('assets/city.png')
+
         self.screen = screen
+        self.mid = (
+            self.screen.get_width() // 2, self.screen.get_height() // 2
+        )
+        # self.prevx = float('NaN')
+        # self.prevy = float('NaN')
+
+        # self.floor_rect = pygame.Rect(1633, 240, self.screen.get_width(), self.screen.get_height())
 
         # The focus is defined by map coordinates, so a lot of the back and forth between screen and map coords
         # can be cut.
@@ -29,8 +75,14 @@ class IsometricMapViewer(event.EventReceiver):
 
         self.tile_width = isometric_map.tile_width
         self.tile_height = isometric_map.tile_height
+
         self.half_tile_width = isometric_map.tile_width // 2
         self.half_tile_height = isometric_map.tile_height // 2
+        rel_set_info(
+            self.half_tile_width, self.half_tile_height
+        )
+        self.visible_area = None
+        self._init_visible_area_init(self.screen)
 
         # _mouse_tile contains the actual tile the mouse is hovering over. However, in most cases what we really want
         # is the location of the mouse cursor. Time to make a property!
@@ -43,7 +95,6 @@ class IsometricMapViewer(event.EventReceiver):
         self.down_scroll_key = down_scroll_key
         self.debug_sprite = None
         self.lastmousepos = None
-        self.visible_area = None
         self.animated_wp = False
 
         # util for the drawing of tiles
@@ -95,7 +146,7 @@ class IsometricMapViewer(event.EventReceiver):
         self.visible_area = pygame.Rect(0, 0, w+self.half_tile_width, h+4*self.tile_height)  # x, y doesnt matter actually
 
     def _model_depth(self, model):
-        return self.relative_y(model.x, model.y)
+        return relative_y(model.x, model.y)
 
     def _update_camera(self, dx, dy):
         # If the mouse and the arrow keys conflict, only one of them should win.
@@ -104,20 +155,29 @@ class IsometricMapViewer(event.EventReceiver):
         self._focus_x, self._focus_y = self.isometric_map.clamp_pos([self._focus_x + dx, self._focus_y + dy])
 
     def _paint_all(self):
-        del self.line_cache[:]
-        self.objgroup_contents.clear()
-        self.objgroup_modified_mappos.clear()
+        # TODO optimize such as the ground layer is blit as one single image, we just move a rect to cut
+        # properly from the very large image stored in memory
+
+        # if self._focus_x==self.prevx and self._focus_y==self.prevy:
+        #     self.screen.blit(self.clonedessin, (0,0))
+        #     return
+
+        # TODO optimize such as if player+cursor have not moved, all graphic elements are blit as the second image:
+        #  2nd img:  all_layers>0 + all_objects
 
         # Prep the screen.
         if self.isometric_map.wallpaper:
             self.fill_wallpaper()
 
+        #self.screen.blit(self.scrollable_floor, (0,0), area=self.floor_rect)
+
         # Check the map scrolling.
         self._camera_updated_this_frame = False
-        if self._focused_object and (self._focused_object.x != self._focused_object_x0 or self._focused_object.y != self._focused_object_y0):
-            self.focus(self._focused_object.x, self._focused_object.y)
-            self._focused_object_x0 = self._focused_object.x
-            self._focused_object_y0 = self._focused_object.y
+        if self._focused_object:
+            if self._focused_object.x != self._focused_object_x0 or self._focused_object.y != self._focused_object_y0:
+                self.focus(self._focused_object.x, self._focused_object.y)
+                self._focused_object_x0 = self._focused_object.x
+                self._focused_object_y0 = self._focused_object.y
 
         # Disabling mouse scrolling because the right and bottom edges of the screen don't seem to be working.
         #if self.lastmousepos:
@@ -151,6 +211,13 @@ class IsometricMapViewer(event.EventReceiver):
             current_line = len(self.line_cache) - 1
 
             for layer_num, layer in enumerate(self.isometric_map.layers):
+                # ---optim surf caching for the ground level (1/2)---
+                #if layer_num == 0:
+                #    continue
+                #     if self.prevx == self._focus_x and self.prevy == self._focus_y:
+                #         self.screen.blit(self.clonedessin, (0, 0))
+                #         continue
+
                 if current_line >= 0:
                     if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
                         # After drawing the terrain last time, draw any objects in the previous cell.
@@ -187,20 +254,31 @@ class IsometricMapViewer(event.EventReceiver):
                                 # top of the "ground" level of a tile. So, we adjust sy before sending the coords
                                 # to the printer, so it is pointing at the bottom corner of the tile instead.
                                 sx, sy = self.screen_coords(x, y)
-                                my_tile(self.screen, sx, sy + layer.offsety + self.isometric_map.tile_height,
-                                        gid & FLIPPED_HORIZONTALLY_FLAG,
-                                        gid & FLIPPED_VERTICALLY_FLAG)
+                                my_tile.paint_tile(
+                                    self.screen, sx, sy + layer.offsety + self.isometric_map.tile_height, gid & FLIPPED_HORIZONTALLY_FLAG,
+                                    gid & FLIPPED_VERTICALLY_FLAG)
 
-                    elif self.line_cache[current_line] is None and layer == self.isometric_map.layers[-1]:
+                    elif self.line_cache[current_line] is None:  # and layer == self.isometric_map.layers[-1]:
                         painting_tiles = False
+
+                    # ---optim surf caching for the ground level (2/2)---
+                    # if layer_num == 0:
+                    #     self.clonedessin = self.screen.copy()
+                    #     self.prevx = self._focus_x
+                    #     self.prevy = self._focus_y
                 else:
                     break
+
                 if layer.offsety < current_y_offset:
                     current_line -= 1
                     current_y_offset = layer.offsety
             line_number += 1
 
         self.phase = (self.phase + 1) % 640
+
+        del self.line_cache[:]
+        self.objgroup_contents.clear()
+        self.objgroup_modified_mappos.clear()
 
     def fill_wallpaper(self):
         screen_rect = self.screen.get_rect()
@@ -273,40 +351,26 @@ class IsometricMapViewer(event.EventReceiver):
         self.is_drawing = False
 
     def proc_event(self, ev, source=None):
-        if not self.is_drawing:
-            return
         if ev.type == EngineEvTypes.PAINT:
-            if self.visible_area is None:
-                self._init_visible_area_init(ev.screen)
-            ev.screen.fill('black')
             self._paint_all()
-            return
-        if ev.type == pygame.MOUSEMOTION:
+
+        elif ev.type == pygame.MOUSEMOTION:
             mouse_x, mouse_y = _hub.core.proj_to_vscreen(ev.pos)
             self.lastmousepos = (mouse_x, mouse_y)
             self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
             if self.cursor:
                 self.cursor.update(self, ev)
 
-    def relative_x(self, x, y):
-        """Return the relative x position of this tile, ignoring offset."""
-        return int((x * float(self.half_tile_width)) - (y * float(self.half_tile_width)))
-
-    def relative_y(self, x, y):
-        """Return the relative y position of this tile, ignoring offset."""
-        return int(y * float(self.half_tile_height) + x * float(self.half_tile_height))
-
     def resume_draw(self):
         self.is_drawing = True
 
     def screen_coords(self, x, y, extra_x_offset=0, extra_y_offset=0):
         x_off, y_off = self.screen_offset()
-        return (self.relative_x(x, y) + x_off + extra_x_offset,
-                self.relative_y(x, y) + y_off + extra_y_offset)
+        return relative_x(x, y) + x_off + extra_x_offset, relative_y(x, y) + y_off + extra_y_offset
 
     def screen_offset(self):
-        return (self.screen.get_width() // 2 - self.relative_x(self._focus_x, self._focus_y) + self.half_tile_width,
-                self.screen.get_height() // 2 - self.relative_y(self._focus_x, self._focus_y) + self.half_tile_height)
+        return self.mid[0] - relative_x(self._focus_x, self._focus_y),\
+               self.mid[1] - relative_y(self._focus_x, self._focus_y)
 
     def set_focused_object(self, fo):
         if fo:
@@ -319,8 +383,13 @@ class IsometricMapViewer(event.EventReceiver):
         self.isometric_map = isometric_map
         self.tile_width = isometric_map.tile_width
         self.tile_height = isometric_map.tile_height
+
         self.half_tile_width = isometric_map.tile_width // 2
         self.half_tile_height = isometric_map.tile_height // 2
+        rel_set_info(
+            self.half_tile_width, self.half_tile_height
+        )
+
         if self._focused_object:
             fo = self._focused_object
             self.focus(fo.x, fo.y)
