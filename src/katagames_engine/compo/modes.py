@@ -1,5 +1,5 @@
-from .Singleton import Singleton
-from .util import drawtext
+from ..Singleton import Singleton
+from ..util import drawtext
 
 
 @Singleton

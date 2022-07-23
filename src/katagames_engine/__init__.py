@@ -33,30 +33,32 @@
  * incentivizes you, the creator, to write clean readable easy-to-refactor &
   easy-to-reuse code!
 """
-from collections import defaultdict
 
-from .vscreen import flip
 from . import _hub as hub
 from . import event
 from . import pal
 from . import struct
+from . import vscreen  # important import! As this is called by web_vm
 from .Injector import Injector
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION
+from .compo import core
+from .compo import gfx
+from .compo.modes import GameModeMger, BaseGameMode
 from .foundation import defs
-from . import vscreen  # important import! As this is called by web_vm
 from .ifaces.pygame import PygameIface
-from .modes import GameModeMger, BaseGameMode
 from .util import underscore_format, camel_case_format
+from .vscreen import flip
 
 
-ver = ENGI_VERSION
-one_plus_init = False
 _active_state = False
+_cached_eff_pygame = None
 _gameticker = None
 _multistate_flag = False
 _stack_based_ctrl = None
+one_plus_init = False
 state_stack = None
+ver = ENGI_VERSION
 
 
 class Objectifier:
@@ -72,7 +74,6 @@ def is_ready():
     global one_plus_init
     return one_plus_init
 
-_cached_eff_pygame = None
 
 def bootstrap_e(info=None):
     """
@@ -84,7 +85,7 @@ def bootstrap_e(info=None):
     global pygame, one_plus_init, _gameticker, _cached_eff_pygame
     if one_plus_init:
         return
-
+    print('xxxxxxxxxxxxxxx')
     del pygame
 
     def _ensure_pygame(xinfo):
@@ -129,11 +130,11 @@ def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
         if vscreen.stored_upscaling is None:  # stored_upscaling isnt relevant <= webctx
             _active_state = True
             pygame_surf_dessin = hub.pygame.display.set_mode(taille_surf_dessin)
-            hub.core.set_virtual_screen(pygame_surf_dessin)
+            core.set_virtual_screen(pygame_surf_dessin)
         else:
             print(taille_surf_dessin)
             pygame_surf_dessin = hub.pygame.surface.Surface(taille_surf_dessin)
-            hub.core.set_virtual_screen(pygame_surf_dessin)
+            core.set_virtual_screen(pygame_surf_dessin)
             vscreen.set_upscaling(adhoc_upscaling)
             if paintev:
                 paintev.screen = pygame_surf_dessin
@@ -145,7 +146,7 @@ def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
                 pgscreen = hub.pygame.display.set_mode(defs.STD_SCR_SIZE)
             else:
                 pgscreen = hub.pygame.display.set_mode(taille_surf_dessin)
-            hub.core.set_realpygame_screen(pgscreen)
+            core.set_realpygame_screen(pgscreen)
     else:
         e_msg = f'graphic mode requested({gfx_mode_code}: {type(gfx_mode_code)}) isnt a valid one! Expected type: int'
         raise ValueError(e_msg)
@@ -172,11 +173,11 @@ def get_surface():
         raise Exception('calling kengi.get_surface() while the engine isnt ready! (no previous bootstrap op.)')
     if not _active_state:
         raise Exception('kengi.init has not been called yet')
-    return get_injector()['core'].get_screen()
+    return core.get_screen()
 
 
 def declare_states(gsdefinition, assoc_gscode_cls, mod_glvars=None):
-    global _multistate_flag, state_stack, _stack_based_ctrl, _loaded_states
+    global _multistate_flag, state_stack, _stack_based_ctrl
     _multistate_flag = True
     state_stack = struct.Stack()
     _stack_based_ctrl = event.StackBasedGameCtrl(
@@ -199,23 +200,21 @@ def get_manager():  # saves some time
 def quit():  # we keep the "quit" name bc of pygame
     global _active_state, _multistate_flag, _stack_based_ctrl
 
-    if _active_state:
-        if _multistate_flag:
-            _multistate_flag = False
-            _stack_based_ctrl = None
-        if hub.ascii.is_ready():
-            hub.ascii.reset()
+    if not _active_state:
+        return
 
-        event.EventManager.instance().hard_reset()
-
-        event.CogObj.reset_class_state()
-
-        get_injector()['core'].init2_done = False
-
-        pyg = get_injector()['pygame']
-        pyg.mixer.quit()
-        pyg.quit()
-        _active_state = False
+    if _multistate_flag:
+        _multistate_flag = False
+        _stack_based_ctrl = None
+    if hub.ascii.is_ready():
+        hub.ascii.reset()
+    event.EventManager.instance().hard_reset()
+    event.CogObj.reset_class_state()
+    core.init2_done = False
+    pyg = get_injector()['pygame']
+    pyg.mixer.quit()
+    pyg.quit()
+    _active_state = False
 
 
 def get_injector():

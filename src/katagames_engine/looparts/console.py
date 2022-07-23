@@ -1,6 +1,10 @@
-import textwrap
 import re
+import textwrap
+
 from .. import _hub as inj
+from ..compo import core
+
+
 pygame = inj.pygame
 
 # - options
@@ -238,7 +242,7 @@ class CustomConsole:
         if not self.active:
             return
         if self.scrref is None:
-            self.scrref = inj.core.get_screen()
+            self.scrref = core.get_screen()
         if self.changed:  # update text layer
             # creation du txt layer
             self.txt_layer.fill(self.bg_color)

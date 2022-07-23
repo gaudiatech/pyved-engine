@@ -1,4 +1,5 @@
 from ... import _hub
+from ...compo import core
 
 
 pygame = _hub.pygame
@@ -92,7 +93,7 @@ class IsometricMapQuarterCursor:
 
     def update(self, view, ev):
         if ev.type == pygame.MOUSEMOTION:
-            mouse_x, mouse_y = _hub.core.proj_to_vscreen(pygame.mouse.get_pos())
+            mouse_x, mouse_y = core.proj_to_vscreen(pygame.mouse.get_pos())
             self.set_position(view, view.map_x(mouse_x, mouse_y, return_int=False),
                               view.map_y(mouse_x, mouse_y, return_int=False))
         elif ev.type == pygame.KEYDOWN:

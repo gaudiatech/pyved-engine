@@ -1,8 +1,11 @@
 import collections
 import glob
 import random
+
 from ... import _hub
 from ... import event
+from ...compo import core
+
 
 pygame = _hub.pygame  # alias to keep on using pygame, easily
 Frect = _hub.polarbear.frects.Frect
@@ -14,7 +17,6 @@ draw_text = _hub.polarbear.draw_text
 wait_event = _hub.polarbear.wait_event
 TIMEREVENT = _hub.polarbear.TIMEREVENT
 INFO_GREEN = _hub.polarbear.INFO_GREEN
-
 DEFAULT_FONT_SIZE = 11
 MENU_ITEM_COLOR = pygame.Color(150, 145, 130)
 MENU_SELECT_COLOR = pygame.Color(128, 250, 230)
@@ -247,7 +249,7 @@ class Menu(event.CogObj, Frect):  # N.B (tom) it would be better to inherit from
 
         elif pc_input.type == pygame.MOUSEBUTTONDOWN:
             if pc_input.button == 1:
-                mouse_pos = _hub.core.proj_to_vscreen(pygame.mouse.get_pos())
+                mouse_pos = core.proj_to_vscreen(pygame.mouse.get_pos())
 
                 moi = self.get_mouseover_item(mouse_pos)
                 if moi is not None:
@@ -259,7 +261,7 @@ class Menu(event.CogObj, Frect):  # N.B (tom) it would be better to inherit from
                 self.top_item = min(self.top_item + 1, self._the_highest_top)
 
         elif pc_input.type == pygame.MOUSEBUTTONUP:
-            mouse_pos = _hub.core.proj_to_vscreen(pygame.mouse.get_pos())
+            mouse_pos = core.proj_to_vscreen(pygame.mouse.get_pos())
             if pc_input.button == 1:
                 moi = self.get_mouseover_item(mouse_pos)
                 if moi is self.selected_item:
@@ -270,7 +272,7 @@ class Menu(event.CogObj, Frect):  # N.B (tom) it would be better to inherit from
                 self.no_choice_made = False
 
         elif pc_input.type == pygame.MOUSEMOTION:
-            mouse_pos = _hub.core.proj_to_vscreen(pygame.mouse.get_pos())
+            mouse_pos = core.proj_to_vscreen(pygame.mouse.get_pos())
             moi = self.get_mouseover_item(mouse_pos)
             if moi is not None:
                 self.set_item_by_position(moi)
@@ -342,11 +344,11 @@ class PopUpMenu(Menu):
     """Creates a small menu at the current mouse position."""
 
     def __init__(self, w=200, h=250, predraw=None, border=default_border, **kwargs):
-        mouse_pos = _hub.core.proj_to_vscreen(pygame.mouse.get_pos())
+        mouse_pos = core.proj_to_vscreen(pygame.mouse.get_pos())
         x, y = mouse_pos
         x += 8
         y += 8
-        sw, sh = _hub.core.get_screen().get_size()
+        sw, sh = core.get_screen().get_size()
         if x + w + 32 > sw:
             x += -w - 32
         if y + h + 32 > sh:

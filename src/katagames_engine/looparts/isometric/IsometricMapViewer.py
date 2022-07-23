@@ -4,8 +4,10 @@ import math
 from .isosm_config import NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG, SCROLL_STEP
 from ... import _hub
 from ... import event
+from ...compo import core
 
-pygame = _hub.pygame
+
+
 EngineEvTypes = event.EngineEvTypes
 
 # --------------------------------------------
@@ -47,13 +49,18 @@ def rel_set_info(halftile_w, halftile_h):
 
 
 class IsometricMapViewer(event.EventReceiver):
+    MOUSEMOTION_CONST = None
+
     def __init__(self, isometric_map, screen, postfx=None, cursor=None,
                  left_scroll_key=None, right_scroll_key=None, up_scroll_key=None, down_scroll_key=None):
         super().__init__()
+
+        self.MOUSEMOTION_CONST = _hub.pygame.MOUSEMOTION
+        self.animated_wallpaper = False
         self.block_wallpaper = False
 
         self.isometric_map = isometric_map
-        self.scrollable_floor = pygame.image.load('assets/city.png')
+        self.scrollable_floor = _hub.pygame.image.load('assets/city.png')
         self.scrollable_floor.set_colorkey((255, 0, 255))
 
         self.screen = screen
@@ -63,7 +70,14 @@ class IsometricMapViewer(event.EventReceiver):
         # self.prevx = float('NaN')
         # self.prevy = float('NaN')
 
-        self.floor_rect = pygame.Rect(0, 0, self.screen.get_width(), self.screen.get_height())
+        self.floor_rect = _hub.pygame.Rect(0, 0, self.screen.get_width(), self.screen.get_height())
+
+        if isometric_map.wallpaper:
+            self.screen_rect = self.screen.get_rect()
+            wp_width, wp_height = self.isometric_map.wallpaper.get_size()
+            self.wp_temp_rect = _hub.pygame.Rect(0, 0, wp_width, wp_height)
+            self.wp_grid_w = self.screen_rect.w // wp_width + 1
+            self.wp_grid_h = self.screen_rect.h // wp_height + 1
 
         # The focus is defined by map coordinates, so a lot of the back and forth between screen and map coords
         # can be cut.
@@ -97,7 +111,6 @@ class IsometricMapViewer(event.EventReceiver):
         self.down_scroll_key = down_scroll_key
         self.debug_sprite = None
         self.lastmousepos = None
-        self.animated_wp = False
 
         # util for the drawing of tiles
         self.line_cache = list()
@@ -145,7 +158,8 @@ class IsometricMapViewer(event.EventReceiver):
     def _init_visible_area_init(self, scr):
         # The visible area describes the region of the map we need to draw
         w, h = scr.get_size()
-        self.visible_area = pygame.Rect(0, 0, w+self.half_tile_width, h+4*self.tile_height)  # x, y doesnt matter actually
+        # below: x, y do not matter actually
+        self.visible_area = _hub.pygame.Rect(0, 0, w+self.half_tile_width, h+4*self.tile_height)
 
     def _model_depth(self, model):
         return relative_y(model.x, model.y)
@@ -284,19 +298,14 @@ class IsometricMapViewer(event.EventReceiver):
         self.objgroup_modified_mappos.clear()
 
     def fill_wallpaper(self):
-        screen_rect = self.screen.get_rect()
-        wp_width, wp_height = self.isometric_map.wallpaper.get_size()
-        grid_w = screen_rect.w // wp_width + 1
-        grid_h = screen_rect.h // wp_height + 1
-        my_rect = pygame.Rect(0, 0, wp_width, wp_height)
+        for x in range(-1, self.wp_grid_w):
+            self.wp_temp_rect.x = self.screen_rect.x + x * self.wp_temp_rect.w
+            for y in range(-1, self.wp_grid_h):
+                self.wp_temp_rect.y = self.screen_rect.y + y * self.wp_temp_rect.h
+                if self.animated_wallpaper:
+                    self.wp_temp_rect.y += self.phase
 
-        for x in range(-1, grid_w):
-            my_rect.x = screen_rect.x + x * wp_width
-            for y in range(-1, grid_h):
-                my_rect.y = screen_rect.y + y * wp_height
-                if self.animated_wp:
-                    my_rect.y += self.phase
-                self.screen.blit(self.isometric_map.wallpaper, my_rect)
+                self.screen.blit(self.isometric_map.wallpaper, self.wp_temp_rect)
 
     def focus(self, x, y):
         """Move the camera to point at the requested map tile. x,y can be ints or floats."""
@@ -357,8 +366,8 @@ class IsometricMapViewer(event.EventReceiver):
         if ev.type == EngineEvTypes.PAINT:
             self._paint_all()
 
-        elif ev.type == pygame.MOUSEMOTION:
-            mouse_x, mouse_y = _hub.core.proj_to_vscreen(ev.pos)
+        elif ev.type == self.MOUSEMOTION_CONST:
+            mouse_x, mouse_y = core.proj_to_vscreen(ev.pos)
             self.lastmousepos = (mouse_x, mouse_y)
             self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
             if self.cursor:

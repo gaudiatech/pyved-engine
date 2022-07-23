@@ -2,13 +2,12 @@ import weakref
 from itertools import chain
 
 from ... import _hub
+from ...compo import core
 
 
 DEFAULT_COLOR_KEY = (255, 0, 255)
 TEXT_COLOR = (240, 240, 50)
-
 pygame = _hub.pygame
-
 # Keep a list of already-loaded images, to save memory when multiple objects
 # need to use the same image file.
 pre_loaded_images = weakref.WeakValueDictionary()
@@ -80,7 +79,7 @@ def draw_text(font, text, rect, color=TEXT_COLOR, justify=-1, antialias=True, de
     if dest_surface:
         dsu = dest_surface
     else:
-        dsu = _hub.core.get_screen()
+        dsu = core.get_screen()
 
     myimage = render_text(font, text, rect.width, color, justify, antialias)
     if justify == 0:
@@ -108,7 +107,7 @@ class Image(object):
             self.bitmap.fill(color_key)
             self.bitmap.set_colorkey(color_key, flags)
 
-        self.scrref = _hub.core.get_screen()
+        self.scrref = core.get_screen()
 
         self.fname = fname
         self.flags = flags
@@ -165,7 +164,7 @@ class Image(object):
 
         dest_c = self.get_rect(frame)
         dest_c.center = dest
-        dest_surface = dest_surface or _hub.core.get_screen()  # new way to retrieve the surface used for display
+        dest_surface = dest_surface or core.get_screen()  # new way to retrieve the surface used for display
 
         dest_surface.blit(self.bitmap, dest_c, area)
 

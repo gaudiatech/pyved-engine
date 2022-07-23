@@ -7,25 +7,22 @@ from .Injector import Injector
 
 
 kengi_inj = Injector({
-    'ai': '._sm_shelf.ai',
-
-    'gfx': '._sm_shelf.gfx',
-    'ascii': '._sm_shelf.ascii',
-    'demolib': '._sm_shelf.demolib',
-    'polarbear': '._sm_shelf.polarbear',
-    'console': '._sm_shelf.console',
-    'core': '._sm_shelf.core',
-    'gui': '._sm_shelf.gui',
-    'isometric': '._sm_shelf.isometric',
-    'legacy': '._sm_shelf.legacy',
-    'tabletop': '._sm_shelf.tabletop',
+    'ai': '.looparts.ai',
+    'ascii': '.looparts.ascii',
+    'demolib': '.looparts.demolib',
+    'polarbear': '.looparts.polarbear',
+    'console': '.looparts.console',
+    'gui': '.looparts.gui',
+    'isometric': '.looparts.isometric',
+    'legacy': '.looparts.legacy',
+    'tabletop': '.looparts.tabletop',
 
     # nota bene: pygame is dynamically added to this dict,
     # its done elsewhere
-    'tmx': '._sm_shelf.tmx',
+    'tmx': '.looparts.tmx',
 
-    'rogue': '._sm_shelf.rogue',
-    'terrain': '._sm_shelf.terrain',
+    'rogue': '.looparts.rogue',
+    'terrain': '.looparts.terrain',
 })
 
 
