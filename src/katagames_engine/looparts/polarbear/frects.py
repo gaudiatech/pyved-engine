@@ -1,5 +1,5 @@
 from ... import _hub
-from ...compo import core
+from ...compo import vscreen as core
 
 
 ANCHOR_UPPERLEFT = (0, 0)

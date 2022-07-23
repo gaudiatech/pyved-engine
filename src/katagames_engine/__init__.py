@@ -39,20 +39,19 @@ from . import event
 from . import pal
 from . import struct
 from . import vscreen  # important import! As this is called by web_vm
+from .compo.vscreen import flip
 from .Injector import Injector
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION
-from .compo import core
+from .compo import vscreen
 from .compo import gfx
 from .compo.modes import GameModeMger, BaseGameMode
 from .foundation import defs
 from .ifaces.pygame import PygameIface
 from .util import underscore_format, camel_case_format
-from .vscreen import flip
 
 
 _active_state = False
-_cached_eff_pygame = None
 _gameticker = None
 _multistate_flag = False
 _stack_based_ctrl = None
@@ -82,10 +81,9 @@ def bootstrap_e(info=None):
     :param info:
     :return:
     """
-    global pygame, one_plus_init, _gameticker, _cached_eff_pygame
+    global pygame, one_plus_init, _gameticker
     if one_plus_init:
         return
-    print('xxxxxxxxxxxxxxx')
     del pygame
 
     def _ensure_pygame(xinfo):
@@ -105,7 +103,7 @@ def bootstrap_e(info=None):
     _gameticker = event.GameTicker()
 
     # dry import
-    _cached_eff_pygame = hub.pygame
+    vscreen.cached_pygame_mod = hub.pygame
 
 
 def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
@@ -130,11 +128,11 @@ def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
         if vscreen.stored_upscaling is None:  # stored_upscaling isnt relevant <= webctx
             _active_state = True
             pygame_surf_dessin = hub.pygame.display.set_mode(taille_surf_dessin)
-            core.set_virtual_screen(pygame_surf_dessin)
+            vscreen.set_virtual_screen(pygame_surf_dessin)
         else:
             print(taille_surf_dessin)
             pygame_surf_dessin = hub.pygame.surface.Surface(taille_surf_dessin)
-            core.set_virtual_screen(pygame_surf_dessin)
+            vscreen.set_virtual_screen(pygame_surf_dessin)
             vscreen.set_upscaling(adhoc_upscaling)
             if paintev:
                 paintev.screen = pygame_surf_dessin
@@ -146,7 +144,7 @@ def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
                 pgscreen = hub.pygame.display.set_mode(defs.STD_SCR_SIZE)
             else:
                 pgscreen = hub.pygame.display.set_mode(taille_surf_dessin)
-            core.set_realpygame_screen(pgscreen)
+            vscreen.set_realpygame_screen(pgscreen)
     else:
         e_msg = f'graphic mode requested({gfx_mode_code}: {type(gfx_mode_code)}) isnt a valid one! Expected type: int'
         raise ValueError(e_msg)
@@ -173,7 +171,7 @@ def get_surface():
         raise Exception('calling kengi.get_surface() while the engine isnt ready! (no previous bootstrap op.)')
     if not _active_state:
         raise Exception('kengi.init has not been called yet')
-    return core.get_screen()
+    return vscreen.screen
 
 
 def declare_states(gsdefinition, assoc_gscode_cls, mod_glvars=None):
@@ -210,7 +208,7 @@ def quit():  # we keep the "quit" name bc of pygame
         hub.ascii.reset()
     event.EventManager.instance().hard_reset()
     event.CogObj.reset_class_state()
-    core.init2_done = False
+    vscreen.init2_done = False
     pyg = get_injector()['pygame']
     pyg.mixer.quit()
     pyg.quit()

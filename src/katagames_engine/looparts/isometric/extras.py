@@ -1,5 +1,5 @@
 from ... import _hub
-from ...compo import core
+from ...compo import vscreen as core
 
 
 pygame = _hub.pygame

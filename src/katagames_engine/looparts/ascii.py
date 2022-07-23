@@ -1,7 +1,7 @@
 from .. import _hub
 from .. import struct
+from ..compo import vscreen
 from ..foundation import defs
-
 
 # - constants
 # character set that allows to draw a box with single line around it
@@ -57,8 +57,8 @@ def increm_char_size():
 def init(upscaling_int=None):
     global _screen, _matrix, _sm_ready
     _sm_ready = True
-    _screen = _hub.core.get_screen()
-    scrw, scrh = _hub.core.get_screen().get_size()
+    _screen = vscreen.get_screen()
+    scrw, scrh = _screen.get_size()
     adhocw = scrw // _char_size
     adhoch = scrh // _char_size
     if adhocw != scrw / _char_size:

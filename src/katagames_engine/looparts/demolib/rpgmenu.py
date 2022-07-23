@@ -4,7 +4,7 @@ import random
 
 from ... import _hub
 from ... import event
-from ...compo import core
+from ...compo import vscreen as core
 
 
 pygame = _hub.pygame  # alias to keep on using pygame, easily

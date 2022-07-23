@@ -5,7 +5,7 @@ from . import frects
 from . import image
 from .image import TEXT_COLOR, truncline, render_text
 from ... import _hub
-from ...compo import core
+from ...compo import vscreen
 
 
 pygame = _hub.pygame
@@ -212,7 +212,6 @@ class GameState(object):
         self.screen = pygame.Surface((max(800, 600 * w // h), 600))
 
 
-
 INPUT_CURSOR = None
 SMALLFONT = None
 TINYFONT = None
@@ -225,7 +224,7 @@ POSTERS = list()
 
 my_state = GameState()
 # fix: add ref to screen
-my_state.screen = core.get_screen()
+my_state.screen = vscreen.get_screen()
 
 # The FPS the rules runs at.
 FPS = 30

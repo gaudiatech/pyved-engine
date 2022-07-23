@@ -4,7 +4,7 @@ import math
 from .isosm_config import NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG, SCROLL_STEP
 from ... import _hub
 from ... import event
-from ...compo import core
+from ...compo import vscreen as core
 
 
 

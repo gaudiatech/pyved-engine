@@ -2,7 +2,7 @@ import weakref
 from itertools import chain
 
 from ... import _hub
-from ...compo import core
+from ...compo import vscreen as core
 
 
 DEFAULT_COLOR_KEY = (255, 0, 255)

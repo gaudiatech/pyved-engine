@@ -2,7 +2,7 @@ import re
 import textwrap
 
 from .. import _hub as inj
-from ..compo import core
+from ..compo import vscreen as core
 
 
 pygame = inj.pygame
