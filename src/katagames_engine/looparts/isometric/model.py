@@ -424,6 +424,7 @@ class IsometricMap:
         self.wall_layer = None
 
         self.wallpaper = None
+        self.mapname = None
 
     def seek_floor_and_wall(self):
         for n, layer in enumerate(self.layers):
@@ -471,6 +472,8 @@ class IsometricMap:
                         tilemap.wrap_x = ptag.get("value") == "true"
                     elif ptag.get("name") == "wrap_y":
                         tilemap.wrap_y = ptag.get("value") == "true"
+                    elif ptag.get("name") == "mapname":
+                        tilemap.mapname = ptag.get("mapname")
                     elif ptag.get("name") == "wallpaper":
                         tilemap.wallpaper = pygame.image.load(os.path.join("assets",ptag.get("value"))).convert_alpha()
 
@@ -501,6 +504,8 @@ class IsometricMap:
                     tilemap.wrap_x = tag.get("value", False)
                 elif tag["name"] == "wrap_y":
                     tilemap.wrap_y = tag.get("value", False)
+                elif tag["name"] == "mapname":
+                    tilemap.mapname = tag.get("value")
                 elif tag["name"] == "wallpaper":
                     tilemap.wallpaper = pygame.image.load(os.path.join("assets", tag.get("value"))).convert_alpha()
 

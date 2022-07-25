@@ -6,8 +6,6 @@ from ... import _hub
 from ... import event
 from ...compo import vscreen as core
 
-
-
 EngineEvTypes = event.EngineEvTypes
 
 # --------------------------------------------
@@ -24,7 +22,7 @@ def relative_x(x, y):
     except KeyError:
         if x not in _buffer_relx:
             _buffer_relx[x] = dict()
-        _buffer_relx[x][y] = int(x*_gl_halftile_w - y*_gl_halftile_w)
+        _buffer_relx[x][y] = int(x * _gl_halftile_w - y * _gl_halftile_w)
         return _buffer_relx[x][y]
 
 
@@ -35,7 +33,7 @@ def relative_y(x, y):
     except KeyError:
         if x not in _buffer_rely:
             _buffer_rely[x] = dict()
-        _buffer_rely[x][y] = int(y*_gl_halftile_h + x*_gl_halftile_h)
+        _buffer_rely[x][y] = int(y * _gl_halftile_h + x * _gl_halftile_h)
         return _buffer_rely[x][y]
 
 
@@ -45,11 +43,20 @@ def rel_set_info(halftile_w, halftile_h):
     _gl_halftile_h = float(halftile_h)
     _buffer_relx.clear()
     _buffer_rely.clear()
+
+
 # ----------------------------------------------
 
 
 class IsometricMapViewer(event.EventReceiver):
+    MEGAOPTIM = False
     MOUSEMOTION_CONST = None
+    SOLID_COLOR = 'navyblue'
+    FLOORS = {}
+    FLOOR_MAN_OFFSET = {
+        0: (1617 + 305, 240 - 128),  # what offset one needs to apply so the floor img is aligned, map 0 (city.png)
+        1: (522 + 300, 100 - 92)
+    }
 
     def __init__(self, isometric_map, screen, postfx=None, cursor=None,
                  left_scroll_key=None, right_scroll_key=None, up_scroll_key=None, down_scroll_key=None):
@@ -60,7 +67,13 @@ class IsometricMapViewer(event.EventReceiver):
         self.block_wallpaper = False
 
         self.isometric_map = isometric_map
-        self.scrollable_floor = _hub.pygame.image.load('assets/city.png')
+        self.FLOORS = {
+            0: _hub.pygame.image.load('assets/city.png'),
+            1: _hub.pygame.image.load('assets/casino.png')
+        }
+        self.manoffset = self.FLOOR_MAN_OFFSET[0]
+        self.scrollable_floor = self.FLOORS[0]
+
         self.scrollable_floor.set_colorkey((255, 0, 255))
 
         self.screen = screen
@@ -120,7 +133,6 @@ class IsometricMapViewer(event.EventReceiver):
 
     def _check_mouse_scroll(self, screen_area, mouse_x, mouse_y):
         # Check for map scrolling, depending on mouse position.
-        print("checking scroll")
         if not self._camera_updated_this_frame:
             if mouse_x < 20:
                 dx = -SCROLL_STEP
@@ -159,7 +171,7 @@ class IsometricMapViewer(event.EventReceiver):
         # The visible area describes the region of the map we need to draw
         w, h = scr.get_size()
         # below: x, y do not matter actually
-        self.visible_area = _hub.pygame.Rect(0, 0, w+self.half_tile_width, h+4*self.tile_height)
+        self.visible_area = _hub.pygame.Rect(0, 0, w + self.half_tile_width, h + 4 * self.tile_height)
 
     def _model_depth(self, model):
         return relative_y(model.x, model.y)
@@ -174,10 +186,6 @@ class IsometricMapViewer(event.EventReceiver):
         # TODO idea 1 optimize such as the ground layer is blit as one single image, we just move a rect to cut
         # properly from the very large image stored in memory
 
-        # ------------------------------------- check this out <<<
-        # --- OPTIM blit large image for the ground level (1/3)---
-        #a, b = self.screen_offset()
-        #self.floor_rect.topleft = 1635 +304-a, 248 - 128 - b
         #
         # TOM REMARK: but i cannot use this optimization right now, it makes
         # the floor "wiggle" compared to buildings or portals :(
@@ -187,15 +195,13 @@ class IsometricMapViewer(event.EventReceiver):
         #  and we just blit this texture instead of computing new stuff
 
         # Prep the screen.
-        if self.isometric_map.wallpaper:
-            if not self.block_wallpaper:
+        wpok = False
+        if not self.block_wallpaper:
+            if self.isometric_map.wallpaper is not None:
                 self.fill_wallpaper()
-            else:
-                self.screen.fill('navyblue')
-
-        # ------------------------------------- check this out <<<
-        # --- OPTIM blit large image for the ground level (2/3)---
-        # self.screen.blit(self.scrollable_floor, (0,0), area=self.floor_rect)
+                wpok = True
+        if not wpok:
+            self.screen.fill(self.SOLID_COLOR)
 
         # Check the map scrolling.
         self._camera_updated_this_frame = False
@@ -206,8 +212,19 @@ class IsometricMapViewer(event.EventReceiver):
                 self._focused_object_y0 = self._focused_object.y
 
         # Disabling mouse scrolling because the right and bottom edges of the screen don't seem to be working.
-        #if self.lastmousepos:
-        #    self._check_mouse_scroll(self.visible_area, *self.lastmousepos)
+        #     if self.lastmousepos:
+        #         self._check_mouse_scroll(self.visible_area, *self.lastmousepos)
+
+        # ------------------------------------- check this out <<<
+        # --- OPTIM blit large image for the ground level (1/3)---
+        if self.MEGAOPTIM:
+            # a = relative_x(self._focused_object.x, self._focused_object.y)
+            # b = relative_y(self._focused_object.x, self._focused_object.y)  # - self.mid[0],  self._focused_object.y-self.mid[1]
+            a, b = self.screen_offset()
+            self.floor_rect.topleft = self.manoffset[0] - a, self.manoffset[1] - b
+        # ------------------------------------- check this out <<<
+        # --- OPTIM blit large image for the ground level (2/3)---
+            self.screen.blit(self.scrollable_floor, (0, 0), area=self.floor_rect)
 
         # Record all of the objectgroup contents for display when their tile comes up
         # Also, clamp all object positions. If this is an infinite scrolling map, objects can move off one side to the
@@ -239,8 +256,9 @@ class IsometricMapViewer(event.EventReceiver):
             for layer_num, layer in enumerate(self.isometric_map.layers):
                 # ------------------------------------- check this out <<<
                 # --- OPTIM blit large image for the ground level (3/3)---
-                # if layer_num == 0:
-                #    continue
+                if self.MEGAOPTIM:
+                    if layer_num == 0:
+                        continue
 
                 if current_line >= 0:
                     if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
@@ -279,8 +297,9 @@ class IsometricMapViewer(event.EventReceiver):
                                 # to the printer, so it is pointing at the bottom corner of the tile instead.
                                 sx, sy = self.screen_coords(x, y)
                                 my_tile.paint_tile(
-                                    self.screen, sx, sy + layer.offsety + self.isometric_map.tile_height, gid & FLIPPED_HORIZONTALLY_FLAG,
-                                    gid & FLIPPED_VERTICALLY_FLAG)
+                                    self.screen, sx, sy + layer.offsety + self.isometric_map.tile_height,
+                                                     gid & FLIPPED_HORIZONTALLY_FLAG,
+                                                     gid & FLIPPED_VERTICALLY_FLAG)
 
                     elif self.line_cache[current_line] is None:  # and layer == self.isometric_map.layers[-1]:
                         painting_tiles = False
@@ -378,7 +397,7 @@ class IsometricMapViewer(event.EventReceiver):
         return relative_x(x, y) + x_off + extra_x_offset, relative_y(x, y) + y_off + extra_y_offset
 
     def screen_offset(self):
-        return self.mid[0] - relative_x(self._focus_x, self._focus_y),\
+        return self.mid[0] - relative_x(self._focus_x, self._focus_y), \
                self.mid[1] - relative_y(self._focus_x, self._focus_y)
 
     def set_focused_object(self, fo):
@@ -389,6 +408,15 @@ class IsometricMapViewer(event.EventReceiver):
             self._focused_object = None
 
     def switch_map(self, isometric_map):
+        # ---------- MEGAOPTIM
+        if self.MEGAOPTIM:
+            if isometric_map.mapname == 'city':
+                self.scrollable_floor = self.FLOORS[0]
+                self.manoffset = self.FLOOR_MAN_OFFSET[0]
+            elif isometric_map.mapname == 'casino':
+                self.scrollable_floor = self.FLOORS[1]
+                self.manoffset = self.FLOOR_MAN_OFFSET[1]
+
         self.isometric_map = isometric_map
         self.tile_width = isometric_map.tile_width
         self.tile_height = isometric_map.tile_height
