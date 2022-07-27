@@ -42,14 +42,15 @@ def load_font_img(path, font_color):
         if colorinfos[0] == 127:
             tmpw = x - last_x
             tmph = font_img.get_height()
-            letters.append(
-                clip(font_img, last_x, 0, tmpw, tmph)
-            )
+            letters.append([last_x, 0, tmpw, tmph])
+            # letters.append(
+            #     clip(font_img, last_x, 0, tmpw, tmph)
+            # )
             letter_spacing.append(tmpw)
             last_x = x + 1
         x += 1
-    for letter in letters:
-        letter.set_colorkey(bg_color)
+    #for letter in letters:
+    #    letter.set_colorkey(bg_color)
     card_l = len(letters)
     print('*debug ImgBasedText*')
     print(f' ... source={path}')
@@ -59,8 +60,12 @@ def load_font_img(path, font_color):
 
 
 class ImgBasedFont:
+    NO_CK_MODE = False  # this is a hotfix for the webctx where on needs to not use colorkey val
+
     def __init__(self, path, color):
-        self.letters, self.letter_spacing, self.line_height = load_font_img(path, color)
+        self._spr_sheet_like = pygame.image.load(path)
+
+        self.letters_rects, self.letter_spacing, self.line_height = load_font_img(path, color)
         self.font_order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
                            'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
                            'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '.', '-',
@@ -96,10 +101,12 @@ class ImgBasedFont:
     # --add-on to stick to pygame interface
     def render(self, gtext, antialias, color, bgcolor=None):
         rez = pygame.Surface((self.width(gtext), self.get_linesize()), pygame.SRCALPHA)
-        upink = (255, 0, 255)  # ugly pink
-        rez.fill(upink)
+        if not self.NO_CK_MODE:
+            upink = (255, 0, 255)  # ugly pink
+            rez.fill(upink)
         self._xrender(gtext, rez, (0, 0))
-        rez.set_colorkey(upink)
+        if not self.NO_CK_MODE:
+            rez.set_colorkey(upink)
         return rez
 
     def _xrender(self, text, surf, loc, line_width=0):
@@ -125,7 +132,9 @@ class ImgBasedFont:
         escaped_chars = ['\n', ' ', '\r']
         for char in text:
             if char not in escaped_chars:
-                surf.blit(self.letters[self.font_order.index(char)], (loc[0] + x_offset, loc[1] + y_offset))
+                #surf.blit(self.letters[self.font_order.index(char)], (loc[0] + x_offset, loc[1] + y_offset))
+                destpos = (loc[0] + x_offset, loc[1] + y_offset)
+                surf.blit(self._spr_sheet_like, destpos, area=self.letters_rects[self.font_order.index(char)] )
                 x_offset += self.letter_spacing[self.font_order.index(char)] + self.base_spacing
                 continue
             if char == ' ':

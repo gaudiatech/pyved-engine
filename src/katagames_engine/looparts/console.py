@@ -241,20 +241,28 @@ class CustomConsole:
     def draw(self):
         if not self.active:
             return
+        if not hasattr(self, 'li_raw_lines_labels'):
+            self.li_raw_lines_labels = list()
+
         if self.scrref is None:
             self.scrref = core.get_screen()
         if self.changed:  # update text layer
+            del self.li_raw_lines_labels[:]
             # creation du txt layer
             self.txt_layer.fill(self.bg_color)
             lines = self.c_out[-(self.max_lines + self.c_scroll):len(self.c_out) - self.c_scroll]
             y_pos = self.size[1]-(self.font_height*(len(lines)+1))
             for line in lines:
-                tmp_surf = self.font.render(line, False, self.txt_color_o, (0, 0, 0))
-                self.txt_layer.blit(tmp_surf, (1, y_pos+self.line_disp_yoffset)) #, 0, 0))
+                label_surf = self.font.render(line, False, self.txt_color_o, (0, 0, 0))
+                dpos = (1, y_pos+self.line_disp_yoffset)
+                # self.txt_layer.blit(label_surf, dpos )
+                self.li_raw_lines_labels.append([label_surf, dpos])
                 y_pos += self.font_height
 
-            tmp_surf = self.font.render(self.format_input_line(), False, self.txt_color_i)
-            self.txt_layer.blit(tmp_surf, (1, self.size[1] - self.font_height + self.line_disp_yoffset))#, 0, 0))
+            last_label = self.font.render(self.format_input_line(), False, self.txt_color_i)
+            last_pos = (1, self.size[1] - self.font_height + self.line_disp_yoffset)
+            # self.txt_layer.blit(last_label, last_pos)
+            self.li_raw_lines_labels.append([last_label, last_pos])
 
             # refresh bg_layer qui contiendra aussi txt_layer...
             # self.bg_layer = pygame.Surface(self.size)
@@ -263,8 +271,9 @@ class CustomConsole:
 
         self.bg_layer.fill(self.bg_color)
         self.scrref.blit(self.bg_layer, (0, 0))
-        self.scrref.blit(self.txt_layer, self.rect)
-        # self.screen().blit(self.bg_layer, self.rect)
+        # self.scrref.blit(self.txt_layer, self.rect)
+        for label, lpos in self.li_raw_lines_labels:
+            self.scrref.blit(label, lpos)
 
     def process_input(self, eventlist):
         if not self.active:
