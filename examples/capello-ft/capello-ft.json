@@ -3553,9 +3553,9 @@
     },
     "tile222.png": {
       "frame": {
-        "x": 1947,
+        "x": 1948,
         "y": 1,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "rotated": false,
@@ -3563,19 +3563,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 5,
         "h": 7
       }
     },
     "tile223.png": {
       "frame": {
-        "x": 1958,
+        "x": 1959,
         "y": 1,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "rotated": false,
@@ -3583,19 +3583,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 5,
         "h": 7
       }
     },
     "tile224.png": {
       "frame": {
-        "x": 1969,
+        "x": 1970,
         "y": 1,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "rotated": false,
@@ -3603,19 +3603,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 5,
         "h": 7
       }
     },
     "tile225.png": {
       "frame": {
-        "x": 1980,
+        "x": 1981,
         "y": 1,
-        "w": 11,
+        "w": 6,
         "h": 7
       },
       "rotated": false,
@@ -3623,19 +3623,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 6,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 6,
         "h": 7
       }
     },
     "tile226.png": {
       "frame": {
-        "x": 1991,
+        "x": 1992,
         "y": 1,
-        "w": 11,
+        "w": 6,
         "h": 7
       },
       "rotated": false,
@@ -3643,19 +3643,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 6,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 6,
         "h": 7
       }
     },
     "tile227.png": {
       "frame": {
-        "x": 2002,
+        "x": 2003,
         "y": 1,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "rotated": false,
@@ -3663,19 +3663,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 5,
         "h": 7
       }
     },
     "tile228.png": {
       "frame": {
-        "x": 2013,
+        "x": 2014,
         "y": 1,
-        "w": 11,
+        "w": 6,
         "h": 7
       },
       "rotated": false,
@@ -3683,19 +3683,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 6,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 6,
         "h": 7
       }
     },
     "tile229.png": {
       "frame": {
-        "x": 2024,
+        "x": 2025,
         "y": 1,
-        "w": 11,
+        "w": 7,
         "h": 7
       },
       "rotated": false,
@@ -3703,11 +3703,11 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 7,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 7,
         "h": 7
       }
     },
@@ -3715,7 +3715,7 @@
       "frame": {
         "x": 2035,
         "y": 1,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "rotated": false,
@@ -3723,19 +3723,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 5,
         "h": 7
       }
     },
     "tile231.png": {
       "frame": {
-        "x": 2046,
+        "x": 2047,
         "y": 1,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "rotated": false,
@@ -3743,19 +3743,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 5,
         "h": 7
       }
     },
     "tile232.png": {
       "frame": {
-        "x": 2057,
+        "x": 2058,
         "y": 1,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "rotated": false,
@@ -3763,19 +3763,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 5,
         "h": 7
       }
     },
     "tile233.png": {
       "frame": {
-        "x": 2068,
+        "x": 2069,
         "y": 1,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "rotated": false,
@@ -3783,19 +3783,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 5,
         "h": 7
       }
     },
     "tile234.png": {
       "frame": {
-        "x": 2079,
+        "x": 2080,
         "y": 1,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "rotated": false,
@@ -3803,19 +3803,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 5,
         "h": 7
       }
     },
     "tile235.png": {
       "frame": {
-        "x": 2090,
+        "x": 2091,
         "y": 1,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "rotated": false,
@@ -3823,19 +3823,19 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 5,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 5,
         "h": 7
       }
     },
     "tile236.png": {
       "frame": {
-        "x": 2101,
+        "x": 2102,
         "y": 1,
-        "w": 11,
+        "w": 6,
         "h": 7
       },
       "rotated": false,
@@ -3843,11 +3843,11 @@
       "spriteSourceSize": {
         "x": 0,
         "y": 0,
-        "w": 11,
+        "w": 6,
         "h": 7
       },
       "sourceSize": {
-        "w": 11,
+        "w": 6,
         "h": 7
       }
     }

@@ -42,16 +42,18 @@ class ProtoFont:
         for e in range(160, 173):
             mappingtable[e] = e - 24
 
-        # caractère degré celsuis °
-        for e in range(186, 186+16):
-            mappingtable[e] = e - 33
+        for e in range(176, 176+16):
+            mappingtable[e] = e - 23
         for e in range(192, 208):
             mappingtable[e] = e - 22
-        # Ð 208
+        # Ð 208 et suivants
         for e in range(208, 224):
             mappingtable[e] = e - 21
         for e in range(224, 240):
             mappingtable[e] = e - 20
+        # ð 240 et suivants
+        for e in range(240, 256):
+            mappingtable[e] = e - 19
         self.car_height = defaultdict(lambda: 7)
         # for my_asciicode in range(*alphabet_span):
         #     self.car_height[chr(my_asciicode)] = 7  # CONST

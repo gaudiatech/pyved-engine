@@ -23,7 +23,7 @@ def draw_tiles():
                 pass
 
 
-reg_font = pygame.font.Font('PixelOperatorMono8-Bold.ttf', 8)
+reg_font = pygame.font.Font(None, 20)  #'PixelOperatorMono8-Bold.ttf', 8)
 
 
 def fill_cells(to_rank):
@@ -50,7 +50,7 @@ def draw_cell(code):
 
     txt = ' ' if (not code) else chr(code)
     surf = reg_font.render(txt, False, 'black')
-    screen.blit(surf, scr_pos)
+    screen.blit(surf, (scr_pos[0]+1, scr_pos[1]))
 
     font.text_to_surf(txt, screen, (scr_pos[0], scr_pos[1] + 14), spacing=0)
 
@@ -82,7 +82,7 @@ while not gameover:
     elif mode == 2:
         # - tab comparatif
         fill_cells(fill)
-        for i in range(0, 311):
+        for i in range(0, 256):
             draw_cell(i)
 
     # --- affiche lettres en se basant sur leur code ascii
@@ -122,7 +122,7 @@ while not gameover:
             m += chr(x)
         font.text_to_surf(m, screen, (8, 177 + 11 * 3), spacing=1, bgcolor='orange')
         m = ''
-        for x in range(232, 282):
+        for x in range(232, 256):
             m += chr(x)
         font.text_to_surf(m, screen, (8, 177 + 11 * 4), spacing=1, bgcolor='orange')
 
