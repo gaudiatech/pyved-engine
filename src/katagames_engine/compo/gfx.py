@@ -12,12 +12,17 @@ class JsonBasedSprSheet:
             jsondata = json.load(json_def_file)
             assoc_tmp = dict()
             self.all_names = set()
-            for infos in jsondata['frames']:
-                gname = infos['filename']
-                self.all_names.add(gname)
-                assoc_tmp[gname] = self.sheet_surf.subsurface(
-                    _hub.pygame.Rect(infos['frame']['x'], infos['frame']['y'], infos['frame']['w'], infos['frame']['h'])
-                ).copy()
+            if isinstance(jsondata['frames'], list):  # we support 2 formats of json desc
+                for infos in jsondata['frames']:
+                    gname = infos['filename']
+                    self.all_names.add(gname)
+                    args = (infos['frame']['x'], infos['frame']['y'], infos['frame']['w'], infos['frame']['h'])
+                    assoc_tmp[gname] = self.sheet_surf.subsurface(_hub.pygame.Rect(*args)).copy()
+            else:
+                for sprname, infos in jsondata['frames'].items():
+                    self.all_names.add(sprname)
+                    args = (infos['frame']['x'], infos['frame']['y'], infos['frame']['w'], infos['frame']['h'])
+                    assoc_tmp[sprname] = self.sheet_surf.subsurface(_hub.pygame.Rect(*args)).copy()
             self.assoc_name_spr = assoc_tmp
 
     def __getitem__(self, item):
