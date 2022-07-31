@@ -1,34 +1,142 @@
+import base64
+import io
 import json
-from .. import _hub
 from collections import defaultdict
+
+from . import packed_capello_ft
+from .. import _hub
 
 
 class JsonBasedSprSheet:
-    def __init__(self, filename_no_ext, ck=None):
-        self.sheet_surf = _hub.pygame.image.load(filename_no_ext+'.png')
+    def __init__(self, required_infos, ck=None):
+        if isinstance(required_infos, str):
+            filename_no_ext = required_infos
+            fptr = open(filename_no_ext+'.png')
+            json_def_file = open(required_infos + '.json', 'r')
+        else:
+            fptr, json_def_file = required_infos
+
+        self.sheet_surf = _hub.pygame.image.load(fptr)  # namehint="capello-ft.png"
         if ck:
             self.sheet_surf.set_colorkey(ck)
 
-        json_def_filepath = filename_no_ext+'.json'
-        with open(json_def_filepath, 'r') as json_def_file:
-            jsondata = json.load(json_def_file)
-            assoc_tmp = dict()
-            self.all_names = set()
-            if isinstance(jsondata['frames'], list):  # we support 2 formats of json desc
-                for infos in jsondata['frames']:
-                    gname = infos['filename']
-                    self.all_names.add(gname)
-                    args = (infos['frame']['x'], infos['frame']['y'], infos['frame']['w'], infos['frame']['h'])
-                    assoc_tmp[gname] = self.sheet_surf.subsurface(_hub.pygame.Rect(*args)).copy()
-            else:
-                for sprname, infos in jsondata['frames'].items():
-                    self.all_names.add(sprname)
-                    args = (infos['frame']['x'], infos['frame']['y'], infos['frame']['w'], infos['frame']['h'])
-                    assoc_tmp[sprname] = self.sheet_surf.subsurface(_hub.pygame.Rect(*args)).copy()
-            self.assoc_name_spr = assoc_tmp
+        jsondata = json.load(json_def_file)
+        assoc_tmp = dict()
+        self.all_names = set()
+        if isinstance(jsondata['frames'], list):  # we support 2 formats of json desc
+            for infos in jsondata['frames']:
+                gname = infos['filename']
+                self.all_names.add(gname)
+                args = (infos['frame']['x'], infos['frame']['y'], infos['frame']['w'], infos['frame']['h'])
+                assoc_tmp[gname] = self.sheet_surf.subsurface(_hub.pygame.Rect(*args)).copy()
+        else:
+            for sprname, infos in jsondata['frames'].items():
+                self.all_names.add(sprname)
+                args = (infos['frame']['x'], infos['frame']['y'], infos['frame']['w'], infos['frame']['h'])
+                assoc_tmp[sprname] = self.sheet_surf.subsurface(_hub.pygame.Rect(*args)).copy()
+        self.assoc_name_spr = assoc_tmp
 
     def __getitem__(self, item):
         return self.assoc_name_spr[item]
+
+
+class ProtoFont:
+    UNKNOWN_CAR_RK = 123
+    SPAM_CAR = False
+
+    def __init__(self, font_source=None):
+
+        if font_source:  # meth1 : on ouvre des fichiers normalement
+            print('[ProtoFont] using the provided pair of files:', font_source)
+            self._sheet = JsonBasedSprSheet(
+                font_source, ck=(127, 127, 127)  # font_source could be 'capello-ft' for example
+            )
+        else:  # default embedded caracter set
+            # - meth2 : on ouvre du packed data
+            filelike_png = io.BytesIO(base64.b64decode(packed_capello_ft.pngdata))
+            filelike_json = io.StringIO(packed_capello_ft.jsondata)
+            self._sheet = JsonBasedSprSheet(
+                (filelike_png, filelike_json), ck=(127, 127, 127)
+            )
+
+        # specific to capello-ft.png and capello-ft.json...
+        # it maps ascii codes to the rank font000.png where 000 is the rank
+        mappingtable = {
+            174: 150,  # circled r car.
+            175: 151,
+        }
+        for e in range(32, 48):
+            mappingtable[e] = e - 32
+        for e in range(48, 64):
+            mappingtable[e] = e - 31
+        for e in range(64, 80):
+            mappingtable[e] = e - 30
+        for e in range(80, 96):
+            mappingtable[e] = e - 29
+        for e in range(96, 112):
+            mappingtable[e] = e - 28
+        for e in range(112, 127):
+            mappingtable[e] = e - 27
+        # upside-down !, cent ¢ , then £ symbol ... etc.
+        for e in range(160, 173):
+            mappingtable[e] = e - 24
+
+        for e in range(176, 176+16):
+            mappingtable[e] = e - 23
+        for e in range(192, 208):
+            mappingtable[e] = e - 22
+        # Ð 208 et suivants
+        for e in range(208, 224):
+            mappingtable[e] = e - 21
+        for e in range(224, 240):
+            mappingtable[e] = e - 20
+        # ð 240 et suivants
+        for e in range(240, 256):
+            mappingtable[e] = e - 19
+        self.car_height = defaultdict(lambda: 7)
+        # for my_asciicode in range(*alphabet_span):
+        #     self.car_height[chr(my_asciicode)] = 7  # CONST
+
+        # - generic
+        self.ascii2img = dict()
+        defaultw = self._sheet['tile{:03d}.png'.format(self.UNKNOWN_CAR_RK)].get_width()
+        self.car_width = defaultdict(lambda: defaultw)
+
+        for my_asciicode in mappingtable.keys():
+            ssurf = self._sheet['tile{:03d}.png'.format(mappingtable[my_asciicode])]
+            self.ascii2img[my_asciicode] = ssurf
+            self.car_width[chr(my_asciicode)] = ssurf.get_width()
+
+    @property
+    def sheet(self):
+        return self._sheet
+
+    def __getitem__(self, itemk):
+        ascii_tmp = ord(itemk)
+        if self.SPAM_CAR:
+            print(itemk, ascii_tmp)
+        try:
+            return self.ascii2img[ascii_tmp]
+        except KeyError:
+            return self._sheet['tile{:03d}.png'.format(self.UNKNOWN_CAR_RK)]
+
+    def text_to_surf(self, w, refsurf, start_pos, spacing=0, bgcolor=None):
+        # fill background with a solid color, if requested
+        if bgcolor:
+            curr_pos = list(start_pos)
+            h = float('-inf')
+            for letter in w:
+                curr_pos[0] += self.car_width[letter] + spacing
+                if self.car_height[letter] > h:
+                    h = self.car_height[letter]
+            _hub.pygame.draw.rect(
+                refsurf, bgcolor, (start_pos[0], start_pos[1], curr_pos[0]-spacing-start_pos[0], h), 0
+            )
+        # draw the text
+        curr_pos = list(start_pos)
+        for letter in w:
+            refsurf.blit(self[letter], curr_pos)
+            curr_pos[0] += self.car_width[letter] + spacing
 
 
 class Spritesheet:

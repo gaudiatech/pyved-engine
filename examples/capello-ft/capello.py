@@ -1,5 +1,5 @@
 import katagames_engine as kengi
-from ProtoFont import ProtoFont
+
 
 SCR_W = 290
 kengi.init(2)
@@ -7,7 +7,8 @@ screen = kengi.get_surface()
 gameover = False
 pygame = kengi.pygame
 clock = pygame.time.Clock()
-font = ProtoFont()
+font = kengi.gfx.ProtoFont()  # use default internal font
+reg_font = pygame.font.Font(None, 20)
 
 
 def draw_tiles():
@@ -21,9 +22,6 @@ def draw_tiles():
                 screen.blit(font.sheet[idx], dest)
             except KeyError:
                 pass
-
-
-reg_font = pygame.font.Font(None, 20)  #'PixelOperatorMono8-Bold.ttf', 8)
 
 
 def fill_cells(to_rank):
@@ -57,7 +55,7 @@ def draw_cell(code):
 
 # 1 : focus on the spr sheet cut process
 # 2 : compare with a regular ttf font
-mode = 2
+mode = 1
 fill = 1
 # can set the flag to True if we need to dump ascii codes in the console
 # ProtoFont.SPAM_CAR = True
@@ -97,11 +95,6 @@ while not gameover:
     #     if xpos > SCR_W:
     #         xpos = 0
     #         tmp += 11
-
-    # --- essai protofont text_to_surf
-    # no spacing, bg color
-    # font.text_to_surf("salut bro! C'est +cool la-bas? çÈé*à~", screen, (8, 177))
-    # with bg color:
 
     # --- draw all caracters, no specific layout
     if mode == 1:
