@@ -1,11 +1,13 @@
 import katagames_engine as kengi
+from ProtoFont import ProtoFont
 
-kengi.init(3)
+SCR_W = 290
+kengi.init(2)
 screen = kengi.get_surface()
 gameover = False
 pygame = kengi.pygame
 clock = pygame.time.Clock()
-sprsheet = kengi.gfx.JsonBasedSprSheet('capello-ft')  #, ck=(127, 127, 127))
+font = ProtoFont()
 
 
 def draw_tiles():
@@ -16,87 +18,50 @@ def draw_tiles():
             try:
                 idx = 'tile{:03d}.png'.format(k)
                 dest = ((k - alpha * decal) * 11, yalign)
-                screen.blit(sprsheet[idx], dest)
+                screen.blit(font.sheet[idx], dest)
             except KeyError:
                 pass
 
 
-SCR_W = 290
+reg_font = pygame.font.Font('PixelOperatorMono8-Bold.ttf', 8)
 
 
-class ProtoFont:
-    UNKNOWN_CAR_RK = 123
+def fill_cells(to_rank):
+    for k in range(to_rank):
+        i, j = k % 16, k // 16
+        # swap i,j
+        tmp = j
+        j = i
+        i = tmp
 
-    def __init__(self, g_sprsheet):
-        self._sheet = g_sprsheet
-
-        # specific to capello-ft.png and capello-ft.json...
-        # it maps ascii codes to the rank font000.png where 000 is the rank
-        mappingtable = dict()
-        for e in range(32, 48):
-            mappingtable[e] = e - 32
-        for e in range(48, 64):
-            mappingtable[e] = e - 31
-        for e in range(64, 80):
-            mappingtable[e] = e - 30
-        for e in range(80, 96):
-            mappingtable[e] = e - 29
-        for e in range(96, 112):
-            mappingtable[e] = e - 28
-        for e in range(112, 127):
-            mappingtable[e] = e - 27
-        self.car_height = dict()
-        alphabet_span = (32, 127)
-        for my_asciicode in range(*alphabet_span):
-            self.car_height[chr(my_asciicode)] = 7  # CONST
-
-        # - generic
-        self.ascii2img = dict()
-        self.car_width = dict()
-        for my_asciicode in range(*alphabet_span):
-            ssurf = g_sprsheet['tile{:03d}.png'.format(mappingtable[my_asciicode])]
-            self.ascii2img[my_asciicode] = ssurf
-            self.car_width[chr(my_asciicode)] = ssurf.get_width()
-
-    def __getitem__(self, itemk):
-        return self.ascii2img[ord(itemk)]
-
-    def text_to_surf(self, w, refsurf, start_pos, spacing=0, bgcolor=None):
-        # fill background with a solid color, if requested
-        if bgcolor:
-            curr_pos = list(start_pos)
-            h = float('-inf')
-            for letter in w:
-                curr_pos[0] += self.car_width[letter] + spacing
-                if self.car_height[letter] > h:
-                    h = self.car_height[letter]
-            pygame.draw.rect(refsurf, bgcolor, (start_pos[0], start_pos[1], curr_pos[0]-spacing-start_pos[0], h), 0)
-        # draw the text
-        curr_pos = list(start_pos)
-        for letter in w:
-            refsurf.blit(self[letter], curr_pos)
-            curr_pos[0] += self.car_width[letter] + spacing
-
-    # def text_to_surf(self, w, refsurf, start_pos):
-    #     curr_pos = list(start_pos)
-    #     for letter in w:
-    #         safecode = self.to_safe_code(ord(letter))
-    #         print('traite: ',letter, ' safecode = ', safecode)
-    #
-    #         img = self._sheet['tile{:03d}.png'.format(safecode)]
-    #         refsurf.blit(img, curr_pos)
-    #         curr_pos[0] += self.car_width[safecode]
-    #
-    # def to_safe_code(self, a_code):
-    #     try:
-    #         gletter = chr(a_code)
-    #         tmp = self[gletter]
-    #         return a_code
-    #     except (ValueError, KeyError):
-    #         return self.UNKNOWN_CAR_RK
+        scr_pos = (18 * i, 22 * j)
+        pygame.draw.rect(screen, 'orange', (scr_pos[0] - 1, scr_pos[1] - 1, 18, 24))
 
 
-font = ProtoFont(sprsheet)
+def draw_cell(code):
+    i, j = code % 16, code // 16
+    # swap i,j
+    tmp = j
+    j = i
+    i = tmp
+
+    scr_pos = (18 * i, 22 * j)
+    pygame.draw.rect(screen, 'antiquewhite3', (scr_pos[0] - 1, scr_pos[1] - 1, 18, 24), 1)
+
+    txt = ' ' if (not code) else chr(code)
+    surf = reg_font.render(txt, False, 'black')
+    screen.blit(surf, scr_pos)
+
+    font.text_to_surf(txt, screen, (scr_pos[0], scr_pos[1] + 14), spacing=0)
+
+
+# 1 : focus on the spr sheet cut process
+# 2 : compare with a regular ttf font
+mode = 2
+fill = 1
+# can set the flag to True if we need to dump ascii codes in the console
+# ProtoFont.SPAM_CAR = True
+
 
 while not gameover:
     for ev in pygame.event.get():
@@ -105,9 +70,20 @@ while not gameover:
         elif ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_ESCAPE:
                 gameover = True
+            elif ev.key == pygame.K_SPACE:
+                fill += 1
+            elif ev.key == pygame.K_RETURN:
+                print(fill-1)
 
     screen.fill('pink')
-    draw_tiles()
+
+    if mode == 1:
+        draw_tiles()
+    elif mode == 2:
+        # - tab comparatif
+        fill_cells(fill)
+        for i in range(0, 311):
+            draw_cell(i)
 
     # --- affiche lettres en se basant sur leur code ascii
     # tmp = 180
@@ -123,9 +99,34 @@ while not gameover:
     #         tmp += 11
 
     # --- essai protofont text_to_surf
-    font.text_to_surf("salut bro! C'est +cool la-bas?", screen, (8, 177), spacing=1, bgcolor='orange')
+    # no spacing, bg color
+    # font.text_to_surf("salut bro! C'est +cool la-bas? çÈé*à~", screen, (8, 177))
+    # with bg color:
 
-    # commit gfx data
+    # --- draw all caracters, no specific layout
+    if mode == 1:
+        m = ''
+        for x in range(32, 82):
+            m += chr(x)
+        font.text_to_surf(m, screen, (8, 177 + 11 * 0), spacing=1, bgcolor='orange')
+        m = ''
+        for x in range(82, 132):
+            m += chr(x)
+        font.text_to_surf(m, screen, (8, 177 + 11 * 1), spacing=1, bgcolor='orange')
+        m = ''
+        for x in range(132, 182):
+            m += chr(x)
+        font.text_to_surf(m, screen, (8, 177 + 11 * 2), spacing=1, bgcolor='orange')
+        m = ''
+        for x in range(182, 232):
+            m += chr(x)
+        font.text_to_surf(m, screen, (8, 177 + 11 * 3), spacing=1, bgcolor='orange')
+        m = ''
+        for x in range(232, 282):
+            m += chr(x)
+        font.text_to_surf(m, screen, (8, 177 + 11 * 4), spacing=1, bgcolor='orange')
+
+    # commit all gfx data
     kengi.flip()
     clock.tick(44)
 
