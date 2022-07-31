@@ -4,10 +4,12 @@ from collections import defaultdict
 
 
 class JsonBasedSprSheet:
-    def __init__(self, filename_no_ext):
+    def __init__(self, filename_no_ext, ck=None):
         self.sheet_surf = _hub.pygame.image.load(filename_no_ext+'.png')
-        json_def_filepath = filename_no_ext+'.json'
+        if ck:
+            self.sheet_surf.set_colorkey(ck)
 
+        json_def_filepath = filename_no_ext+'.json'
         with open(json_def_filepath, 'r') as json_def_file:
             jsondata = json.load(json_def_file)
             assoc_tmp = dict()

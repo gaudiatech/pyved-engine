@@ -1,23 +1,21 @@
-
 import katagames_engine as kengi
-
 
 kengi.init(3)
 screen = kengi.get_surface()
 gameover = False
 pygame = kengi.pygame
 clock = pygame.time.Clock()
-sprsheet = kengi.gfx.JsonBasedSprSheet('capello-ft')
+sprsheet = kengi.gfx.JsonBasedSprSheet('capello-ft')  #, ck=(127, 127, 127))
 
 
 def draw_tiles():
     decal = 28
     for alpha in range(0, 17):
-        yalign = 2+11*alpha
-        for k in range(alpha*decal, (alpha+1)*decal):
+        yalign = 2 + 11 * alpha
+        for k in range(alpha * decal, (alpha + 1) * decal):
             try:
                 idx = 'tile{:03d}.png'.format(k)
-                dest = ((k-alpha*decal)*11, yalign)
+                dest = ((k - alpha * decal) * 11, yalign)
                 screen.blit(sprsheet[idx], dest)
             except KeyError:
                 pass
@@ -27,7 +25,6 @@ SCR_W = 290
 
 
 class ProtoFont:
-
     UNKNOWN_CAR_RK = 123
 
     def __init__(self, g_sprsheet):
@@ -64,11 +61,21 @@ class ProtoFont:
     def __getitem__(self, itemk):
         return self.ascii2img[ord(itemk)]
 
-    def text_to_surf(self, w, refsurf, start_pos):
+    def text_to_surf(self, w, refsurf, start_pos, spacing=0, bgcolor=None):
+        # fill background with a solid color, if requested
+        if bgcolor:
+            curr_pos = list(start_pos)
+            h = float('-inf')
+            for letter in w:
+                curr_pos[0] += self.car_width[letter] + spacing
+                if self.car_height[letter] > h:
+                    h = self.car_height[letter]
+            pygame.draw.rect(refsurf, bgcolor, (start_pos[0], start_pos[1], curr_pos[0]-spacing-start_pos[0], h), 0)
+        # draw the text
         curr_pos = list(start_pos)
         for letter in w:
             refsurf.blit(self[letter], curr_pos)
-            curr_pos[0] += self.car_width[letter]
+            curr_pos[0] += self.car_width[letter] + spacing
 
     # def text_to_surf(self, w, refsurf, start_pos):
     #     curr_pos = list(start_pos)
@@ -90,7 +97,6 @@ class ProtoFont:
 
 
 font = ProtoFont(sprsheet)
-
 
 while not gameover:
     for ev in pygame.event.get():
@@ -117,7 +123,7 @@ while not gameover:
     #         tmp += 11
 
     # --- essai protofont text_to_surf
-    font.text_to_surf('salut bro! ', screen, (8, 177))
+    font.text_to_surf("salut bro! C'est +cool la-bas?", screen, (8, 177), spacing=1, bgcolor='orange')
 
     # commit gfx data
     kengi.flip()
