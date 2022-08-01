@@ -11,12 +11,12 @@ class JsonBasedSprSheet:
     def __init__(self, required_infos, ck=None):
         if isinstance(required_infos, str):
             filename_no_ext = required_infos
-            fptr = open(filename_no_ext+'.png')
+            self.sheet_surf = _hub.pygame.image.load(filename_no_ext+'.png')
             json_def_file = open(required_infos + '.json', 'r')
         else:
             fptr, json_def_file = required_infos
+            self.sheet_surf = _hub.pygame.image.load(fptr)  # namehint="capello-ft.png"
 
-        self.sheet_surf = _hub.pygame.image.load(fptr)  # namehint="capello-ft.png"
         if ck:
             self.sheet_surf.set_colorkey(ck)
 
