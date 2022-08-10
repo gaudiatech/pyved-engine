@@ -6,6 +6,11 @@ from ..compo import gfx
 
 pygame = _hub.pygame
 
+# - check your .json file to be sure the format is well-specified in the code
+# cf it matches what's written below
+ENUM_FRAMES_ENTRY = 'seq'
+DELAY_ENTRY = 'delay'
+
 
 class AnimatedSprite(pygame.sprite.Sprite):
     def __init__(self, srcpath):

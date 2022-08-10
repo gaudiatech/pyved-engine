@@ -8,6 +8,7 @@ from .Injector import Injector
 
 kengi_inj = Injector({
     'ai': '.looparts.ai',
+    'anim': '.looparts.anim',
     'ascii': '.looparts.ascii',
     'demolib': '.looparts.demolib',
     'polarbear': '.looparts.polarbear',
