@@ -1,2 +1,1 @@
--i https://pypi.org/simple
-pygame==2.1.1
+pygame>=2.1.1
