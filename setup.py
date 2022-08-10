@@ -15,10 +15,12 @@ setup(
         "katagames_engine",
         "katagames_engine.foundation",
         "katagames_engine.ifaces",
-        "katagames_engine._sm_shelf.gui",
-        "katagames_engine._sm_shelf.isometric",
-        "katagames_engine._sm_shelf.tmx",
-        "katagames_engine._sm_shelf.polarbear"
+        "katagames_engine.looparts.ai",
+        "katagames_engine.looparts.demolib",
+        "katagames_engine.looparts.gui",
+        "katagames_engine.looparts.isometric",
+        "katagames_engine.looparts.polarbear",
+        "katagames_engine.looparts.tmx"
         ],
     include_package_data=True,  # to be sure we get _sm_shelf/legacy.py, etc.
 
