@@ -41,7 +41,7 @@ def game_init():
     global screen, tilemap, tilemap2, viewer, manager, mypc, paint_ev, mv_offset
     # aliases
     kengi.init(2)
-    screen = kengi.core.get_screen()
+    screen = kengi.get_surface()
 
     # model
     tilemap = isometric_maps.model.IsometricMap.load(['xassets', ], 'test_map.tmx')

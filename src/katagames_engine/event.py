@@ -2,10 +2,10 @@ import time
 from abc import abstractmethod
 from collections import deque as deque_obj
 
-from .foundation import defs
-from . import vscreen
+from .compo import vscreen
 from . import _hub
 from . import struct
+from .foundation import defs
 
 
 enum_builder_generic = struct.enum_builder_generic

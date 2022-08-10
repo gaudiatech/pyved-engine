@@ -38,7 +38,7 @@ from . import _hub as hub
 from . import event
 from . import pal
 from . import struct
-from . import vscreen  # important import! As this is called by web_vm
+# from .compo import vscreen  # important import! As this is called by web_vm
 from .compo.vscreen import flip
 from .Injector import Injector
 from ._BaseGameState import BaseGameState

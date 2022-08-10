@@ -1,9 +1,10 @@
 import collections
-import math
 
 from .isosm_config import NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG, SCROLL_STEP
 from ... import _hub
 from ... import event
+from ...compo import vscreen
+
 
 pygame = _hub.pygame
 EngineEvTypes = event.EngineEvTypes
@@ -188,7 +189,7 @@ class IsometricMapViewer0(event.EventReceiver):
                                 my_tile = self.isometric_map.tilesets[tile_id]
 
                                 sx, sy = self.screen_coords(x, y)
-                                my_tile(self.screen, sx, sy + layer.offsety, gid & FLIPPED_HORIZONTALLY_FLAG,
+                                my_tile.paint_tile(self.screen, sx, sy + layer.offsety, gid & FLIPPED_HORIZONTALLY_FLAG,
                                         gid & FLIPPED_VERTICALLY_FLAG)
 
                             if self.cursor:
@@ -288,7 +289,7 @@ class IsometricMapViewer0(event.EventReceiver):
             self._paint_all()
             return
         if ev.type == pygame.MOUSEMOTION:
-            mouse_x, mouse_y = _hub.core.proj_to_vscreen(ev.pos)
+            mouse_x, mouse_y = vscreen.proj_to_vscreen(ev.pos)
             self.lastmousepos = (mouse_x, mouse_y)
             self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
             if self.cursor:
