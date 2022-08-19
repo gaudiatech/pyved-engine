@@ -29,6 +29,10 @@ a match3 puzzle game...
 <img src="docs/match3-preview.png" alt="match3 screenshot" width=600>
 
 And many others! 
+We also have built-in color palettes to unleash users' creativity.
+
+<img src="docs/kengi-palette-preview.png" alt="palette preview" width=600>
+
 Feel free to study/copy all files available in this folder:
 * [game_templates](https://github.com/gaudiatech/kengi/blob/master/game_templates) 
 
