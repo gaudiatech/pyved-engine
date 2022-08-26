@@ -81,7 +81,8 @@ class CustomConsole:
            k is a function in the form console_func(console, match) that calls console.output(...)
         """
         self.message_of_the_day = ["no Motd"]
-        self.scrref = None
+        self.scrref = screen
+        self.li_raw_lines_labels = list()
 
         self.bg_color = '#06170e'  # very dark green
 
@@ -241,11 +242,7 @@ class CustomConsole:
     def draw(self):
         if not self.active:
             return
-        if not hasattr(self, 'li_raw_lines_labels'):
-            self.li_raw_lines_labels = list()
 
-        if self.scrref is None:
-            self.scrref = core.get_screen()
         if self.changed:  # update text layer
             del self.li_raw_lines_labels[:]
             # creation du txt layer
@@ -463,6 +460,7 @@ class CustomConsole:
 
     def clear(self):
         """Clear the screen! Use: clear"""
+        del self.li_raw_lines_labels[:]
         self.c_out = [" "]
         self.c_scroll = 0
         return "[Screen Cleared]"

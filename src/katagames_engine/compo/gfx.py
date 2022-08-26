@@ -138,6 +138,12 @@ class ProtoFont:
             refsurf.blit(self[letter], curr_pos)
             curr_pos[0] += self.car_width[letter] + spacing
 
+    def compute_width(self, w, spacing=0):
+        res = 0
+        for letter in w:
+            res += self.car_width[letter] + spacing
+        return res
+
 
 class Spritesheet:
     """
