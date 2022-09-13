@@ -362,19 +362,19 @@ class CustomConsole:
                 self.setvar(assign.group('name'), tokens[0])
             else:
                 # Function
+                if tokens[0] not in self.func_calls:
+                    self.output("Unknown Command: " + str(tokens[0]))
+                    self.output(r'Type "help" for a list of commands.')
+                else:
+                    out = self.func_calls[tokens[0]](*tokens[1:])
+                    if out is None:
+                        print('*Warning console func MUST return a value*')
+                    # Assignment from function's return value
+                    if assign:
+                        self.setvar(assign.group('name'), out)
+                    if out is not None:
+                        self.output(out)
 
-                out = self.func_calls[tokens[0]](*tokens[1:])
-                if out is None:
-                    print('*Warning console func MUST return a value*')
-                # Assignment from function's return value
-                if assign:
-                    self.setvar(assign.group('name'), out)
-
-            if out is not None:
-                self.output(out)
-        except KeyError:
-            self.output("Unknown Command: " + str(tokens[0]))
-            self.output(r'Type "help" for a list of commands.')
         except ValueError as ve:
             self.output("Error: {0}".format(ve))
         except TypeError as te:
