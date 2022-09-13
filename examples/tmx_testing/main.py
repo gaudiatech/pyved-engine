@@ -16,7 +16,7 @@ kengi.init(2)
 
 clock = pygame.time.Clock()
 #scr = pygame.display.set_mode(SCR_SIZE)
-scr=kengi.core.get_screen()
+scr=kengi.get_surface()
 scr_size = scr.get_size()
 
 tm_obj = tmxdata.load_tmx('level.tmx')
