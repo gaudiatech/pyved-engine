@@ -42,6 +42,8 @@ class Button(pygame.sprite.Sprite):
 
         if size:
             self._w, self._h = size
+        else:
+            self._w, self._h = 128, 40
         if pos:
             self.pos = list(pos)
         self.image = pygame.surface.Surface((self._w, self._h))
