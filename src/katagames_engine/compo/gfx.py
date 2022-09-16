@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+from abc import abstractmethod
 from collections import defaultdict
 
 from . import packed_capello_ft
@@ -40,24 +41,17 @@ class JsonBasedSprSheet:
         return self.assoc_name_spr[item]
 
 
-class ProtoFont:
+class BaseCfont:
     UNKNOWN_CAR_RK = 123
     SPAM_CAR = False
 
-    def __init__(self, font_source=None):
+    @abstractmethod
+    def _init_sheet_attr(self):
+        raise NotImplementedError
 
-        if font_source:  # meth1 : on ouvre des fichiers normalement
-            print('[ProtoFont] using the provided pair of files:', font_source)
-            self._sheet = JsonBasedSprSheet(
-                font_source, ck=(127, 127, 127)  # font_source could be 'capello-ft' for example
-            )
-        else:  # default embedded caracter set
-            # - meth2 : on ouvre du packed data
-            filelike_png = io.BytesIO(base64.b64decode(packed_capello_ft.pngdata))
-            filelike_json = io.StringIO(packed_capello_ft.jsondata)
-            self._sheet = JsonBasedSprSheet(
-                (filelike_png, filelike_json), ck=(127, 127, 127)
-            )
+    def __init__(self):
+        self._sheet = None
+        self._init_sheet_attr()
 
         # specific to capello-ft.png and capello-ft.json...
         # it maps ascii codes to the rank font000.png where 000 is the rank
@@ -81,7 +75,7 @@ class ProtoFont:
         for e in range(160, 173):
             mappingtable[e] = e - 24
 
-        for e in range(176, 176+16):
+        for e in range(176, 176 + 16):
             mappingtable[e] = e - 23
         for e in range(192, 208):
             mappingtable[e] = e - 22
@@ -130,7 +124,7 @@ class ProtoFont:
                 if self.car_height[letter] > h:
                     h = self.car_height[letter]
             _hub.pygame.draw.rect(
-                refsurf, bgcolor, (start_pos[0], start_pos[1], curr_pos[0]-spacing-start_pos[0], h), 0
+                refsurf, bgcolor, (start_pos[0], start_pos[1], curr_pos[0] - spacing - start_pos[0], h), 0
             )
         # draw the text
         curr_pos = list(start_pos)
@@ -143,6 +137,29 @@ class ProtoFont:
         for letter in w:
             res += self.car_width[letter] + spacing
         return res
+
+
+class JsonBasedCfont(BaseCfont):
+    def __init__(self, sourcejson):
+        self._known_source = sourcejson
+        super().__init__()
+
+    def _init_sheet_attr(self):
+        font_source_no_ext = self._known_source
+        print('[ProtoFont] using the provided pair of files:', font_source_no_ext)
+        self._sheet = JsonBasedSprSheet(
+            font_source_no_ext, ck=(127, 127, 127)  # font_source could be 'capello-ft' for example
+        )
+
+
+class EmbeddedCfont(BaseCfont):
+    def _init_sheet_attr(self):
+        # - meth2 : on ouvre du packed data, tt simplement!
+        filelike_png = io.BytesIO(base64.b64decode(packed_capello_ft.pngdata))
+        filelike_json = io.StringIO(packed_capello_ft.jsondata)
+        self._sheet = JsonBasedSprSheet(
+            (filelike_png, filelike_json), ck=(127, 127, 127)
+        )
 
 
 class Spritesheet:
