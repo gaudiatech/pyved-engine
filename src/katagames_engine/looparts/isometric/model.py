@@ -16,27 +16,42 @@ info_type_obj = 'class'
 
 
 class IsometricTile:
-    def __init__(self, tile_id, tile_surface, hflip, vflip):
+    def __init__(self, tile_id, tile_surface):
         self.id = tile_id
         self.tile_surface = tile_surface
+        self.tmp_anchor = list(self.tile_surface.get_size())
+        self.tmp_anchor[0] -= self.tmp_anchor[0]//2
 
-        self.hflip_surface = pygame.transform.flip(tile_surface, True, False).convert_alpha()
-        self.hflip_surface.set_colorkey(tile_surface.get_colorkey(), tile_surface.get_flags())
-        self.vflip_surface = pygame.transform.flip(tile_surface, False, True).convert_alpha()
-        self.vflip_surface.set_colorkey(tile_surface.get_colorkey(), tile_surface.get_flags())
-        self.hvflip_surface = pygame.transform.flip(tile_surface, True, True).convert_alpha()
-        self.hvflip_surface.set_colorkey(tile_surface.get_colorkey(), tile_surface.get_flags())
+        self.hflip_surface = None
+        self.vflip_surface = None
+        self.hvflip_surface = None
 
     def paint_tile(self, dest_surface, x, y, hflip=False, vflip=False):
         """Draw this tile on the dest_surface at the provided x,y coordinates."""
+        if (not hflip) and (not vflip):
+            dest_surface.blit(self.tile_surface, (x-self.tmp_anchor[0], y-self.tmp_anchor[1]))
+            return
+
         if hflip and vflip:
+            if self.hvflip_surface is None:
+                print('FLIP H-V')
+                self.hvflip_surface = pygame.transform.flip(self.tile_surface, True, True)
+                self.hvflip_surface.set_colorkey(self.tile_surface.get_colorkey(), self.tile_surface.get_flags())
             surf = self.hvflip_surface
+
         elif hflip:
+            if self.hflip_surface is None:
+                print('FLIP H')
+                self.hflip_surface = pygame.transform.flip(self.tile_surface, True, False)
+                self.hflip_surface.set_colorkey(self.tile_surface.get_colorkey(), self.tile_surface.get_flags())
             surf = self.hflip_surface
+
         elif vflip:
+            if self.vflip_surface is None:
+                self.vflip_surface = pygame.transform.flip(self.tile_surface, False, True)
+                self.vflip_surface.set_colorkey(self.tile_surface.get_colorkey(), self.tile_surface.get_flags())
             surf = self.vflip_surface
-        else:
-            surf = self.tile_surface
+
         mydest = surf.get_rect(midbottom=(x, y))
         dest_surface.blit(surf, mydest)
 
@@ -56,8 +71,8 @@ class IsometricTileset:
         self.tile_height = tile_height
         self.firstgid = firstgid
 
-        self.hflip = False
-        self.vflip = False
+        # self.hflip = False
+        # self.vflip = False
 
         self.tiles = []
         self.properties = {}
@@ -75,7 +90,7 @@ class IsometricTileset:
         for frame in range(num_tiles):
             myrect.x = (frame % frames_per_row) * self.tile_width
             myrect.y = (frame // frames_per_row) * self.tile_height
-            self.tiles.append(IsometricTile(frame + 1, mysurf.subsurface(myrect), self.hflip, self.vflip))
+            self.tiles.append(IsometricTile(frame + 1, mysurf.subsurface(myrect)))
 
     @classmethod
     def fromxml(cls, folders, tag, firstgid=None):
