@@ -184,17 +184,19 @@ class IsometricMapObject:
     A thing that can be placed on the map.
     """
 
-    def __init__(self, **keywords):
+    def __init__(self, **kwargs):
         self.name = ""
-        self.type = ""
+        # self.type = ""
         self.x = 0
         self.y = 0
         self.width = 0
         self.height = 0
         self.gid = 0
         self.visible = 1
-        self.properties = dict()
-        super().__init__(**keywords)
+        # self.properties = dict()
+        # super().__init__(**keywords)
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     def __call__(self, dest_surface, sx, sy, mymap):
         """Draw this object at the requested surface coordinates on the provided surface."""
@@ -217,8 +219,8 @@ class IsometricMapObject:
         # delete this long rant of a comment. Or leave it as a warning to others. I am just glad to finally understand
         # what's going on.
 
-        mx = tx / float(givenlayer.tile_height)
-        my = ty / float(givenlayer.tile_height)
+        mx = -0.5 + (tx / float(givenlayer.tile_height))
+        my = -0.5 + (ty / float(givenlayer.tile_height))
         return mx, my
 
     @classmethod
@@ -241,19 +243,27 @@ class IsometricMapObject:
 
     @classmethod
     def fromjson(cls, jdict, givenlayer):
-        myob = cls()
-        myob.name = jdict.get("name")
-        myob.type = jdict.get(info_type_obj)
+        name = jdict.get("name")
+        objtype = jdict.get(info_type_obj)
         # Convert the x,y pixel coordinates to x,y map coordinates.
-        x = jdict.get("x", 0)
-        y = jdict.get("y", 0)
-        myob.x, myob.y = cls._deweirdify_coordinates(x, y, givenlayer)
-        myob.gid = jdict.get("gid")
-        myob.visible = jdict.get("visible")
+        x, y = cls._deweirdify_coordinates(jdict.get("x", 0), jdict.get("y", 0), givenlayer)
+        if name == 'yoyo':
+            print('-----------------yoyo--------------', x, y)
+        gid = jdict.get("gid")
+        visible = jdict.get("visible")
+
+        eproperties = dict()
         if "properties" in jdict:
             for p in jdict["properties"]:
-                myob.properties[p.get("name", "property")] = p.get("value")
-        return myob
+                kk = p.get("name", "property")
+                vv = p.get("value")
+                eproperties[kk] = vv
+        eproperties['name'] = name
+        eproperties['type'] = objtype
+        eproperties['x'], eproperties['y'] = x, y
+        eproperties['gid'] = gid
+        eproperties['visible'] = visible
+        return cls(**eproperties)
 
 
 class IsometricLayer:
@@ -595,8 +605,23 @@ class IsometricMap:
         return tuple(nupos)
 
     def clamp_pos_int(self, pos):
+        def spefilter(val):
+            xinf, xmid, xsup = math.floor(val), math.floor(val) + 0.5, math.ceil(val)
+            a, b, c = abs(val - xinf), abs(val - xmid), abs(val - xsup)
+            if c < a:
+                if c < b:
+                    rez = xsup
+                else:
+                    rez = xmid
+            else:
+                if a < b:
+                    rez = xinf
+                else:
+                    rez = xmid
+            return rez
+
         # For infinite scroll maps, clamp the x and/or y values
-        nupos = [int(math.floor(c)) for c in pos]
+        nupos = [math.floor(c) for c in pos]
         if self.wrap_x:
             f, i = math.modf(pos[0])
             nupos[0] = int(i) % self.width
@@ -605,6 +630,7 @@ class IsometricMap:
                 nupos[0] = 0
             elif pos[0] >= self.width:
                 nupos[0] = self.width-1
+
         if self.wrap_y:
             f, i = math.modf(pos[1])
             nupos[1] = int(i) % self.height
