@@ -7,7 +7,7 @@ screen = kengi.get_surface()
 gameover = False
 pygame = kengi.pygame
 clock = pygame.time.Clock()
-font = kengi.gfx.ProtoFont()  # use default internal font
+font = kengi.gfx.EmbeddedCfont()  # use default internal font
 reg_font = pygame.font.Font(None, 20)
 
 

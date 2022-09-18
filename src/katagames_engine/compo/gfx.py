@@ -146,7 +146,6 @@ class JsonBasedCfont(BaseCfont):
 
     def _init_sheet_attr(self):
         font_source_no_ext = self._known_source
-        print('[ProtoFont] using the provided pair of files:', font_source_no_ext)
         self._sheet = JsonBasedSprSheet(
             font_source_no_ext, ck=(127, 127, 127)  # font_source could be 'capello-ft' for example
         )
@@ -167,7 +166,6 @@ class Spritesheet:
     handles sprite sheets in an optimized way!
     REMARK: When calling images_at the rect is the format: (x, y, x + offset, y + offset)
     """
-
     def __init__(self, resource_info, chosen_scale=1):
         """
         :param resource_info: either pygame.Surface or filepath
@@ -183,8 +181,6 @@ class Spritesheet:
             w, h = self._sheet.get_size()
             self._sheet = homo(self._sheet, (chosen_scale*w, chosen_scale*h))
 
-        print('** SHEET size ** ', self._sheet.get_size())
-
         # can be init later
         self._per_line_img_quant = 0
         self._size = 0
@@ -194,23 +190,59 @@ class Spritesheet:
 
         # goal: speed-up
         self.cache = defaultdict(lambda: None)
+        self._spacing = 0
 
     @property
     def card(self):
-        return self._size
+        return self._card
 
     @property
     def tilesize(self):
         return self._tilesize
 
-    @tilesize.setter
-    def tilesize(self, pair_wh):
-        print('** tilesize set **', pair_wh)
-        self._tilesize = tw, th = pair_wh
-        # compute the nb of img and how many img per line
-        self._per_line_img_quant = self._sheet.get_width() // tw
-        self._size = self._per_line_img_quant * (self._sheet.get_height() // th)
+    def set_infos(self, pair_wh, count_tiles=None, nb_columns=None, spacing=0):
+        self._tilesize = pair_wh[0], pair_wh[1]
+
+        if count_tiles is not None and nb_columns is not None:
+            self._per_line_img_quant = nb_columns
+            self._card = count_tiles
+        else:
+            sz = self._sheet.get_size()
+            self._per_line_img_quant = sz[0]//self._tilesize[0]
+            self._card = (sz[1]//self._tilesize[1]) * self._per_line_img_quant
+
+        self._spacing = spacing
+        # - debug
+        # print(
+        #     f'infos dans Spritesheet saisies depuis dehors:\n___tilesize {self._tilesize}\n'
+        #     + '___count_img {count_tiles}\n___nbcol {nb_columns}\n___spacing {spacing}'
+        # )
         self.cache.clear()
+
+        pg = _hub.pygame
+        # re - populate the whole cache!
+        tc = self._size
+        spacing = self._spacing
+        tile_w, tile_h = self._tilesize
+        # print('tilesize dans gfx.Spritesheet-->', self._tilesize)
+        nb_columns = self._per_line_img_quant
+        ident = 0
+        curr_line = 0
+        nb_lines = self._card//self._per_line_img_quant
+        # print('nb_lines:', nb_lines)
+        for curr_line in range(1, nb_lines+1):
+            for column in range(1, self._per_line_img_quant+1):
+                adhocx = -tile_w + column*tile_w + (column-1)*self._spacing
+                adhocy = -tile_h + curr_line*tile_h + (curr_line-1)*self._spacing
+                decoupe = pg.Rect(adhocx, adhocy, tile_w, tile_h)
+                # - debug
+                # print(decoupe)
+                self.cache[ident] = self._sheet.subsurface(decoupe)
+                ident += 1
+
+    @property
+    def spacing(self):
+        return self._spacing
 
     def __getitem__(self, item):
         return self.image_by_rank(item)
@@ -242,7 +274,7 @@ class Spritesheet:
             tw, th = self._tilesize
             # map kval -> to a rect
             i, j = kval % self._per_line_img_quant, int(kval / self._per_line_img_quant)
-            rect_obj = _hub.pygame.Rect(i*self._tilesize[0], j*self._tilesize[1], tw, th)
+            rect_obj = _hub.pygame.Rect(i*tw, j*th, tw, th)
             # crop from the sheet save & return the result
             y = self.cache[kval] = self.image_at(rect_obj)
         return y
