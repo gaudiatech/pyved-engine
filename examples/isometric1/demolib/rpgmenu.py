@@ -251,7 +251,7 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
 
         elif pc_input.type == pygame.MOUSEBUTTONDOWN:
             if pc_input.button == 1:
-                mouse_pos = kengi.core.proj_to_vscreen(pygame.mouse.get_pos())
+                mouse_pos = kengi.vscreen.proj_to_vscreen(pygame.mouse.get_pos())
 
                 moi = self.get_mouseover_item(mouse_pos)
                 if moi is not None:
@@ -262,7 +262,7 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
                 self.top_item = min(self.top_item + 1, self._the_highest_top)
 
         elif pc_input.type == pygame.MOUSEBUTTONUP:
-            mouse_pos = kengi.core.proj_to_vscreen(pygame.mouse.get_pos())
+            mouse_pos = kengi.vscreen.proj_to_vscreen(pygame.mouse.get_pos())
             if pc_input.button == 1:
                 moi = self.get_mouseover_item(mouse_pos)
                 if moi is self.selected_item:
@@ -272,7 +272,7 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
                 self.no_choice_made = False
 
         elif pc_input.type == pygame.MOUSEMOTION:
-            mouse_pos = kengi.core.proj_to_vscreen(pygame.mouse.get_pos())
+            mouse_pos = kengi.vscreen.proj_to_vscreen(pygame.mouse.get_pos())
             moi = self.get_mouseover_item(mouse_pos)
             if moi is not None:
                 self.set_item_by_position(moi)

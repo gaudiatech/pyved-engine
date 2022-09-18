@@ -67,14 +67,17 @@ class IsometricMapViewer(event.EventReceiver):
         self.block_wallpaper = False
 
         self.isometric_map = isometric_map
-        self.FLOORS = {
-            0: _hub.pygame.image.load('assets/city.png'),
-            1: _hub.pygame.image.load('assets/casino.png')
-        }
-        self.manoffset = self.FLOOR_MAN_OFFSET[0]
-        self.scrollable_floor = self.FLOORS[0]
-
-        self.scrollable_floor.set_colorkey((255, 0, 255))
+        if self.MEGAOPTIM:
+            self.FLOORS.update({
+                0: _hub.pygame.image.load('assets/city.png'),
+                1: _hub.pygame.image.load('assets/casino.png')
+            })
+            self.manoffset = self.FLOOR_MAN_OFFSET[0]
+            self.scrollable_floor = self.FLOORS[0]
+            self.scrollable_floor.set_colorkey((255, 0, 255))
+        else:
+            self.manoffset = (0, 0)
+            self.scrollable_floor = None
 
         self.screen = screen
         self.mid = (

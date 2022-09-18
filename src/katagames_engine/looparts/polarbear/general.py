@@ -58,7 +58,7 @@ class Border(object):
     def render(self, dest, scr=None):
         """Draw this decorative border at dest on screen."""
         if scr is None:
-            scr = core.get_screen()
+            scr = vscreen.get_screen()
 
         # We're gonna draw a decorative border to surround the provided area.
         if self.border == None:
