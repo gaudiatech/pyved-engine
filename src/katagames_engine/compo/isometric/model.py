@@ -1,16 +1,15 @@
-from ... import _hub
 import json
-import os
-from xml.etree import ElementTree
-from .flags import *
-from zlib import decompress
-from base64 import b64decode
-import struct
 import math
+import os
+import struct
+from base64 import b64decode
+from xml.etree import ElementTree
+from zlib import decompress
 
+from .flags import *
+from .. import tmx
+from ... import _hub
 
-pygame = _hub.pygame
-Tilesets = _hub.tmx.data.Tilesets
 
 info_type_obj = 'class'
 
@@ -18,9 +17,17 @@ info_type_obj = 'class'
 class IsometricTile:
     def __init__(self, tile_id, tile_surface):
         self.id = tile_id
+
         self.tile_surface = tile_surface
-        self.tmp_anchor = list(self.tile_surface.get_size())
-        self.tmp_anchor[0] -= self.tmp_anchor[0]//2
+        self.anchor = list(tile_surface.get_size())
+        self.anchor[0] = self.anchor[0]//2  # int(0.5*self.anchor[0])
+
+        self.images = {
+            (False, False): tile_surface,
+            (True, False): _hub.pygame.transform.flip(tile_surface, True, False),
+            (False, True): _hub.pygame.transform.flip(tile_surface, False, True),
+            (True, True): _hub.pygame.transform.flip(tile_surface, True, True),
+        }
 
         self.hflip_surface = None
         self.vflip_surface = None
@@ -28,27 +35,26 @@ class IsometricTile:
 
     def paint_tile(self, dest_surface, x, y, hflip=False, vflip=False):
         """Draw this tile on the dest_surface at the provided x,y coordinates."""
+
         if (not hflip) and (not vflip):
-            dest_surface.blit(self.tile_surface, (x-self.tmp_anchor[0], y-self.tmp_anchor[1]))
+            dest_surface.blit(self.tile_surface, (x-self.anchor[0], y-self.anchor[1]))
             return
 
         if hflip and vflip:
             if self.hvflip_surface is None:
-                print('FLIP H-V')
-                self.hvflip_surface = pygame.transform.flip(self.tile_surface, True, True)
+                self.hvflip_surface = _hub.pygame.transform.flip(self.tile_surface, True, True)
                 self.hvflip_surface.set_colorkey(self.tile_surface.get_colorkey(), self.tile_surface.get_flags())
             surf = self.hvflip_surface
 
         elif hflip:
             if self.hflip_surface is None:
-                print('FLIP H')
-                self.hflip_surface = pygame.transform.flip(self.tile_surface, True, False)
+                self.hflip_surface = _hub.pygame.transform.flip(self.tile_surface, True, False)
                 self.hflip_surface.set_colorkey(self.tile_surface.get_colorkey(), self.tile_surface.get_flags())
             surf = self.hflip_surface
 
         elif vflip:
             if self.vflip_surface is None:
-                self.vflip_surface = pygame.transform.flip(self.tile_surface, False, True)
+                self.vflip_surface = _hub.pygame.transform.flip(self.tile_surface, False, True)
                 self.vflip_surface.set_colorkey(self.tile_surface.get_colorkey(), self.tile_surface.get_flags())
             surf = self.vflip_surface
 
@@ -82,9 +88,9 @@ class IsometricTileset:
 
     def _add_image(self, folders, source, num_tiles):
         # TODO: Make this bit compatible with Kenji.
-        mysurf = pygame.image.load(os.path.join(os.sep.join(folders), source)).convert_alpha()
+        mysurf = _hub.pygame.image.load(os.path.join(os.sep.join(folders), source)).convert_alpha()
         mysurf.set_colorkey((255, 0, 255))
-        myrect = pygame.Rect(0, 0, self.tile_width, self.tile_height)
+        myrect = _hub.pygame.Rect(0, 0, self.tile_width, self.tile_height)
         frames_per_row = mysurf.get_width() // self.tile_width
 
         for frame in range(num_tiles):
@@ -198,14 +204,15 @@ class IsometricMapObject:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+        self.drawingoffset = [0, 16]  # replaces the anchor stuff
+
     def __call__(self, dest_surface, sx, sy, mymap):
         """Draw this object at the requested surface coordinates on the provided surface."""
         if self.gid:
             tile_id = self.gid & NOT_ALL_FLAGS
             if tile_id > 0:
                 my_tile = mymap.tilesets[tile_id]
-                my_tile.paint_tile(dest_surface, sx, sy, self.gid & FLIPPED_HORIZONTALLY_FLAG,
-                        self.gid & FLIPPED_VERTICALLY_FLAG)
+                my_tile.paint_tile(dest_surface, sx+self.drawingoffset[0], sy+self.drawingoffset[1], self.gid & FLIPPED_HORIZONTALLY_FLAG, self.gid & FLIPPED_VERTICALLY_FLAG)
 
     @staticmethod
     def _deweirdify_coordinates(tx, ty, givenlayer):
@@ -439,7 +446,7 @@ class IsometricMap:
         self.width = 0
         self.height = 0
         self.layers = list()
-        self.tilesets = Tilesets()
+        self.tilesets = tmx.data.Tilesets()
         self.objectgroups = dict()
 
         self.wrap_x = False
@@ -500,7 +507,7 @@ class IsometricMap:
                     elif ptag.get("name") == "mapname":
                         tilemap.mapname = ptag.get("mapname")
                     elif ptag.get("name") == "wallpaper":
-                        tilemap.wallpaper = pygame.image.load(os.path.join("assets",ptag.get("value"))).convert_alpha()
+                        tilemap.wallpaper = _hub.pygame.image.load(os.path.join("assets",ptag.get("value"))).convert_alpha()
 
         return tilemap
 
@@ -532,7 +539,7 @@ class IsometricMap:
                 elif tag["name"] == "mapname":
                     tilemap.mapname = tag.get("value")
                 elif tag["name"] == "wallpaper":
-                    tilemap.wallpaper = pygame.image.load(os.path.join("assets", tag.get("value"))).convert_alpha()
+                    tilemap.wallpaper = _hub.pygame.image.load(os.path.join("assets", tag.get("value"))).convert_alpha()
 
         for tag in jdict['tilesets']:
             tilemap.tilesets.add(

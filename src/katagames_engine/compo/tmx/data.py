@@ -1,5 +1,4 @@
-from ... import _hub as inj
-pygame = inj.pygame
+from ... import _hub
 
 # TODO model refactoring: use matrices as building blocks,
 # it will save some effort (Cell, CellLayer etc.)
@@ -148,6 +147,7 @@ class ObjectTmx:
 
         self._added_properties = {}
         self._deleted_properties = set()
+        self.pyg = _hub.pygame
 
     def __repr__(self):
         if self.tile:
@@ -187,8 +187,8 @@ class ObjectTmx:
             if self.tile:
                 surface.blit(self.tile.surface, (x, y))
             else:
-                r = pygame.Rect((x, y), (self.width, self.height))
-                pygame.draw.rect(surface, (255, 100, 100), r, 2)
+                r = self.pyg.Rect((x, y), (self.width, self.height))
+                self.pyg.draw.rect(surface, (255, 100, 100), r, 2)
 
     @classmethod
     def fromxml(cls, tag, map):
@@ -391,7 +391,7 @@ class Layer:
         self.width = map.width
         self.height = map.height
         self.tilesets = map.tilesets
-        self.group = pygame.sprite.Group()
+        self.group = _hub.pygame.sprite.Group()
         self.properties = {}
         self.cells = {}
 
@@ -594,7 +594,7 @@ class Tileset:
         self.properties = {}
 
     def add_image(self, file):
-        image = pygame.image.load(file).convert_alpha()
+        image = _hub.pygame.image.load(file).convert_alpha()
         if not image:
             print("Error creating new Tileset: file %s not found" % file)
             raise FileNotFoundError
@@ -603,7 +603,7 @@ class Tileset:
         tile_w, tile_h = self.tile_width, self.tile_height
         for line in range(image.get_height() // tile_h):
             for column in range(image.get_width() // tile_w):
-                pos = pygame.Rect(column * tile_w, line * tile_h, tile_w, tile_h)
+                pos = _hub.pygame.Rect(column * tile_w, line * tile_h, tile_w, tile_h)
                 self.tiles.append(Tile(ident, image.subsurface(pos), self))
                 ident += 1
 

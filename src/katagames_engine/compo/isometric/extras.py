@@ -1,9 +1,9 @@
-from ... import _hub
+from .. import tmx
 from ...compo import vscreen as core
+from ... import _hub
 
 
-pygame = _hub.pygame
-Tilesets = _hub.tmx.data.Tilesets
+Tilesets = tmx.data.Tilesets
 
 
 class IsometricMapCursor:
@@ -18,8 +18,9 @@ class IsometricMapCursor:
         self.image = image
         self.frame = frame
         self.visible = visible
+        self.pyg = _hub.pygame
 
-    def render(self, dest: pygame.Rect):
+    def render(self, dest):  # dest: pygame.Rect
         if self.visible:
             self.image.render(dest, self.frame)
 
@@ -28,31 +29,31 @@ class IsometricMapCursor:
             self.x, self.y = x, y
 
     def update(self, view, ev):
-        if ev.type == pygame.MOUSEMOTION:
+        if ev.type == self.pyg.MOUSEMOTION:
             self.set_position(view.isometric_map, *view._mouse_tile)
-        elif ev.type == pygame.KEYDOWN:
-            if ev.key == pygame.K_KP8:
+        elif ev.type == self.pyg.KEYDOWN:
+            if ev.key == self.pyg.K_KP8:
                 self.set_position(view.isometric_map, self.x - 1, self.y - 1)
                 view.focus(self.x, self.y)
-            elif ev.key == pygame.K_KP9:
+            elif ev.key == self.pyg.K_KP9:
                 self.set_position(view.isometric_map, self.x, self.y - 1)
                 view.focus(self.x, self.y)
-            elif ev.key == pygame.K_KP6:
+            elif ev.key == self.pyg.K_KP6:
                 self.set_position(view.isometric_map, self.x + 1, self.y - 1)
                 view.focus(self.x, self.y)
-            elif ev.key == pygame.K_KP3:
+            elif ev.key == self.pyg.K_KP3:
                 self.set_position(view.isometric_map, self.x + 1, self.y)
                 view.focus(self.x, self.y)
             elif ev.key == pygame.K_KP2:
                 self.set_position(view.isometric_map, self.x + 1, self.y + 1)
                 view.focus(self.x, self.y)
-            elif ev.key == pygame.K_KP1:
+            elif ev.key == self.pyg.K_KP1:
                 self.set_position(view.isometric_map, self.x, self.y + 1)
                 view.focus(self.x, self.y)
-            elif ev.key == pygame.K_KP4:
+            elif ev.key == self.pyg.K_KP4:
                 self.set_position(view.isometric_map, self.x - 1, self.y + 1)
                 view.focus(self.x, self.y)
-            elif ev.key == pygame.K_KP7:
+            elif ev.key == self.pyg.K_KP7:
                 self.set_position(view.isometric_map, self.x - 1, self.y)
                 view.focus(self.x, self.y)
 
@@ -65,6 +66,7 @@ class IsometricMapQuarterCursor:
         self.surf = surf
         self.layer_name = layer.name
         self.visible = visible
+        self.pyg = _hub.pygame
 
     def render(self, view):
         if self.visible:
@@ -92,36 +94,36 @@ class IsometricMapQuarterCursor:
         view.focus(*self.get_pos())
 
     def update(self, view, ev):
-        if ev.type == pygame.MOUSEMOTION:
-            mouse_x, mouse_y = core.proj_to_vscreen(pygame.mouse.get_pos())
+        if ev.type == self.pyg.MOUSEMOTION:
+            mouse_x, mouse_y = core.proj_to_vscreen(self.pyg.mouse.get_pos())
             self.set_position(view, view.map_x(mouse_x, mouse_y, return_int=False),
                               view.map_y(mouse_x, mouse_y, return_int=False))
-        elif ev.type == pygame.KEYDOWN:
-            if ev.key == pygame.K_KP8:
+        elif ev.type == self.pyg.KEYDOWN:
+            if ev.key == self.pyg.K_KP8:
                 self._doublex -= 1
                 self._doubley -= 1
                 self.focus(view)
-            elif ev.key == pygame.K_KP9:
+            elif ev.key == self.pyg.K_KP9:
                 self._doubley -= 1
                 self.focus(view)
-            elif ev.key == pygame.K_KP6:
+            elif ev.key == self.pyg.K_KP6:
                 self._doublex += 1
                 self._doubley -= 1
                 self.focus(view)
-            elif ev.key == pygame.K_KP3:
+            elif ev.key == self.pyg.K_KP3:
                 self._doublex += 1
                 self.focus(view)
-            elif ev.key == pygame.K_KP2:
+            elif ev.key == self.pyg.K_KP2:
                 self._doublex += 1
                 self._doubley += 1
                 self.focus(view)
-            elif ev.key == pygame.K_KP1:
+            elif ev.key == self.pyg.K_KP1:
                 self._doubley += 1
                 self.focus(view)
-            elif ev.key == pygame.K_KP4:
+            elif ev.key == self.pyg.K_KP4:
                 self._doublex -= 1
                 self._doubley += 1
                 self.focus(view)
-            elif ev.key == pygame.K_KP7:
+            elif ev.key == self.pyg.K_KP7:
                 self._doublex -= 1
                 self.focus(view)

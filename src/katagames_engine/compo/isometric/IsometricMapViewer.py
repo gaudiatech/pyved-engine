@@ -57,6 +57,7 @@ class IsometricMapViewer(event.EventReceiver):
         0: (1617 + 305, 240 - 128),  # what offset one needs to apply so the floor img is aligned, map 0 (city.png)
         1: (522 + 300, 100 - 92)
     }
+    UPINK = (255, 0, 255)
 
     def __init__(self, isometric_map, screen, postfx=None, cursor=None,
                  left_scroll_key=None, right_scroll_key=None, up_scroll_key=None, down_scroll_key=None):
@@ -65,6 +66,7 @@ class IsometricMapViewer(event.EventReceiver):
         self.MOUSEMOTION_CONST = _hub.pygame.MOUSEMOTION
         self.animated_wallpaper = False
         self.block_wallpaper = False
+        self.info_draw_mapobj = dict()
 
         self.isometric_map = isometric_map
         if self.MEGAOPTIM:
@@ -87,6 +89,8 @@ class IsometricMapViewer(event.EventReceiver):
         # self.prevy = float('NaN')
 
         self.floor_rect = _hub.pygame.Rect(0, 0, self.screen.get_width(), self.screen.get_height())
+        self.gfx_data_buffer = _hub.pygame.Surface(self.screen.get_size())
+        self.gfx_data_buffer.set_colorkey(self.UPINK)
 
         if isometric_map.wallpaper:
             self.screen_rect = self.screen.get_rect()
@@ -173,8 +177,9 @@ class IsometricMapViewer(event.EventReceiver):
     def _init_visible_area_init(self, scr):
         # The visible area describes the region of the map we need to draw
         w, h = scr.get_size()
-        # below: x, y do not matter actually
-        self.visible_area = _hub.pygame.Rect(0, 0, w + self.half_tile_width, h + 4 * self.tile_height)
+        # below: args idx 0 and 1 do not matter actually
+        tw, th = self.isometric_map.tile_width, self.isometric_map.tile_height
+        self.visible_area = _hub.pygame.Rect(0, 0, w + int(0.5*tw), h + 6*th)
 
     def _model_depth(self, model):
         return relative_y(model.x, model.y)
@@ -186,33 +191,39 @@ class IsometricMapViewer(event.EventReceiver):
         self._focus_x, self._focus_y = self.isometric_map.clamp_pos([self._focus_x + dx, self._focus_y + dy])
 
     def _paint_all(self):
-        # TODO idea 1 optimize such as the ground layer is blit as one single image, we just move a rect to cut
-        # properly from the very large image stored in memory
-
-        #
-        # TOM REMARK: but i cannot use this optimization right now, it makes
-        # the floor "wiggle" compared to buildings or portals :(
-
-        # TODO maybe?
-        #  idea 2 optimize such as if player+cursor are not moving, all graphic elements are saved onto a "texture"
-        #  and we just blit this texture instead of computing new stuff
-
-        # Prep the screen.
-        wpok = False
-        if not self.block_wallpaper:
-            if self.isometric_map.wallpaper is not None:
-                self.fill_wallpaper()
-                wpok = True
-        if not wpok:
+        # manage the wallpaper blit
+        if (not self.block_wallpaper) and self.isometric_map.wallpaper:
+            self.fill_wallpaper()
+        else:
             self.screen.fill(self.SOLID_COLOR)
 
-        # Check the map scrolling.
-        self._camera_updated_this_frame = False
-        if self._focused_object:
-            if self._focused_object.x != self._focused_object_x0 or self._focused_object.y != self._focused_object_y0:
-                self.focus(self._focused_object.x, self._focused_object.y)
-                self._focused_object_x0 = self._focused_object.x
-                self._focused_object_y0 = self._focused_object.y
+        # -------------------------------------------------------------- OPTIM#2
+        need_to_redraw = (self._focused_object.x != self._focused_object_x0) or \
+                         (self._focused_object.y != self._focused_object_y0)
+        if need_to_redraw:
+            self._focused_object_x0 = self._focused_object.x
+            self._focused_object_y0 = self._focused_object.y
+            self.focus(self._focused_object.x, self._focused_object.y)
+            # TODO can one find a way to optimize without the abusive flag/ that dirty branching?
+            if '__BRYTHON__' not in globals():
+                self.gfx_data_buffer.fill(self.UPINK)
+            else:
+                self.gfx_data_buffer.wreset()  # a hack method, defined only in pygame_emu.Surface
+            self.impacte_surf(self.gfx_data_buffer)
+        # -------------------------------------------------------------- OPTIM#2 over.
+
+        if self.MEGAOPTIM:  # floor drawing, the fast way
+            a, b = self.screen_offset()
+            self.floor_rect.topleft = self.manoffset[0] - a, self.manoffset[1] - b
+            self.screen.blit(self.scrollable_floor, (0, 0), area=self.floor_rect)
+
+        self.screen.blit(self.gfx_data_buffer, (0, 0))
+
+        # - the new chunk of code that draws objects {NEW CHUNK OBJ DRAW}
+        for mapobj, screen_pos in self.info_draw_mapobj.items():
+            mapobj(self.screen, screen_pos[0], screen_pos[1], self.isometric_map)
+
+        return
 
         # Disabling mouse scrolling because the right and bottom edges of the screen don't seem to be working.
         #     if self.lastmousepos:
@@ -229,19 +240,47 @@ class IsometricMapViewer(event.EventReceiver):
         # --- OPTIM blit large image for the ground level (2/3)---
             self.screen.blit(self.scrollable_floor, (0, 0), area=self.floor_rect)
 
-        # Record all of the objectgroup contents for display when their tile comes up
-        # Also, clamp all object positions. If this is an infinite scrolling map, objects can move off one side to the
-        # map to the other. However, in their data, we want the objects to stay within the bounds of the map.
-        for k, v in self.isometric_map.objectgroups.items():
-            self.objgroup_contents[k] = collections.defaultdict(list)
-            for ob in v.contents:
-                ob.x, ob.y = self.isometric_map.clamp_pos((ob.x, ob.y))
-                sx, sy = self.screen_coords(ob.x, ob.y, v.offsetx, v.offsety)
-                mx, my = self.map_x(sx, sy, return_int=False), self.map_y(sx, sy, return_int=False)
-                obkey = self.isometric_map.clamp_pos_int((mx, my))
-                self.objgroup_contents[k][obkey].append(ob)
-                # Also save the mofidied map pos, which will come in handy later.
-                self.objgroup_modified_mappos[ob] = (mx, my)
+    def impacte_surf(self, output_surf):
+        # --- init step before drawing map objects:
+        # we record all of the objectgroup contents for display when their tile comes up
+        # Also, clamp all object positions. If this is an infinite scrolling map,
+        # objects can move off one side to the map to the other.
+        # However, in their data, we want the objects to stay within the bounds of the map.
+
+        # ++++++ old code:
+        # print( self.isometric_map.objectgroups.keys() )
+        # print(self.isometric_map.objectgroups.values())
+        # for k, v in self.isometric_map.objectgroups.items():
+        #     self.objgroup_contents[k] = collections.defaultdict(list)
+        #     for ob in v.contents:
+        #         print('ob found:', ob)
+        #         ob.x, ob.y = self.isometric_map.clamp_pos((ob.x, ob.y))
+        #         sx, sy = self.screen_coords(ob.x, ob.y, v.offsetx, v.offsety)
+        #         mx, my = self.map_x(sx, sy, return_int=False), self.map_y(sx, sy, return_int=False)
+        #         obkey = self.isometric_map.clamp_pos_int((mx, my))
+        #         self.objgroup_contents[k][obkey].append(ob)
+        #         # Also save the mofidied map pos, which will come in handy later.
+        #         self.objgroup_modified_mappos[ob] = (mx, my)
+        # print(3 / 0)
+
+        # ++++++ new code:
+        self.info_draw_mapobj.clear()
+        for objgroup in self.isometric_map.objectgroups.values():
+            offx, offy = objgroup.offsetx, objgroup.offsety
+            for map_obj in objgroup.contents:
+                scrx, scry = self.screen_coords(map_obj.x, map_obj.y, offx, offy)
+                if 0 <= scrx < self.floor_rect.w:
+                    if 0 <= scry < self.floor_rect.h:
+                        info_mapobj_k = self.isometric_map.clamp_pos_int((map_obj.x+offx, map_obj.y+offy))
+                        self.info_draw_mapobj[map_obj] = (scrx, scry)  # rule: 1 map_obj per location!
+                        # save the mofidied map pos, which will come in handy later.
+                        #self.objgroup_modified_mappos[map_obj] = (scrx, scry)
+                        #print('saving:', map_obj, ' scrpos',  (scrx, scry))
+            # STOP the loop right now! Because,
+            # actually we use only one value of the dict,
+            # since all map objects are def. in the same layer
+            break
+        # ---
 
         x, y = self.map_x(0, 0) - 2, self.map_y(0, 0) - 1
         x0, y0 = x, y
@@ -264,43 +303,48 @@ class IsometricMapViewer(event.EventReceiver):
                         continue
 
                 if current_line >= 0:
-                    if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
-                        # After drawing the terrain last time, draw any objects in the previous cell.
-                        for x, y in self.line_cache[current_line - 1]:
-                            if self.cursor:
-                                if self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
-                                    self.cursor.render(self)
 
-                            ox, oy = x % self.isometric_map.width, y % self.isometric_map.height
-                            if (ox, oy) in self.objgroup_contents[layer]:
-                                self.objgroup_contents[layer][(ox, oy)].sort(key=self._model_depth)
-                                for ob in self.objgroup_contents[layer][(ox, oy)]:
-                                    # The following bit of math makes sure that the clamped object positions will
-                                    # print at the correct screen positions. Otherwise, if the player/focus is on the
-                                    # other side of the map seam, this object will be printed in the wrong position.
-                                    mmx, mmy = self.objgroup_modified_mappos[ob]
-                                    fx = x + math.modf(mmx)[0]
-                                    fy = y + math.modf(mmy)[0]
-                                    sx, sy = self.screen_coords(
-                                        fx, fy,
-                                        self.isometric_map.objectgroups[layer].offsetx,
-                                        self.isometric_map.objectgroups[layer].offsety
-                                    )
-                                    ob(self.screen, sx, sy, self.isometric_map)
+                    # - Tom N.B.
+                    # this was a chunk of code that draws object. I dont think its very efficient so i replace it,
+                    # see {NEW CHUNK OBJ DRAW} that uses: self. info_draw_mapobj
 
+                    # if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
+                    #     # After drawing the terrain last time, draw any objects in the previous cell.
+                    #     for x, y in self.line_cache[current_line - 1]:
+                    #         if self.cursor:
+                    #             if self.cursor.layer_name == layer.name and x == self.cursor.x and y == self.cursor.y:
+                    #                 self.cursor.render(self)
+                    #
+                    #         ox, oy = x % self.isometric_map.width, y % self.isometric_map.height
+                    #         if (ox, oy) in self.objgroup_contents[layer]:
+                    #             self.objgroup_contents[layer][(ox, oy)].sort(key=self._model_depth)
+                    #             for ob in self.objgroup_contents[layer][(ox, oy)]:
+                    #                 # The following bit of math makes sure that the clamped object positions will
+                    #                 # print at the correct screen positions. Otherwise, if the player/focus is on the
+                    #                 # other side of the map seam, this object will be printed in the wrong position.
+                    #                 mmx, mmy = self.objgroup_modified_mappos[ob]
+                    #                 fx = x + math.modf(mmx)[0]
+                    #                 fy = y + math.modf(mmy)[0]
+                    #                 sx, sy = self.screen_coords(
+                    #                     fx, fy,
+                    #                     self.isometric_map.objectgroups[layer].offsetx,
+                    #                     self.isometric_map.objectgroups[layer].offsety
+                    #                 )
+                    #                 ob(output_surf, sx, sy, self.isometric_map)
+
+                    # - the rest of the drawing algorithm
                     if self.line_cache[current_line]:
                         for x, y in self.line_cache[current_line]:
                             gid = layer[x, y]
                             tile_id = gid & NOT_ALL_FLAGS
                             if tile_id > 0:
                                 my_tile = self.isometric_map.tilesets[tile_id]
-
                                 # Note that x,y refer to IsometricMapObject coordinates, and so 0,0 points at the
                                 # top of the "ground" level of a tile. So, we adjust sy before sending the coords
                                 # to the printer, so it is pointing at the bottom corner of the tile instead.
                                 sx, sy = self.screen_coords(x, y)
                                 my_tile.paint_tile(
-                                    self.screen, sx, sy + layer.offsety + self.isometric_map.tile_height,
+                                    output_surf, sx, sy + layer.offsety + self.isometric_map.tile_height,
                                                      gid & FLIPPED_HORIZONTALLY_FLAG,
                                                      gid & FLIPPED_VERTICALLY_FLAG)
 
@@ -314,10 +358,10 @@ class IsometricMapViewer(event.EventReceiver):
             line_number += 1
 
         self.phase = (self.phase + 1) % 640
-
         del self.line_cache[:]
         self.objgroup_contents.clear()
         self.objgroup_modified_mappos.clear()
+        # fin impacte_surf
 
     def fill_wallpaper(self):
         for x in range(-1, self.wp_grid_w):

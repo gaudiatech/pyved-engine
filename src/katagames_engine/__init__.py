@@ -38,6 +38,7 @@ from . import _hub as hub
 from . import event
 from . import pal
 from . import struct
+from .compo import isometric
 # from .compo import vscreen  # important import! As this is called by web_vm
 from .compo.vscreen import flip
 from .Injector import Injector
@@ -49,6 +50,7 @@ from .compo.modes import GameModeMger, BaseGameMode
 from .foundation import defs
 from .ifaces.pygame import PygameIface
 from .util import underscore_format, camel_case_format
+from .compo import tmx
 
 
 _active_state = False

@@ -14,13 +14,12 @@ kengi_inj = Injector({
     'polarbear': '.looparts.polarbear',
     'console': '.looparts.console',
     'gui': '.looparts.gui',
-    'isometric': '.looparts.isometric',
     'legacy': '.looparts.legacy',
     'tabletop': '.looparts.tabletop',
 
     # nota bene: pygame is dynamically added to this dict,
     # its done elsewhere
-    'tmx': '.looparts.tmx',
+    # 'tmx': '.looparts.tmx',
 
     'rogue': '.looparts.rogue',
     'terrain': '.looparts.terrain',
