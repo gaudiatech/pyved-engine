@@ -199,7 +199,9 @@ class IsometricMapObject:
         self.height = 0
         self.gid = 0
         self.visible = 1
-        # self.properties = dict()
+
+        self.properties = dict(kwargs)  # copy properties, stores various custom properties
+
         # super().__init__(**keywords)
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -254,8 +256,6 @@ class IsometricMapObject:
         objtype = jdict.get(info_type_obj)
         # Convert the x,y pixel coordinates to x,y map coordinates.
         x, y = cls._deweirdify_coordinates(jdict.get("x", 0), jdict.get("y", 0), givenlayer)
-        if name == 'yoyo':
-            print('-----------------yoyo--------------', x, y)
         gid = jdict.get("gid")
         visible = jdict.get("visible")
 

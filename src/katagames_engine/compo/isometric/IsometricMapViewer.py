@@ -281,7 +281,7 @@ class IsometricMapViewer(event.EventReceiver):
                     continue
                 # cas général
                 scrx, scry = self.screen_coords(map_obj.x, map_obj.y, offx, offy)
-                if 0 <= scrx < self.floor_rect.w:
+                if 0 <= scrx < self.floor_rect.w+self.isometric_map.tile_width:
                     if 0 <= scry < self.floor_rect.h:
                         # info_mapobj_k = self.isometric_map.clamp_pos_int((map_obj.x+offx, map_obj.y+offy))
                         self.info_draw_mapobj[map_obj] = (scrx, scry)  # rule: 1 map_obj per location!
