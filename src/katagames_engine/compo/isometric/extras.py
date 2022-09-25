@@ -68,13 +68,6 @@ class IsometricMapQuarterCursor:
         self.visible = visible
         self.pyg = _hub.pygame
 
-    def render(self, view):
-        if self.visible:
-            sx, sy = view.screen_coords(*self.get_pos())
-            mylayer = view.isometric_map.get_layer_by_name(self.layer_name)
-            mydest = self.surf.get_rect(midtop=(sx + mylayer.offsetx, sy + mylayer.offsety - 2))
-            view.screen.blit(self.surf, mydest)
-
     def set_position(self, view, x, y):
         self._doublex = int(x * 2)
         self._doubley = int(y * 2)

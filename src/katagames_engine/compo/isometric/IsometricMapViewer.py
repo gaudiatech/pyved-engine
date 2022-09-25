@@ -63,6 +63,9 @@ class IsometricMapViewer(event.EventReceiver):
                  left_scroll_key=None, right_scroll_key=None, up_scroll_key=None, down_scroll_key=None):
         super().__init__()
 
+        # player character class
+        self.pc_cls = int  # this needs to be set from outside, related to perf optimization
+
         self.MOUSEMOTION_CONST = _hub.pygame.MOUSEMOTION
         self.animated_wallpaper = False
         self.block_wallpaper = False
@@ -76,7 +79,7 @@ class IsometricMapViewer(event.EventReceiver):
             })
             self.manoffset = self.FLOOR_MAN_OFFSET[0]
             self.scrollable_floor = self.FLOORS[0]
-            self.scrollable_floor.set_colorkey((255, 0, 255))
+            self.scrollable_floor.set_colorkey(self.UPINK)
         else:
             self.manoffset = (0, 0)
             self.scrollable_floor = None
@@ -201,8 +204,6 @@ class IsometricMapViewer(event.EventReceiver):
         need_to_redraw = (self._focused_object.x != self._focused_object_x0) or \
                          (self._focused_object.y != self._focused_object_y0)
         if need_to_redraw:
-            self._focused_object_x0 = self._focused_object.x
-            self._focused_object_y0 = self._focused_object.y
             self.focus(self._focused_object.x, self._focused_object.y)
             # TODO can one find a way to optimize without the abusive flag/ that dirty branching?
             if '__BRYTHON__' not in globals():
@@ -210,6 +211,8 @@ class IsometricMapViewer(event.EventReceiver):
             else:
                 self.gfx_data_buffer.wreset()  # a hack method, defined only in pygame_emu.Surface
             self.impacte_surf(self.gfx_data_buffer)
+            self._focused_object_x0 = self._focused_object.x
+            self._focused_object_y0 = self._focused_object.y
         # -------------------------------------------------------------- OPTIM#2 over.
 
         if self.MEGAOPTIM:  # floor drawing, the fast way
@@ -217,28 +220,25 @@ class IsometricMapViewer(event.EventReceiver):
             self.floor_rect.topleft = self.manoffset[0] - a, self.manoffset[1] - b
             self.screen.blit(self.scrollable_floor, (0, 0), area=self.floor_rect)
 
-        self.screen.blit(self.gfx_data_buffer, (0, 0))
+        self.screen.blit(self.gfx_data_buffer, (0, 0))  # buildings & the player!
+
+        if self.cursor and self.cursor.visible:
+            #if self.cursor.layer_name == layer.name:
+                #if (x == self.cursor.x) and (y == self.cursor.y):
+            # old way:
+            # self.cursor.render(self)
+            # new way:
+            cu = self.cursor
+            sx, sy = self.screen_coords(*cu.get_pos())
+            mylayer = self.isometric_map.get_layer_by_name(cu.layer_name)
+            mydest = cu.surf.get_rect(midtop=(sx + mylayer.offsetx, sy + mylayer.offsety - 2))
+            self.screen.blit(cu.surf, mydest)
 
         # - the new chunk of code that draws objects {NEW CHUNK OBJ DRAW}
         for mapobj, screen_pos in self.info_draw_mapobj.items():
+            if isinstance(mapobj, self.pc_cls):
+                continue
             mapobj(self.screen, screen_pos[0], screen_pos[1], self.isometric_map)
-
-        return
-
-        # Disabling mouse scrolling because the right and bottom edges of the screen don't seem to be working.
-        #     if self.lastmousepos:
-        #         self._check_mouse_scroll(self.visible_area, *self.lastmousepos)
-
-        # ------------------------------------- check this out <<<
-        # --- OPTIM blit large image for the ground level (1/3)---
-        if self.MEGAOPTIM:
-            # a = relative_x(self._focused_object.x, self._focused_object.y)
-            # b = relative_y(self._focused_object.x, self._focused_object.y)  # - self.mid[0],  self._focused_object.y-self.mid[1]
-            a, b = self.screen_offset()
-            self.floor_rect.topleft = self.manoffset[0] - a, self.manoffset[1] - b
-        # ------------------------------------- check this out <<<
-        # --- OPTIM blit large image for the ground level (2/3)---
-            self.screen.blit(self.scrollable_floor, (0, 0), area=self.floor_rect)
 
     def impacte_surf(self, output_surf):
         # --- init step before drawing map objects:
@@ -265,17 +265,29 @@ class IsometricMapViewer(event.EventReceiver):
 
         # ++++++ new code:
         self.info_draw_mapobj.clear()
-        for objgroup in self.isometric_map.objectgroups.values():
+        for layerk, objgroup in self.isometric_map.objectgroups.items():
             offx, offy = objgroup.offsetx, objgroup.offsety
             for map_obj in objgroup.contents:
+                # cas spe:
+                if isinstance(map_obj, self.pc_cls):
+                    ob = map_obj
+                    ob.x, ob.y = self.isometric_map.clamp_pos((ob.x, ob.y))  # mini-tp player!
+                    sx, sy = self.screen_coords(ob.x, ob.y, objgroup.offsetx, objgroup.offsety)
+                    mx, my = self.map_x(sx, sy, return_int=False), self.map_y(sx, sy, return_int=False)
+                    obkey = self.isometric_map.clamp_pos_int((mx, my))
+                    self.objgroup_contents[layerk] = dict()
+                    self.objgroup_contents[layerk][obkey] = [ob]
+                    self.objgroup_modified_mappos[ob] = (mx, my)
+                    continue
+                # cas général
                 scrx, scry = self.screen_coords(map_obj.x, map_obj.y, offx, offy)
                 if 0 <= scrx < self.floor_rect.w:
                     if 0 <= scry < self.floor_rect.h:
-                        info_mapobj_k = self.isometric_map.clamp_pos_int((map_obj.x+offx, map_obj.y+offy))
+                        # info_mapobj_k = self.isometric_map.clamp_pos_int((map_obj.x+offx, map_obj.y+offy))
                         self.info_draw_mapobj[map_obj] = (scrx, scry)  # rule: 1 map_obj per location!
                         # save the mofidied map pos, which will come in handy later.
-                        #self.objgroup_modified_mappos[map_obj] = (scrx, scry)
-                        #print('saving:', map_obj, ' scrpos',  (scrx, scry))
+                        # self.objgroup_modified_mappos[map_obj] = (scrx, scry)
+
             # STOP the loop right now! Because,
             # actually we use only one value of the dict,
             # since all map objects are def. in the same layer
@@ -331,6 +343,24 @@ class IsometricMapViewer(event.EventReceiver):
                     #                     self.isometric_map.objectgroups[layer].offsety
                     #                 )
                     #                 ob(output_surf, sx, sy, self.isometric_map)
+
+                    # player draw( 1)
+                    if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
+                        for x, y in self.line_cache[current_line - 1]:
+                            ox, oy = x % self.isometric_map.width, y % self.isometric_map.height
+                            if (ox, oy) in self.objgroup_contents[layer]:
+                                # @@@ nothing to sort bc we have only the player here!@@@
+                                # self.objgroup_contents[layer][(ox, oy)].sort(key=self._model_depth)
+                                for ob in self.objgroup_contents[layer][(ox, oy)]:
+                                    mmx, mmy = self.objgroup_modified_mappos[ob]
+                                    fx = x + math.modf(mmx)[0]
+                                    fy = y + math.modf(mmy)[0]
+                                    sx, sy = self.screen_coords(
+                                        fx, fy,
+                                        self.isometric_map.objectgroups[layer].offsetx,
+                                        self.isometric_map.objectgroups[layer].offsety
+                                    )
+                                    ob(output_surf, sx, sy, self.isometric_map)
 
                     # - the rest of the drawing algorithm
                     if self.line_cache[current_line]:
