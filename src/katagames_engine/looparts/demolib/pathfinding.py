@@ -52,7 +52,8 @@ class AStarPath(object):
         self.cost_to_tile = {}
         self.came_from[self.start] = None
         self.cost_to_tile[self.start] = 0
-        while not frontier.empty():
+        self.cpt = 0
+        while not frontier.empty() and self.cpt < 256:
             current = frontier.get()
             if current == goal:
                 break
@@ -77,12 +78,13 @@ class AStarPath(object):
         return results
 
     def neighbors(self, mymap, pos):
+        self.cpt += 1
         x, y = pos
         for dx, dy in self.DELTA8:
             #x2, y2 = x + dx, y + dy
             x2, y2 = self.clamp_fun((x + dx/2, y + dy/2))
             #x2, y2 = int(x2), int(y2)
-            if not ((x2, y2) in self.blocked_tiles or self.blocked_fun(mymap, x2, y2)):
+            if not( ((x2, y2) in self.blocked_tiles) or self.blocked_fun(mymap, int(x2), int(y2)) ):
                 yield (x2, y2)
             elif (x2, y2) == self.goal:
                 yield self.goal

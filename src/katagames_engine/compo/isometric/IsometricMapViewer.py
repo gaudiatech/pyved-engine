@@ -236,9 +236,10 @@ class IsometricMapViewer(event.EventReceiver):
 
         # - the new chunk of code that draws objects {NEW CHUNK OBJ DRAW}
         for mapobj, screen_pos in self.info_draw_mapobj.items():
-            if isinstance(mapobj, self.pc_cls):
-                continue
-            mapobj(self.screen, screen_pos[0], screen_pos[1], self.isometric_map)
+            if (not mapobj.visible) or isinstance(mapobj, self.pc_cls):
+                pass
+            else:
+                mapobj(self.screen, screen_pos[0], screen_pos[1], self.isometric_map)
 
     def impacte_surf(self, output_surf):
         # --- init step before drawing map objects:
