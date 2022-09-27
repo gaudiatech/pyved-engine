@@ -59,12 +59,35 @@ class IsometricMapViewer(event.EventReceiver):
     }
     UPINK = (255, 0, 255)
 
+    @property
+    def show_avatar(self):
+        return self._show_avatar
+
+    @show_avatar.setter
+    def show_avatar(self, newval):
+        self._show_avatar = newval
+        self.force_redraw_flag = True
+
+    def set_av_anim_speed(self, v):
+        self.av_phase_thresh = int(100/v)
+
     def __init__(self, isometric_map, screen, postfx=None, cursor=None,
                  left_scroll_key=None, right_scroll_key=None, up_scroll_key=None, down_scroll_key=None):
         super().__init__()
 
-        # player character class
+        # RELATED to avatar {{ -- player character class --
         self.pc_cls = int  # this needs to be set from outside, related to perf optimization
+        self._show_avatar = True
+        self.force_redraw_flag = False
+        self.av_phase_thresh = 3
+        self.av_phase = self.av_phase_thresh - 1
+        self.av_frame = 1
+        self.anim_av_offset = [2.0, -1.0]
+        self.cutav = None
+        self.cutav_cpt = 1
+
+        self.extra_anim = None
+        # done }}
 
         self.MOUSEMOTION_CONST = _hub.pygame.MOUSEMOTION
         self.animated_wallpaper = False
@@ -201,7 +224,8 @@ class IsometricMapViewer(event.EventReceiver):
             self.screen.fill(self.SOLID_COLOR)
 
         # -------------------------------------------------------------- OPTIM#2
-        need_to_redraw = (self._focused_object.x != self._focused_object_x0) or \
+        need_to_redraw = self.force_redraw_flag
+        need_to_redraw = need_to_redraw or (self._focused_object.x != self._focused_object_x0) or \
                          (self._focused_object.y != self._focused_object_y0)
         if need_to_redraw:
             self.focus(self._focused_object.x, self._focused_object.y)
@@ -210,9 +234,11 @@ class IsometricMapViewer(event.EventReceiver):
                 self.gfx_data_buffer.fill(self.UPINK)
             else:
                 self.gfx_data_buffer.wreset()  # a hack method, defined only in pygame_emu.Surface
+
             self.impacte_surf(self.gfx_data_buffer)
             self._focused_object_x0 = self._focused_object.x
             self._focused_object_y0 = self._focused_object.y
+            self.force_redraw_flag = False
         # -------------------------------------------------------------- OPTIM#2 over.
 
         if self.MEGAOPTIM:  # floor drawing, the fast way
@@ -234,12 +260,32 @@ class IsometricMapViewer(event.EventReceiver):
             mydest = cu.surf.get_rect(midtop=(sx + mylayer.offsetx, sy + mylayer.offsety - 2))
             self.screen.blit(cu.surf, mydest)
 
-        # - the new chunk of code that draws objects {NEW CHUNK OBJ DRAW}
+        # - the new chunk of code that draws objects! {NEW CHUNK OBJ DRAW}
         for mapobj, screen_pos in self.info_draw_mapobj.items():
             if (not mapobj.visible) or isinstance(mapobj, self.pc_cls):
                 pass
             else:
                 mapobj(self.screen, screen_pos[0], screen_pos[1], self.isometric_map)
+
+        # if an extra anim for the avatar, we use it on the top of everything else
+        if (not self._show_avatar) and (self.extra_anim is not None):
+            self.av_phase += 1
+            if self.av_phase >= self.av_phase_thresh:
+                self.av_phase = 0
+                if self.av_frame < self.extra_anim.card-1:
+                    self.av_frame += 1
+                if self.av_frame > 5:
+                    self.anim_av_offset[0] += 1.75
+                    self.anim_av_offset[1] -= 0.24
+                    self.cutav_cpt += 1
+                    base = self.extra_anim[self.av_frame]
+                    kappa = self.cutav_cpt
+                    self.cutav = base.subsurface((0, kappa, base.get_width()-kappa, base.get_height()-kappa))
+            # display avatar alt anim/sprite
+            self.screen.blit(  # DIRTY but i dunno how to do better:
+                self.extra_anim[self.av_frame] if (self.cutav is None) else self.cutav,
+                (160+int(self.anim_av_offset[0]), 118+int(self.anim_av_offset[1]))
+            )
 
     def impacte_surf(self, output_surf):
         # --- init step before drawing map objects:
@@ -270,7 +316,7 @@ class IsometricMapViewer(event.EventReceiver):
             offx, offy = objgroup.offsetx, objgroup.offsety
             for map_obj in objgroup.contents:
                 # cas spe:
-                if isinstance(map_obj, self.pc_cls):
+                if type(map_obj) == self.pc_cls:
                     ob = map_obj
                     ob.x, ob.y = self.isometric_map.clamp_pos((ob.x, ob.y))  # mini-tp player!
                     sx, sy = self.screen_coords(ob.x, ob.y, objgroup.offsetx, objgroup.offsety)
@@ -346,22 +392,23 @@ class IsometricMapViewer(event.EventReceiver):
                     #                 ob(output_surf, sx, sy, self.isometric_map)
 
                     # player draw( 1)
-                    if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
-                        for x, y in self.line_cache[current_line - 1]:
-                            ox, oy = x % self.isometric_map.width, y % self.isometric_map.height
-                            if (ox, oy) in self.objgroup_contents[layer]:
-                                # @@@ nothing to sort bc we have only the player here!@@@
-                                # self.objgroup_contents[layer][(ox, oy)].sort(key=self._model_depth)
-                                for ob in self.objgroup_contents[layer][(ox, oy)]:
-                                    mmx, mmy = self.objgroup_modified_mappos[ob]
-                                    fx = x + math.modf(mmx)[0]
-                                    fy = y + math.modf(mmy)[0]
-                                    sx, sy = self.screen_coords(
-                                        fx, fy,
-                                        self.isometric_map.objectgroups[layer].offsetx,
-                                        self.isometric_map.objectgroups[layer].offsety
-                                    )
-                                    ob(output_surf, sx, sy, self.isometric_map)
+                    if self._show_avatar:  # otherwise, the avatar is invisble!
+                        if current_line > 1 and layer in self.objgroup_contents and self.line_cache[current_line - 1]:
+                            for x, y in self.line_cache[current_line - 1]:
+                                ox, oy = x % self.isometric_map.width, y % self.isometric_map.height
+                                if (ox, oy) in self.objgroup_contents[layer]:
+                                    # @@@ nothing to sort bc we have only the player here!@@@
+                                    # self.objgroup_contents[layer][(ox, oy)].sort(key=self._model_depth)
+                                    for ob in self.objgroup_contents[layer][(ox, oy)]:
+                                        mmx, mmy = self.objgroup_modified_mappos[ob]
+                                        fx = x + math.modf(mmx)[0]
+                                        fy = y + math.modf(mmy)[0]
+                                        sx, sy = self.screen_coords(
+                                            fx, fy,
+                                            self.isometric_map.objectgroups[layer].offsetx,
+                                            self.isometric_map.objectgroups[layer].offsety
+                                        )
+                                        ob(output_surf, sx, sy, self.isometric_map)
 
                     # - the rest of the drawing algorithm
                     if self.line_cache[current_line]:
