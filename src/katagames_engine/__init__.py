@@ -38,19 +38,18 @@ from . import _hub as hub
 from . import event
 from . import pal
 from . import struct
-from .compo import isometric
-# from .compo import vscreen  # important import! As this is called by web_vm
-from .compo.vscreen import flip
 from .Injector import Injector
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION
-from .compo import vscreen
 from .compo import gfx
+from .compo import isometric
+from .compo import tmx
+from .compo import vscreen
 from .compo.modes import GameModeMger, BaseGameMode
+from .compo.vscreen import flip
 from .foundation import defs
 from .ifaces.pygame import PygameIface
 from .util import underscore_format, camel_case_format
-from .compo import tmx
 
 
 _active_state = False
@@ -76,11 +75,11 @@ def is_ready():
     return one_plus_init
 
 
-def bootstrap_e(info=None):
+def bootstrap_e(given_pgmod=None, print_ver_info=True):
     """
     ensure the engine is ready to be used
-
-    :param info:
+    :param given_pgmod: a python module that is/can replace pygame, or None
+    :param print_ver_info: bool
     :return:
     """
     global pygame, one_plus_init, _gameticker
@@ -96,14 +95,15 @@ def bootstrap_e(info=None):
             hub.kengi_inj.set('pygame', xinfo)  # set the module directly, instead of using lazy load
 
     one_plus_init = True
-    _show_ver_infos()
-    if info is None:
-        info = 'pygame'
-    _ensure_pygame(info)
+    if given_pgmod:
+        _ensure_pygame(given_pgmod)
+    else:
+        _ensure_pygame('pygame')
+    if print_ver_info:
+        _show_ver_infos()  # skip the msg, (if running KENGI along with katasdk, the sdk has already printed out ver. infos)
 
     event.create_manager()
     _gameticker = event.GameTicker()
-
     # dry import
     vscreen.cached_pygame_mod = hub.pygame
 
