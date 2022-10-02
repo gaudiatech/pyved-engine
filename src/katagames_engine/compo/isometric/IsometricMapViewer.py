@@ -533,6 +533,8 @@ class IsometricMapViewer(event.EventReceiver):
             self._focused_object = None
 
     def switch_map(self, isometric_map):
+        self.force_redraw_flag = True  # obvious that we will have to redraw all!
+
         # ---------- MEGAOPTIM
         if self.MEGAOPTIM:
             if isometric_map.mapname == 'city':
