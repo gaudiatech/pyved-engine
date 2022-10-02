@@ -236,45 +236,36 @@ class CogObj:
     _free_id = 2
     _taken = set()
 
-    def __init__(self, explicit_id=None):
-        cls = self.__class__
-        if explicit_id:
-            if explicit_id in cls._taken:
-                raise ValueError('cannot create CogObj with id{}, already taken!'.format(explicit_id))
-            self._ident = explicit_id
-        else:
-            while cls._free_id in cls._taken:
-                cls._free_id += 1
-            self._ident = cls._free_id
-        cls._taken.add(self._ident)
-
-        self._cached_lu = CgmEvent(EngineEvTypes.LOGICUPDATE, curr_t=None)
-        self._cached_pt = CgmEvent(EngineEvTypes.PAINT, screen=None)
-        self.latest_rank = None
-
     @classmethod
     def reset_class_state(cls):
         cls._free_id = 2
         cls._taken.clear()
 
+    def __init__(self, specifyid=None):
+        if specifyid:
+            myid = specifyid
+        else:
+            cls = self.__class__
+            while cls._free_id in cls._taken:
+                cls._free_id += 1
+            myid = cls._free_id
+        self.__class__._taken.add(myid)
+        self._ident = myid
+        self._ev_cache = dict()
+        self.manager = EventManager.instance()
+
     def get_id(self):
         return self._ident
 
     def pev(self, ev_type, **kwargs):
-        if EngineEvTypes.LOGICUPDATE == ev_type:
-            self._cached_lu.curr_t = time.time()
-            event_obj = self._cached_lu
-
-        elif EngineEvTypes.PAINT == ev_type:
-            c1 = self._cached_pt.screen is None
-            c2 = self.latest_rank is not None and self.latest_rank != vscreen.screen_rank
-            if c1 or c2:  # need to update the cached screen in the PAINT event
-                self.latest_rank = vscreen.screen_rank
-                self._cached_pt.screen = vscreen.screen
-            event_obj = self._cached_pt
-        else:
-            event_obj = CgmEvent(ev_type, **kwargs)
-        gl_unique_manager.post(event_obj)
+        try:
+            eev = self._ev_cache[ev_type]
+            eev.__dict__.update(kwargs)
+            self.manager.post(eev)
+        except KeyError:
+            new_ev = CgmEvent(ev_type, **kwargs)
+            self._ev_cache[ev_type] = new_ev
+            self.manager.post(new_ev)
 
 
 class EventReceiver(CogObj):
