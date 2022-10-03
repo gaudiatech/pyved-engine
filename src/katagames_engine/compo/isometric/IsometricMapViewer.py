@@ -233,7 +233,9 @@ class IsometricMapViewer(event.EventReceiver):
             if '__BRYTHON__' not in globals():
                 self.gfx_data_buffer.fill(self.UPINK)
             else:
-                self.gfx_data_buffer.wreset()  # a hack method, defined only in pygame_emu.Surface
+                # a hack method, works only with pygame_emu.Surface kengi>v22-10a, thats why i use hasattr(...) here
+                if hasattr(self.gfx_data_buffer, 'wreset'):
+                    self.gfx_data_buffer.wreset()
 
             self.impacte_surf(self.gfx_data_buffer)
             self._focused_object_x0 = self._focused_object.x
