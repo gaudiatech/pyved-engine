@@ -138,6 +138,27 @@ class BaseCfont:
             res += self.car_width[letter] + spacing
         return res
 
+    # ---------------
+    #  lets emulate the pygame API, too
+    # ---------------
+    def size(self, w):
+        fixspacing = 0
+        return self.compute_width(w, fixspacing), self.car_height[' ']
+
+    # signature. font.render(l, antialias, color)
+    def render(self, textstr, dummy_antialias, dummy_color, spacing=0):
+        """
+        :param spacing:
+        :param textstr:
+        :param dummy_antialias: unused, but must be here for API compliance
+        :param dummy_color: unused, but must be here for API compliance
+        :return: a pygame surface obj!
+        """
+        aw, ah = self.compute_width(textstr, spacing), self.car_height[' ']
+        res = _hub.pygame.Surface((aw, ah))
+        self.text_to_surf(textstr, res, (0, 0), spacing)
+        return res
+
 
 class JsonBasedCfont(BaseCfont):
     def __init__(self, sourcejson):
