@@ -13,25 +13,11 @@ isolate the graphics handling from the code as much as possible,
 so that if PyGame is replaced the interface shouldn't change
 too much. Also, so that creating a new rules should be as simple
 as importing this package.
-
 Word wrapper taken from the PyGame wiki plus the list-printer
 from Anne Archibald's GearHead Prime demo.
 """
 
-import glob
-import random
-import weakref
-from ... import _hub
-from .general import default_border, render_text, wait_event, TIMEREVENT, INFO_GREEN
-from .image import draw_text
-# has been deleted, its included within .demolib now
-# from . import rpgmenu
 from . import image
 from . import widgets
-
-# disabled as this
-# creates a problem (circular import? Cannot import from partially initialized polarbear)
-# from . import dialogue
-
-pygame = _hub.pygame
-
+from .general import default_border, render_text, wait_event, TIMEREVENT, INFO_GREEN
+from .image import draw_text
