@@ -52,7 +52,9 @@ def wrap_multi_line(text, font, maxwidth):
     return list(lines)
 
 
-def render_text(font, text, width, color=TEXT_COLOR, justify=-1, antialias=True):
+def render_text(font, text, width, color=TEXT_COLOR, justify=-1, antialias=True, dsuu=None, moff=None):
+    if moff:
+        moffx, moffy = moff
     # Return an image with prettyprinted text.
     lines = wrap_multi_line(text, font, width)
 
@@ -68,10 +70,16 @@ def render_text(font, text, width, color=TEXT_COLOR, justify=-1, antialias=True)
             x = width - i.get_width()
         else:
             x = 0
-        s.blit(i, (x, o))
+
+        if dsuu:
+            dsuu.blit(i, (moffx+x, moffy+o))
+        else:
+            s.blit(i, (x, o))
         o += i.get_height()
-    s.set_colorkey((0, 0, 0), pygame.RLEACCEL)
-    return s
+
+    if moff is None:
+        s.set_colorkey((0, 0, 0), pygame.RLEACCEL)
+        return s
 
 
 def draw_text(font, text, rect, color=TEXT_COLOR, justify=-1, antialias=True, dest_surface=None):
@@ -81,13 +89,17 @@ def draw_text(font, text, rect, color=TEXT_COLOR, justify=-1, antialias=True, de
     else:
         dsu = core.get_screen()
 
-    myimage = render_text(font, text, rect.width, color, justify, antialias)
+    # myimage = render. ...
+    render_text(font, text, rect.width, color, justify, antialias, dsuu=dsu, moff=rect.topleft)
+    return
+
     if justify == 0:
         myrect = myimage.get_rect(midtop=rect.midtop)
     elif justify > 0:
         myrect = myimage.get_rect(topleft=rect.topleft)
     else:
         myrect = rect
+
     dsu.set_clip(rect)
     dsu.blit(myimage, myrect)
     dsu.set_clip(None)

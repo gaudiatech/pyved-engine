@@ -28,7 +28,7 @@ class MenuItem(object):
     def __init__(self, msg, value, desc, menu):
         self.value = value
         self.desc = desc
-        self.font = menu.font
+        self._font = menu.font
         self.width = menu.w
         self.justify = -1
         self.menuitem = menu.menuitem
@@ -36,16 +36,30 @@ class MenuItem(object):
         self.item_image = None
         self.select_image = None
         self.height = 0
-        self.msg = msg
+        self._msg = msg
+
+    @property
+    def font(self):
+        return self._font
+
+    @font.setter
+    def font(self, v):
+        self._font = v
+        self._set_msg(self._msg)  # force refresh
 
     def _get_msg(self):
         return self._msg
 
     def _set_msg(self, msg):
         self._msg = msg
-        self.item_image = render_text(self.font, self._msg, self.width, justify=self.justify, color=self.menuitem)
-        self.select_image = render_text(self.font, self._msg, self.width, justify=self.justify, color=self.menuselect)
-        self.height = self.select_image.get_height()
+        # - remove the pre-computation so the webctx accepts this as well
+        #self.item_image = render_text(self._font, self._msg, self.width, justify=self.justify, color=self.menuitem)
+        #self.select_image = render_text(self._font, self._msg, self.width, justify=self.justify, color=self.menuselect)
+        tmp = render_text(self._font, self._msg, self.width, justify=self.justify, color=self.menuselect)
+        self.height = tmp.get_size()[1]
+
+        # before tinkenig web ctx:
+        # self.select_image.get_height()
 
     msg = property(_get_msg, _set_msg)
 
@@ -62,10 +76,17 @@ class MenuItem(object):
         return self._msg
 
     def render(self, screen, dest, selected=False):
-        if selected:
-            screen.blit(self.select_image, dest)
-        else:
-            screen.blit(self.item_image, dest)
+        # signature draw_text(font, text, rect, color=TEXT_COLOR, justify=-1, antialias=True, dest_surface=None):
+        #if selected:
+        draw_text(self._font, self._msg, pygame.Rect(dest[0], dest[1], self.width, 256), justify=self.justify, dest_surface=screen)
+        #else:
+        #    draw_text(self._font, self._msg, (dest[0], dest[1], self.width, 256), justify=self.justify, color=self.menuitem)
+
+        # - before tinkering for the web ctx compat...
+        # if selected:
+        #     screen.blit(self.select_image, dest)
+        # else:
+        #     screen.blit(self.item_image, dest)
 
 
 # The DescBox is the default MenuDesc. It takes a string stored in the menu
@@ -96,7 +117,12 @@ class DescBox(Frect):
             screen.blit(img, mydest)
 
 
-class Menu(event.CogObj, Frect):  # N.B (tom) it would be better to inherit from CogObj +have a Frect attribute
+class Menu(event.CogObj, Frect):
+    """
+    N.B (tom) it would be much better to inherit from CogObj
+    + have a Frect attribute
+    """
+    # TODO refactor
 
     def __init__(self, dx, dy, w=300, h=100, anchor=ANCHOR_CENTER, menuitem=MENU_ITEM_COLOR,
                  menuselect=MENU_SELECT_COLOR, border=default_border, predraw=None, font=None, padding=0,
@@ -166,12 +192,41 @@ class Menu(event.CogObj, Frect):  # N.B (tom) it would be better to inherit from
             item_num -= 1
             y -= self.padding
 
+    def alt_render(self, scr, capft, select_capft, do_extras=True):
+        mydest = self.get_rect()
+        if do_extras:
+            if self.predraw:
+                self.predraw(scr)
+            if self.border:
+                self.border.render(mydest)
+
+        scr.set_clip(mydest)
+        self.arrange()
+        for item_num, area in list(self._item_rects.items()):
+            # THIS IS THE LINE THAT's rly different
+            # signatur is:
+            #  text_to_surf(self, w, refsurf, start_pos, spacing=0, bgcolor=None)
+            # debug - print(type(self.items[item_num]))
+
+            #TODO if selected then use the select_capft to render txt !
+            if item_num == self.selected_item:
+                pfont = select_capft
+            else:
+                pfont = capft
+            self.items[item_num].font = pfont
+            self.items[item_num].render(scr, area, False)
+            # pfont.text_to_surf(self.items[item_num].msg, scr, (area[0], area[1]))
+
+        scr.set_clip(None)
+        # tom: dunno what its for?
+        # if self.descobj:
+        #     self.descobj(self.get_current_item())
+
     def render(self, scr, do_extras=True):
         mydest = self.get_rect()
         if do_extras:
             if self.predraw:
                 self.predraw(scr)
-
             if self.border:
                 self.border.render(mydest)
 
@@ -179,9 +234,7 @@ class Menu(event.CogObj, Frect):  # N.B (tom) it would be better to inherit from
         self.arrange()
         for item_num, area in list(self._item_rects.items()):
             self.items[item_num].render(scr, area, (item_num == self.selected_item) and do_extras)
-
         scr.set_clip(None)
-
         if self.descobj:
             self.descobj(self.get_current_item())
 
