@@ -264,6 +264,9 @@ class CogObj:
             self.manager.post(eev)
         except KeyError:
             new_ev = CgmEvent(ev_type, **kwargs)
+            if ev_type == EngineEvTypes.PAINT:
+                new_ev.screen = vscreen.screen
+
             self._ev_cache[ev_type] = new_ev
             self.manager.post(new_ev)
 

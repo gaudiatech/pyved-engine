@@ -1,11 +1,11 @@
 <img src="https://gaudia-tech.com/shared/kengi-logo.png"/>
 <p align="center">
-  <a href="https://discord.gg/nyvDpXebZB">join us on Discord<br>
+  <a href="https://discord.gg/SHdJhcWvQD">join us on Discord<br>
     <img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
   </a>
 </p>
 
-kengi is the abbreviation of **K**ata **ENGI**ne: a pythonic game engine built on top of
+`kengi` is the abbreviation of **K**ata **ENGI**ne: a pythonic game engine built on top of
 the in python built on top of the popular [pygame](https://github.com/pygame/pygame)
 library. It has no other dependencies. So why "Kata"? [Kata.Games](https://kata.games) is
 a new gaming portal for indie game fans!
@@ -54,7 +54,6 @@ First, ensure that your python
 distribution meets the requirements. Then, go to the `src` folder and proceed with the installation:
 ```shell
 > pip install -r requirements.txt
-> cd src/
 > pip install .
 ```
 In this way, you can use `kengi` from any folder on your system.
