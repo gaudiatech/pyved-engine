@@ -23,10 +23,11 @@ def swap_color(img, old_c, new_c):
     return surf
 
 
-def load_font_img(path, font_color):
+def load_font_img(path, font_color, precomp_letter_widths=None, verbose=False):
     fg_color = (255, 0, 0)
     bg_color = (0, 0, 0)
     font_img = pygame.image.load(path).convert()
+    valid_letter_h = font_img.get_height()
 
     # N.B. theres a BUG when interactin with KataSDK, thats why I have
     # commetend the line below.
@@ -35,43 +36,74 @@ def load_font_img(path, font_color):
 
     # font_img = swap_color(font_img, fg_color, font_color)
     last_x = 0
-    letters = []
-    letter_spacing = []
-    for x in range(font_img.get_width()):
-        colorinfos = font_img.get_at((x, 0))
-        if colorinfos[0] == 127:
-            tmpw = x - last_x
-            tmph = font_img.get_height()
-            letters.append([last_x, 0, tmpw, tmph])
-            # letters.append(
-            #     clip(font_img, last_x, 0, tmpw, tmph)
-            # )
-            letter_spacing.append(tmpw)
-            last_x = x + 1
-        x += 1
-    #for letter in letters:
-    #    letter.set_colorkey(bg_color)
-    card_l = len(letters)
-    print('*debug ImgBasedText*')
-    print(f' ... source={path}')
-    print(f' ... num of letters={card_l}')
-    print(f' ... letter_spacings {letter_spacing}')
-    return letters, letter_spacing, font_img.get_height()
+
+    letter_widths = list()
+    if precomp_letter_widths:
+        letter_widths.extend(precomp_letter_widths)
+    else:
+        # compute dynamically, by using >>Surface.get_at(xy_coords)<<
+        print('*** ------------ Dyn computing letters_widths -------------- ***')
+        for x in range(0, font_img.get_width()):
+            colorinfos = font_img.get_at((x, 0))
+            if colorinfos[0] == 127:
+                tmpw = x - last_x
+                letter_widths.append(tmpw)
+                last_x = x + 1
+            x += 1
+
+    # algo (STEP2) use the letter_width to produce letter_rects
+    letter_rects = list()
+    cumul = 0
+    for given_letter_w in letter_widths:
+        letter_rects.append([cumul, 0, given_letter_w, valid_letter_h])
+        # - deprec
+        # letters.append(
+        #     clip(font_img, last_x, 0, tmpw, tmph)
+        # )
+        cumul += given_letter_w + 1
+
+    # - deprec
+    # for letter in letters:
+    #     letter.set_colorkey(bg_color)
+
+    # - verbose output, useful to DEBUG
+    if verbose:
+        card_l = len(letter_rects)
+        print('*debug ImgBasedText*')
+        print(f' ... source={path}')
+        print(f' ... num of letters={card_l}')
+        print(f' ... rects={letter_rects}')
+        print(f' ... letter_spacings {letter_widths}')
+    return letter_rects, letter_widths, font_img.get_height()
 
 
 class ImgBasedFont:
-    NO_CK_MODE = False  # this is a hotfix for the webctx where on needs to not use colorkey val
+    # use_colorkey_flag = True  # this is a hotfix for the webctx where on needs to not use colorkey val
+    precomputed_widths_data = None
+    debugmode_flag = False
 
     def __init__(self, path, color):
         self._spr_sheet_like = pygame.image.load(path)
 
-        self.letters_rects, self.letter_spacing, self.line_height = load_font_img(path, color)
-        self.font_order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
-                           'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-                           'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '.', '-',
-                           ',', ':', '+', '\'', '!', '?', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')',
-                           '/', '_', '=', '\\', '[', ']', '*', '"', '<', '>', ';', '#', '$', '%', '@', '{', '}', '`',
-                           '~']
+        if self.precomputed_widths_data:
+            triplet = load_font_img(path, color, precomp_letter_widths=self.precomputed_widths_data,
+                                    verbose=self.debugmode_flag)
+        else:
+            triplet = load_font_img(path, color)
+
+        self.letters_rects, self.letter_spacing, self.line_height = triplet
+        self.font_order = [
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R',
+            'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+            'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '.', '-',
+            ',', ':', '+', '\'', '!', '?', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '(', ')',
+            '/', '_', '=', '\\', '[', ']', '*', '"', '<', '>', ';', '#', '$', '%', '@', '{', '}', '`',
+            '~'
+        ]
+        self.letter_to_idx = dict()
+        for idx, one_char in enumerate(self.font_order):
+            self.letter_to_idx[one_char] = idx
+
         self.space_width = self.letter_spacing[self.font_order.index('_')]
         self.base_spacing = 1
         self.line_spacing = 2
@@ -98,47 +130,59 @@ class ImgBasedFont:
 
         return text_width
 
-    # --add-on to stick to pygame interface
+    # ---
+    # add-on, only to be compatible with the pygame interface
     def render(self, gtext, antialias, color, bgcolor=None):
         rez = pygame.Surface((self.width(gtext), self.get_linesize()), pygame.SRCALPHA)
-        if not self.NO_CK_MODE:
-            upink = (255, 0, 255)  # ugly pink
-            rez.fill(upink)
-        self._xrender(gtext, rez, (0, 0))
-        if not self.NO_CK_MODE:
-            rez.set_colorkey(upink)
-        return rez
 
-    def _xrender(self, text, surf, loc, line_width=0):
+        # ancien code -
 
-        x_offset = 0
-        y_offset = 0
-        if line_width != 0:
-            spaces = []
-            x = 0
-            for i, char in enumerate(text):
-                if char == ' ':
-                    spaces.append((x, i))
-                    x += self.space_width + self.base_spacing
-                else:
-                    x += self.letter_spacing[self.font_order.index(char)] + self.base_spacing
-            line_offset = 0
-            for i, space in enumerate(spaces):
-                if (space[0] - line_offset) > line_width:
-                    line_offset += spaces[i - 1][0] - line_offset
-                    if i != 0:
-                        text = text[:spaces[i - 1][1]] + '\n' + text[spaces[i - 1][1] + 1:]
+        # if not self.NO_CK_MODE:
+        #     upink = (255, 0, 255)  # ugly pink
+        #    rez.fill(upink)
+        # self._xrender(gtext, rez, (0, 0))
+        # if not self.NO_CK_MODE:
+        #     rez.set_colorkey(upink)
 
-        escaped_chars = ['\n', ' ', '\r']
+        # nouveau code -
+        # avant, tt ce bout cetait dans
+        # def _xrender(self, text, targ_surf, loc, line_width=0)
+
+        text = gtext
+        targ_surf = rez
+        loc = (0, 0)
+
+        # - deprec for now, DO NOT DELETE, it could be useful someday soon (today is november 1st)
+        # if line_width:
+        #     spaces = []
+        #     x = 0
+        #     for i, char in enumerate(text):
+        #         if char == ' ':
+        #             spaces.append((x, i))
+        #             x += self.space_width + self.base_spacing
+        #         else:
+        #             x += self.letter_spacing[self.font_order.index(char)] + self.base_spacing
+        #     line_offset = 0
+        #     for i, space in enumerate(spaces):
+        #         if (space[0] - line_offset) > line_width:
+        #             line_offset += spaces[i - 1][0] - line_offset
+        #             if i != 0:
+        #                 text = text[:spaces[i - 1][1]] + '\n' + text[spaces[i - 1][1] + 1:]
+
+        # escaped_chars ARE ['\n', ' ', '\r']
+        x_offset = y_offset = 0
         for char in text:
-            if char not in escaped_chars:
-                #surf.blit(self.letters[self.font_order.index(char)], (loc[0] + x_offset, loc[1] + y_offset))
-                destpos = (loc[0] + x_offset, loc[1] + y_offset)
-                surf.blit(self._spr_sheet_like, destpos, area=self.letters_rects[self.font_order.index(char)] )
-                x_offset += self.letter_spacing[self.font_order.index(char)] + self.base_spacing
-                continue
-            if char == ' ':
-                x_offset += self.space_width + self.base_spacing
-            elif char == '\n':
+            if char == '\n':
                 y_offset += self.line_spacing + self.line_height
                 x_offset = 0
+            elif char == ' ':
+                x_offset += self.space_width + self.base_spacing
+            elif char == '\r':
+                pass
+            else:
+                # surf.blit(self.letters[self.font_order.index(char)], (loc[0] + x_offset, loc[1] + y_offset))
+                tmpr = self.letters_rects[self.letter_to_idx[char]]
+                targ_surf.blit(self._spr_sheet_like, (loc[0] + x_offset, loc[1] + y_offset), area=tmpr)
+                x_offset += self.letter_spacing[self.font_order.index(char)] + self.base_spacing
+
+        return rez

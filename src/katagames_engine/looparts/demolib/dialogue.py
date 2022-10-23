@@ -73,7 +73,7 @@ class ConversationView(event.EventReceiver):
     TEXT_AREA = frects.Frect(-75, -100, 300, 100)
     MENU_AREA = frects.Frect(-75, 30, 300, 80)
     PORTRAIT_AREA = frects.Frect(-240, -110, 150, 225)
-    BGCOL = (11, 24, 11)  # pal.c64['darkgrey']  # pal.punk['nightblue']
+    CONV_BG_COL = (11, 24, 11)  # this is a dark green
     MENU_BORDER_COL = pal.punk['gray']
     DEBUG = True
 
@@ -85,13 +85,13 @@ class ConversationView(event.EventReceiver):
 
         # n.b: need to use EmbeddedCfont, or no?
         if li_alt_font_obj:  # defaults to capello ft
-            self.capfont = li_alt_font_obj
+            self._capfont = li_alt_font_obj
             # self.capfont = [
             #     gfx.JsonBasedCfont(capfont_path_prfix + '-b'),  # blue-ish
             #     gfx.JsonBasedCfont(capfont_path_prfix+'-a'),  # orange
             # ]
         else:
-            self.capfont = None
+            self._capfont = None
 
         # - slight optim:
         self.text_rect = None
@@ -100,27 +100,38 @@ class ConversationView(event.EventReceiver):
 
         # can be used to make things faster for webctx
         self._primitive_style = False
-        self.zombie = False
+
         self.text = ''
         self.root_offer = root_offer
         self.pre_render = pre_render
-        self.font = pygame.font.Font(chosen_font, ft_size)
+        self._pg_font = pygame.font.Font(chosen_font, ft_size)
         if portrait_fn:
             self.portrait = pygame.image.load(portrait_fn).convert_alpha()
         else:
             self.portrait = None
         self.curr_offer = root_offer
-        self.dialog_upto_date = False
+
         self.existing_menu = None
+
+        if self._capfont:
+            self.activefont = self._capfont[0]
+            self.alternative_menu_flag = True
+        else:
+            self.activefont = self._pg_font
+            self.alternative_menu_flag = False
+
+    def refresh(self):
+        # get the repr zero ready
+        self.update_dialog_repr()
 
     def proc_event(self, ev, source):
         if self.existing_menu:  # forward event to menu if it exists
             self.existing_menu.proc_event(ev, None)
+        #
+        # if ev.type == EngineEvTypes.LOGICUPDATE:  # TODO: using L.u. isnt great!
+        #     self.update_dialog()
 
-        if ev.type == EngineEvTypes.LOGICUPDATE:  # TODO: using L.u. isnt great!
-            self.update_dialog()
-
-        elif ev.type == EngineEvTypes.PAINT:
+        if ev.type == EngineEvTypes.PAINT:
             if self.primitive_style:
                 self._primitiv_render(ev.screen)
             else:
@@ -128,18 +139,21 @@ class ConversationView(event.EventReceiver):
 
         elif ev.type == EngineEvTypes.CONVCHOICE:  # ~ iterate over the conversation...
             print('ConvChoice event received by', self.__class__.__name__)
-            self.dialog_upto_date = False
+
             self.curr_offer = ev.value
+            self.update_dialog_repr()
 
     def _primitiv_render(self, refscreen):
-        pygame.draw.rect(refscreen, self.BGCOL, self.glob_rect)  # fond de fenetre
-        pygame.draw.rect(refscreen, self.BGCOL, self.text_rect)
+        pygame.draw.rect(refscreen, self.CONV_BG_COL, self.glob_rect)  # fond de fenetre
+        pygame.draw.rect(refscreen, self.CONV_BG_COL, self.text_rect)
 
         #if not self.capfont:
             # old fashion
 
-        _hub.polarbear.image.draw_text(
-            self.capfont[0] if self.capfont else self.font, self.text, self.text_rect)
+        _hub.polarbear.draw_text(
+            self.activefont, self.text, self.text_rect, dest_surface=refscreen
+        )
+        # refscreen.blit(newsurf, (self.text_rect[0], self.text_rect[1]))
 
         #else:  # we've overriden the basic behavior
             # signatur is:
@@ -148,15 +162,14 @@ class ConversationView(event.EventReceiver):
 
         if self.portrait:
             refscreen.blit(self.portrait, self.portrait_rect)
-        pygame.draw.rect(refscreen, self.BGCOL, self.menu_rect)
+        pygame.draw.rect(refscreen, self.CONV_BG_COL, self.menu_rect)
 
         if self.existing_menu:  # draw what the player can SAY
-            if not self.capfont:
-                # old fashion
+            if self.alternative_menu_flag:  # we have overriden the default behavior, when using a special kengi font
+                self.existing_menu.alt_render(refscreen, self._capfont[0], self._capfont[1])
+
+            else:  # the old fashion
                 self.existing_menu.render(refscreen)
-            else:  # we've overriden the basic behavior
-                self.existing_menu.alt_render(refscreen, self.capfont[0], self.capfont[1])
-            #    self.existing_menu.alt_render(refscreen, self.capfont[0], self.capfont[1])
 
         # pourtour menu
         pygame.draw.rect(refscreen, self.MENU_BORDER_COL, (self.taquet_portrait, 148, self.dim_menux, 88), 2)
@@ -167,7 +180,7 @@ class ConversationView(event.EventReceiver):
         text_rect = self.TEXT_AREA.get_rect()
         dborder = _hub.polarbear.default_border
         dborder.render(text_rect)
-        _hub.polarbear.draw_text(self.font, self.text, text_rect)
+        _hub.polarbear.draw_text(self.activefont, self.text, text_rect)
         dborder.render(self.MENU_AREA.get_rect())
         if self.existing_menu:
             self.existing_menu.render(refscreen)
@@ -179,63 +192,45 @@ class ConversationView(event.EventReceiver):
         return self._primitive_style
 
     @primitive_style.setter
-    def primitive_style(self, v):
-        self._primitive_style = v
+    def primitive_style(self, use_new_layout: bool):
+        self._primitive_style = use_new_layout
 
-        # modify locations as we know that (Primitive style => upscaling is set to x3)
-        x = 48
-        w = 192
-        self.refxxx = x
+        if use_new_layout:
+            print('ConversationView -> use_new_layout!')
+            # modify locations as we know that (Primitive style => upscaling is set to x3)
+            x = 48
+            w = 192
+            self.TEXT_AREA = frects.Frect(-x, -66, w, 80)
+            self.MENU_AREA = frects.Frect(-x, 33, w, 80)
+            self.PORTRAIT_AREA = frects.Frect(-x-100, -66, 90, 128)
 
-        self.TEXT_AREA = frects.Frect(-x, -66, w, 80)
-        self.MENU_AREA = frects.Frect(-x, 33, w, 80)
-        self.PORTRAIT_AREA = frects.Frect(-x-100, -66, 90, 128)
+            # optim:
+            self.dim_menux = w+100
+            self.text_rect = self.TEXT_AREA.get_rect()
+            self.menu_rect = self.MENU_AREA.get_rect()
+            self.portrait_rect = self.PORTRAIT_AREA.get_rect()
+            self.taquet_portrait = self.portrait_rect[0]
+            self.glob_rect = pygame.Rect(self.portrait_rect[0], 53, self.dim_menux, 182)
 
-        # optim:
-        self.dim_menux = w+104
-
-        self.text_rect = self.TEXT_AREA.get_rect()
-        self.menu_rect = self.MENU_AREA.get_rect()
-        self.portrait_rect = self.PORTRAIT_AREA.get_rect()
-        self.taquet_portrait = self.portrait_rect[0]
-        self.glob_rect = pygame.Rect(self.portrait_rect[0], 53, self.dim_menux, 182)
-
-    def update_dialog(self):
-        if self.zombie:
-            return
-
-        if self.curr_offer is None:
+    def update_dialog_repr(self):
+        if self.curr_offer:
+            self.text = self.curr_offer.msg
+            # create a new Menu inst.
+            self.existing_menu = rpgmenu.Menu(
+                self.MENU_AREA.dx, self.MENU_AREA.dy, self.MENU_AREA.w, self.MENU_AREA.h,
+                border=None, predraw=None, font=self.activefont
+            )
+            # predraw: self.render
+            mymenu = self.existing_menu
+            for i in self.curr_offer.replies:
+                i.apply_to_menu(mymenu)
+            if self.text and not mymenu.items:
+                mymenu.add_item("[Continue]", None)
+            else:
+                mymenu.sort()
+            nextfx = self.curr_offer.effect
+            if nextfx:
+                nextfx()
+        else:
             # auto-close everything
             self.pev(EngineEvTypes.CONVENDS)
-            # let the full program remove the listener
-            # self.turn_off()
-            self.zombie = True
-            return
-
-        if self.dialog_upto_date:
-            return
-
-        self.dialog_upto_date = True
-        self.text = self.curr_offer.msg
-
-        # create a new Menu inst.
-        if self.capfont:
-            adhocft = self.capfont[0]
-        else:
-            adhocft = self.font
-        self.existing_menu = rpgmenu.Menu(
-            self.MENU_AREA.dx, self.MENU_AREA.dy, self.MENU_AREA.w, self.MENU_AREA.h,
-            border=None, predraw=None, font=adhocft
-        )
-        # predraw: self.render
-
-        mymenu = self.existing_menu
-        for i in self.curr_offer.replies:
-            i.apply_to_menu(mymenu)
-        if self.text and not mymenu.items:
-            mymenu.add_item("[Continue]", None)
-        else:
-            mymenu.sort()
-        nextfx = self.curr_offer.effect
-        if nextfx:
-            nextfx()
