@@ -1,3 +1,5 @@
+import pygame
+
 from .. import _hub
 from .. import struct
 from ..compo import vscreen
@@ -5,12 +7,12 @@ from ..foundation import defs
 
 # - constants
 # character set that allows to draw a box with single line around it
-CODE_LINE_VERT = 16*11 + 3
-CODE_LINE_NE = 16*12 - 1
-CODE_LINE_SW = 16*12 + 0
-CODE_LINE_NW = 16*13 + 10
-CODE_LINE_HORZ = 16*12 + 4
-CODE_LINE_SE = 16*13 + 9
+CODE_LINE_VERT = 16 * 11 + 3
+CODE_LINE_NE = 16 * 12 - 1
+CODE_LINE_SW = 16 * 12 + 0
+CODE_LINE_NW = 16 * 13 + 10
+CODE_LINE_HORZ = 16 * 12 + 4
+CODE_LINE_SE = 16 * 13 + 9
 
 # the character that allows to fill the space
 CODE_FILL = 13 * 16 + 11
@@ -31,7 +33,8 @@ _EMB_TILEMAPS_PNGF = {
     20: b'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'
 }
 
-
+# global vars
+_lastcol = _lastrow = None
 _sm_ready = False
 
 
@@ -40,7 +43,7 @@ _sm_ready = False
 # -------------------------------------------------
 def cpos_to_screen(cpos):
     i, j = cpos
-    return i*_char_size, j*_char_size
+    return i * _char_size, j * _char_size
 
 
 def get_char_size():
@@ -54,8 +57,8 @@ def increm_char_size():
     set_char_size(loop[pos])
 
 
-def init(upscaling_int=None):
-    global _screen, _matrix, _sm_ready
+def init(upscaling_int):
+    global _screen, _matrix, _sm_ready, _lastcol, _lastrow
     _sm_ready = True
     _screen = vscreen.get_screen()
     scrw, scrh = _screen.get_size()
@@ -66,6 +69,8 @@ def init(upscaling_int=None):
     if adhoch != scrh / _char_size:
         raise ValueError('div tombe pas juste pour calculer h')
     _matrix = struct.IntegerMatrix((adhocw, adhoch))
+    _lastcol = -1 + adhocw
+    _lastrow = -1 + adhoch
 
 
 def is_ready():
@@ -92,7 +97,7 @@ def is_inside(ij_coords):
     return -1 < i < _lastcol + 1 and -1 < j < _lastrow + 1
 
 
-def put_char(identifier, arraypos, fgcolor, bgcolor=None):
+def put_char(identifier, arraypos, fgcolor, bgcolor=None, dest_surf=None):
     if bgcolor is None and identifier == ' ':  # skip if nothing to show
         return
 
@@ -102,7 +107,15 @@ def put_char(identifier, arraypos, fgcolor, bgcolor=None):
         good_s = _alphabet.fetch(identifier)
     else:
         good_s = _alphabet.render([identifier, ], fgcolor, bgcolor)
-    _screen.blit(good_s, (_char_size*arraypos[0], _char_size*arraypos[1]))
+    if dest_surf:
+        target_s = dest_surf
+    else:
+        target_s = _screen
+    target_s.blit(good_s, (_char_size * arraypos[0], _char_size * arraypos[1]))
+
+
+def get_charsize():  # like a property, but on module => read-only var.
+    return _char_size
 
 
 # def paste(self, src_surf, pos):
@@ -185,7 +198,7 @@ class _KFont:
             inp = list(karray_or_txt)
         else:
             inp = karray_or_txt
-        rez = _pyg.surface.Surface((_char_size*len(inp), _char_size))
+        rez = _pyg.surface.Surface((_char_size * len(inp), _char_size))
         rez.fill((0, 0, 0))
         char_destpos = [0, 0]
         for elt in inp:
@@ -193,7 +206,7 @@ class _KFont:
             rez.blit(s, char_destpos)
             char_destpos[0] += _char_size
         # replace fg color
-        fres = _pyg.surface.Surface((_char_size*len(inp), _char_size))
+        fres = _pyg.surface.Surface((_char_size * len(inp), _char_size))
         if bg_color is None:
             fres.fill((255, 0, 255))
             fres.set_colorkey((255, 0, 255))
@@ -229,5 +242,3 @@ _curr_spritesheet = None
 _pyg = _hub.pygame
 _alphabet = _KFont()
 _screen = _matrix = None
-_lastcol = -1 + defs.STD_SCR_SIZE[0] // _char_size
-_lastrow = -1 + defs.STD_SCR_SIZE[1] // _char_size

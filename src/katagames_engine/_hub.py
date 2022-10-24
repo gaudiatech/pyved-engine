@@ -16,6 +16,7 @@ kengi_inj = Injector({
     'gui': '.looparts.gui',
     'legacy': '.looparts.legacy',
     'tabletop': '.looparts.tabletop',
+    'sysconsole': '.looparts.sysconsole',
 
     # nota bene: pygame is dynamically added to this dict,
     # its done elsewhere
