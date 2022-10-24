@@ -33,7 +33,8 @@ from ...util import parse_color
 # This does mean that the test suite will fail if zstd is installed, so for
 # development purposes it should only be installed when specifically manually
 # testing for zstd things.
-zstd_spec = importlib.util.find_spec("zstd")
+
+zstd_spec = False  #importlib.util.find_spec("zstd")
 if zstd_spec:  # pragma: no cover
     import zstd
 else:

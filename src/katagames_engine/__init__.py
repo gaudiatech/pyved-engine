@@ -42,8 +42,8 @@ from .Injector import Injector
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION
 from .compo import gfx
-from .compo import isometric
-from .compo import tmx
+# from .compo import isometric
+# from .compo import tmx
 from .compo import vscreen
 from .compo.modes import GameModeMger, BaseGameMode
 from .compo.vscreen import flip

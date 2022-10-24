@@ -13,8 +13,7 @@ syntax
 """
 
 # N.b need to import so setup.py can detect all files
-
-from . import console
-from . import rogue
-from . import tabletop
-from . import terrain
+# from . import console
+# from . import rogue
+# from . import tabletop
+# from . import terrain
