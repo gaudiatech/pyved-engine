@@ -539,7 +539,8 @@ class IsometricMap:
                 elif tag["name"] == "mapname":
                     tilemap.mapname = tag.get("value")
                 elif tag["name"] == "wallpaper":
-                    tilemap.wallpaper = _hub.pygame.image.load(os.path.join("assets", tag.get("value"))).convert_alpha()
+                    pprefix = os.pathsep.join(folders)
+                    tilemap.wallpaper = _hub.pygame.image.load(os.path.join(pprefix, tag.get("value"))).convert_alpha()
 
         for tag in jdict['tilesets']:
             tilemap.tilesets.add(

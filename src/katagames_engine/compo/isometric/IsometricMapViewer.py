@@ -50,6 +50,7 @@ def rel_set_info(halftile_w, halftile_h):
 
 class IsometricMapViewer(event.EventReceiver):
     MEGAOPTIM = False
+
     MOUSEMOTION_CONST = None
     SOLID_COLOR = 'navyblue'
     FLOORS = {}
@@ -95,17 +96,9 @@ class IsometricMapViewer(event.EventReceiver):
         self.info_draw_mapobj = dict()
 
         self.isometric_map = isometric_map
-        if self.MEGAOPTIM:
-            self.FLOORS.update({
-                0: _hub.pygame.image.load('assets/city.png'),
-                1: _hub.pygame.image.load('assets/casino.png')
-            })
-            self.manoffset = self.FLOOR_MAN_OFFSET[0]
-            self.scrollable_floor = self.FLOORS[0]
-            self.scrollable_floor.set_colorkey(self.UPINK)
-        else:
-            self.manoffset = (0, 0)
-            self.scrollable_floor = None
+
+        self.manoffset = (0, 0)
+        self.scrollable_floor = None
 
         self.screen = screen
         self.mid = (
@@ -163,6 +156,16 @@ class IsometricMapViewer(event.EventReceiver):
         self.objgroup_contents = dict()
         self.objgroup_modified_mappos = dict()
         self._camera_updated_this_frame = False
+
+    def enable_megaoptim(self, imgcity, imgcasino):
+        self.MEGAOPTIM = True
+        self.FLOORS.update({
+            0: imgcity,
+            1: imgcasino
+        })
+        self.manoffset = self.FLOOR_MAN_OFFSET[0]
+        self.scrollable_floor = self.FLOORS[0]
+        self.scrollable_floor.set_colorkey(self.UPINK)
 
     def _check_mouse_scroll(self, screen_area, mouse_x, mouse_y):
         # Check for map scrolling, depending on mouse position.
