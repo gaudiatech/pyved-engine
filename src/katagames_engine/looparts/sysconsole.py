@@ -47,37 +47,24 @@ class MiniConsComponent:
     CONS_DISP_OFFSET = (1, 1)  # cannot use 0 bc its a border!
 
     def __init__(self, txtcolor):
-        # better not use wrapper cause its lagging in web ctx!
-
-        #self.wrapper_obj = textwrap.TextWrapper(break_long_words=True)
-        bounds = _hub.ascii.get_bounds()
-        #self.wrapper_obj.width = bounds[0] - 2  # minus 2 because we have a 1-cell border left&right
-        #
         self.txtcolor = txtcolor
-
-        # model per se
+        # the model per se
+        self.changed = False
         self.logical_cursor_pos = [0, 0]
-        self.maxlines = bounds[1] - 3  # see above, almost same remark
+        bounds = _hub.ascii.get_bounds()
+        self.maxlines = bounds[1] - 2  # see above, almost same remark
         self.alltext = ''
         self.lines = list()
         self._nblines = 0
 
-    def output(self, word_or_letter):
+    def output(self, line_of_txt):
         """
         for better results, use full lines!
-        :param word_or_letter:
+        :param line_of_txt: type str, not longer than a line
         :return:
         """
-
-        # # TODO need to split lines
-        # curr_card_lines = len(self.lines)
-        # self.alltext += word_or_letter
-        # tmp = self.wrapper_obj.wrap(self.alltext)
-        # if len(tmp) > curr_card_lines:
-        #     self.lines = tmp
-        # else:
-        #     self.lines[-1] += word_or_letter
-        self.lines.append(word_or_letter)
+        self.changed = True
+        self.lines.append(line_of_txt)
         self._nblines += 1
 
     @property
@@ -85,11 +72,11 @@ class MiniConsComponent:
         return self._nblines
 
     def updategfx(self):
-        # only take a chunk, => achieve scrolling
+        # only take a chunk => achieve scrolling
         partial_lines = self.lines[-self.maxlines:]
-
         for line_rank, line_content in enumerate(partial_lines):
-            put_line(  # if we dont use bgcolor => pass None
+            put_line(  # since we dont use bgcolor => pass None
                 line_content, (self.CONS_DISP_OFFSET[0], self.CONS_DISP_OFFSET[1]+line_rank), self.txtcolor, None
             )
         _hub.ascii.flush()
+        self.changed = False
