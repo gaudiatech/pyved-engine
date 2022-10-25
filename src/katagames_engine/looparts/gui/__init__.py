@@ -2,26 +2,25 @@
 sub-module dedicated to GUI management/creation,
  belongs to the kata engine
 """
+import pygame
 
 from .Button import Button
 from .Button import ButtonPanel
 from .Button2 import Button2
-from .Label import Label
+from .base import Label
 from .TextBlock import TextBlock
 from .Trigger import Trigger
 from .WidgetBo import WidgetBo
+from .base import ANCHOR_CENTER, ANCHOR_RIGHT, ANCHOR_LEFT  # bring codes here
+
+from .base import AugmentedSprite
+from .base import WidgetContainer
 from .text import ImgBasedFont
-from ... import _hub as inj
 from ... import event
 
 
-pygame = inj.pygame
-# TODO doublon Label , Etiquette
-#  à regler
-
-
-# ---------- pr GUI
 class Etiquette:
+    # TODO on a un souci avec classe Etiquette-> doublon, faut fusionner ou en retirer un!
     ft_obj = None
 
     def __init__(self, text, pos, rgb_color):
@@ -45,7 +44,8 @@ class Etiquette:
         self.img = self.ft_obj.render(self._text, True, self._color)
 
 
-class TextInput(event.EventReceiver):
+class TextInput(event.EventReceiver):  # TODO on devrait pas utiliser eventreceiver juste pr un bouton/widget!
+    # utiliser des Container de préférence + eventuellement structure hierarchique
     """
     Simple text entry component.
     """
@@ -211,11 +211,9 @@ class TextInput(event.EventReceiver):
             #    self.backspace_char()
             self.text_img = self.font.render(content, 1, self.text_color, self.fill_color)
             self.image.blit(self.text_img, (2, 2))
-
             # - draw caret
             # TODO fix pygame draw line
             # xpos = self.font.size(content[:self.caretpos])[0] + 2
             # pygame.draw.line(self.image, self._caret_color, (xpos, self._padding),
             #                  (xpos, self.image.get_height() - self._padding), 2)
-
         pygame.draw.rect(self.image, (100, 100, 100), self.text_field_rect, 2)
