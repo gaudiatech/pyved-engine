@@ -18,11 +18,11 @@ class GenericUIElement(IfaceUIElement):
     so it can be visually debugged
     """
 
-    def __init__(self, position0: SPATIAL_INFO, dimensions0: SPATIAL_INFO, anchoring=None):
+    def __init__(self, position0: SPATIAL_INFO, dimensions0: SPATIAL_INFO, anchoring=None, debugmode=False):
         super().__init__()
 
         # state/sys
-        self._debug_mode = False
+        self._debug_mode = debugmode
         self._is_active = True
         self._cached_scr_ref = None
 
@@ -109,7 +109,8 @@ class GenericUIElement(IfaceUIElement):
             pygame.draw.rect(
                 self._cached_scr_ref,
                 'red',
-                (self._xy_coords[0], self._xy_coords[1], self._dim[0], self._dim[1])
+                (self._xy_coords[0]-1, self._xy_coords[1]-1, self._dim[0]+1, self._dim[1]+1),
+                2  # line width
             )
 
     def kill(self):
@@ -280,11 +281,11 @@ class _SprLikeLabel(pygame.sprite.Sprite):
 
 class Label(GenericUIElement):
 
-    def __init__(self, position, text, color=None, anchoring=ANCHOR_LEFT):
+    def __init__(self, position, text, color=None, anchoring=ANCHOR_LEFT, debugmode=False):
         self._used_text = text
         self._used_color = color
         self._inner_spr = _SprLikeLabel(text, color)
-        super().__init__(position, self._inner_spr.rect.size, anchoring)
+        super().__init__(position, self._inner_spr.rect.size, anchoring, debugmode)
 
     def rebuild(self) -> None:
         """
@@ -292,7 +293,7 @@ class Label(GenericUIElement):
         :return:
         """
         self._inner_spr = _SprLikeLabel(self._used_text, self._used_color)
-        super().__init__(self.get_position(), self._inner_spr.rect.size, self._curr_anchor)
+        super().__init__(self.get_position(), self._inner_spr.rect.size, self._curr_anchor, self._debug_mode)
 
     def draw(self):
         super().draw()
