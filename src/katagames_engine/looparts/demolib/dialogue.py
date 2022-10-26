@@ -73,7 +73,7 @@ class ConversationView(event.EventReceiver):
     TEXT_AREA = frects.Frect(-75, -100, 300, 100)
     MENU_AREA = frects.Frect(-75, 30, 300, 80)
     PORTRAIT_AREA = frects.Frect(-240, -110, 150, 225)
-    CONV_BG_COL = (11, 24, 11)  # this is a dark green
+    CONV_BG_COL = pal.niobe['darkgreen']
     MENU_BORDER_COL = pal.punk['gray']
     DEBUG = True
 

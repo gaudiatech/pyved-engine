@@ -141,6 +141,13 @@ _japan = (
 
 japan = _Pal(_japan)
 
+_niobe = (
+    ('darkgreen', 11, 24, 11),
+)
+
+niobe = _Pal(_niobe)
+
+
 ALL_PALETTES = {
     'c64': c64,
     'japan': japan,
