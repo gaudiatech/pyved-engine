@@ -1,39 +1,6 @@
 from .. import _hub
-from ..compo import vscreen
-import textwrap
-
 
 pygame = _hub.pygame
-_cached_scrref = None
-
-
-def put_line(w, base_ij_pos, fgcolor, bgcolor):
-    global _cached_scrref
-    i, j = base_ij_pos
-    chsize = _hub.ascii.get_charsize()
-    if _cached_scrref is None:
-        _cached_scrref = vscreen.screen
-
-    # ----------
-    #  ALGO 1: this would work well, but due to how ascii_web is created, we have to put char 1 by 1 directly to screen
-    # ---------
-    # sumsurf = pygame.Surface((len(w) * chsize, chsize))
-    # tmpc = pygame.Color(fgcolor)
-    # ck = pygame.Color((tmpc.r + 1) % 255, (tmpc.g + 1) % 255, (tmpc.b + 1) % 255)
-    # sumsurf.fill(ck)
-    # sumsurf.set_colorkey(ck)
-    # for rank, char in enumerate(w):
-    #     _hub.ascii.put_char(char, (rank, 0), fgcolor, bgcolor, dest_surf=sumsurf)
-
-    # _cached_scrref.blit(sumsurf, (chsize * i, chsize * j))
-
-    # ---------
-    # ALGO 2
-    # ---------
-    starti, startj = base_ij_pos
-    for rank, char in enumerate(w):
-        _hub.ascii.put_char(char, (starti+rank, startj), fgcolor, bgcolor)
-    _hub.ascii.flush()
 
 
 class MiniConsComponent:
@@ -48,35 +15,51 @@ class MiniConsComponent:
 
     def __init__(self, txtcolor):
         self.txtcolor = txtcolor
+        self.fgcolor = txtcolor
+        self.bgcolor = None  # for text !
+
         # the model per se
-        self.changed = False
+        self.needs_paint_op = False
         self.logical_cursor_pos = [0, 0]
         bounds = _hub.ascii.get_bounds()
         self.maxlines = bounds[1] - 2  # see above, almost same remark
         self.alltext = ''
         self.lines = list()
         self._nblines = 0
+        self._buffer = list()
+        self._prev_t = None
 
-    def output(self, line_of_txt):
+    def draw_console_line(self, myword, base_ij_pos):
+        for rank, mchar in enumerate(myword):
+            _hub.ascii.put_char(mchar, (base_ij_pos[0] + rank, base_ij_pos[1]), self.fgcolor, self.bgcolor)
+
+    def lineappend(self, line_of_text):
         """
-        for better results, use full lines!
-        :param line_of_txt: type str, not longer than a line
-        :return:
+        for better results, use full lines! Its buffered bc we wanna
+        add it line per line and display before adding the nxt one
         """
-        self.changed = True
-        self.lines.append(line_of_txt)
-        self._nblines += 1
+        self._buffer.append(line_of_text)
 
-    @property
-    def nblines(self):
-        return self._nblines
+    def has_bufferempty(self):
+        return len(self._buffer) == 0
 
-    def updategfx(self):
-        # only take a chunk => achieve scrolling
-        partial_lines = self.lines[-self.maxlines:]
-        for line_rank, line_content in enumerate(partial_lines):
-            put_line(  # since we dont use bgcolor => pass None
-                line_content, (self.CONS_DISP_OFFSET[0], self.CONS_DISP_OFFSET[1]+line_rank), self.txtcolor, None
+    def update(self, infot):
+        if len(self._buffer):
+            self._prev_t = infot
+            self.lines.append(self._buffer.pop(0))
+            self.needs_paint_op = True
+
+    def draw(self):
+        # push the whole set of chars to screen & refresh display
+        _hub.ascii.reset()
+        if len(self.lines) > self.maxlines:
+            k = self.maxlines
+            plines = self.lines[-k:]  # last k lines
+        else:
+            plines = self.lines
+        for j, line_content in enumerate(plines):
+            self.draw_console_line(  # since we dont use bgcolor => pass None
+                line_content, (self.CONS_DISP_OFFSET[0], self.CONS_DISP_OFFSET[1] + j)
             )
         _hub.ascii.flush()
-        self.changed = False
+        self.needs_paint_op = False
