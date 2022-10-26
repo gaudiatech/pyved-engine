@@ -2,12 +2,11 @@ import glvars
 import katagames_engine as kengi
 from config import W, H
 from objects import Puzzle
-from ui import Button
 
 
 pygame = kengi.pygame
 drawtext = kengi.util.drawtext
-
+Button = kengi.tankui.Button
 
 def sig_endgame():
     glvars.gameover = True

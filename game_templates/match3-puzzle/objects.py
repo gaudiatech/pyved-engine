@@ -5,12 +5,13 @@ from typing import Union
 import glvars
 import katagames_engine as kengi
 from config import W, H
-from ui import Button
 from utils import load_image
 
 
+# aliases
 pygame = kengi.pygame
 text = kengi.util.drawtext
+Button = kengi.tankui.Button
 
 
 class BaseObject:

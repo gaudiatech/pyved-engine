@@ -38,12 +38,11 @@ from . import _hub as hub
 from . import event
 from . import pal
 from . import struct
+from . import tankui
 from .Injector import Injector
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION
 from .compo import gfx
-# from .compo import isometric
-# from .compo import tmx
 from .compo import vscreen
 from .compo.modes import GameModeMger, BaseGameMode
 from .compo.vscreen import flip

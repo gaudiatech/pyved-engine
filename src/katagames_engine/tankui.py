@@ -1,10 +1,11 @@
 import time
-from utils import *
-import katagames_engine as kengi
+
+from . import _hub
+from . import util
+from .compo import vscreen
 
 
-pygame = kengi.pygame
-text = kengi.modes.drawtext
+text = util.drawtext
 
 
 class Button:
@@ -18,17 +19,18 @@ class Button:
         self.text = text(self.label, 40, aliased=True)
         self.active_color = (204, 122, 68)
         self.inactive_color = (182, 122, 87)
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+        self.rect = _hub.pygame.Rect(self.x, self.y, self.w, self.h)
         self.is_active = False
 
     def update(self, events):
-        mx, my = pygame.mouse.get_pos()
+        mx, my = vscreen.proj_to_vscreen(_hub.pygame.mouse.get_pos())
+
         if self.rect.collidepoint(mx, my):
             self.is_active = True
         else:
             self.is_active = False
         for e in events:
-            if e.type == pygame.MOUSEBUTTONDOWN:
+            if e.type == _hub.pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
                     if self.is_active:
                         if self.action is not None:
@@ -36,7 +38,7 @@ class Button:
 
     def draw(self, surf):
         color = self.active_color if self.is_active else self.inactive_color
-        pygame.draw.rect(surf, color, (self.x, self.y, self.w, self.h), border_radius=5)
+        _hub.pygame.draw.rect(surf, color, (self.x, self.y, self.w, self.h), border_radius=5)
         surf.blit(self.text, self.text.get_rect(center=self.rect.center))
 
 
@@ -49,14 +51,14 @@ class Label:
         self.label = label
         self.text = text(self.label, size=25, aliased=True)
         self.color = (182, 122, 87)
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+        self.rect = _hub.pygame.Rect(self.x, self.y, self.w, self.h)
         self.is_active = False
 
     def update(self, events):
         pass
 
     def draw(self, surf):
-        pygame.draw.rect(surf, self.color, (self.x, self.y, self.w, self.h))
+        _hub.pygame.draw.rect(surf, self.color, (self.x, self.y, self.w, self.h))
         surf.blit(self.text, self.text.get_rect(center=self.rect.center))
 
 
@@ -66,7 +68,7 @@ class InputBox:
         self.y = y
         self.w = w
         self.h = h
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+        self.rect = _hub.pygame.Rect(self.x, self.y, self.w, self.h)
         self.numeric_only = numeric_only
         self.active_color = (204, 122, 68)
         self.inactive_color = (182, 122, 87)
@@ -81,7 +83,8 @@ class InputBox:
         self.cursor_blink_timer = time.time()
 
     def update(self, events):
-        mx, my = pygame.mouse.get_pos()
+        pygame = _hub.pygame
+        mx, my = vscreen.proj_to_vscreen(pygame.mouse.get_pos())
         if self.rect.collidepoint(mx, my):
             self.is_hovered = True
         else:
@@ -123,5 +126,5 @@ class InputBox:
             else:
                 display_text += ' '
         t = text(display_text, 25, aliased=True)
-        pygame.draw.rect(surf, color, self.rect)
+        _hub.pygame.draw.rect(surf, color, self.rect)
         surf.blit(t, t.get_rect(center=self.rect.center))
