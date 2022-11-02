@@ -250,8 +250,8 @@ class WidgetContainer(GenericUIElement):
 class _SprLikeLabel(pygame.sprite.Sprite):
     # TODO make it a UIelement
 
-    def __init__(self, txt, color=None):
-        self._font = pygame.font.Font(None, 35)
+    def __init__(self, txt, txtsize, color=None):
+        self._font = pygame.font.Font(None, txtsize)
 
         super().__init__()
 
@@ -281,18 +281,29 @@ class _SprLikeLabel(pygame.sprite.Sprite):
 
 class Label(GenericUIElement):
 
-    def __init__(self, position, text, color=None, anchoring=ANCHOR_LEFT, debugmode=False):
+    def __init__(self, position, text, txtsize=35, color=None, anchoring=ANCHOR_LEFT, debugmode=False):
         self._used_text = text
         self._used_color = color
-        self._inner_spr = _SprLikeLabel(text, color)
+        self.txtsize = txtsize
+        self._inner_spr = _SprLikeLabel(text, txtsize, color)
         super().__init__(position, self._inner_spr.rect.size, anchoring, debugmode)
+
+    @property
+    def text(self):
+        return self._used_text
+
+    # modifiying text => rebuild step
+    @text.setter
+    def text(self, newtext):
+        self._used_text = newtext
+        self.rebuild()
 
     def rebuild(self) -> None:
         """
         called if the spr has changed (or the color)
         :return:
         """
-        self._inner_spr = _SprLikeLabel(self._used_text, self._used_color)
+        self._inner_spr = _SprLikeLabel(self._used_text, self.txtsize, self._used_color)
         super().__init__(self.get_position(), self._inner_spr.rect.size, self._curr_anchor, self._debug_mode)
 
     def draw(self):
