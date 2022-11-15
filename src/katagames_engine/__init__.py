@@ -36,6 +36,7 @@
 
 from . import _hub as hub
 from . import event
+from . import event2
 from . import pal
 from . import struct
 from . import tankui
