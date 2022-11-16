@@ -1,7 +1,7 @@
 import re
 
-from .core import EngineEvTypes, KengiEv, PseudoEnum
-from .core import to_camelcase, to_snakecase, CircularBuffer, Singleton
+from .defs import EngineEvTypes, KengiEv, PseudoEnum
+from .defs import to_camelcase, to_snakecase, CircularBuffer, Singleton
 
 
 _FIRST_LISTENER_ID = 72931
@@ -20,7 +20,8 @@ class EvManager:
         self._etype_to_sncname = dict()  # corresp identifiant num. <-> nom event snakecase
         self.regexp = None
         self.debug_mode = False
-        self._alt_ev_source = None
+
+        self.a_event_source = None
 
     @property
     def queue_size(self):
@@ -31,9 +32,9 @@ class EvManager:
 
     def update(self):
         # optional block, in some cases this is equivalent to a <pass> instruction
-        if self._alt_ev_source:  # true => pull all events from alt. source (concrete kengi backend) & merge in cbuffer
-            for alien_ev in self._alt_ev_source.pull_events():
-                kevent = (self._alt_ev_source.map_etype2kengi(alien_ev.type), alien_ev.dict)
+        if self.a_event_source:  # true => pull all events from alt. source (concrete kengi backend) & merge in cbuffer
+            for alien_ev in self.a_event_source.pull_events():
+                kevent = (self.a_event_source.map_etype2kengi(alien_ev.type), alien_ev.dict)
                 self._cbuffer.enqueue(kevent)
 
         while len(self._cbuffer.deque_obj):
@@ -45,8 +46,6 @@ class EvManager:
 
     def hard_reset(self):
         self._etype_to_listenerli.clear()
-        self._cbuffer = CircularBuffer()
-        self.event_types_inform()
 
     def _refresh_regexp(self, gnames):
         # we create a regexp such that, listeners know what keywords they have to consider
@@ -82,17 +81,15 @@ class EvManager:
         if self.debug_mode:
             print('  debug UNSUBSCRIBE - - - {} - {}'.format(ename, listener_obj))
 
-    def setup(self, alt_ev_source=None, given_extra_penum=None):
-        if alt_ev_source:
-            self._alt_ev_source = alt_ev_source
-
+    def setup(self, given_extra_penum=None):
         names = list()
         self._known_ev_types = EngineEvTypes.content.copy()
 
         for evname, eid in EngineEvTypes.content.items():
             names.append(to_snakecase(evname))
 
-        if given_extra_penum:
+        if given_extra_penum is not None:
+            print('>>>>>>>>>>>>>--setup event2.evmanager -- ', given_extra_penum)
             self._known_ev_types.update(given_extra_penum.content)
             for evname, eid in given_extra_penum.content.items():
                 names.append(to_snakecase(evname))

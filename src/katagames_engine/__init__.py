@@ -35,9 +35,8 @@
 """
 
 from . import _hub as hub
-from . import event
-from . import event2
-from .default_backend import PygameKenBackend
+# from . import event
+from .foundation import event2
 from . import pal
 from . import struct
 from . import tankui
@@ -49,7 +48,7 @@ from .compo import vscreen
 from .compo.modes import GameModeMger, BaseGameMode
 from .compo.vscreen import flip
 from .foundation import defs
-from .ifaces.pygame import PygameIface
+from .foundation.interfaces import PygameIface
 from .util import underscore_format, camel_case_format
 
 
@@ -60,6 +59,8 @@ _stack_based_ctrl = None
 one_plus_init = False
 state_stack = None
 ver = ENGI_VERSION
+
+pbackend_name = ''
 
 
 class Objectifier:
@@ -83,9 +84,10 @@ def bootstrap_e(given_pgmod=None, print_ver_info=True):
     :param print_ver_info: bool
     :return:
     """
-    global pygame, one_plus_init, _gameticker
+    global one_plus_init, pygame, _gameticker
     if one_plus_init:
         return
+
     del pygame
 
     def _ensure_pygame(xinfo):
@@ -103,8 +105,17 @@ def bootstrap_e(given_pgmod=None, print_ver_info=True):
     if print_ver_info:
         _show_ver_infos()  # skip the msg, (if running KENGI along with katasdk, the sdk has already printed out ver. infos)
 
-    event.create_manager()
-    _gameticker = event.GameTicker()
+    # --> init newest event system! in nov22
+    # from here and later,
+    # we know that kengi_inj has been updated, so we can build a primal backend
+    from .foundation.pbackends import build_primalbackend
+    pbe_localctx = build_primalbackend(pbackend_name)  # by default: local ctx
+    event2.EvManager.instance().a_event_source = pbe_localctx
+
+    # TODO quick fix this part!
+    #event.create_manager()
+    #_gameticker = event.GameTicker()
+
     # dry import
     vscreen.cached_pygame_mod = hub.pygame
 
@@ -165,7 +176,8 @@ def init(gfc_mode=1, caption=None, maxfps=60, screen_dim=None):
         caption = f'untitled demo, uses KENGI ver {ENGI_VERSION}'
     pygm.display.set_caption(caption)
 
-    _gameticker.maxfps = maxfps
+    # TODO quick fix this part
+    # _gameticker.maxfps = maxfps
 
 
 def get_surface():
@@ -209,8 +221,12 @@ def quit():  # we keep the "quit" name bc of pygame
         _stack_based_ctrl = None
     if hub.ascii.is_ready():
         hub.ascii.reset()
-    event.EventManager.instance().hard_reset()
-    event.CogObj.reset_class_state()
+
+    # TODO quick fix this part
+    # event.EventManager.instance().hard_reset()
+    # event.CogObj.reset_class_state()
+    event2.EvManager.instance().hard_reset()
+
     vscreen.init2_done = False
     pyg = get_injector()['pygame']
     pyg.mixer.quit()
