@@ -5,12 +5,13 @@ contact - tom@kata.games
 That file contains everything that's needed to implement
 kengi.event... That is:
 
- - to_camelcase, and to_snakecase
+  - to_camelcase, and to_snakecase
+  - (classes) CircularBuffer, EnumSeed, PseudoEnum, Singleton
+  - EngineEvTypes (the enum)
 
- - (classes) CircularBuffer, EnumSeed, PseudoEnum, Singleton
 """
-
 import re
+from abc import abstractmethod, ABCMeta
 from collections import deque
 
 
@@ -47,6 +48,16 @@ class _CustomIter:
 
 def _enum_seed_implem(gt, c0):
     return {i: ename for (i, ename) in zip(gt, range(c0, c0 + len(gt)))}
+
+
+class BaseKenBackend(metaclass=ABCMeta):
+    @abstractmethod
+    def pull_events(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def map_etype2kengi(self, alien_etype):
+        raise NotImplementedError
 
 
 class CircularBuffer:
@@ -168,6 +179,47 @@ class Singleton:
         return isinstance(inst, self._decorated)
 
 
+# --- declare all engine events ---
+_TRADITIONAL_1ST_ETYPE = 32866+1  # 32866 == pygame.USEREVENT
+
+EngineEvTypes = PseudoEnum((
+    'Quit',
+    'Activation',
+    'FocusGained',
+    'FocusLost',
+    'BasicTextinput',
+
+    'Keydown',
+    'Keyup',
+    'Mousemotion',
+    'Mousedown',
+    'Mouseup',
+
+    'Update',
+    'Paint',
+
+    'Gamestart',
+    'Gameover',
+    # (used in RPGs like niobepolis, conv<- conversation)
+    'ConvStart',  # contains convo_obj, portrait
+    'ConvFinish',
+    'ConvStep',  # contains value
+
+    'StateChange',  # contains code state_ident
+    'StatePush',  # contains code state_ident
+    'StatePop',
+
+    'NetwSend',  # [num] un N°identification & [msg] un string (Async network comms)
+    'NetwReceive'  # [num] un N°identification & [msg] un string (Async network comms)
+), _TRADITIONAL_1ST_ETYPE)
+
+
+class KengiEv:
+    def __init__(self, etype, **entries):
+        self.__dict__.update(entries)
+        self.type = etype
+
+
 if __name__ == '__main__':
     cb = CircularBuffer(3)
     print(str(cb))
@@ -188,7 +240,7 @@ if __name__ == '__main__':
 
     print('front?', cb.front())
     print(str(cb))
-    print(cb.size())
+    print(cb.get_size())
     print("Empty: {}".format(cb.is_empty()))
     print("Full: {}".format(cb.is_full()))
     print()
@@ -197,7 +249,7 @@ if __name__ == '__main__':
     cb.enqueue("six")
     print(str(cb))
     print('front? ', cb.front())
-    print(cb.size())
+    print(cb.get_size())
     print("Empty: {}".format(cb.is_empty()))
     print("Full: {}".format(cb.is_full()))
     print()
@@ -206,6 +258,6 @@ if __name__ == '__main__':
     print(cb.dequeue())
     print(cb.dequeue())
     print(str(cb))
-    print(cb.size())
+    print(cb.get_size())
     print("Empty: {}".format(cb.is_empty()))
     print("Full: {}".format(cb.is_full()))

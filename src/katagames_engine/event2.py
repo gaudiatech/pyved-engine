@@ -1,52 +1,14 @@
-import pygame
+import re
 
-from .core import *
+from .core import EngineEvTypes, KengiEv, PseudoEnum
+from .core import to_camelcase, to_snakecase, CircularBuffer, Singleton
 
 
-EngineEvTypes = PseudoEnum([
-    'AppQuit',
-    'KeyDown',
-    'KeyUp',
-    'MouseMotion',
-    'MouseDown',
-    'MouseUp',
-
-    'Update',
-    'Paint',
-
-    'Gamestart',
-    'Gameover',
-    # (used in RPGs like niobepolis, conv<- conversation)
-    'ConvStart',  # contains convo_obj, portrait
-    'ConvFinish',
-    'ConvStep',  # contains value
-
-    'StateChange',  # contains code state_ident
-    'StatePush',  # contains code state_ident
-    'StatePop',
-
-    'NetwSend',  # [num] un N°identification & [msg] un string (Async network comms)
-    'NetwReceive'  # [num] un N°identification & [msg] un string (Async network comms)
-], pygame.USEREVENT)
-
-_pygame_to_kengi_etype = {
-    256: EngineEvTypes.AppQuit,
-    768: EngineEvTypes.KeyDown,
-    769: EngineEvTypes.KeyUp,
-    1024: EngineEvTypes.MouseMotion,
-    1025: EngineEvTypes.MouseDown,
-    1026: EngineEvTypes.MouseUp,
-}
+_FIRST_LISTENER_ID = 72931
 
 
 def game_events_enum(x_iterable):
     return PseudoEnum(x_iterable, EngineEvTypes.first + EngineEvTypes.size)
-
-
-class KengiEv:
-    def __init__(self, etype, **entries):
-        self.__dict__.update(entries)
-        self.type = etype
 
 
 @Singleton
@@ -58,6 +20,7 @@ class EvManager:
         self._etype_to_sncname = dict()  # corresp identifiant num. <-> nom event snakecase
         self.regexp = None
         self.debug_mode = False
+        self._alt_ev_source = None
 
     @property
     def queue_size(self):
@@ -67,22 +30,18 @@ class EvManager:
         self._cbuffer.enqueue((etype, kwargs))
 
     def update(self):
-        # merge events stored in the backend with the kengi buffer
-        try:
-            for pygev in pygame.event.get():
-                new_elt = (_pygame_to_kengi_etype[pygev.type], pygev.dict)
-                self._cbuffer.deque_obj.append(new_elt)
-                print('added --->>', new_elt[0], ' from pygame queue')
-        except KeyError:
-            pass  # no conversion
-            # print(str(new_elt.dict))
+        # optional block, in some cases this is equivalent to a <pass> instruction
+        if self._alt_ev_source:  # true => pull all events from alt. source (concrete kengi backend) & merge in cbuffer
+            for alien_ev in self._alt_ev_source.pull_events():
+                kevent = (self._alt_ev_source.map_etype2kengi(alien_ev.type), alien_ev.dict)
+                self._cbuffer.enqueue(kevent)
 
         while len(self._cbuffer.deque_obj):
-            # process event
             etype, d = self._cbuffer.dequeue()
             if etype in self._etype_to_listenerli:
                 for lobj in self._etype_to_listenerli[etype]:
-                    getattr(lobj, 'on_'+self._etype_to_sncname[etype])(KengiEv(etype, **d))
+                    adhoc_meth_name = 'on_'+self._etype_to_sncname[etype]
+                    getattr(lobj, adhoc_meth_name)(KengiEv(etype, **d))
 
     def hard_reset(self):
         self._etype_to_listenerli.clear()
@@ -123,7 +82,10 @@ class EvManager:
         if self.debug_mode:
             print('  debug UNSUBSCRIBE - - - {} - {}'.format(ename, listener_obj))
 
-    def event_types_inform(self, given_extra_penum=None):
+    def setup(self, alt_ev_source=None, given_extra_penum=None):
+        if alt_ev_source:
+            self._alt_ev_source = alt_ev_source
+
         names = list()
         self._known_ev_types = EngineEvTypes.content.copy()
 
@@ -143,13 +105,13 @@ class EvManager:
 
 
 class Emitter:
-    _free_listener_id = 34822
+    _free_listener_id = _FIRST_LISTENER_ID
 
     def __init__(self):
         self._manager = None
-
-        self._lid = self.__class__._free_listener_id
-        self.__class__._free_listener_id += 1
+        cls = self.__class__
+        self._lid = cls._free_listener_id
+        cls._free_listener_id += 1
 
     def pev(self, evtype, **kwargs):
         if self._manager is None:

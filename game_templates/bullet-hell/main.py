@@ -1,3 +1,0 @@
-"""
- game template: placeholder
-"""

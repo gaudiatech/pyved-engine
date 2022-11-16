@@ -37,6 +37,7 @@
 from . import _hub as hub
 from . import event
 from . import event2
+from .default_backend import PygameKenBackend
 from . import pal
 from . import struct
 from . import tankui
