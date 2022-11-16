@@ -72,6 +72,10 @@ class Injector:
                 tmp.load_now(self.package_arg)
             return tmp.pymod
 
+    def is_loaded(self, pckname):
+        tmp = self._listing[pckname]
+        return tmp.ready
+
     def register(self, sm_name, py_path):
         if self._loading_done:
             print('***warning*** register plugin should be done before using loading elements')
