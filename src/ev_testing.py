@@ -1,4 +1,4 @@
-from katagames_engine.event2 import game_events_enum, EventManager, EngineEvTypes, PseudoEnum, EvListener
+from katagames_engine.event2 import EngineEvTypes, EvManager, EvListener, game_events_enum, PseudoEnum
 
 
 # mockup cls
@@ -37,12 +37,13 @@ MyEvents = game_events_enum((
     'PlayerMovement',
     'PlayerDeath'
 ))
-manager = EventManager.instance()
+
+manager = EvManager.instance()
 manager.debug_mode = True
 
 # the manager becomes "self-aware", for
 # all engine ev types AND all game-specific ev types
-manager.event_types_inform(MyEvents)
+manager.setup(None, MyEvents)
 
 print('~~ codes ~~')
 print(EngineEvTypes.Update)
@@ -69,6 +70,7 @@ print('-' * 48)
 
 print('show me the regexp in EventManager inst?')
 print(manager.regexp)
+print(manager.regexp.match('on_player_movement'))
 print('-' * 48)
 
 print("create! then turn on/turn off the listener..")
