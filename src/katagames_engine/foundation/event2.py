@@ -89,7 +89,6 @@ class EvManager:
             names.append(to_snakecase(evname))
 
         if given_extra_penum is not None:
-            print('>>>>>>>>>>>>>--setup event2.evmanager -- ', given_extra_penum)
             self._known_ev_types.update(given_extra_penum.content)
             for evname, eid in given_extra_penum.content.items():
                 names.append(to_snakecase(evname))
@@ -136,6 +135,14 @@ class EvListener(Emitter):
         # où * représente tout type d'évènement connu du moteur, que ce soit un event engine ou un event custom ajouté
         every_method = [method_name for method_name in dir(self) if callable(getattr(self, method_name))]
         callbacks_only = [mname for mname in every_method if self._ev_manager_ref.regexp.match(mname)]
+
+        # BIG WARNING- important
+        for e in every_method:
+            if e[:3] == 'on_' and (e not in callbacks_only):
+                rawmsg = '!!! BIG WARNING !!!\n    listener #{} that is{}\n'
+                rawmsg += '    has been turned -ON- but its method "{}" cannot be called (Unknown event type)'
+                w_msg = rawmsg.format(self.id, self, e)
+                print(w_msg)
 
         for cbname in callbacks_only:
             # remove 'on_' prefix and convert Back to CamlCase

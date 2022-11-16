@@ -33,13 +33,14 @@ class PygameKenBackend(BaseKenBackend):
 
     def __init__(self):
         self._pygame_mod = _hub.kengi_inj['pygame']
+        self.debug_mode = False
 
     def pull_events(self):
         return self._pygame_mod.event.get()
 
     def map_etype2kengi(self, alien_etype):
         if alien_etype not in self.__class__.static_mapping:
-            # no conversion
-            print('[no conversion] pygame etype=', alien_etype)  # alien_etype.dict)
+            if self.debug_mode:  # notify that there's no conversion
+                print('[no conversion] pygame etype=', alien_etype)  # alien_etype.dict)
         else:
             return self.__class__.static_mapping[alien_etype]

@@ -144,7 +144,7 @@ def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
             pygame_surf_dessin = hub.pygame.display.set_mode(taille_surf_dessin)
             vscreen.set_virtual_screen(pygame_surf_dessin)
         else:
-            print(taille_surf_dessin)
+
             pygame_surf_dessin = hub.pygame.surface.Surface(taille_surf_dessin)
             vscreen.set_virtual_screen(pygame_surf_dessin)
             vscreen.set_upscaling(adhoc_upscaling)
@@ -219,7 +219,7 @@ def quit():  # we keep the "quit" name bc of pygame
     if _multistate_flag:
         _multistate_flag = False
         _stack_based_ctrl = None
-    if hub.ascii.is_ready():
+    if hub.kengi_inj.is_loaded('ascii') and hub.ascii.is_ready():
         hub.ascii.reset()
 
     # TODO quick fix this part
