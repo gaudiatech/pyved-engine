@@ -11,16 +11,18 @@ from compo import MyView
 manager = None
 EngineEvTypes = kengi.event2.EngineEvTypes
 myv = None
-PygBackend = kengi.PygameKenBackend
 
 
 def entergame(x=None):
     global manager, myv
-    kengi.init(2, 'bullet hell game template')  # upscaling x2
+    # signature:
+    # upscaling x2, window lbl, enum game-specific events
+    kengi.init(2, 'bullet hell game template')
 
-    # to use events new ver
     manager = kengi.event2.EvManager.instance()
-    manager.setup(PygBackend(), None)
+    # MANDATORY
+    manager.setup(None)
+
     myv = MyView()
     myv.turn_on()
 
@@ -42,4 +44,4 @@ if __name__ == '__main__':
     while not glvars.gameover:
         updategame(0)
     exitgame()
-    print('done.')
+    print('Clean exit-')

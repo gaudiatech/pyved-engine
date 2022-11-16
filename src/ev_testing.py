@@ -1,4 +1,5 @@
-from katagames_engine.event2 import EngineEvTypes, EvManager, EvListener, game_events_enum, PseudoEnum
+import katagames_engine as kengi
+from katagames_engine.foundation.event2 import EngineEvTypes, EvManager, EvListener, game_events_enum, PseudoEnum
 
 
 # mockup cls
@@ -32,6 +33,7 @@ class SampleListener(EvListener):
 # -----------------
 #  testing
 # ----------------
+kengi.init()
 
 MyEvents = game_events_enum((
     'PlayerMovement',
@@ -43,7 +45,7 @@ manager.debug_mode = True
 
 # the manager becomes "self-aware", for
 # all engine ev types AND all game-specific ev types
-manager.setup(None, MyEvents)
+manager.setup(MyEvents)
 
 print('~~ codes ~~')
 print(EngineEvTypes.Update)
@@ -80,4 +82,5 @@ my_li.turn_on()
 my_li.turn_off()
 
 # ---for sandbox testing---
+kengi.quit()
 enum_example = PseudoEnum(['KeyUp', 'KeyDown', 'Update'])

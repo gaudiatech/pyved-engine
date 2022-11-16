@@ -1,20 +1,22 @@
 import katagames_engine as kengi
-from katagames_engine.default_backend import PygameKenBackend
+from katagames_engine.foundation.pbackends import build_primalbackend
+ev2 = kengi.event2
+MyEvents = ev2.game_events_enum((
+    'PlayerMovement',  # contains attributes x, y
+    'ColorChange',  # contains color_code
+))
+kengi.bootstrap_e()
 
-
-kengi.init(2, caption='demo-a uses kengi / events+mvc variant')
+# kengi.init(2, caption='demo-a uses kengi / events+mvc variant')
 pygame = kengi.pygame
 
-ev2 = kengi.event2
+
 EngineEvTypes = ev2.EngineEvTypes
 gameover = False
 
 
 # declaring custom game events that are compatible with the kengi event-system:
-MyEvents = ev2.game_events_enum((
-    'PlayerMovement',  # contains attributes x, y
-    'ColorChange',  # contains color_code
-))
+
 
 
 # ------------------
@@ -78,10 +80,8 @@ class DemoCtrl(ev2.EvListener):
         super().__init__()
         self.state = gs
 
-    # def proc_event(self, ev, source=None):
-    #
-    #     if ev.type == pygame.KEYUP:
-
+    # def on_toto(self, ev):
+    #    pass
 
     def on_update(self, ev):
         self.state.refresh_avatar_pos()
@@ -123,27 +123,32 @@ class MyGameCtrl(ev2.EvListener):
             kengi.flip()
             self._clock.tick(self.MAXFPS)
 
-        print('done!')
-
 
 def play_game():
     """
     using the built-in event manager + game controller to execute the game
     """
+    kengi.init(2, 'he', MyEvents)
+
     game_st = GameState()
     game_ctrl = MyGameCtrl()
     receivers = [game_ctrl, DemoCtrl(game_st), GameView(game_st)]
-    # init! new event system!!
-    ev2.EvManager.instance().setup(PygameKenBackend(), MyEvents)
+
+    # MANDATORY: setup the new event system!
+    ev2.EvManager.instance().setup(MyEvents)
+
+    # verbose needed?
+    # ev2.EvManager.instance().debug_mode = True
 
     for r in receivers:
         r.turn_on()  # listen to incoming events
     game_ctrl.loop()  # standard game loop
+    kengi.quit()
 
 
 if __name__ == '__main__':
-    print(" KENGI events+mvc variant of ~~~ Demo A | controls:")
-    print("UP/DOWN arrow, SPACE, ESCAPE")
+    print("~~~ KENGI events+mvc variant of Demo A~~~")
+    print(" Controls: UP/DOWN arrow, SPACE, ESCAPE")
+    print('~~~ ~~~')
     play_game()
-    kengi.quit()
-    print('bye.')
+    print('Clean exit-')
