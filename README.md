@@ -47,23 +47,45 @@ open the project with an IDE like PyCharm and configure two root folders:
 
 
 ## Installation
-Clone the repo or download a .zip from Github. Then, use the command line to navigate to the
-root folder of the project. You can use `pip` to install the game engine.
+Download the source-code (.zip file) from Github. It is recommended to download a release, not the latest commit, because the latest dev version might be unstable.
 
-First, ensure that your python
-distribution meets the requirements. Then, go to the `src` folder and proceed with the installation:
+Once you have the files on your computer, use the command line to navigate to the root folder of the project (one level below `src\`).
+
+We use the `pip` tool to install the game engine.
+Ensure that your python is a recent one (`python >=3.9`), then go to the `src` folder and proceed with the installation:
 ```shell
 > pip install -r requirements.txt
 > pip install .
 ```
-In this way, you can use `kengi` from any folder on your system.
+In this way, you will be able to use `kengi` from any folder on your system.
 
-It is very common and convenient to start all your games with
-this kind of code snippet:
+You can create a first file named `test_kengi.py` and copy-paste this very basic code snippet to understand how games are built, using `kengi`:
 ```python
 import katagames_engine as kengi
-kengi.init('hd', caption='its my first video game, hi mom!')
+
+kengi.init(1, caption='my first video game, hi mom!')
 pygame = kengi.pygame
+screen = kengi.get_surface()
+gameover = False
+color_idx = 0
+allcolors = ('pink', 'yellow', 'purple')
+bg_color = allcolors[0]
+print('press ESC to exit, any key to change bg_color...'
+
+# game loop
+while not gameover:
+    for ev in pygame.event.get():
+        if ev.type==pygame.KEYDOWN:
+            if ev.key==pygame.K_ESCAPE:
+                gameover = True
+            else:
+                color_idx = (color_idx + 1) % len(allcolors)
+    # update "game logic"
+    bg_color = allcolors[color_idx]
+    # update the display
+    screen.fill(bg_color)
+    kengi.flip()
+print('game over!')
 ```
 
 

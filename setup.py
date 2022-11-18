@@ -15,31 +15,33 @@ from katagames_engine.__version__ import ENGI_VERSION
 
 setup(
     name="kengi",
-    author="wkta-tom et alii",
+    author="moonb3ndr et al.",
     author_email="tom@kata.games",
     url="https://github.com/gaudiatech/kengi",
     package_dir={'': 'src'},
     packages=[
         "katagames_engine",
         "katagames_engine.foundation",
-        "katagames_engine.ifaces",
 
         "katagames_engine.compo",
-        "katagames_engine.compo.isometric",
-        "katagames_engine.compo.tmx",
-        "katagames_engine.compo.tmx.pytiled_parser",
-        "katagames_engine.compo.tmx.pytiled_parser.parsers",
-        "katagames_engine.compo.tmx.pytiled_parser.parsers.json",
-        "katagames_engine.compo.tmx.pytiled_parser.parsers.tmx",
 
         "katagames_engine.looparts.ai",
         "katagames_engine.looparts.demolib",
         "katagames_engine.looparts.gui",
-        "katagames_engine.looparts.polarbear"
+
+        "katagames_engine.looparts.isometric",
+ 
+        "katagames_engine.looparts.polarbear",
+
+        "katagames_engine.looparts.tmx",
+        "katagames_engine.looparts.tmx.pytiled_parser",
+        "katagames_engine.looparts.tmx.pytiled_parser.parsers",
+        "katagames_engine.looparts.tmx.pytiled_parser.parsers.json",
+        "katagames_engine.looparts.tmx.pytiled_parser.parsers.tmx"
         ],
-    include_package_data=True,  # to be sure we get _sm_shelf/legacy.py, etc.
+    include_package_data=True,  # to be sure we get looparts/rogue.py, looparts/tabletop.py, etc.
     install_requires=install_requires,
-    description='pythonic game engine built on top of pygame',
+    description='game engine built on top of python/pygame',
     license='LGPL3',
     version=str(ENGI_VERSION),
 )
