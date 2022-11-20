@@ -5,7 +5,7 @@ sub-module dedicated to GUI management/creation,
 import pygame
 
 from .Button import Button
-from .Button import ButtonPanel
+# from .Button import ButtonPanel
 from .Button2 import Button2
 from .base import Label
 from .TextBlock import TextBlock
@@ -16,7 +16,8 @@ from .base import ANCHOR_CENTER, ANCHOR_RIGHT, ANCHOR_LEFT  # bring codes here
 from .base import AugmentedSprite
 from .base import WidgetContainer
 from .text import ImgBasedFont
-from ... import event
+# from ... import event
+from ...foundation.event2 import EvListener
 
 
 class Etiquette:
@@ -44,7 +45,7 @@ class Etiquette:
         self.img = self.ft_obj.render(self._text, True, self._color)
 
 
-class TextInput(event.EventReceiver):  # TODO on devrait pas utiliser eventreceiver juste pr un bouton/widget!
+class TextInput(EvListener):  # TODO on devrait pas utiliser eventreceiver juste pr un bouton/widget!
     # utiliser des Container de préférence + eventuellement structure hierarchique
     """
     Simple text entry component.

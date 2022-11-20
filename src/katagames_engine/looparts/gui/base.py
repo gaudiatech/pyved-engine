@@ -4,7 +4,7 @@ from typing import Union, Tuple
 import pygame
 
 from .interfaces.element_interface import IfaceUIElement
-from ... import event as evmodule
+from ...foundation import event2 as evmodule
 from ...compo import vscreen
 
 
@@ -196,18 +196,21 @@ class AugmentedSprite(GenericUIElement):
         super().set_position(position)
         self._inner_sprite.rect.center = position
 
-    def draw(self):
-        super().draw()
-        self._cached_scr_ref.blit(self._inner_sprite.image, self._inner_sprite.rect.topleft)
+    # def on_paint(self, ev):
+    #     super().draw()
+    #     ev.screen.blit(self._inner_sprite.image, self._inner_sprite.rect.topleft)
+    #
+    # def on_mousedown(self, ev):
+    #     print('x')
 
     def proc_event(self, event: pygame.event.Event) -> bool:
         if self._is_active:
             super().proc_event(event)
 
-            if event.type == evmodule.EngineEvTypes.PAINT:
-                self.draw()
+            #if event.type == evmodule.EngineEvTypes.PAINT:
+            #    self.draw()
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 print('augmented spr knows click')
                 updated_pos = vscreen.proj_to_vscreen(event.pos)
 

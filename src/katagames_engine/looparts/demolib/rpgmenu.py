@@ -3,8 +3,10 @@ import glob
 import random
 
 from ... import _hub
-from ... import event
+# from ... import event
+from ...foundation.event2 import EvListener, Emitter
 from ...compo import vscreen as core
+from ...foundation import event2
 
 
 pygame = _hub.pygame  # alias to keep on using pygame, easily
@@ -20,8 +22,9 @@ INFO_GREEN = _hub.polarbear.INFO_GREEN
 DEFAULT_FONT_SIZE = 11
 MENU_ITEM_COLOR = pygame.Color(150, 145, 130)
 MENU_SELECT_COLOR = pygame.Color(128, 250, 230)
-ReceiverObj = event.EventReceiver
-EngineEvTypes = event.EngineEvTypes
+
+ReceiverObj = event2.EvListener
+EngineEvTypes = event2.EngineEvTypes
 
 
 class MenuItem(object):
@@ -117,7 +120,7 @@ class DescBox(Frect):
             screen.blit(img, mydest)
 
 
-class Menu(event.CogObj, Frect):
+class Menu(Emitter, Frect):
     """
     N.B (tom) it would be much better to inherit from CogObj
     + have a Frect attribute
@@ -128,7 +131,7 @@ class Menu(event.CogObj, Frect):
                  menuselect=MENU_SELECT_COLOR, border=default_border, predraw=None, font=None, padding=0,
                  item_class=MenuItem):
         # usin multiple inheritance
-        event.CogObj.__init__(self)
+        Emitter.__init__(self)
         Frect.__init__(self, dx, dy, w, h, anchor)
 
         self.menuitem = menuitem
@@ -289,15 +292,15 @@ class Menu(event.CogObj, Frect):
                 if self.selected_item not in self._item_rects:
                     self.top_item = min(self.selected_item, self._the_highest_top)
             elif pc_input.key == pygame.K_SPACE or pc_input.key == pygame.K_RETURN:
-                self.pev(event.EngineEvTypes.CONVCHOICE, value=self.items[self.selected_item].value)
+                self.pev(EngineEvTypes.CONVCHOICE, value=self.items[self.selected_item].value)
                 self.no_choice_made = False
             elif (pc_input.key == pygame.K_ESCAPE or pc_input.key == pygame.K_BACKSPACE) and self.can_cancel:
                 self.no_choice_made = False
             elif 0 <= pc_input.key < 256 and chr(pc_input.key) in self.quick_keys:
-                self.pev(event.EngineEvTypes.CONVCHOICE, value=self.quick_keys[chr(pc_input.key)])
+                self.pev(EngineEvTypes.CONVCHOICE, value=self.quick_keys[chr(pc_input.key)])
                 self.no_choice_made = False
             elif pc_input.key > 255 and pc_input.key in self.quick_keys:
-                self.pev(event.EngineEvTypes.CONVCHOICE, value=self.quick_keys[pc_input.key])
+                self.pev(EngineEvTypes.CONVCHOICE, value=self.quick_keys[pc_input.key])
                 self.no_choice_made = False
 
         elif pc_input.type == pygame.MOUSEBUTTONDOWN:

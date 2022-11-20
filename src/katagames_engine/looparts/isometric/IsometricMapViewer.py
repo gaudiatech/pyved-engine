@@ -3,10 +3,12 @@ import math
 
 from .isosm_config import NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG, SCROLL_STEP
 from ... import _hub
-from ... import event
+# from ... import event
 from ...compo import vscreen as core
+from ...foundation.event2 import EngineEvTypes, EvListener
 
-EngineEvTypes = event.EngineEvTypes
+
+# EngineEvTypes = event.EngineEvTypes
 
 # --------------------------------------------
 # optimization
@@ -48,7 +50,7 @@ def rel_set_info(halftile_w, halftile_h):
 # ----------------------------------------------
 
 
-class IsometricMapViewer(event.EventReceiver):
+class IsometricMapViewer(EvListener):
     MEGAOPTIM = False
 
     MOUSEMOTION_CONST = None

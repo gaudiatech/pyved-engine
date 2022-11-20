@@ -35,8 +35,6 @@
 """
 
 from . import _hub as hub
-# from . import event
-from .foundation import event2
 from . import pal
 from . import struct
 from . import tankui
@@ -48,6 +46,8 @@ from .compo import vscreen
 from .compo.modes import GameModeMger, BaseGameMode
 from .compo.vscreen import flip
 from .foundation import defs
+from .foundation import event2
+from .foundation.event2 import EvListener, Emitter, EngineEvTypes
 from .foundation.interfaces import PygameIface
 from .util import underscore_format, camel_case_format
 
@@ -59,7 +59,6 @@ _stack_based_ctrl = None
 one_plus_init = False
 state_stack = None
 ver = ENGI_VERSION
-
 pbackend_name = ''
 
 
@@ -103,7 +102,8 @@ def bootstrap_e(given_pgmod=None, print_ver_info=True):
     else:
         _ensure_pygame('pygame')
     if print_ver_info:
-        _show_ver_infos()  # skip the msg, (if running KENGI along with katasdk, the sdk has already printed out ver. infos)
+        # skip the msg, (if running KENGI along with katasdk, the sdk has already printed out ver. infos)
+        _show_ver_infos()
 
     # --> init newest event system! in nov22
     # from here and later,
@@ -189,25 +189,53 @@ def get_surface():
     return vscreen.screen
 
 
-def declare_states(gsdefinition, assoc_gscode_cls, mod_glvars=None):
-    global _multistate_flag, state_stack, _stack_based_ctrl
-    _multistate_flag = True
-    state_stack = struct.Stack()
-    _stack_based_ctrl = event.StackBasedGameCtrl(
-        _gameticker, gsdefinition, mod_glvars, assoc_gscode_cls
-    )
+# TODO repair this part, so it fits kengi v22.11.3+
+
+# def declare_states(gsdefinition, assoc_gscode_cls, mod_glvars=None):
+#     global _multistate_flag, state_stack, _stack_based_ctrl
+#     _multistate_flag = True
+#     state_stack = struct.Stack()
+#     _stack_based_ctrl = event.StackBasedGameCtrl(
+#         _gameticker, gsdefinition, mod_glvars, assoc_gscode_cls
+#     )
+
+
+class _MyGameCtrl(event2.EvListener):
+    MAXFPS = 75
+
+    def __init__(self):
+        super().__init__()
+        self._clock = hub.kengi_inj['pygame'].time.Clock()
+        self.gameover = False
+
+    def on_gameover(self, ev):
+        self.gameover = True
+
+    def loop(self):
+        while not self.gameover:
+            self.pev(event2.EngineEvTypes.Update)
+            self.pev(event2.EngineEvTypes.Paint, screen=vscreen.screen)
+            self._manager.update()
+            flip()
+            self._clock.tick(self.MAXFPS)
+
+
+# --- deprec, was used before event sys 4 ---
+
+# def get_game_ctrl():
+#     global _multistate_flag, _stack_based_ctrl, _gameticker
+#     if _multistate_flag:
+#         return _stack_based_ctrl
+#     else:
+#         return _gameticker
 
 
 def get_game_ctrl():
-    global _multistate_flag, _stack_based_ctrl, _gameticker
-    if _multistate_flag:
-        return _stack_based_ctrl
-    else:
-        return _gameticker
+    return _MyGameCtrl()
 
 
-def get_manager():  # saves some time
-    return event.EventManager.instance()
+def get_ev_manager():  # saves some time
+    return event2.EvManager.instance()
 
 
 def quit():  # we keep the "quit" name bc of pygame

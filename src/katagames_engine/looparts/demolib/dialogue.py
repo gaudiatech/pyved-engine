@@ -2,14 +2,15 @@ import json
 
 from . import rpgmenu
 from ... import _hub
-from ... import event
+# from ... import event
 from ... import pal
 from ...compo import gfx
+from ...foundation.event2 import EvListener
 
 
 frects = _hub.polarbear.frects
 pygame = _hub.pygame
-EngineEvTypes = event.EngineEvTypes
+# EngineEvTypes = event.EngineEvTypes
 
 
 class Offer:
@@ -65,7 +66,7 @@ class Reply:
         return cls(msg, destination)
 
 
-class ConversationView(event.EventReceiver):
+class ConversationView(EvListener):
     """
     The View is used by the conversation when conversing.
     It has a "text" property and "render", "get_menu" methods.

@@ -2,24 +2,27 @@ import collections
 
 from .isosm_config import NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG, SCROLL_STEP
 from ... import _hub
-from ... import event
+from ... import event2
 from ...compo import vscreen
 
 
 pygame = _hub.pygame
-EngineEvTypes = event.EngineEvTypes
+EngineEvTypes = event2.EngineEvTypes
+Receiver = event2.EvListener
 
 
-class IsometricMapViewer0(event.EventReceiver):
-    def __init__(self, isometric_map, screen, postfx=None, cursor=None,
-                 left_scroll_key=None, right_scroll_key=None, up_scroll_key=None, down_scroll_key=None):
+class IsometricMapViewer0(Receiver):
+    def __init__(self, isometric_map, screen, postfx=None, cursor=None, left_scroll_key=None, right_scroll_key=None,
+                 up_scroll_key=None, down_scroll_key=None):
         super().__init__()
+
+        self.x_off = self.y_off = 0
+
         self.is_drawing = True
         self.isometric_map = isometric_map
         self.screen = screen
 
-        # The focus is defined by map coordinates, so a lot of the back and forth between screen and map coords
-        # can be cut.
+        # The focus is defined by map coordinates. A lot of the back and forth between screen and map coords can be cut
         self._focus_x = 0
         self._focus_y = 0
         self._focused_object_x0 = 0
@@ -59,14 +62,12 @@ class IsometricMapViewer0(event.EventReceiver):
             dx = -SCROLL_STEP
         else:
             dx = 0
-
         if mouse_y < 20:
             dy = SCROLL_STEP
         elif mouse_y > (screen_area.bottom - 20):
             dy = -SCROLL_STEP
         else:
             dy = 0
-
         if dx or dy:
             self._update_camera(dx, dy)
 
@@ -279,21 +280,19 @@ class IsometricMapViewer0(event.EventReceiver):
     def pause_draw(self):
         self.is_drawing = False
 
-    def proc_event(self, ev, source=None):
-        if not self.is_drawing:
-            return
-        if ev.type == EngineEvTypes.PAINT:
+    def on_paint(self, ev):
+        if self.is_drawing:
             if self.visible_area is None:
                 self._init_visible_area_init(ev.screen)
             ev.screen.fill('black')
             self._paint_all()
-            return
-        if ev.type == pygame.MOUSEMOTION:
-            mouse_x, mouse_y = vscreen.proj_to_vscreen(ev.pos)
-            self.lastmousepos = (mouse_x, mouse_y)
-            self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
-            if self.cursor:
-                self.cursor.update(self, ev)
+
+    def on_mousemotion(self, ev):
+        mouse_x, mouse_y = vscreen.proj_to_vscreen(ev.pos)
+        self.lastmousepos = (mouse_x, mouse_y)
+        self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
+        if self.cursor:
+            self.cursor.update(self, ev)
 
     def relative_x(self, x, y):
         """Return the relative x position of this tile, ignoring offset."""

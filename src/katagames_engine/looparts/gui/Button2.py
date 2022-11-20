@@ -1,6 +1,7 @@
 from ... import _hub as inj
-from ... import event
 
+# from ... import event
+from ...foundation.event2 import EvListener
 
 pygame = inj.pygame
 
@@ -9,7 +10,7 @@ def test_func():
     print("Button clicked!")
 
 
-class Button2(event.EventReceiver):
+class Button2(EvListener):
     HIDEOUS_PURPLE = (255, 0, 255)
 
     def __init__(self, font, text, position_on_screen, callback=None, draw_background=True):
