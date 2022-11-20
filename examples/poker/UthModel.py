@@ -3,10 +3,10 @@ from pokerdefs import MyEvTypes
 from tabletop import StandardCard, find_best_ph, PokerHand, CardDeck
 
 print(PokerHand)
-EngineEvTypes = kengi.event.EngineEvTypes
+EngineEvTypes = kengi.event2.EngineEvTypes
 
 
-class MoneyInfo(kengi.event.CogObj):
+class MoneyInfo(kengi.event2.Emitter):
     """
     created a 2nd class (model) so it will be easier to manage
     earning & loosing
@@ -109,7 +109,7 @@ class MoneyInfo(kengi.event.CogObj):
         self.pev(MyEvTypes.Defeat, loss=-1*(self.ante+self.blind+self.playcost))
 
 
-class UthModel(kengi.event.CogObj):
+class UthModel(kengi.event2.Emitter):
     INIT_ST_CODE, DISCOV_ST_CODE, FLOP_ST_CODE, TR_ST_CODE, OUTCOME_ST_CODE, WAIT_STATE = range(1, 6 + 1)
 
     """

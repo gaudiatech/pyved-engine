@@ -1,17 +1,16 @@
 import katagames_engine as kengi
+
 kengi.bootstrap_e()
 
+from UthCtrl import UthCtrl
 from UthModel import UthModel, StandardCard, PokerHand
 from UthView import UthView
-from UthCtrl import UthCtrl
+from poker.pokerdefs import MyEvTypes
 
 
-# - aliases
-ReceiverObj = kengi.event.EventReceiver
-EngineEvTypes = kengi.event.EngineEvTypes
+ReceiverObj = kengi.event2.EvListener
+EngineEvTypes = kengi.event2.EngineEvTypes
 pygame = kengi.pygame
-
-# - glvars
 alea_xx = lambda_hand = epic_hand = list()
 
 
@@ -47,6 +46,26 @@ def _init_and_tests():
     print()
 
 
+class MyGameCtrl(kengi.event2.EvListener):
+    MAXFPS = 75
+
+    def __init__(self):
+        super().__init__()
+        self._clock = pygame.time.Clock()
+        self.active_gameloop = True
+
+    def on_gameover(self, ev):
+        self.active_gameloop = False
+
+    def loop(self):
+        while self.active_gameloop:
+            self.pev(kengi.event2.EngineEvTypes.Update)
+            self.pev(kengi.event2.EngineEvTypes.Paint, screen=kengi.get_surface())
+            self._manager.update()
+            kengi.flip()
+            self._clock.tick(self.MAXFPS)
+
+
 def run_game():
     global alea_xx, lambda_hand, epic_hand
     _init_and_tests()
@@ -70,13 +89,14 @@ def run_game():
 
     # ------- init kengi ------
     kengi.init(0, screen_dim=(1920, 1080))
+    kengi.event2.EvManager.instance().setup(MyEvTypes)
 
     # >>> the game loop
     mod = UthModel()
     receivers = [
         UthView(mod),
         UthCtrl(mod),
-        kengi.get_game_ctrl()
+        MyGameCtrl()
     ]
     for robj in receivers:
         robj.turn_on()

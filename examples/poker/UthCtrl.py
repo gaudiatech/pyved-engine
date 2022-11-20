@@ -1,12 +1,13 @@
 import time
 
 import katagames_engine as kengi
-from UthModel import MyEvTypes, UthModel
+from UthModel import UthModel
 
-# - aliases
-EngineEvTypes = kengi.event.EngineEvTypes
+
+# alias def.
 pygame = kengi.pygame
-ReceiverObj = kengi.event.EventReceiver
+EngineEvTypes = kengi.event2.EngineEvTypes
+ReceiverObj = kengi.event2.EvListener
 
 
 class UthCtrl(ReceiverObj):
@@ -18,27 +19,23 @@ class UthCtrl(ReceiverObj):
         self._last_t = None
         self.elapsed = 0
 
-    def proc_event(self, ev, source):
+    def on_update(self, ev):
+        if self._mod.autoplay_flag:
+            elapsed = time.time() - self._last_t
+            if elapsed > self.AUTOPLAY_DELAY:
+                self._mod.evolve_state()
+                self._last_t = time.time()
 
-        if ev.type == EngineEvTypes.LOGICUPDATE:
-            if self._mod.autoplay_flag:
-                elapsed = time.time() - self._last_t
-                if elapsed > self.AUTOPLAY_DELAY:
-                    self._mod.evolve_state()
-                    self._last_t = time.time()
+    def on_end_round_requested(self, ev):
+        self._mod.autoplay_flag = True
+        self._mod.evolve_state()
+        self._last_t = time.time()
 
-        elif ev.type == MyEvTypes.EndRoundRequested:
-            self._mod.autoplay_flag = True
-            self._mod.evolve_state()
-            self._last_t = time.time()
+    def on_keydown(self, ev):
+        if ev.key == pygame.K_ESCAPE:
+            self.pev(EngineEvTypes.Gameover)
 
-        elif ev.type == pygame.KEYDOWN:  # -------- manage keyboard
-            if ev.key == pygame.K_ESCAPE:
-                self.pev(EngineEvTypes.GAMEENDS)
-
-            if self._mod.autoplay_flag:
-                return
-
+        if not self._mod.autoplay_flag:
             # backspace will be used to CHECK / FOLD
             if ev.key == pygame.K_BACKSPACE:
                 self._mod.input_check()

@@ -107,23 +107,6 @@ class DemoCtrl(ev2.EvListener):
             self.state.av_y_speed = 1
 
 
-class MyGameCtrl(ev2.EvListener):
-    MAXFPS = 75
-
-    def __init__(self):
-        super().__init__()
-        self._clock = pygame.time.Clock()
-
-    def loop(self):
-        global gameover
-        while not gameover:
-            self.pev(ev2.EngineEvTypes.Update)
-            self.pev(ev2.EngineEvTypes.Paint, screen=kengi.get_surface())
-            self._manager.update()
-            kengi.flip()
-            self._clock.tick(self.MAXFPS)
-
-
 def play_game():
     """
     using the built-in event manager + game controller to execute the game
@@ -131,7 +114,7 @@ def play_game():
     kengi.init(2, 'he', MyEvents)
 
     game_st = GameState()
-    game_ctrl = MyGameCtrl()
+    game_ctrl = kengi.get_game_ctrl()
     receivers = [game_ctrl, DemoCtrl(game_st), GameView(game_st)]
 
     # MANDATORY: setup the new event system!

@@ -4,8 +4,8 @@ from UthModel import StandardCard, PokerHand, MyEvTypes, UthModel
 
 # - aliases
 pygame = kengi.pygame
-ReceiverObj = kengi.event.EventReceiver
-EngineEvTypes = kengi.event.EngineEvTypes
+ReceiverObj = kengi.event2.EvListener
+EngineEvTypes = kengi.event2.EngineEvTypes
 
 # - program constants
 BACKGROUND_IMG_PATH = 'img/bg0.jpg'
@@ -134,57 +134,55 @@ class UthView(ReceiverObj):
     # # TODO disp. amount lost
     # self.info_msg0 = self.ft.render('Defeat', True, self.TEXTCOLOR)
 
-    def proc_event(self, ev, source):
-        if ev.type == EngineEvTypes.PAINT:
-            if not self._assets_rdy:
-                self._load_assets()
-            self._paint(ev.screen)
+    def on_paint(self, ev):
+        if not self._assets_rdy:
+            self._load_assets()
+        self._paint(ev.screen)
 
-        elif ev.type == MyEvTypes.StageChanges:
-            self._update_displayed_status()
+    def on_stage_changes(self, ev):
+        self._update_displayed_status()
 
-        elif ev.type == MyEvTypes.CashChanges:
-            # RE-draw cash value
-            self.cash_etq = self.ft.render(str(ev.value) + '$ ', True, self.TEXTCOLOR, self.BG_TEXTCOLOR)
+    def on_cash_changes(self, ev):
+        self.cash_etq = self.ft.render(str(ev.value) + '$ ', True, self.TEXTCOLOR, self.BG_TEXTCOLOR)
 
-        elif ev.type == MyEvTypes.Victory:
-            print('victory event received')
-            result = ev.amount
-            infoh_player = self._mod.player_vhand.description
+    def on_victory(self, ev):
+        print('victory event received')
+        result = ev.amount
+        infoh_player = self._mod.player_vhand.description
+        infoh_dealer = self._mod.dealer_vhand.description
+        msg = f"Player: {infoh_player}; Dealer: {infoh_dealer}; Change {result}$"
+        self.info_msg0 = self.ft.render('Victory!', True, self.TEXTCOLOR)
+        self.info_msg1 = self.small_ft.render(msg, True, self.TEXTCOLOR)
+        self.info_msg2 = self.small_ft.render('Press BACKSPACE to restart', True, self.TEXTCOLOR)
+
+    def on_tie(self, ev):
+        print('tie event received')
+        self.info_msg0 = self.ft.render('Its a Tie.', True, self.TEXTCOLOR)
+        infoh_player = self._mod.player_vhand.description
+        infoh_dealer = self._mod.dealer_vhand.description
+        self.info_msg1 = self.small_ft.render(
+            f"Player: {infoh_player}; Dealer: {infoh_dealer}; Change {0}$",
+            True, self.TEXTCOLOR
+        )
+        self.info_msg2 = self.small_ft.render('Press BACKSPACE to restart', True, self.TEXTCOLOR)
+
+    def on_defeat(self, ev):
+        print('defeat event received')
+        if self._mod.folded:
+            msg = 'Player folded.'
+        else:
+            msg = 'Defeat.'
+        self.info_msg0 = self.ft.render(msg, True, self.TEXTCOLOR)
+        result = ev.loss
+        if self._mod.folded:
+            self.info_msg1 = self.small_ft.render(f"You've lost {result}$", True, self.TEXTCOLOR)
+        else:
             infoh_dealer = self._mod.dealer_vhand.description
-            msg = f"Player: {infoh_player}; Dealer: {infoh_dealer}; Change {result}$"
-            self.info_msg0 = self.ft.render('Victory!', True, self.TEXTCOLOR)
-            self.info_msg1 = self.small_ft.render(msg, True, self.TEXTCOLOR)
-            self.info_msg2 = self.small_ft.render('Press BACKSPACE to restart', True, self.TEXTCOLOR)
-
-        elif ev.type == MyEvTypes.Tie:
-            print('tie event received')
-            self.info_msg0 = self.ft.render('Its a Tie.', True, self.TEXTCOLOR)
             infoh_player = self._mod.player_vhand.description
-            infoh_dealer = self._mod.dealer_vhand.description
             self.info_msg1 = self.small_ft.render(
-                f"Player: {infoh_player}; Dealer: {infoh_dealer}; Change {0}$",
-                True, self.TEXTCOLOR
+                f"Player: {infoh_player}; Dealer: {infoh_dealer}; You've lost {result}$", True, self.TEXTCOLOR
             )
-            self.info_msg2 = self.small_ft.render('Press BACKSPACE to restart', True, self.TEXTCOLOR)
-
-        elif ev.type == MyEvTypes.Defeat:
-            print('defeat event received')
-            if self._mod.folded:
-                msg = 'Player folded.'
-            else:
-                msg = 'Defeat.'
-            self.info_msg0 = self.ft.render(msg, True, self.TEXTCOLOR)
-            result = ev.loss
-            if self._mod.folded:
-                self.info_msg1 = self.small_ft.render(f"You've lost {result}$", True, self.TEXTCOLOR)
-            else:
-                infoh_dealer = self._mod.dealer_vhand.description
-                infoh_player = self._mod.player_vhand.description
-                self.info_msg1 = self.small_ft.render(
-                    f"Player: {infoh_player}; Dealer: {infoh_dealer}; You've lost {result}$", True, self.TEXTCOLOR
-                )
-            self.info_msg2 = self.small_ft.render('Press BACKSPACE to restart', True, self.TEXTCOLOR)
+        self.info_msg2 = self.small_ft.render('Press BACKSPACE to restart', True, self.TEXTCOLOR)
 
     @staticmethod
     def centerblit(refscr, surf, p):

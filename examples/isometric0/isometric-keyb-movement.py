@@ -41,6 +41,8 @@ def game_init():
     global screen, tilemap, tilemap2, viewer, manager, mypc, paint_ev, mv_offset
     # aliases
     kengi.init(2)
+    manager = kengi.event2.EvManager.instance()
+    manager.setup()
     screen = kengi.get_surface()
 
     # model
@@ -71,9 +73,8 @@ def game_init():
     # TODO port Pbge to kengi CogObj+EventReceiver+event system,
     #  so we can avoid using pygame.USEREVENT and viewer() like here
 
-    manager = kengi.event.EventManager.instance()
-    CgmEvent = kengi.event.CgmEvent
-    paint_ev = CgmEvent(kengi.event.EngineEvTypes.PAINT, screen=kengi.get_surface())
+    CgmEvent = kengi.event2.KengiEv
+    paint_ev = CgmEvent(kengi.event2.EngineEvTypes.Paint, screen=kengi.get_surface())
     mypc.x += 0.5
     mv_offset = 0.5
 
@@ -92,14 +93,6 @@ def game_update(infot=None):
         elif gdi.type == pygame.KEYDOWN:
             if gdi.key == pygame.K_ESCAPE:
                 keep_going = False
-            elif gdi.key == pygame.K_m:
-                pass
-                # mouse_x, mouse_y = pygame.mouse.get_pos()
-                # print(
-                #     viewer.map_x(mouse_x, mouse_y, return_int=False), viewer.map_y(mouse_x, mouse_y, return_int=False)
-                # )
-                # print(viewer.relative_x(0, 0), viewer.relative_y(0, 0))
-                # print(viewer.relative_x(0, 19), viewer.relative_y(0, 19))
             elif gdi.key == pygame.K_RIGHT and mypc.x < tilemap.width - 1.5:
                 mypc.x += mv_offset
             elif gdi.key == pygame.K_LEFT and mypc.x > -1:
@@ -113,7 +106,9 @@ def game_update(infot=None):
                 viewer.switch_map(get_maps()[current_tilemap])
 
         # display
-        manager.post(paint_ev)
+        # manager.post(paint_ev)
+
+        manager.post(kengi.event2.EngineEvTypes.Paint, screen=kengi.get_surface())
         manager.update()
         kengi.flip()
 
