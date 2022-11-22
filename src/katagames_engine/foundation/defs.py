@@ -197,6 +197,9 @@ EngineEvTypes = PseudoEnum((
     'Mousedown',
     'Mouseup',
 
+    'Gamepaddown',
+    'Gamepadup',
+
     'Update',
     'Paint',
 

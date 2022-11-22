@@ -29,18 +29,49 @@ class PygameKenBackend(BaseKenBackend):
         1024: EngineEvTypes.Mousemotion,  # pygame.MOUSEMOTION
         1025: EngineEvTypes.Mousedown,  # pygame.MOUSEBUTTONDOWN
         1026: EngineEvTypes.Mouseup,  # pygame.MOUSEBUTTONUP
+
+        # gamepad support
+        1536: None,  # JOYAXISMOTION:  self.joy[event.joy].axis[event.axis] = event.value
+        1537: None,  # JOYBALLMOTION:  self.joy[event.joy].ball[event.ball] = event.rel
+        1538: None,  # JOYHATMOTION:  self.joy[event.joy].hat[event.hat] = event.value
+        1539: EngineEvTypes.Gamepaddown,  # JOYBUTTONDOWN: self.joy[event.joy].button[event.button] = 1
+        1540: EngineEvTypes.Gamepadup,  # JOYBUTTONUP:  self.joy[event.joy].button[event.button] = 0
+    }
+    joypad_events_bounds = [1536, 1540]
+    joy_bt_map = {
+        0: 'A',
+        1: 'B',
+        2: 'X',
+        3: 'Y',
+        4: 'triggerL',
+        5: 'triggerR',
+        6: 'back',
+        7: 'start'
     }
 
     def __init__(self):
         self._pygame_mod = _hub.kengi_inj['pygame']
         self.debug_mode = False
+        self._ev_storage = list()
 
     def pull_events(self):
-        return self._pygame_mod.event.get()
+        del self._ev_storage[:]
+        self._ev_storage.extend(self._pygame_mod.event.get())
+
+        # for convenient gamepad support, we map pygame JOY* in a more specialized way (xbox360 pad support) 1/2
+        for e in self._ev_storage:
+            if e.type == 1539 or e.type == 1540:  # joybtdown/joybtup
+                e.button = self.joy_bt_map[e.button]
+
+        return self._ev_storage
 
     def map_etype2kengi(self, alien_etype):
         if alien_etype not in self.__class__.static_mapping:
             if self.debug_mode:  # notify that there's no conversion
                 print('[no conversion] pygame etype=', alien_etype)  # alien_etype.dict)
         else:
+            if self.joypad_events_bounds[0] <= alien_etype <= self.joypad_events_bounds[1]:
+                pass
+                # for convenient gamepad support, we map pygame JOY* in a more specialized way (xbox360 pad support) 2/2
+                # else:
             return self.__class__.static_mapping[alien_etype]

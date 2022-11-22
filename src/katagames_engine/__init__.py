@@ -166,13 +166,30 @@ def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
         raise ValueError(e_msg)
 
 
+_joy = None
+
+
 def init(gfc_mode=1, caption=None, maxfps=60, screen_dim=None):
-    global _gameticker
+    global _gameticker, _joy
     bootstrap_e()
 
     pygm = hub.pygame
     pygm.init()
     pygm.mixer.init()
+
+    jc = pygm.joystick.get_count()
+    if jc > 0:
+        # ------ init the joystick ------
+        _joy = pygm.joystick.Joystick(0)
+        name = _joy.get_name()
+        print(name + ' detected')
+        _joy.init()
+        numaxes = _joy.get_numaxes()
+        numballs = _joy.get_numballs()
+        numbuttons = _joy.get_numbuttons()
+        numhats = _joy.get_numhats()
+        # print(numaxes, numballs, numbuttons, numhats)
+
     screen_param(gfc_mode, screen_dim=screen_dim)
     if caption is None:
         caption = f'untitled demo, uses KENGI ver {ENGI_VERSION}'

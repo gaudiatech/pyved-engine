@@ -10,9 +10,16 @@ class BhCtrl(_Listener):
         self._v = refview
         self._g = gameref
 
-    def on_keydown(self, ev):
+    def _trigger_visual_change(self):
         self._v.curr_idx = (self._v.curr_idx + 1) % self._v.sprsheet_a.card
         self._v.curr_idx_b = (self._v.curr_idx_b + 1) % self._v.sprsheet_b.card
+
+    def on_keydown(self, ev):
+        self._trigger_visual_change()
+
+    def on_gamepaddown(self, ev):
+        print(ev.button)
+        self._trigger_visual_change()
 
     def on_quit(self, ev):
         self._g.gameover = True
