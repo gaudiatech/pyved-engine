@@ -34,6 +34,8 @@
   easy-to-reuse code!
 """
 
+import time
+
 from . import _hub as hub
 from . import pal
 from . import struct
@@ -284,9 +286,14 @@ class GameTpl:
     the "no name" game template class. It allows to define your game in a quick way,
     by redefining one or several methods: enter, update, exit
     """
+    INFO_STOP_MSG = 'kengi.GameTpl->the loop() call has ended.'
+    ERR_LOCK_MSG = 'kengi.GameTpl.loop called while SAFETY_LOCK is on!'
+    SAFETY_LOCK = False  # can be set to True from outside, if you don't want a game to call .loop()
+
     def __init__(self):
         self._manager = None
         self.gameover = False
+        self._last_t = None
 
     def enter(self, vms=None):
         init(1)
@@ -301,6 +308,19 @@ class GameTpl:
 
     def exit(self, vms=None):
         quit()
+
+    def loop(self):
+        # /!\ its forbidden to call .loop() in the web ctx, for example
+        # therefore this lock mechanism can be handy
+        if self.SAFETY_LOCK:
+            raise ValueError(self.ERR_LOCK_MSG)
+        # use enter, update, exit to handle the global "run game logic"
+        self.enter()
+        while not self.gameover:
+            self.update((time.time()-self._last_t) if self._last_t else 0)
+            self._last_t = time.time()
+        self.exit()
+        print(self.INFO_STOP_MSG)
 
 
 # ----------------------------

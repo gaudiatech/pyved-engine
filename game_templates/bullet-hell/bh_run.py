@@ -31,8 +31,4 @@ game_obj = BhGame()  # ->standard variable name (game_obj)
 
 
 if __name__ == '__main__':  # run game (local context)
-    game_obj.enter()
-    while not game_obj.gameover:
-        game_obj.update(0)
-    game_obj.exit()
-    print('Clean exit-')
+    game_obj.loop()
