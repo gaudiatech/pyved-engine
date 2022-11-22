@@ -15,7 +15,16 @@ class BhCtrl(_Listener):
         self._v.curr_idx_b = (self._v.curr_idx_b + 1) % self._v.sprsheet_b.card
 
     def on_gamepad_dir(self, ev):
-        print(ev.dir)
+        impact = {
+            'north': (0, -self._v.MOV_INCREM),
+            'east': (self._v.MOV_INCREM, 0),
+            'west': (-self._v.MOV_INCREM, 0),
+            'south': (0, self._v.MOV_INCREM),
+            None: None
+        }[ev.dir]
+        if impact:
+            self._v.blitpos[0] += impact[0]
+            self._v.blitpos[1] += impact[1]
 
     def on_keydown(self, ev):
         self._trigger_visual_change()
@@ -29,6 +38,8 @@ class BhCtrl(_Listener):
 
 
 class BhView(_Listener):
+    MOV_INCREM = 8
+
     def __init__(self):
         super().__init__()
         self.sprsheet_a = kengi.gfx.Spritesheet('topdown-shooter-sprsheet.png')
@@ -37,8 +48,9 @@ class BhView(_Listener):
         self.sprsheet_b = kengi.gfx.Spritesheet('topdown-shooter-sprsheet.png')
         self.sprsheet_b.set_infos((16, 16))
         self.curr_idx = self.curr_idx_b = 0
+        self.blitpos = [0, 0]
 
     def on_paint(self, ev):
         ev.screen.fill('orange')
-        ev.screen.blit(self.sprsheet_a[self.curr_idx], (0, 0))
+        ev.screen.blit(self.sprsheet_a[self.curr_idx], self.blitpos)
         ev.screen.blit(self.sprsheet_b[self.curr_idx_b], (48, 48))
