@@ -128,13 +128,16 @@ class EvListener(Emitter):
         return self._lid
 
     def turn_on(self):
+        if self._is_active:
+            raise ValueError('call turn_on on obj {} where ._is_active is already True!'.format(self))
+
         if self._manager is None:
-            self._ev_manager_ref = EvManager.instance()
+            self._manager = EvManager.instance()
 
         # introspection & detection des on_*
         # où * représente tout type d'évènement connu du moteur, que ce soit un event engine ou un event custom ajouté
         every_method = [method_name for method_name in dir(self) if callable(getattr(self, method_name))]
-        callbacks_only = [mname for mname in every_method if self._ev_manager_ref.regexp.match(mname)]
+        callbacks_only = [mname for mname in every_method if self._manager.regexp.match(mname)]
 
         # BIG WARNING- important
         for e in every_method:
@@ -150,10 +153,13 @@ class EvListener(Emitter):
 
         # enregistrement de son activité d'écoute auprès du evt manager
         for evname in self._tracked_ev:
-            self._ev_manager_ref.subscribe(evname, self)
+            self._manager.subscribe(evname, self)
+
+        self._is_active = True
 
     def turn_off(self):
         # opération contraire
         for evname in self._tracked_ev:
-            self._ev_manager_ref.unsubscribe(evname, self)
+            self._manager.unsubscribe(evname, self)
         del self._tracked_ev[:]
+        self._is_active = False

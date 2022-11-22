@@ -279,6 +279,30 @@ def bulk_plugin_bind(darg: dict):
         plugin_bind(ppath, ppath)
 
 
+class GameTpl:
+    """
+    the "no name" game template class. It allows to define your game in a quick way,
+    by redefining one or several methods: enter, update, exit
+    """
+    def __init__(self):
+        self._manager = None
+        self.gameover = False
+
+    def enter(self, vms=None):
+        init(1)
+        self._manager = get_ev_manager()
+        self._manager.setup()
+
+    def update(self, dt):
+        self._manager.post(EngineEvTypes.Update)
+        self._manager.post(EngineEvTypes.Paint, screen=vscreen.screen)
+        self._manager.update()
+        flip()
+
+    def exit(self, vms=None):
+        quit()
+
+
 # ----------------------------
 # Stuff related to lazy import
 # ----------------------------
