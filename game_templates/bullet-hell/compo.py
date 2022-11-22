@@ -14,6 +14,9 @@ class BhCtrl(_Listener):
         self._v.curr_idx = (self._v.curr_idx + 1) % self._v.sprsheet_a.card
         self._v.curr_idx_b = (self._v.curr_idx_b + 1) % self._v.sprsheet_b.card
 
+    def on_gamepad_dir(self, ev):
+        print(ev.dir)
+
     def on_keydown(self, ev):
         self._trigger_visual_change()
 
