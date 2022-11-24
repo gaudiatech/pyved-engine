@@ -2,22 +2,23 @@
 sub-module dedicated to GUI management/creation,
  belongs to the kata engine
 """
-import pygame
 
 from .Button import Button
-# from .Button import ButtonPanel
 from .Button2 import Button2
-from .base import Label
+from .DispCenteredPopup import DispCenteredPopup
 from .TextBlock import TextBlock
 from .Trigger import Trigger
 from .WidgetBo import WidgetBo
 from .base import ANCHOR_CENTER, ANCHOR_RIGHT, ANCHOR_LEFT  # bring codes here
-
 from .base import AugmentedSprite
+from .base import Label
 from .base import WidgetContainer
 from .text import ImgBasedFont
-# from ... import event
+from ... import _hub
 from ...foundation.event2 import EvListener
+
+
+pygame = _hub.pygame
 
 
 class Etiquette:

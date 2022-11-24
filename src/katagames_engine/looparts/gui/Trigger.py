@@ -1,14 +1,14 @@
-"""
-deprecated! This class has been copied for better retro-compatibility with old projects(e.g. Brutos)
-"""
-
-from ... import _hub as inj
+import katagames_sdk
 
 
-pygame = inj.pygame
+pygame = katagames_sdk.kengi.pygame
 
 
 class Trigger:
+    """
+    This class has been copied for better retro-compatibility with old projects
+    (e.g. Brutos), but it's also used in VmSelector kartridge
+    """
     class_ready_to_draw = False
     RED = None
     small_font = None
@@ -21,9 +21,9 @@ class Trigger:
         self.visibility = True
         self.label = None
         self.spr_label = None
-        self.RED = self.drawing_color = pygame.Color('red')
-        self.small_font = pygame.font.Font(None, 15)
-        self.med_font = pygame.font.Font(None, 28)
+        self.drawing_color = pygame.Color('purple')
+        sm_ft = pygame.font.Font(None, 24)
+        self.med_font = sm_ft
 
     def set_active(self, val):
         self.active = val
@@ -92,7 +92,7 @@ class Trigger:
         if nouveau_label is None:
             self.spr_label = None
         else:
-            self.spr_label = self.med_font.render(nouveau_label, True, self.drawing_color)
+            self.spr_label = self.med_font.render(nouveau_label, False, self.drawing_color)
 
     def draw(self, screen, forced_color=None):
         if not self.visibility:  # invisible trigger

@@ -196,9 +196,10 @@ class AugmentedSprite(GenericUIElement):
         super().set_position(position)
         self._inner_sprite.rect.center = position
 
-    # def on_paint(self, ev):
-    #     super().draw()
-    #     ev.screen.blit(self._inner_sprite.image, self._inner_sprite.rect.topleft)
+    def draw(self):
+        super().draw()
+
+        self._cached_scr_ref.blit(self._inner_sprite.image, self._inner_sprite.rect.topleft)
     #
     # def on_mousedown(self, ev):
     #     print('x')
@@ -207,8 +208,8 @@ class AugmentedSprite(GenericUIElement):
         if self._is_active:
             super().proc_event(event)
 
-            #if event.type == evmodule.EngineEvTypes.PAINT:
-            #    self.draw()
+            if event.type == evmodule.EngineEvTypes.Paint:
+                self.draw()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 print('augmented spr knows click')
@@ -218,7 +219,6 @@ class AugmentedSprite(GenericUIElement):
                     print('HIT on augmented sprite detected...')
                     if self.callback is not None:
                         self.callback(event.button)
-
             return True
         else:
             return False
