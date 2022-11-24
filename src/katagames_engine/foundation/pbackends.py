@@ -20,7 +20,7 @@ class PygameKenBackend(BaseKenBackend):
         1026: EngineEvTypes.Mouseup,  # pygame.MOUSEBUTTONUP
 
         # gamepad support
-        1536: None,  # JOYAXISMOTION:  self.joy[event.joy].axis[event.axis] = event.value
+        1536: EngineEvTypes.Stickmotion,  # JOYAXISMOTION:  self.joy[event.joy].axis[event.axis] = event.value
         1537: None,  # JOYBALLMOTION:  self.joy[event.joy].ball[event.ball] = event.rel
         1538: EngineEvTypes.GamepadDir,  # JOYHATMOTION:  self.joy[event.joy].hat[event.hat] = event.value
         1539: EngineEvTypes.Gamepaddown,  # JOYBUTTONDOWN: self.joy[event.joy].button[event.button] = 1
@@ -64,6 +64,10 @@ class PygameKenBackend(BaseKenBackend):
                 e.button = self.joy_bt_map[e.button]
             elif e.type == 1538:  # joy Dpad has been activated
                 e.dir = self.dpad_mapping[e.value]
+            elif e.type == 1536:  # JOYAXISMOTION (0,1) ->joy L; (2,3)->joyR;  4 & 5->triggers Left & Right
+                # pyg has values in [-1,1]
+                pass
+
         return self._ev_storage
 
     def map_etype2kengi(self, alien_etype):

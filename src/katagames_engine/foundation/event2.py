@@ -23,6 +23,9 @@ class EvManager:
 
         self.a_event_source = None
 
+        # for debug purpose
+        self._cached_extra_penum = None
+
     @property
     def queue_size(self):
         return self._cbuffer.get_size()
@@ -81,6 +84,12 @@ class EvManager:
         if self.debug_mode:
             print('  debug UNSUBSCRIBE - - - {} - {}'.format(ename, listener_obj))
 
+    def inspect_etype(self, g_etype):
+        if self._cached_extra_penum:
+            if g_etype in self._cached_extra_penum.inv_map:
+                return self._cached_extra_penum.inv_map[g_etype]
+        return EngineEvTypes.inv_map[g_etype]
+
     def setup(self, given_extra_penum=None):
         names = list()
         self._known_ev_types = EngineEvTypes.content.copy()
@@ -89,9 +98,12 @@ class EvManager:
             names.append(to_snakecase(evname))
 
         if given_extra_penum is not None:
+            self._cached_extra_penum = given_extra_penum
             self._known_ev_types.update(given_extra_penum.content)
             for evname, eid in given_extra_penum.content.items():
                 names.append(to_snakecase(evname))
+        else:
+            self._cached_extra_penum = None
 
         # force a {refresh regexp} op!
         self._refresh_regexp(names)
