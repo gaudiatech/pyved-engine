@@ -52,8 +52,6 @@ def rel_set_info(halftile_w, halftile_h):
 
 class IsometricMapViewer(EvListener):
     MEGAOPTIM = False
-
-    MOUSEMOTION_CONST = None
     SOLID_COLOR = 'navyblue'
     FLOORS = {}
     FLOOR_MAN_OFFSET = {
@@ -91,8 +89,6 @@ class IsometricMapViewer(EvListener):
 
         self.extra_anim = None
         # done }}
-
-        self.MOUSEMOTION_CONST = _hub.pygame.MOUSEMOTION
         self.animated_wallpaper = False
         self.block_wallpaper = False
         self.info_draw_mapobj = dict()
@@ -220,79 +216,6 @@ class IsometricMapViewer(EvListener):
         if self._camera_updated_this_frame:
             return
         self._focus_x, self._focus_y = self.isometric_map.clamp_pos([self._focus_x + dx, self._focus_y + dy])
-
-    def _paint_all(self):
-        # manage the wallpaper blit
-        if (not self.block_wallpaper) and self.isometric_map.wallpaper:
-            self.fill_wallpaper()
-        else:
-            self.screen.fill(self.SOLID_COLOR)
-
-        # -------------------------------------------------------------- OPTIM#2
-        need_to_redraw = self.force_redraw_flag
-        need_to_redraw = need_to_redraw or (self._focused_object.x != self._focused_object_x0) or \
-                         (self._focused_object.y != self._focused_object_y0)
-        if need_to_redraw:
-            self.focus(self._focused_object.x, self._focused_object.y)
-            # TODO can one find a way to optimize without the abusive flag/ that dirty branching?
-            if '__BRYTHON__' not in globals():
-                self.gfx_data_buffer.fill(self.UPINK)
-            else:
-                # a hack method, works only with pygame_emu.Surface kengi>v22-10a, thats why i use hasattr(...) here
-                if hasattr(self.gfx_data_buffer, 'wreset'):
-                    self.gfx_data_buffer.wreset()
-
-            self.impacte_surf(self.gfx_data_buffer)
-            self._focused_object_x0 = self._focused_object.x
-            self._focused_object_y0 = self._focused_object.y
-            self.force_redraw_flag = False
-        # -------------------------------------------------------------- OPTIM#2 over.
-
-        if self.MEGAOPTIM:  # floor drawing, the fast way
-            a, b = self.screen_offset()
-            self.floor_rect.topleft = self.manoffset[0] - a, self.manoffset[1] - b
-            self.screen.blit(self.scrollable_floor, (0, 0), area=self.floor_rect)
-
-        self.screen.blit(self.gfx_data_buffer, (0, 0))  # buildings & the player!
-
-        if self.cursor and self.cursor.visible:
-            #if self.cursor.layer_name == layer.name:
-                #if (x == self.cursor.x) and (y == self.cursor.y):
-            # old way:
-            # self.cursor.render(self)
-            # new way:
-            cu = self.cursor
-            sx, sy = self.screen_coords(*cu.get_pos())
-            mylayer = self.isometric_map.get_layer_by_name(cu.layer_name)
-            mydest = cu.surf.get_rect(midtop=(sx + mylayer.offsetx, sy + mylayer.offsety - 2))
-            self.screen.blit(cu.surf, mydest)
-
-        # - the new chunk of code that draws objects! {NEW CHUNK OBJ DRAW}
-        for mapobj, screen_pos in self.info_draw_mapobj.items():
-            if (not mapobj.visible) or isinstance(mapobj, self.pc_cls):
-                pass
-            else:
-                mapobj(self.screen, screen_pos[0], screen_pos[1], self.isometric_map)
-
-        # if an extra anim for the avatar, we use it on the top of everything else
-        if (not self._show_avatar) and (self.extra_anim is not None):
-            self.av_phase += 1
-            if self.av_phase >= self.av_phase_thresh:
-                self.av_phase = 0
-                if self.av_frame < self.extra_anim.card-1:
-                    self.av_frame += 1
-                if self.av_frame > 5:
-                    self.anim_av_offset[0] += 1.75
-                    self.anim_av_offset[1] -= 0.24
-                    self.cutav_cpt += 1
-                    base = self.extra_anim[self.av_frame]
-                    kappa = self.cutav_cpt
-                    self.cutav = base.subsurface((0, kappa, base.get_width()-kappa, base.get_height()-kappa))
-            # display avatar alt anim/sprite
-            self.screen.blit(  # DIRTY but i dunno how to do better:
-                self.extra_anim[self.av_frame] if (self.cutav is None) else self.cutav,
-                (160+int(self.anim_av_offset[0]), 118+int(self.anim_av_offset[1]))
-            )
 
     def impacte_surf(self, output_surf):
         # --- init step before drawing map objects:
@@ -513,16 +436,87 @@ class IsometricMapViewer(EvListener):
         else:
             return self._mouse_tile
 
-    def proc_event(self, ev, source=None):
-        if ev.type == EngineEvTypes.PAINT:
-            self._paint_all()
+    def on_paint(self, ev):
+        # manage the wallpaper blit
+        if (not self.block_wallpaper) and self.isometric_map.wallpaper:
+            self.fill_wallpaper()
+        else:
+            self.screen.fill(self.SOLID_COLOR)
 
-        elif ev.type == self.MOUSEMOTION_CONST:
-            mouse_x, mouse_y = core.proj_to_vscreen(ev.pos)
-            self.lastmousepos = (mouse_x, mouse_y)
-            self._mouse_tile = (self.map_x(mouse_x, mouse_y), self.map_y(mouse_x, mouse_y))
-            if self.cursor:
-                self.cursor.update(self, ev)
+        # -------------------------------------------------------------- OPTIM#2
+        need_to_redraw = self.force_redraw_flag
+        need_to_redraw = need_to_redraw or (self._focused_object.x != self._focused_object_x0) or \
+                         (self._focused_object.y != self._focused_object_y0)
+        if need_to_redraw:
+            self.focus(self._focused_object.x, self._focused_object.y)
+            # TODO can one find a way to optimize without the abusive flag/ that dirty branching?
+            if '__BRYTHON__' not in globals():
+                self.gfx_data_buffer.fill(self.UPINK)
+            else:
+                # a hack method, works only with pygame_emu.Surface kengi>v22-10a, thats why i use hasattr(...) here
+                if hasattr(self.gfx_data_buffer, 'wreset'):
+                    self.gfx_data_buffer.wreset()
+
+            self.impacte_surf(self.gfx_data_buffer)
+            self._focused_object_x0 = self._focused_object.x
+            self._focused_object_y0 = self._focused_object.y
+            self.force_redraw_flag = False
+        # -------------------------------------------------------------- OPTIM#2 over.
+
+        if self.MEGAOPTIM:  # floor drawing, the fast way
+            a, b = self.screen_offset()
+            self.floor_rect.topleft = self.manoffset[0] - a, self.manoffset[1] - b
+            self.screen.blit(self.scrollable_floor, (0, 0), area=self.floor_rect)
+
+        self.screen.blit(self.gfx_data_buffer, (0, 0))  # buildings & the player!
+
+        if self.cursor and self.cursor.visible:
+            # if self.cursor.layer_name == layer.name:
+            # if (x == self.cursor.x) and (y == self.cursor.y):
+            # old way:
+            # self.cursor.render(self)
+            # new way:
+            cu = self.cursor
+            sx, sy = self.screen_coords(*cu.get_pos())
+            mylayer = self.isometric_map.get_layer_by_name(cu.layer_name)
+            mydest = cu.surf.get_rect(midtop=(sx + mylayer.offsetx, sy + mylayer.offsety - 2))
+            self.screen.blit(cu.surf, mydest)
+
+        # - the new chunk of code that draws objects! {NEW CHUNK OBJ DRAW}
+        for mapobj, screen_pos in self.info_draw_mapobj.items():
+            if (not mapobj.visible) or isinstance(mapobj, self.pc_cls):
+                pass
+            else:
+                mapobj(self.screen, screen_pos[0], screen_pos[1], self.isometric_map)
+
+        # if an extra anim for the avatar, we use it on the top of everything else
+        if (not self._show_avatar) and (self.extra_anim is not None):
+            self.av_phase += 1
+            if self.av_phase >= self.av_phase_thresh:
+                self.av_phase = 0
+                if self.av_frame < self.extra_anim.card - 1:
+                    self.av_frame += 1
+                if self.av_frame > 5:
+                    self.anim_av_offset[0] += 1.75
+                    self.anim_av_offset[1] -= 0.24
+                    self.cutav_cpt += 1
+                    base = self.extra_anim[self.av_frame]
+                    kappa = self.cutav_cpt
+                    self.cutav = base.subsurface((0, kappa, base.get_width() - kappa, base.get_height() - kappa))
+            # display avatar alt anim/sprite
+            self.screen.blit(  # DIRTY but i dunno how to do better:
+                self.extra_anim[self.av_frame] if (self.cutav is None) else self.cutav,
+                (160 + int(self.anim_av_offset[0]), 118 + int(self.anim_av_offset[1]))
+            )
+
+    def on_mousemotion(self, ev):
+        mouse_x, mouse_y = core.proj_to_vscreen(ev.pos)
+
+        self.lastmousepos = (mouse_x, mouse_y)
+        self._mouse_tile = (self.map_x(mouse_x, mouse_y, False), self.map_y(mouse_x, mouse_y, False))
+
+        if self.cursor:
+            self.cursor.set_position(self.isometric_map, *self._mouse_tile)
 
     def screen_coords(self, x, y, extra_x_offset=0, extra_y_offset=0):
         x_off, y_off = self.screen_offset()

@@ -28,34 +28,34 @@ class IsometricMapCursor:
         if scene.on_the_map(x, y) and (scene.get_visible(x, y) or not must_be_visible):
             self.x, self.y = x, y
 
-    def update(self, view, ev):
-        if ev.type == self.pyg.MOUSEMOTION:
-            self.set_position(view.isometric_map, *view._mouse_tile)
-        elif ev.type == self.pyg.KEYDOWN:
-            if ev.key == self.pyg.K_KP8:
-                self.set_position(view.isometric_map, self.x - 1, self.y - 1)
-                view.focus(self.x, self.y)
-            elif ev.key == self.pyg.K_KP9:
-                self.set_position(view.isometric_map, self.x, self.y - 1)
-                view.focus(self.x, self.y)
-            elif ev.key == self.pyg.K_KP6:
-                self.set_position(view.isometric_map, self.x + 1, self.y - 1)
-                view.focus(self.x, self.y)
-            elif ev.key == self.pyg.K_KP3:
-                self.set_position(view.isometric_map, self.x + 1, self.y)
-                view.focus(self.x, self.y)
-            elif ev.key == pygame.K_KP2:
-                self.set_position(view.isometric_map, self.x + 1, self.y + 1)
-                view.focus(self.x, self.y)
-            elif ev.key == self.pyg.K_KP1:
-                self.set_position(view.isometric_map, self.x, self.y + 1)
-                view.focus(self.x, self.y)
-            elif ev.key == self.pyg.K_KP4:
-                self.set_position(view.isometric_map, self.x - 1, self.y + 1)
-                view.focus(self.x, self.y)
-            elif ev.key == self.pyg.K_KP7:
-                self.set_position(view.isometric_map, self.x - 1, self.y)
-                view.focus(self.x, self.y)
+    # def update(self, view, ev):
+    #     if ev.type == self.pyg.MOUSEMOTION:
+    #         self.set_position(view.isometric_map, *view._mouse_tile)
+    #     elif ev.type == self.pyg.KEYDOWN:
+    #         if ev.key == self.pyg.K_KP8:
+    #             self.set_position(view.isometric_map, self.x - 1, self.y - 1)
+    #             view.focus(self.x, self.y)
+    #         elif ev.key == self.pyg.K_KP9:
+    #             self.set_position(view.isometric_map, self.x, self.y - 1)
+    #             view.focus(self.x, self.y)
+    #         elif ev.key == self.pyg.K_KP6:
+    #             self.set_position(view.isometric_map, self.x + 1, self.y - 1)
+    #             view.focus(self.x, self.y)
+    #         elif ev.key == self.pyg.K_KP3:
+    #             self.set_position(view.isometric_map, self.x + 1, self.y)
+    #             view.focus(self.x, self.y)
+    #         elif ev.key == pygame.K_KP2:
+    #             self.set_position(view.isometric_map, self.x + 1, self.y + 1)
+    #             view.focus(self.x, self.y)
+    #         elif ev.key == self.pyg.K_KP1:
+    #             self.set_position(view.isometric_map, self.x, self.y + 1)
+    #             view.focus(self.x, self.y)
+    #         elif ev.key == self.pyg.K_KP4:
+    #             self.set_position(view.isometric_map, self.x - 1, self.y + 1)
+    #             view.focus(self.x, self.y)
+    #         elif ev.key == self.pyg.K_KP7:
+    #             self.set_position(view.isometric_map, self.x - 1, self.y)
+    #             view.focus(self.x, self.y)
 
 
 class IsometricMapQuarterCursor:

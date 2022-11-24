@@ -49,7 +49,7 @@ from .compo.modes import GameModeMger, BaseGameMode
 from .compo.vscreen import flip
 from .foundation import defs
 from .foundation import event2
-from .foundation.event2 import EvListener, Emitter, EngineEvTypes
+from .foundation.event2 import EvListener, Emitter, EngineEvTypes, game_events_enum
 from .foundation.interfaces import PygameIface
 from .util import underscore_format, camel_case_format
 

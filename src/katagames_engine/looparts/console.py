@@ -272,65 +272,61 @@ class CustomConsole:
         for label, lpos in self.li_raw_lines_labels:
             self.scrref.blit(label, lpos)
 
-    def process_input(self, eventlist):
-        if not self.active:
-            return
-
-        for event in eventlist:
-            if event.type == pygame.KEYDOWN:
-                self.changed = True
-                # Special Character Manipulation
-                if event.key == pygame.K_TAB:
-                    self.c_in = self.str_insert(self.c_in, "    ")
-                elif event.key == pygame.K_BACKSPACE:
-                    if self.c_pos > 0:
-                        self.c_in = self.c_in[:self.c_pos - 1] + self.c_in[self.c_pos:]
-                        self.set_pos(self.c_pos - 1)
-                elif event.key == pygame.K_DELETE:
-                    if self.c_pos < len(self.c_in):
-                        self.c_in = self.c_in[:self.c_pos] + self.c_in[self.c_pos + 1:]
-                elif event.key == pygame.K_RETURN or event.key == 271:
-                    self.submit_input(self.c_in)
-                # Changing Cursor Position
-                elif event.key == pygame.K_LEFT:
-                    if self.c_pos > 0:
-                        self.set_pos(self.c_pos - 1)
-                elif event.key == pygame.K_RIGHT:
-                    if self.c_pos < len(self.c_in):
-                        self.set_pos(self.c_pos + 1)
-                elif event.key == pygame.K_HOME:
-                    self.set_pos(0)
-                elif event.key == pygame.K_END:
+    def keyhandler(self, event):
+        if self.active:
+            self.changed = True
+            # Special Character Manipulation
+            if event.key == pygame.K_TAB:
+                self.c_in = self.str_insert(self.c_in, "    ")
+            elif event.key == pygame.K_BACKSPACE:
+                if self.c_pos > 0:
+                    self.c_in = self.c_in[:self.c_pos - 1] + self.c_in[self.c_pos:]
+                    self.set_pos(self.c_pos - 1)
+            elif event.key == pygame.K_DELETE:
+                if self.c_pos < len(self.c_in):
+                    self.c_in = self.c_in[:self.c_pos] + self.c_in[self.c_pos + 1:]
+            elif event.key == pygame.K_RETURN or event.key == 271:
+                self.submit_input(self.c_in)
+            # Changing Cursor Position
+            elif event.key == pygame.K_LEFT:
+                if self.c_pos > 0:
+                    self.set_pos(self.c_pos - 1)
+            elif event.key == pygame.K_RIGHT:
+                if self.c_pos < len(self.c_in):
+                    self.set_pos(self.c_pos + 1)
+            elif event.key == pygame.K_HOME:
+                self.set_pos(0)
+            elif event.key == pygame.K_END:
+                self.set_pos(len(self.c_in))
+            # History Navigation
+            elif event.key == pygame.K_UP:
+                if len(self.c_out):
+                    if self.c_hist_pos > 0:
+                        self.c_hist_pos -= 1
+                    self.c_in = self.c_hist[self.c_hist_pos]
                     self.set_pos(len(self.c_in))
-                # History Navigation
-                elif event.key == pygame.K_UP:
-                    if len(self.c_out):
-                        if self.c_hist_pos > 0:
-                            self.c_hist_pos -= 1
-                        self.c_in = self.c_hist[self.c_hist_pos]
-                        self.set_pos(len(self.c_in))
-                elif event.key == pygame.K_DOWN:
-                    if len(self.c_out):
-                        if self.c_hist_pos < len(self.c_hist) - 1:
-                            self.c_hist_pos += 1
-                        self.c_in = self.c_hist[self.c_hist_pos]
-                        self.set_pos(len(self.c_in))
-                # Scrolling
-                elif event.key == pygame.K_PAGEUP:
-                    if self.c_scroll < len(self.c_out) - 1:
-                        self.c_scroll += 1
-                elif event.key == pygame.K_PAGEDOWN:
-                    if self.c_scroll > 0:
-                        self.c_scroll -= 1
-                # Normal character printing
-                elif event.key >= 32:
-                    mods = pygame.key.get_mods()
-                    if mods & pygame.KMOD_CTRL:
-                        if event.key in range(256) and chr(event.key) in self.key_calls:
-                            self.key_calls[chr(event.key)]()
-                    else:
-                        char = str(event.unicode)
-                        self.c_in = self.str_insert(self.c_in, char)
+            elif event.key == pygame.K_DOWN:
+                if len(self.c_out):
+                    if self.c_hist_pos < len(self.c_hist) - 1:
+                        self.c_hist_pos += 1
+                    self.c_in = self.c_hist[self.c_hist_pos]
+                    self.set_pos(len(self.c_in))
+            # Scrolling
+            elif event.key == pygame.K_PAGEUP:
+                if self.c_scroll < len(self.c_out) - 1:
+                    self.c_scroll += 1
+            elif event.key == pygame.K_PAGEDOWN:
+                if self.c_scroll > 0:
+                    self.c_scroll -= 1
+            # Normal character printing
+            elif event.key >= 32:
+                mods = pygame.key.get_mods()
+                if mods & pygame.KMOD_CTRL:
+                    if event.key in range(256) and chr(event.key) in self.key_calls:
+                        self.key_calls[chr(event.key)]()
+                else:
+                    char = str(event.unicode)
+                    self.c_in = self.str_insert(self.c_in, char)
 
     def send_pyconsole(self, text):
         if not text:  # Output a blank row if nothing is entered
