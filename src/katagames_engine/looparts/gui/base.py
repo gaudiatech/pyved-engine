@@ -1,14 +1,15 @@
 import random
 from typing import Union, Tuple
 
-import pygame
-
 from .interfaces.element_interface import IfaceUIElement
 from ...foundation import event2 as evmodule
 from ...compo import vscreen
+from ... import _hub
 
 
-SPATIAL_INFO = Union[pygame.math.Vector2, Tuple[int, int], Tuple[float, float]]
+pygame = _hub.pygame
+
+# SPATIAL_INFO = Union[pygame.math.Vector2, Tuple[int, int], Tuple[float, float]]  pose pb en web context , parce que pygame used
 ANCHOR_CENTER, ANCHOR_RIGHT, ANCHOR_LEFT = range(34151, 34151+3)
 
 
@@ -18,7 +19,7 @@ class GenericUIElement(IfaceUIElement):
     so it can be visually debugged
     """
 
-    def __init__(self, position0: SPATIAL_INFO, dimensions0: SPATIAL_INFO, anchoring=None, debugmode=False):
+    def __init__(self, position0, dimensions0, anchoring=None, debugmode=False):
         super().__init__()
 
         # state/sys
@@ -70,7 +71,7 @@ class GenericUIElement(IfaceUIElement):
         hh = int(hh / 2)
         return self._xy_coords[0]+hw, self._xy_coords[1]+hh
 
-    def set_position(self, position: SPATIAL_INFO):
+    def set_position(self, position):
         # args passed are absolute!
         if self._curr_anchor == ANCHOR_LEFT:
             self._xy_coords[0], self._xy_coords[1] = position
@@ -82,20 +83,20 @@ class GenericUIElement(IfaceUIElement):
             self._xy_coords[0] = position[0] - hw
             self._xy_coords[1] = position[1] - hh
 
-    def set_relative_position(self, position: SPATIAL_INFO):
+    def set_relative_position(self, position):
         # TODO
         raise Exception
 
     def get_dimensions(self):
         return self._dim
 
-    def set_dimensions(self, dimensions: SPATIAL_INFO):
+    def set_dimensions(self, dimensions):
         self._dim[0], self._dim[1] = dimensions
 
-    def get_relative_rect(self) -> pygame.Rect:
+    def get_relative_rect(self):# -> pygame.Rect:
         pass
 
-    def get_abs_rect(self) -> pygame.Rect:
+    def get_abs_rect(self):  # -> pygame.Rect:
         pass
 
     def update(self, time_delta: float):
@@ -122,7 +123,7 @@ class GenericUIElement(IfaceUIElement):
     def hover_point(self, hover_x: float, hover_y: float) -> bool:
         pass
 
-    def proc_event(self, event: pygame.event.Event) -> bool:
+    def proc_event(self, event) -> bool:
         if event.type == pygame.MOUSEMOTION:
             mx, my = vscreen.proj_to_vscreen(event.pos)
             if not self._hovered_rn:
@@ -146,7 +147,7 @@ class GenericUIElement(IfaceUIElement):
     def set_debug_mode(self, activate_mode: bool):
         self._debug_mode = activate_mode
 
-    def set_image(self, new_image: Union[pygame.surface.Surface, None]):
+    def set_image(self, new_image):  #: Union[pygame.surface.Surface, None]
         pass
 
     def set_active(self, activate_mode: bool):
@@ -192,7 +193,7 @@ class AugmentedSprite(GenericUIElement):
         self.callback = None  # can be used whenever the element is clicked!
 
     # redefine
-    def set_position(self, position: SPATIAL_INFO):
+    def set_position(self, position):
         super().set_position(position)
         self._inner_sprite.rect.center = position
 
@@ -204,7 +205,7 @@ class AugmentedSprite(GenericUIElement):
     # def on_mousedown(self, ev):
     #     print('x')
 
-    def proc_event(self, event: pygame.event.Event) -> bool:
+    def proc_event(self, event) -> bool:  # event: pygame.event.Event
         if self._is_active:
             super().proc_event(event)
 

@@ -4,6 +4,7 @@ from .. import _hub
 
 
 class PygameKenBackend(BaseKenBackend):
+
     static_mapping = {
         256: EngineEvTypes.Quit,  # pygame.QUIT is 256
         32787: EngineEvTypes.Quit,  # for pygame2.0.1+ we also have 32787 -> pygame.WINDOWCLOSE
@@ -50,9 +51,34 @@ class PygameKenBackend(BaseKenBackend):
     }
 
     def __init__(self):
+        import pygame as _genuine_pyg
+        _hub.kengi_inj.set('pygame', _genuine_pyg)
+        # def _ensure_pygame(xinfo):
+        #     # replace iface by genuine pygame lib, use this lib from now on
+        #     if isinstance(xinfo, str):
+        #         hub.kengi_inj.register('pygame', xinfo)
+        #     else:
+        #         hub.kengi_inj.set('pygame', xinfo)  # set the module directly, instead of using lazy load
+        #
+        # if given_pgmod:
+        #     _ensure_pygame(given_pgmod)
+        # else:
+        #     _ensure_pygame('pygame')
+
         self._pygame_mod = _hub.kengi_inj['pygame']
         self.debug_mode = False
         self._ev_storage = list()
+        self.jm = None
+
+    def joystick_count(self):
+        return self._pygame_mod.joystick.get_count()
+
+    def joystick_init(self, idj):
+        self.jm = self._pygame_mod.joystick.Joystick(idj)
+        self.jm.init()
+
+    def joystick_info(self, idj):
+        return self.jm.get_name()
 
     def pull_events(self):
         del self._ev_storage[:]
@@ -82,7 +108,7 @@ class PygameKenBackend(BaseKenBackend):
             return self.__class__.static_mapping[alien_etype]
 
 
-def build_primalbackend(pbe_identifier: str = ''):
+def build_primalbackend(pbe_identifier: str):
     if pbe_identifier == '':  # default
         return PygameKenBackend()
 

@@ -30,6 +30,18 @@ class BaseKenBackend(metaclass=ABCMeta):
     def map_etype2kengi(self, alien_etype):
         raise NotImplementedError
 
+    @abstractmethod
+    def joystick_count(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def joystick_init(self, idj):
+        raise NotImplementedError
+
+    @abstractmethod
+    def joystick_info(self, idj):
+        raise NotImplementedError
+
 
 class _pygameDrawIface:
 

@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 # from typing import Tuple, Union
 
-import pygame
+# import pygame
 
 
 class IfaceUIElement(metaclass=ABCMeta):
@@ -14,7 +14,7 @@ class IfaceUIElement(metaclass=ABCMeta):
     # ANCHOR_CENTER, ANCHOR_RIGHT, ANCHOR_LEFT = range(34151, 34151 + 3)
 
     @abstractmethod
-    def get_relative_rect(self) -> pygame.Rect:
+    def get_relative_rect(self): # -> pygame.Rect:
         """
         The relative positioning rect.
 
@@ -23,7 +23,7 @@ class IfaceUIElement(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def get_abs_rect(self) -> pygame.Rect:
+    def get_abs_rect(self): # -> pygame.Rect:
         """
         The absolute positioning rect.
 
@@ -165,7 +165,7 @@ class IfaceUIElement(metaclass=ABCMeta):
         """
 
     @abstractmethod
-    def proc_event(self, event: pygame.event.Event) -> bool:
+    def proc_event(self, event) -> bool:
         """
         A stub to override. Gives UI Elements access to pygame events.
 

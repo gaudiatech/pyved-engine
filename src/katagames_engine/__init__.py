@@ -60,7 +60,9 @@ _multistate_flag = False
 _stack_based_ctrl = None
 one_plus_init = False
 state_stack = None
+_stored_kbackend = None
 ver = ENGI_VERSION
+
 pbackend_name = ''
 
 
@@ -78,31 +80,17 @@ def is_ready():
     return one_plus_init
 
 
-def bootstrap_e(given_pgmod=None, print_ver_info=True):
+def bootstrap_e(print_ver_info=True):
     """
     ensure the engine is ready to be used
-    :param given_pgmod: a python module that is/can replace pygame, or None
     :param print_ver_info: bool
     :return:
     """
-    global one_plus_init, pygame, _gameticker
+    global one_plus_init, _gameticker, _stored_kbackend, pbackend_name
     if one_plus_init:
         return
-
     del pygame
-
-    def _ensure_pygame(xinfo):
-        # replace iface by genuine pygame lib, use this lib from now on
-        if isinstance(xinfo, str):
-            hub.kengi_inj.register('pygame', xinfo)
-        else:
-            hub.kengi_inj.set('pygame', xinfo)  # set the module directly, instead of using lazy load
-
     one_plus_init = True
-    if given_pgmod:
-        _ensure_pygame(given_pgmod)
-    else:
-        _ensure_pygame('pygame')
     if print_ver_info:
         # skip the msg, (if running KENGI along with katasdk, the sdk has already printed out ver. infos)
         _show_ver_infos()
@@ -111,8 +99,8 @@ def bootstrap_e(given_pgmod=None, print_ver_info=True):
     # from here and later,
     # we know that kengi_inj has been updated, so we can build a primal backend
     from .foundation.pbackends import build_primalbackend
-    pbe_localctx = build_primalbackend(pbackend_name)  # by default: local ctx
-    event2.EvManager.instance().a_event_source = pbe_localctx
+    _stored_kbackend = build_primalbackend(pbackend_name)  # by default: local ctx
+    event2.EvManager.instance().a_event_source = _stored_kbackend
 
     # TODO quick fix this part!
     #event.create_manager()
@@ -177,17 +165,18 @@ def init(gfc_mode=1, caption=None, maxfps=60, screen_dim=None):
     pygm.init()
     pygm.mixer.init()
 
-    jc = pygm.joystick.get_count()
+    jc = _stored_kbackend.joystick_count()
     if jc > 0:
         # ------ init the joystick ------
-        _joy = pygm.joystick.Joystick(0)
-        name = _joy.get_name()
+
+        _joy = _stored_kbackend.joystick_init(0)
+        name = _stored_kbackend.joystick_info(0)
         print(name + ' detected')
-        _joy.init()
-        numaxes = _joy.get_numaxes()
-        numballs = _joy.get_numballs()
-        numbuttons = _joy.get_numbuttons()
-        numhats = _joy.get_numhats()
+
+        # numaxes = _joy.get_numaxes()
+        # numballs = _joy.get_numballs()
+        # numbuttons = _joy.get_numbuttons()
+        # numhats = _joy.get_numhats()
         # print(numaxes, numballs, numbuttons, numhats)
 
     screen_param(gfc_mode, screen_dim=screen_dim)
@@ -344,7 +333,6 @@ class GameTpl:
 # Stuff related to lazy import
 # ----------------------------
 pygame = PygameIface()
-
 
 def __getattr__(attr_name):
     if not is_ready():
