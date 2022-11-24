@@ -197,6 +197,7 @@ EngineEvTypes = PseudoEnum((
     'Mousedown',
     'Mouseup',
 
+    'Stickmotion',  # has event.axis; event.value
     'GamepadDir',
     'Gamepaddown',
     'Gamepadup',
