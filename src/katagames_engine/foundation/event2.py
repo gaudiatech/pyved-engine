@@ -136,6 +136,10 @@ class EvListener(Emitter):
         self._tracked_ev = list()
 
     @property
+    def active(self):
+        return self._is_active
+
+    @property
     def id(self):
         return self._lid
 
