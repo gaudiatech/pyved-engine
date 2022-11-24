@@ -86,7 +86,7 @@ def bootstrap_e(print_ver_info=True):
     :param print_ver_info: bool
     :return:
     """
-    global one_plus_init, _gameticker, _stored_kbackend, pbackend_name
+    global one_plus_init, _gameticker, _stored_kbackend, pbackend_name, pygame
     if one_plus_init:
         return
     del pygame

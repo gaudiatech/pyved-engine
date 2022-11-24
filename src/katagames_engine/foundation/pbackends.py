@@ -4,7 +4,32 @@ from .. import _hub
 
 
 class PygameKenBackend(BaseKenBackend):
+    """
+    Important architecture change:
+    instead of:
 
+                   /-->pygame_API(full)- -+---->pygameSDL
+                 /                       /
+               /                       /
+    kengiCore +----> pygame_API(subset) -----> pygameEm
+
+
+    Tom has chosen:                     /----> web pbackend -----> pygameEm+JS
+                                       /
+    pygame_API(subset) ---> kengiCore +
+                                       \
+                                        \\--> default pbackend ----> pygameSDL
+
+    Main benefits are:
+
+     * expliciting the subset
+     * no more flawed emulation-related errors, if smth runs in local (Imagine that Bob is calling kengi.pygame.*)
+       it should never crash in web ctx
+     * from now on, our own low-level API can differ a lot from pygame's API. Our low-level API is freely defined
+       in the abstract backend/ backend interface
+     * less code coupling. If we ever drop the pygame support/if pygame_API receives heavy patches,
+     it won't become a disaster
+    """
     static_mapping = {
         256: EngineEvTypes.Quit,  # pygame.QUIT is 256
         32787: EngineEvTypes.Quit,  # for pygame2.0.1+ we also have 32787 -> pygame.WINDOWCLOSE
@@ -28,6 +53,7 @@ class PygameKenBackend(BaseKenBackend):
         1540: EngineEvTypes.Gamepadup,  # JOYBUTTONUP:  self.joy[event.joy].button[event.button] = 0
     }
     joypad_events_bounds = [1536, 1540]
+
     joy_bt_map = {
         0: 'A',
         1: 'B',
@@ -53,22 +79,10 @@ class PygameKenBackend(BaseKenBackend):
     def __init__(self):
         import pygame as _genuine_pyg
         _hub.kengi_inj.set('pygame', _genuine_pyg)
-        # def _ensure_pygame(xinfo):
-        #     # replace iface by genuine pygame lib, use this lib from now on
-        #     if isinstance(xinfo, str):
-        #         hub.kengi_inj.register('pygame', xinfo)
-        #     else:
-        #         hub.kengi_inj.set('pygame', xinfo)  # set the module directly, instead of using lazy load
-        #
-        # if given_pgmod:
-        #     _ensure_pygame(given_pgmod)
-        # else:
-        #     _ensure_pygame('pygame')
-
         self._pygame_mod = _hub.kengi_inj['pygame']
         self.debug_mode = False
         self._ev_storage = list()
-        self.jm = None
+        self.jm = None  # model for joystickS
 
     def joystick_count(self):
         return self._pygame_mod.joystick.get_count()
