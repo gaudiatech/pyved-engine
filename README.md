@@ -5,49 +5,27 @@
   </a>
 </p>
 
-`kengi` is the abbreviation of **K**ata **ENGI**ne: a pythonic game engine built on top of
-the in python built on top of the popular [pygame](https://github.com/pygame/pygame)
-library. It has no other dependencies. So why "Kata"? [Kata.Games](https://kata.games) is
-a new gaming portal for indie game fans!
+What is `kengi`?
+It's a rather complex piece of software
+but its purpose is simple:
+Making your life (as a game dev) easier and more enjoyable!
+
+The best description of `kengi` depends on your perspective. It is:
+
+* an overlay over the the popular [pygame](https://github.com/pygame/pygame) python library
+* a game engine (=a complete framework designed for the rapid prototyping of video games)
+* a subset of the API defined by `pygame`
+* a set of helper classes and helper functions to save yourself some trouble
+
+Lastly, `kengi` is the abbreviation of **K**ata **ENGI**ne. Why "Kata"?
+
+[Kata.Games](https://kata.games) is a new gaming platform for indie game fans!
+Via this platform, we aim at distributing all kinds of games powered by kengi!
 
 
-## Game templates
-*How can you create a full game with speed and efficiency while
-having more reliability in your work?*
-
-The use of a high-quality game engine + a set of game templates is probably
-the best start one can get as a game developer.
-It allows you, the game creator, to bootstrap a Game Dev project easily and attain
-solid results!
-
-For instance, game templates that ship with `kengi` include a flappy bird clone... 
-
-<img src="docs/flappybird-preview.png" alt="flappybird screenshot" width=600>
-
-a match3 puzzle game...
-
-<img src="docs/match3-preview.png" alt="match3 screenshot" width=600>
-
-And many others! 
-We also have built-in color palettes to unleash users' creativity.
-
-<img src="docs/kengi-palette-preview.png" alt="palette preview" width=600>
-
-Feel free to study/copy all files available in this folder:
-* [game_templates](https://github.com/gaudiatech/kengi/blob/master/game_templates) 
-
-Save yourself a lot of time for your project: use `kengi` ;-)
-
-To test a game template you will need to install `kengi` (see next section)
-and then run the `main.py` file found in the corresponding game template folder.
-
-Alternatively, testing demos without installation is possible if you
-open the project with an IDE like PyCharm and configure two root folders:
-`src/` and `game_templates/`.
-
-
-## Installation
-Download the source-code (.zip file) from Github. It is recommended to download a release, not the latest commit, because the latest dev version might be unstable.
+## Getting started
+Download the source-code (a .zip file) from Github. It is recommended to download the last tagged version,
+not the most recent commit, because the dev versions might be unstable.
 
 Once you have the files on your computer, use the command line to navigate to the root folder of the project (one level below `src\`).
 
@@ -89,6 +67,37 @@ print('game over!')
 ```
 
 
+## Game templates
+*How can you create a full game with speed and efficiency while
+having more reliability in your work?*
+
+The use of a high-quality game engine + a set of game templates is probably
+the best start one can get as a game developer.
+It allows you, the game creator, to bootstrap a Game Dev project easily and attain
+solid results! For instance, game templates that ship with `kengi` include a flappy bird clone... 
+
+<img src="docs/flappybird-preview.png" alt="flappybird screenshot" width=600>
+
+Or, this match3 puzzle game...
+
+<img src="docs/match3-preview.png" alt="match3 screenshot" width=600>
+
+And many others! 
+We also have built-in color palettes to unleash users' creativity.
+
+<img src="docs/kengi-palette-preview.png" alt="palette preview" width=600>
+
+Feel free to study/copy all files available in this folder:
+* [game_templates](https://github.com/gaudiatech/kengi/blob/master/game_templates) 
+
+Save yourself a lot of time for your project: use `kengi` from now on ;-)
+
+To test a game template you will need to install `kengi` (see next section)
+and then run the `main.py` file found in the corresponding game template folder. Alternatively,
+testing demos without installation is possible if you  open the project with an IDE like PyCharm and
+configure two root folders: `src/` and `game_templates/`.
+
+
 ## Mini tutorial
 If you're familiar with `pygame`, getting used to `kengi` is really easy.
 Navigate to the `src/` folder. There, you see a very basic example that uses only pygame:
@@ -126,30 +135,31 @@ A game template should be customizable very easily ;
 People should be free to use this pattern or keep it basic based on their preferences.
 
 
-## Goals
-> "It’s Harder to Read Code than to Write it" - Joel Spolsky
+## General goal
+As a wise man (Joel Spolsky) once said:
+> "It’s Harder to Read Code than to Write it"
 
-The ultimate goal is to offer a mix of benefits for all
-game devs who use python... These benefits are precious.
-`kengi` enables you:
+Our general goal is to empower you to:
 
-1. to write standardized therefore very easy-to-read code.
-Readability is not to overlook!
-If you take care of your code readability you'll encounter 30% fewer bugs,
-you will fix any bug faster, etc. It works like magic!
+1. **write standardized therefore very easy-to-read code**
 
-2. to write a type of code that can evolve easily.
-By using the built-in **custom event system** and the **M-V-C pattern**,
-you can reach an amazing level of code flexibility.
+Readability is not to overlook! If you take care of your code readability you'll encounter
+30% fewer bugs, you will fix any bug faster, etc. It works like magic!
 
-3. to save a lot of time while creating your game
+2. **write a type of code that can evolve easily**
 
-(And most importantly)
+By using our *built-in event system* along with the *M-V-C pattern*, you can reach
+an amazing level of code flexibility.
 
-4. to use your `kengi`-based game as the input for another 
-tool that we produce named `katasdk`.
-This tool creates special game bundles, out of python source-code,
-that can run in your browser! *A world premiere!*
+3. **be more productive**
+
+And, interestingly enough:
+
+5. **distribute your newly created games via our awesome
+[Kata.Games](https://kata.games) platform!**
+
+In this way, your whole game and the python source-code that it's made of, can be
+played directly by modern browser (Chrome, Brave, etc.). *A world premiere!*
 
 
 ## License
