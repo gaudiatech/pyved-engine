@@ -48,7 +48,7 @@ gameover = False
 color_idx = 0
 allcolors = ('pink', 'yellow', 'purple')
 bg_color = allcolors[0]
-print('press ESC to exit, any key to change bg_color...'
+print('press ESC to exit, any key to change bg_color...')
 
 # game loop
 while not gameover:
