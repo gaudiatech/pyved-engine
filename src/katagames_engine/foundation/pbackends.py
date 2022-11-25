@@ -102,8 +102,14 @@ class PygameKenBackend(BaseKenBackend):
         for e in self._ev_storage:
             if e.type == 1539 or e.type == 1540:  # joybtdown/joybtup
                 e.button = self.joy_bt_map[e.button]
+
             elif e.type == 1538:  # joy Dpad has been activated
                 e.dir = self.dpad_mapping[e.value]
+                tmp = list(e.value)
+                if tmp[1] != 0:
+                    tmp[1] *= -1
+                e.value = e.dict['value'] = tmp
+
             elif e.type == 1536:  # JOYAXISMOTION (0,1) ->joy L; (2,3)->joyR;  4 & 5->triggers Left & Right
                 # pyg has values in [-1,1]
                 pass

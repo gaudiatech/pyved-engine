@@ -9,28 +9,49 @@ class BhCtrl(_Listener):
         super().__init__()
         self._v = refview
         self._g = gameref
+        self._currdir = None
+        self._cpt = 0
 
     def _trigger_visual_change(self):
         self._v.curr_idx = (self._v.curr_idx + 1) % self._v.sprsheet_a.card
         self._v.curr_idx_b = (self._v.curr_idx_b + 1) % self._v.sprsheet_b.card
 
     def on_gamepad_dir(self, ev):
-        impact = {
-            'north': (0, -self._v.MOV_INCREM),
-            'east': (self._v.MOV_INCREM, 0),
-            'west': (-self._v.MOV_INCREM, 0),
-            'south': (0, self._v.MOV_INCREM),
-            None: None
-        }[ev.dir]
-        if impact:
-            self._v.blitpos[0] += impact[0]
-            self._v.blitpos[1] += impact[1]
+        # this could work:
+        # -
+        # self._currdir = {
+        #     'north': (+0, -1),
+        #     'east':  (+1,  0),
+        #     'west':  (-1,  0),
+        #     'south': (+0, +1),
+        #
+        #     'south-west': (-1, +1),
+        #     'south-east': (+1, +1),
+        #     'north-east': (+1, -1),
+        #     'north-west': (-1, -1),
+        #     None: None
+        # }[ev.dir]
+
+        # this solution might be better, it depends on your particular needs!
+        # -
+        if (not ev.value[0]) and (not ev.value[1]):
+            self._currdir = None
+        else:
+            self._currdir = ev.value
+
+    def on_update(self, ev):
+        if self._currdir:
+            if self._cpt > 25:
+                a, b = self._currdir
+                self._v.blitpos[0] += a * self._v.MOV_INCREM
+                self._v.blitpos[1] += b * self._v.MOV_INCREM
+                self._cpt = -1
+            self._cpt += 1
 
     def on_keydown(self, ev):
         self._trigger_visual_change()
 
     def on_gamepaddown(self, ev):
-        print(ev.button)
         self._trigger_visual_change()
 
     def on_quit(self, ev):
