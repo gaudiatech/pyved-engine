@@ -295,10 +295,12 @@ class GameTpl:
     INFO_STOP_MSG = 'kengi.GameTpl->the loop() call has ended.'
     ERR_LOCK_MSG = 'kengi.GameTpl.loop called while SAFETY_LOCK is on!'
     SAFETY_LOCK = False  # can be set to True from outside, if you don't want a game to call .loop()
+    MAXFPS = 75
 
     def __init__(self):
         self._manager = None
         self.gameover = False
+        self.clock = hub.kengi_inj['pygame'].time.Clock()
         self._last_t = None
 
     def enter(self, vms=None):
@@ -307,7 +309,7 @@ class GameTpl:
         self._manager.setup()
 
     def update(self, dt):
-        self._manager.post(EngineEvTypes.Update)
+        self._manager.post(EngineEvTypes.Update, delta_t=dt)
         self._manager.post(EngineEvTypes.Paint, screen=vscreen.screen)
         self._manager.update()
         flip()
@@ -322,9 +324,19 @@ class GameTpl:
             raise ValueError(self.ERR_LOCK_MSG)
         # use enter, update, exit to handle the global "run game logic"
         self.enter()
+
         while not self.gameover:
-            self.update((time.time()-self._last_t) if self._last_t else 0)
-            self._last_t = time.time()
+
+            info = time.time()
+            if self._last_t is not None:
+                dt = info - self._last_t
+            else:
+                dt = 0
+            self._last_t = info
+
+            self.update(dt)
+            self.clock.tick(self.MAXFPS)
+
         self.exit()
         print(self.INFO_STOP_MSG)
 
