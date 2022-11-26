@@ -313,6 +313,7 @@ class GameTpl:
         self._manager.post(EngineEvTypes.Paint, screen=vscreen.screen)
         self._manager.update()
         flip()
+        self.clock.tick(self.MAXFPS)
 
     def exit(self, vms=None):
         quit()
@@ -333,9 +334,7 @@ class GameTpl:
             else:
                 dt = 0
             self._last_t = info
-
             self.update(dt)
-            self.clock.tick(self.MAXFPS)
 
         self.exit()
         print(self.INFO_STOP_MSG)
@@ -345,6 +344,7 @@ class GameTpl:
 # Stuff related to lazy import
 # ----------------------------
 pygame = PygameIface()
+
 
 def __getattr__(attr_name):
     if not is_ready():

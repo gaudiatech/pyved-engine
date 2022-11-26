@@ -1,10 +1,9 @@
 import collections
 import glob
 import random
-
 from ... import _hub
 # from ... import event
-from ...foundation.event2 import EvListener, Emitter
+from ...foundation.event2 import Emitter, EngineEvTypes
 from ...compo import vscreen as core
 from ...foundation import event2
 
@@ -24,7 +23,6 @@ MENU_ITEM_COLOR = pygame.Color(150, 145, 130)
 MENU_SELECT_COLOR = pygame.Color(128, 250, 230)
 
 ReceiverObj = event2.EvListener
-EngineEvTypes = event2.EngineEvTypes
 
 
 class MenuItem(object):
@@ -263,7 +261,7 @@ class Menu(Emitter, Frect):
         # Do an initial arrangement of the menu.
         self.arrange()
 
-    def proc_event(self, pc_input, source):
+    def proc_event(self, kengi_ev, source):
         """
         since may 2022,
         the new way to return "choice" values, is via posting an event
@@ -276,65 +274,61 @@ class Menu(Emitter, Frect):
         #     self.render()
         #     kengi.flip()
 
-        if pc_input.type == pygame.KEYDOWN:
+        if kengi_ev.type == EngineEvTypes.Keydown:
             # A key was pressed, oh happy day! See what key it was and act
             # accordingly.
-            if pc_input.key == pygame.K_UP:
+            if kengi_ev.key == pygame.K_UP:
                 self.selected_item -= 1
                 if self.selected_item < 0:
                     self.selected_item = len(self.items) - 1
                 if self.selected_item not in self._item_rects:
                     self.top_item = min(self.selected_item, self._the_highest_top)
-            elif pc_input.key == pygame.K_DOWN:
+            elif kengi_ev.key == pygame.K_DOWN:
                 self.selected_item += 1
                 if self.selected_item >= len(self.items):
                     self.selected_item = 0
                 if self.selected_item not in self._item_rects:
                     self.top_item = min(self.selected_item, self._the_highest_top)
-            elif pc_input.key == pygame.K_SPACE or pc_input.key == pygame.K_RETURN:
-                self.pev(EngineEvTypes.CONVCHOICE, value=self.items[self.selected_item].value)
+            elif kengi_ev.key == pygame.K_SPACE or kengi_ev.key == pygame.K_RETURN:
+                self.pev(EngineEvTypes.ConvStart, value=self.items[self.selected_item].value)
                 self.no_choice_made = False
-            elif (pc_input.key == pygame.K_ESCAPE or pc_input.key == pygame.K_BACKSPACE) and self.can_cancel:
+            elif (kengi_ev.key == pygame.K_ESCAPE or kengi_ev.key == pygame.K_BACKSPACE) and self.can_cancel:
                 self.no_choice_made = False
-            elif 0 <= pc_input.key < 256 and chr(pc_input.key) in self.quick_keys:
-                self.pev(EngineEvTypes.CONVCHOICE, value=self.quick_keys[chr(pc_input.key)])
+            elif 0 <= kengi_ev.key < 256 and chr(kengi_ev.key) in self.quick_keys:
+                self.pev(EngineEvTypes.ConvStep, value=self.quick_keys[chr(kengi_ev.key)])
                 self.no_choice_made = False
-            elif pc_input.key > 255 and pc_input.key in self.quick_keys:
-                self.pev(EngineEvTypes.CONVCHOICE, value=self.quick_keys[pc_input.key])
+            elif kengi_ev.key > 255 and kengi_ev.key in self.quick_keys:
+                self.pev(EngineEvTypes.ConvStep, value=self.quick_keys[kengi_ev.key])
                 self.no_choice_made = False
 
-        elif pc_input.type == pygame.MOUSEBUTTONDOWN:
-            if pc_input.button == 1:
+        elif kengi_ev.type == EngineEvTypes.Mousedown:
+            if kengi_ev.button == 1:
                 mouse_pos = core.proj_to_vscreen(pygame.mouse.get_pos())
-
                 moi = self.get_mouseover_item(mouse_pos)
                 if moi is not None:
-
                     self.set_item_by_position(moi)
-            elif pc_input.button == 4:
+            elif kengi_ev.button == 4:
                 self.top_item = max(self.top_item - 1, 0)
-            elif pc_input.button == 5:
+            elif kengi_ev.button == 5:
                 self.top_item = min(self.top_item + 1, self._the_highest_top)
 
-        elif pc_input.type == pygame.MOUSEBUTTONUP:
+        elif kengi_ev.type == EngineEvTypes.Mouseup:
             mouse_pos = core.proj_to_vscreen(pygame.mouse.get_pos())
-            if pc_input.button == 1:
+
+            if kengi_ev.button == 1:
                 moi = self.get_mouseover_item(mouse_pos)
                 if moi is self.selected_item:
-
-                    self.pev(EngineEvTypes.CONVCHOICE, value=self.items[self.selected_item].value)
+                    self.pev(EngineEvTypes.ConvStep, value=self.items[self.selected_item].value)
                     self.no_choice_made = False
-            elif pc_input.button == 3 and self.can_cancel:
+
+            elif kengi_ev.button == 3 and self.can_cancel:
                 self.no_choice_made = False
 
-        elif pc_input.type == pygame.MOUSEMOTION:
+        elif kengi_ev.type == EngineEvTypes.Mousemotion:
             mouse_pos = core.proj_to_vscreen(pygame.mouse.get_pos())
             moi = self.get_mouseover_item(mouse_pos)
             if moi is not None:
                 self.set_item_by_position(moi)
-
-        elif pc_input.type == pygame.QUIT:
-            self.no_choice_made = False
 
     def sort(self):
         self.items.sort()

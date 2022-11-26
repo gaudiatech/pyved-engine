@@ -2,15 +2,12 @@ import json
 
 from . import rpgmenu
 from ... import _hub
-# from ... import event
 from ... import pal
-from ...compo import gfx
-from ...foundation.event2 import EvListener
+from ...foundation.event2 import EvListener, EngineEvTypes
 
 
 frects = _hub.polarbear.frects
 pygame = _hub.pygame
-# EngineEvTypes = event.EngineEvTypes
 
 
 class Offer:
@@ -125,24 +122,29 @@ class ConversationView(EvListener):
         # get the repr zero ready
         self.update_dialog_repr()
 
-    def proc_event(self, ev, source):
-        if self.existing_menu:  # forward event to menu if it exists
+    def on_paint(self, ev):
+        if self.primitive_style:
+            self._primitiv_render(ev.screen)
+        else:
+            self._reg_render(ev.screen)
+
+    def on_conv_step(self, ev):  # iterate over the conversation
+        print('CONV step RECV in dialogue')
+        self.curr_offer = ev.value
+        self.update_dialog_repr()
+
+    def on_mousemotion(self, ev):
+        if self.existing_menu:
             self.existing_menu.proc_event(ev, None)
-        #
-        # if ev.type == EngineEvTypes.LOGICUPDATE:  # TODO: using L.u. isnt great!
-        #     self.update_dialog()
 
-        if ev.type == EngineEvTypes.PAINT:
-            if self.primitive_style:
-                self._primitiv_render(ev.screen)
-            else:
-                self._reg_render(ev.screen)
+    def on_mousedown(self, ev):
+        if self.existing_menu:
+            self.existing_menu.proc_event(ev, None)
 
-        elif ev.type == EngineEvTypes.CONVCHOICE:  # ~ iterate over the conversation...
-            print('ConvChoice event received by', self.__class__.__name__)
-
-            self.curr_offer = ev.value
-            self.update_dialog_repr()
+    def on_mouseup(self, ev):
+        # /!\ its the mouse_up that allows to switch the rpgmenu state
+        if self.existing_menu:
+            self.existing_menu.proc_event(ev, None)
 
     def _primitiv_render(self, refscreen):
         pygame.draw.rect(refscreen, self.CONV_BG_COL, self.glob_rect)  # fond de fenetre
@@ -234,4 +236,4 @@ class ConversationView(EvListener):
                 nextfx()
         else:
             # auto-close everything
-            self.pev(EngineEvTypes.CONVENDS)
+            self.pev(EngineEvTypes.ConvFinish)
