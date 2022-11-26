@@ -250,16 +250,22 @@ class CustomConsole:
             lines = self.c_out[-(self.max_lines + self.c_scroll):len(self.c_out) - self.c_scroll]
             y_pos = self.size[1]-(self.font_height*(len(lines)+1))
             for line in lines:
-                label_surf = self.font.render(line, False, self.txt_color_o, (0, 0, 0))
-                dpos = (1, y_pos+self.line_disp_yoffset)
-                # self.txt_layer.blit(label_surf, dpos )
-                self.li_raw_lines_labels.append([label_surf, dpos])
+                if line == '':
+                    self.li_raw_lines_labels.append(None)
+                else:
+                    label_surf = self.font.render(line, False, self.txt_color_o, (0, 0, 0))
+                    dpos = (1, y_pos+self.line_disp_yoffset)
+                    # self.txt_layer.blit(label_surf, dpos )
+                    self.li_raw_lines_labels.append([label_surf, dpos])
                 y_pos += self.font_height
 
-            last_label = self.font.render(self.format_input_line(), False, self.txt_color_i)
-            last_pos = (1, self.size[1] - self.font_height + self.line_disp_yoffset)
-            # self.txt_layer.blit(last_label, last_pos)
-            self.li_raw_lines_labels.append([last_label, last_pos])
+            if self.format_input_line() == '':
+                self.li_raw_lines_labels.append(None)
+            else:
+                last_label = self.font.render(self.format_input_line(), False, self.txt_color_i)
+                last_pos = (1, self.size[1] - self.font_height + self.line_disp_yoffset)
+                # self.txt_layer.blit(last_label, last_pos)
+                self.li_raw_lines_labels.append([last_label, last_pos])
 
             # refresh bg_layer qui contiendra aussi txt_layer...
             # self.bg_layer = pygame.Surface(self.size)
@@ -268,9 +274,11 @@ class CustomConsole:
 
         self.bg_layer.fill(self.bg_color)
         self.scrref.blit(self.bg_layer, (0, 0))
-        # self.scrref.blit(self.txt_layer, self.rect)
-        for label, lpos in self.li_raw_lines_labels:
-            self.scrref.blit(label, lpos)
+
+        for liraw_elt in self.li_raw_lines_labels:
+            if liraw_elt:
+                label, lpos = liraw_elt
+                self.scrref.blit(label, lpos)
 
     def keyhandler(self, event):
         if self.active:
