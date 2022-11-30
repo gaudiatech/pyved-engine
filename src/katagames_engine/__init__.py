@@ -33,7 +33,6 @@
  * incentivizes you, the creator, to write clean readable easy-to-refactor &
   easy-to-reuse code!
 """
-
 import time
 
 from . import _hub as hub
@@ -47,8 +46,9 @@ from .compo import gfx
 from .compo import vscreen
 from .compo.modes import GameModeMger, BaseGameMode
 from .compo.vscreen import flip
-from .foundation import defs
+from .foundation import defs  # needed for the vm!
 from .foundation import event2
+from .foundation.defs import STD_SCR_SIZE, KengiEv, Singleton
 from .foundation.event2 import EvListener, Emitter, EngineEvTypes, game_events_enum
 from .foundation.interfaces import PygameIface
 from .util import underscore_format, camel_case_format
@@ -62,8 +62,9 @@ one_plus_init = False
 state_stack = None
 _stored_kbackend = None
 ver = ENGI_VERSION
+pbackend_name = ''  # can be modified from elsewhere
 
-pbackend_name = ''
+LD_HGC_SIG = (2, 'niobepolis')
 
 
 class Objectifier:
@@ -117,7 +118,7 @@ def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
             ValueError(f'graphic mode 0 required an extra valid screen_dim argument(provided by user: {screen_dim})')
 
         # from here, we know that the gfx_mode_code is 100% valid
-        conventionw, conventionh = defs.STD_SCR_SIZE
+        conventionw, conventionh = STD_SCR_SIZE
         if gfx_mode_code != 0:
             adhoc_upscaling = gfx_mode_code
             taille_surf_dessin = int(conventionw/gfx_mode_code), int(conventionh/gfx_mode_code)
@@ -145,7 +146,7 @@ def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
             _active_state = True
 
             if gfx_mode_code:
-                pgscreen = hub.pygame.display.set_mode(defs.STD_SCR_SIZE)
+                pgscreen = hub.pygame.display.set_mode(STD_SCR_SIZE)
             else:
                 pgscreen = hub.pygame.display.set_mode(taille_surf_dessin)
             vscreen.set_realpygame_screen(pgscreen)
@@ -301,17 +302,21 @@ class GameTpl:
         self._manager = None
         self.gameover = False
         self.clock = hub.kengi_inj['pygame'].time.Clock()
-        self._last_t = None
+        # self._last_t = None
 
     def enter(self, vms=None):
         init(1)
         self._manager = get_ev_manager()
         self._manager.setup()
 
-    def update(self, dt):
-        self._manager.post(EngineEvTypes.Update, delta_t=dt)
+    def update(self, infot):
+        self._manager.post(EngineEvTypes.Update, curr_t=infot)
         self._manager.post(EngineEvTypes.Paint, screen=vscreen.screen)
         self._manager.update()
+        pyg = hub.kengi_inj['pygame']
+        pk = pyg.key.get_pressed()
+        if pk[pyg.K_ESCAPE]:
+            return LD_HGC_SIG
         flip()
         self.clock.tick(self.MAXFPS)
 
@@ -319,23 +324,21 @@ class GameTpl:
         quit()
 
     def loop(self):
-        # /!\ its forbidden to call .loop() in the web ctx, for example
-        # therefore this lock mechanism can be handy
+        """
+        its forbidden to call .loop() in the web ctx, but its convenient in the local ctx
+        if one wants to test a program without using the Kata VM
+        :return:
+        """
+        # lock mechanism, for extra safety so we never call .loop() in the web ctx
         if self.SAFETY_LOCK:
             raise ValueError(self.ERR_LOCK_MSG)
+
         # use enter, update, exit to handle the global "run game logic"
         self.enter()
 
         while not self.gameover:
-
-            info = time.time()
-            if self._last_t is not None:
-                dt = info - self._last_t
-            else:
-                dt = 0
-            self._last_t = info
-            self.update(dt)
-
+            infot = time.time()
+            self.update(infot)
         self.exit()
         print(self.INFO_STOP_MSG)
 
