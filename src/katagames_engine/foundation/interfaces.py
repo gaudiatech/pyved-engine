@@ -23,15 +23,7 @@ from abc import abstractmethod, ABCMeta
 
 class BaseKenBackend(metaclass=ABCMeta):
     @abstractmethod
-    def pull_events(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def map_etype2kengi(self, alien_etype):
-        raise NotImplementedError
-
-    @abstractmethod
-    def joystick_count(self):
+    def fetch_kengi_events(self):
         raise NotImplementedError
 
     @abstractmethod
@@ -40,6 +32,10 @@ class BaseKenBackend(metaclass=ABCMeta):
 
     @abstractmethod
     def joystick_info(self, idj):
+        raise NotImplementedError
+
+    @abstractmethod
+    def joystick_count(self):
         raise NotImplementedError
 
 

@@ -20,9 +20,7 @@ class EvManager:
         self._etype_to_sncname = dict()  # corresp identifiant num. <-> nom event snakecase
         self.regexp = None
         self.debug_mode = False
-
         self.a_event_source = None
-
         # for debug purpose
         self._cached_extra_penum = None
 
@@ -34,14 +32,14 @@ class EvManager:
         self._cbuffer.enqueue((etype, kwargs))
 
     def update(self):
-        # optional block, in some cases this is equivalent to a <pass> instruction
-        if self.a_event_source:  # true => pull all events from alt. source (concrete kengi backend) & merge in cbuffer
-            for alien_ev in self.a_event_source.pull_events():
-                kevent = (self.a_event_source.map_etype2kengi(alien_ev.type), alien_ev.dict)
-                self._cbuffer.enqueue(kevent)
-
-        while len(self._cbuffer.deque_obj):
+        # optional block,
+        # in some cases this is equivalent to a <pass> instruction
+        if self.a_event_source is not None:
+            self._cbuffer.deque_obj.extend(self.a_event_source.fetch_kengi_events())
+        kappa = len(self._cbuffer.deque_obj)
+        while kappa > 0:
             etype, d = self._cbuffer.dequeue()
+            kappa -= 1
             if etype in self._etype_to_listenerli:
                 for lobj in self._etype_to_listenerli[etype]:
                     adhoc_meth_name = 'on_'+self._etype_to_sncname[etype]

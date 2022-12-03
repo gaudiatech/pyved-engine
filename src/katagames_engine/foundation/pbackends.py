@@ -84,9 +84,6 @@ class PygameKenBackend(BaseKenBackend):
         self._ev_storage = list()
         self.jm = None  # model for joystickS
 
-    def joystick_count(self):
-        return self._pygame_mod.joystick.get_count()
-
     def joystick_init(self, idj):
         self.jm = self._pygame_mod.joystick.Joystick(idj)
         self.jm.init()
@@ -94,29 +91,10 @@ class PygameKenBackend(BaseKenBackend):
     def joystick_info(self, idj):
         return self.jm.get_name()
 
-    def pull_events(self):
-        del self._ev_storage[:]
-        self._ev_storage.extend(self._pygame_mod.event.get())
+    def joystick_count(self):
+        return self._pygame_mod.joystick.get_count()
 
-        # for convenient gamepad support, we map pygame JOY* in a specialized way (xbox360 pad support) 1/2
-        for e in self._ev_storage:
-            if e.type == 1539 or e.type == 1540:  # joybtdown/joybtup
-                e.button = self.joy_bt_map[e.button]
-
-            elif e.type == 1538:  # joy Dpad has been activated
-                e.dir = self.dpad_mapping[e.value]
-                tmp = list(e.value)
-                if tmp[1] != 0:
-                    tmp[1] *= -1
-                e.value = e.dict['value'] = tmp
-
-            elif e.type == 1536:  # JOYAXISMOTION (0,1) ->joy L; (2,3)->joyR;  4 & 5->triggers Left & Right
-                # pyg has values in [-1,1]
-                pass
-
-        return self._ev_storage
-
-    def map_etype2kengi(self, alien_etype):
+    def _map_etype2kengi(self, alien_etype):
         if alien_etype not in self.__class__.static_mapping:
             if self.debug_mode:  # notify that there's no conversion
                 print('[no conversion] pygame etype=', alien_etype)  # alien_etype.dict)
@@ -126,6 +104,31 @@ class PygameKenBackend(BaseKenBackend):
                 # for convenient gamepad support, we map pygame JOY* in a more specialized way (xbox360 pad support) 2/2
                 # else:
             return self.__class__.static_mapping[alien_etype]
+
+    def fetch_kengi_events(self):
+        del self._ev_storage[:]
+        raw_pyg_events = self._pygame_mod.event.get()
+
+        # for convenient gamepad support, we map pygame JOY* in a specialized way (xbox360 pad support) 1/2
+        for pygev in raw_pyg_events:
+            if pygev.type == 1539 or pygev.type == 1540:  # joybtdown/joybtup
+                pygev.button = self.joy_bt_map[pygev.button]
+
+            elif pygev.type == 1538:  # joy Dpad has been activated
+                pygev.dir = self.dpad_mapping[pygev.value]
+                tmp = list(pygev.value)
+                if tmp[1] != 0:
+                    tmp[1] *= -1
+                pygev.value = pygev.dict['value'] = tmp
+
+            elif pygev.type == 1536:  # JOYAXISMOTION (0,1) ->joy L; (2,3)->joyR;  4 & 5->triggers Left & Right
+                # pyg has values in [-1,1]
+                pass
+
+            self._ev_storage.append(
+                (self._map_etype2kengi(pygev.type), pygev.dict)
+            )
+        return self._ev_storage
 
 
 def build_primalbackend(pbe_identifier: str):
