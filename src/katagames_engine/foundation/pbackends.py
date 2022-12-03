@@ -59,8 +59,8 @@ class PygameKenBackend(BaseKenBackend):
         1: 'B',
         2: 'X',
         3: 'Y',
-        4: 'LbKey',
-        5: 'RbKey',
+        4: 'lB',
+        5: 'rB',
         6: 'Back',
         7: 'Start'
     }
@@ -106,28 +106,48 @@ class PygameKenBackend(BaseKenBackend):
             return self.__class__.static_mapping[alien_etype]
 
     def fetch_kengi_events(self):
-        del self._ev_storage[:]
+        cst_joyaxismotion = 1536
+        cst_joyballmotion = 1537
+        cst_hatmotion = 1538
+        cst_joydown = 1539
+        cst_joyup = 1540
+
         raw_pyg_events = self._pygame_mod.event.get()
+        del self._ev_storage[:]
 
-        # for convenient gamepad support, we map pygame JOY* in a specialized way (xbox360 pad support) 1/2
-        for pygev in raw_pyg_events:
-            if pygev.type == 1539 or pygev.type == 1540:  # joybtdown/joybtup
-                pygev.button = self.joy_bt_map[pygev.button]
-
-            elif pygev.type == 1538:  # joy Dpad has been activated
-                pygev.dir = self.dpad_mapping[pygev.value]
-                tmp = list(pygev.value)
+        for pyev in raw_pyg_events:
+            # for convenient gamepad support, we will
+            # map pygame JOY* in a specialized way (xbox360 pad support)
+            if pyev.type == cst_joyaxismotion:
+                if pyev.axis == 4:
+                    self._ev_storage.append(
+                        (EngineEvTypes.Gamepaddown, {'button': 'lTrigger', 'value': pyev.value})
+                    )
+                elif pyev.axis == 5:
+                    self._ev_storage.append(
+                        (EngineEvTypes.Gamepaddown, {'button': 'rTrigger', 'value': pyev.value})
+                    )
+            if pyev.type == cst_joyballmotion:
+                # ignore
+                continue
+            if pyev.type == cst_hatmotion:  # joy Dpad has been activated
+                # <Event(1538-JoyHatMotion {'joy': 0, 'instance_id': 0, 'hat': 0, 'value': (0, 0)})>
+                setattr(pyev, 'dir', self.dpad_mapping[pyev.value])  # east, west, etc.
+                tmp = list(pyev.value)
                 if tmp[1] != 0:
                     tmp[1] *= -1
-                pygev.value = pygev.dict['value'] = tmp
+                pyev.value = pyev.dict['value'] = tuple(tmp)
+                self._ev_storage.append((self._map_etype2kengi(pyev.type), pyev.dict))
+                continue
+            if pyev.type == cst_joydown or pyev.type == cst_joyup:  # joybtdown/joybtup
+                pyev.button = self.joy_bt_map[pyev.button]  # change name of the button
+                setattr(pyev, 'value', int(pyev.type == cst_joydown))
+                self._ev_storage.append((self._map_etype2kengi(pyev.type), pyev.dict))
+                continue
 
-            elif pygev.type == 1536:  # JOYAXISMOTION (0,1) ->joy L; (2,3)->joyR;  4 & 5->triggers Left & Right
-                # pyg has values in [-1,1]
-                pass
+            k_event = (self._map_etype2kengi(pyev.type), pyev.dict)
+            self._ev_storage.append(k_event)
 
-            self._ev_storage.append(
-                (self._map_etype2kengi(pygev.type), pygev.dict)
-            )
         return self._ev_storage
 
 

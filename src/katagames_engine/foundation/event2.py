@@ -25,6 +25,10 @@ class EvManager:
         self._cached_extra_penum = None
 
     @property
+    def all_possible_etypes(self):
+        return tuple(self._known_ev_types.keys())
+
+    @property
     def queue_size(self):
         return self._cbuffer.get_size()
 
@@ -42,8 +46,11 @@ class EvManager:
             kappa -= 1
             if etype in self._etype_to_listenerli:
                 for lobj in self._etype_to_listenerli[etype]:
-                    adhoc_meth_name = 'on_'+self._etype_to_sncname[etype]
-                    getattr(lobj, adhoc_meth_name)(KengiEv(etype, **d))
+                    if not hasattr(lobj, 'on_event'):  # on_event defined => we always use this method!
+                        adhoc_meth_name = 'on_'+self._etype_to_sncname[etype]
+                        getattr(lobj, adhoc_meth_name)(KengiEv(etype, **d))
+                    else:
+                        lobj.on_event(KengiEv(etype, **d))
 
     def hard_reset(self):
         self._etype_to_listenerli.clear()
@@ -147,6 +154,14 @@ class EvListener(Emitter):
 
         if self._manager is None:
             self._manager = EvManager.instance()
+
+        # special case: listen to every possible event!
+        if hasattr(self, 'on_event') and callable(self.on_event):
+            for etn in self._manager.all_possible_etypes:
+                self._tracked_ev.append(etn)
+                self._manager.subscribe(etn, self)
+            self._is_active = True
+            return
 
         # introspection & detection des on_*
         # où * représente tout type d'évènement connu du moteur, que ce soit un event engine ou un event custom ajouté
