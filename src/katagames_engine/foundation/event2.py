@@ -9,7 +9,7 @@ _FIRST_LISTENER_ID = 72931
 
 
 def game_events_enum(x_iterable):
-    return PseudoEnum(x_iterable, EngineEvTypes.first + EngineEvTypes.size)
+    return PseudoEnum(x_iterable, 1 + EngineEvTypes.first + EngineEvTypes.size)
 
 
 @Singleton
@@ -24,6 +24,9 @@ class EvManager:
         self.a_event_source = None
         # for debug purpose
         self._cached_extra_penum = None
+
+        # can be useful when one needs to insta-STOP processing events(use-case: reset the manager)
+        self.fresh_reset = False
 
         # for auto-repeat post event mechanism (like in JS, set_interval):
         self._lsent = dict()  # etype <-> t
@@ -86,9 +89,20 @@ class EvManager:
                         getattr(lobj, adhoc_meth_name)(KengiEv(etype, **d))
                     else:
                         lobj.on_event(KengiEv(etype, **d))
+            if self.fresh_reset:
+                return
 
     def hard_reset(self):
+        self.fresh_reset = True
+
+        # destroy events
+        self._cbuffer = CircularBuffer()
+
         self._etype_to_listenerli.clear()
+
+        self._lsent = dict()  # etype <-> t
+        self._intervalsdef = dict()
+        self._storedargs = dict()  # etype <-> dict kwargs
 
     def _refresh_regexp(self, gnames):
         # we create a regexp such that, listeners know what keywords they have to consider
@@ -131,6 +145,8 @@ class EvManager:
         return EngineEvTypes.inv_map[g_etype]
 
     def setup(self, given_extra_penum=None):
+        self.fresh_reset = False
+
         names = list()
         self._known_ev_types = EngineEvTypes.content.copy()
 
