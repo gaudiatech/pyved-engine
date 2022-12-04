@@ -209,6 +209,108 @@ def get_surface():
 #     )
 
 
+class StateStackCtrl(EvListener):
+    def __init__(self, all_gs, stmapping):
+    # old sig:
+    # def __init__(self, existing_ticker, gamestates_enum, glvars_pymodule, stmapping):
+
+        super().__init__()
+        self._gs_omega = all_gs
+        self._stack = struct.Stack()
+        self.first_state_id = all_gs.all_codes[0]  # CONVENTION: the first of the enum <=> the init gamestate id !
+
+        # lets build up all gamestates objects
+        self._st_container = struct.StContainer()
+
+        # relation avec stcontainer
+        self._st_container.setup(all_gs, stmapping, None)
+
+        # if -1 in stmapping:  # TODO fix architecture, engine shouldnt know bout SDK feat
+        #     self.first_state_id = -1
+        # else:
+        #     self.first_state_id = 0
+        self.__state_stack = struct.Stack()
+
+    # redefinition
+    # def halt(self):
+    #     while self.get_curr_state_ident() is not None:
+    #         self._pop_state()
+    #     self.ticker.halt()
+
+    def get_curr_state_ident(self):
+        return self.__state_stack.peek()
+
+    # --- ---
+    #  MÉTIER
+    # --- ---
+    def _push_state(self, state_obj):
+        tmp = self.__state_stack.peek()
+        curr_state = self._st_container.retrieve(tmp)
+        curr_state.pause()
+
+        self.__state_stack.push(state_obj.get_id())
+        state_obj.enter()
+
+    def _pop_state(self):
+        self.__only_the_pop_part()
+
+        # FOLLOW - UP
+        if self.__state_stack.count() == 0:
+            # TODO needs repair?
+            # self.ticker.halt()
+            pass
+            print('state count 0')
+        else:
+            tmp = self.__state_stack.peek()
+            state_obj = self._st_container.retrieve(tmp)
+            state_obj.resume()
+
+    def _change_state(self, state_obj):
+        self.__only_the_pop_part()
+        # FOLLOW - UP
+        self.__state_stack.push(state_obj.get_id())
+        state_obj.enter()
+
+    # Warning! never, ever call this method without some kind of follow-up (private method)
+    def __only_the_pop_part(self):
+        tmp = self.__state_stack.pop()
+        state_obj = self._st_container.retrieve(tmp)
+        state_obj.release()
+
+    # --------------------
+    #  CALLBACKS
+    # --------------------
+    # def proc_event(self, ev, source):
+    #     if ev.type == _hub.pygame.QUIT or ev.type == EngineEvTypes.GAMEENDS:
+    #         self.halt()
+
+    def on_state_change(self, ev):
+        state_obj = self._st_container.retrieve(ev.state_ident)
+        self._change_state(state_obj)
+
+    def on_state_push(self, ev):
+        state_obj = self._st_container.retrieve(ev.state_ident)
+        self._push_state(state_obj)
+
+    def on_state_pop(self, ev):
+        self._pop_state()
+
+    def on_gamestart(self, ev):
+        self.__state_stack.push(self.first_state_id)
+        self._st_container.retrieve(self.first_state_id).enter()
+
+
+def declare_game_states(gs_enum, assoc_gscode_gscls):
+    """
+    :param gs_enum: enum of every single gamestate code
+    :param assoc_gscode_gscls: a dict that binds a gamestate code to a gamestate class
+    """
+    global state_ctrl
+    state_ctrl = StateStackCtrl(gs_enum, assoc_gscode_gscls)
+    state_ctrl.turn_on()
+    print('* gamestates control is OPERATIONAL *')
+
+
 class _MyGameCtrl(event2.EvListener):
     MAXFPS = 75
 
@@ -302,7 +404,6 @@ class GameTpl:
         self._manager = None
         self.gameover = False
         self.clock = hub.kengi_inj['pygame'].time.Clock()
-        # self._last_t = None
 
     def enter(self, vms=None):
         init(1)
@@ -315,7 +416,7 @@ class GameTpl:
         self._manager.update()
         pyg = hub.kengi_inj['pygame']
         pk = pyg.key.get_pressed()
-        if pk[pyg.K_ESCAPE]:
+        if pk[pyg.K_ESCAPE] or self.gameover:
             return LD_HGC_SIG
         flip()
         self.clock.tick(self.MAXFPS)
