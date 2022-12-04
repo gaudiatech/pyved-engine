@@ -82,14 +82,16 @@ class PygameKenBackend(BaseKenBackend):
         self._pygame_mod = _hub.kengi_inj['pygame']
         self.debug_mode = False
         self._ev_storage = list()
-        self.jm = None  # model for joystickS
+        self.pyg_jm = None  # model for joystickS
+        self.lstick_val_cache = [0.0, 0.0]
+        self.rstick_val_cache = [0.0, 0.0]
 
     def joystick_init(self, idj):
-        self.jm = self._pygame_mod.joystick.Joystick(idj)
-        self.jm.init()
+        self.pyg_jm = self._pygame_mod.joystick.Joystick(idj)
+        self.pyg_jm.init()
 
     def joystick_info(self, idj):
-        return self.jm.get_name()
+        return self.pyg_jm.get_name()
 
     def joystick_count(self):
         return self._pygame_mod.joystick.get_count()
@@ -119,7 +121,17 @@ class PygameKenBackend(BaseKenBackend):
             # for convenient gamepad support, we will
             # map pygame JOY* in a specialized way (xbox360 pad support)
             if pyev.type == cst_joyaxismotion:
-                if pyev.axis == 4:
+                if pyev.axis in (0, 1):
+                    self.lstick_val_cache[pyev.axis] = pyev.value
+                    self._ev_storage.append(
+                        (EngineEvTypes.Stickmotion, {'side': 'left', 'pos': tuple(self.lstick_val_cache)})
+                    )
+                elif pyev.axis in (2, 3):
+                    self.rstick_val_cache[-2+pyev.axis] = pyev.value
+                    self._ev_storage.append(
+                        (EngineEvTypes.Stickmotion, {'side': 'right', 'pos': tuple(self.rstick_val_cache)})
+                    )
+                elif pyev.axis == 4:
                     self._ev_storage.append(
                         (EngineEvTypes.Gamepaddown, {'button': 'lTrigger', 'value': pyev.value})
                     )
@@ -127,10 +139,12 @@ class PygameKenBackend(BaseKenBackend):
                     self._ev_storage.append(
                         (EngineEvTypes.Gamepaddown, {'button': 'rTrigger', 'value': pyev.value})
                     )
-            if pyev.type == cst_joyballmotion:
+
+            elif pyev.type == cst_joyballmotion:
                 # ignore
-                continue
-            if pyev.type == cst_hatmotion:  # joy Dpad has been activated
+                pass
+
+            elif pyev.type == cst_hatmotion:  # joy Dpad has been activated
                 # <Event(1538-JoyHatMotion {'joy': 0, 'instance_id': 0, 'hat': 0, 'value': (0, 0)})>
                 setattr(pyev, 'dir', self.dpad_mapping[pyev.value])  # east, west, etc.
                 tmp = list(pyev.value)
@@ -138,15 +152,15 @@ class PygameKenBackend(BaseKenBackend):
                     tmp[1] *= -1
                 pyev.value = pyev.dict['value'] = tuple(tmp)
                 self._ev_storage.append((self._map_etype2kengi(pyev.type), pyev.dict))
-                continue
-            if pyev.type == cst_joydown or pyev.type == cst_joyup:  # joybtdown/joybtup
+
+            elif pyev.type == cst_joydown or pyev.type == cst_joyup:  # joybtdown/joybtup
                 pyev.button = self.joy_bt_map[pyev.button]  # change name of the button
                 setattr(pyev, 'value', int(pyev.type == cst_joydown))
                 self._ev_storage.append((self._map_etype2kengi(pyev.type), pyev.dict))
-                continue
 
-            k_event = (self._map_etype2kengi(pyev.type), pyev.dict)
-            self._ev_storage.append(k_event)
+            else:
+                k_event = (self._map_etype2kengi(pyev.type), pyev.dict)
+                self._ev_storage.append(k_event)
 
         return self._ev_storage
 
