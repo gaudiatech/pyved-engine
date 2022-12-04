@@ -1,4 +1,5 @@
 import re
+import time
 
 from .defs import EngineEvTypes, KengiEv, PseudoEnum
 from .defs import to_camelcase, to_snakecase, CircularBuffer, Singleton
@@ -24,6 +25,11 @@ class EvManager:
         # for debug purpose
         self._cached_extra_penum = None
 
+        # for auto-repeat post event mechanism (like in JS, set_interval):
+        self._lsent = dict()  # etype <-> t
+        self._intervalsdef = dict()
+        self._storedargs = dict()  # etype <-> dict kwargs
+
     @property
     def all_possible_etypes(self):
         return tuple(self._known_ev_types.keys())
@@ -35,11 +41,40 @@ class EvManager:
     def post(self, etype, **kwargs):
         self._cbuffer.enqueue((etype, kwargs))
 
+    def set_interval(self, delay, etype, **kwargs):
+        """
+        :param delay: in MS !!!!
+        :param etype:
+        :param kwargs:
+        :return:
+        """
+        if delay > 0:
+            self._intervalsdef[etype] = delay/1000  # to keep seconds
+            self._storedargs[etype] = kwargs
+            # pretend one was sent right now
+            self._lsent[etype] = time.time()
+            print('set_interval OK')
+            print(self._intervalsdef, self._storedargs, self._lsent)
+        else:
+            del self._intervalsdef[etype]
+
     def update(self):
-        # optional block,
+        # optional block:
         # in some cases this is equivalent to a <pass> instruction
         if self.a_event_source is not None:
             self._cbuffer.deque_obj.extend(self.a_event_source.fetch_kengi_events())
+
+        # if some interval timed-events have been defined, inject whats needed to _cbuffer
+        for ety, delay in self._intervalsdef.items():
+            tnow = time.time()
+            dt = tnow-self._lsent[ety]
+            if dt > delay:
+                kwargs = self._storedargs[ety]
+                # 'pushin to cbuffer:', ety, kwargs, ' and dt was:', dt)
+                self.post(ety, **kwargs)
+                self._lsent[ety] = tnow
+
+        # process all content tbf in ._cbuffer
         kappa = len(self._cbuffer.deque_obj)
         while kappa > 0:
             etype, d = self._cbuffer.dequeue()
