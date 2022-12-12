@@ -1,14 +1,12 @@
-#! /usr/bin/env python
-
-
-from ChessBoard import ChessBoard
-from ChessAI import ChessAI_random, ChessAI_defense, ChessAI_offense
-from ChessPlayer import ChessPlayer
-from ChessGUI_text import ChessGUI_text
-from ChessGUI_pygame import ChessGUI_pygame
-from ChessRules import ChessRules
-from optparse import OptionParser
 import time
+from optparse import OptionParser
+
+from ChessAI import ChessAI_random, ChessAI_defense, ChessAI_offense
+from ChessBoard import ChessBoard
+from ChessGUI_pygame import ChessGUI_pygame
+from ChessGUI_text import ChessGUI_text
+from ChessPlayer import ChessPlayer
+from ChessRules import ChessRules
 
 
 # - pour switcher sur le mode jeu via console (sans pygame)
