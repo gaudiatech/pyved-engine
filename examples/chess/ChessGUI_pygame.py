@@ -15,14 +15,28 @@ def load_img(assetname):
 
 
 class ChessGameView:
+    BG_COLOR = (125, 110, 120)  #  '#06170e' # dark green  #
+
+    OFFSET_X = 64
+    OFFSET_Y = 175
+
     def __init__(self, scr_ref):
         self.Rules = ChessRules()
         self.screen = scr_ref
-        self.boardStart_x = 50
-        self.boardStart_y = 50
-        self.textBox = ScrollingTextBox(self.screen, 525, 825, 50, 450)
+
+        # self.textBox = ScrollingTextBox(self.screen, 525, 825, 50, 450)
+        # -* Hacking begins *-
+        self.textBox = kengi.console.CustomConsole(scr_ref, (self.OFFSET_X, 4, 640, 133))
+        self.textBox.active = True
+        self.textBox.bg_color = self.BG_COLOR  # customize console
+        self.textBox.font_size = 25
+        # self.textBox.Add = extAdd
+        self.textBox.Add = self.textBox.output
+        # -* Hacking done *-
+
         self._preload_assets()
         self.fontDefault = pygame.font.Font(None, 20)
+        self.ready_to_quit = False
 
     def _preload_assets(self):
         self.square_size = 100
@@ -58,29 +72,27 @@ class ChessGameView:
     def PrintMessage(self, message):
         # prints a string to the area to the right of the board
         self.textBox.Add(message)
-        self.textBox.Draw()
+        self.textBox.draw()
 
     def ConvertToScreenCoords(self, chessSquareTuple):
         # converts a (row,col) chessSquare into the pixel location of the upper-left corner of the square
         (row, col) = chessSquareTuple
-        screenX = self.boardStart_x + col * self.square_size
-        screenY = self.boardStart_y + row * self.square_size
-        return (screenX, screenY)
+        screenX = self.OFFSET_X + col * self.square_size
+        screenY = self.OFFSET_Y + row * self.square_size
+        return screenX, screenY
 
     def ConvertToChessCoords(self, screenPositionTuple):
         # converts a screen pixel location (X,Y) into a chessSquare tuple (row,col)
         # x is horizontal, y is vertical
         # (x=0,y=0) is upper-left corner of the screen
         (X, Y) = screenPositionTuple
-        row = (Y - self.boardStart_y) / self.square_size
-        col = (X - self.boardStart_x) / self.square_size
+        row = (Y - self.OFFSET_Y) / self.square_size
+        col = (X - self.OFFSET_X) / self.square_size
         return int(row), int(col)
 
     def do_paint(self, board, highlightSquares=None):
-        self.screen.fill((125, 110, 120))
-
-        #  TODO rétablir textbox !
-        #self.textBox.Draw()
+        self.screen.fill(self.BG_COLOR)
+        self.textBox.draw()
         boardSize = len(board)  # should be always 8, but here we can avoid magic numbers
 
         # draw blank board
@@ -171,16 +183,7 @@ class ChessGameView:
         self.do_paint(board)  # draw board to show end game status
         # TODO remove this flip
         kengi.flip()
-
-        pygame.event.set_blocked(pygame.MOUSEMOTION)
-        while 1:
-            e = pygame.event.wait()
-            if e.type == pygame.KEYDOWN:
-                pygame.quit()
-                sys.exit(0)
-            if e.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit(0)
+        self.ready_to_quit = True
 
     def GetPlayerInput(self, board, currentColor) -> tuple:
         """
@@ -256,7 +259,7 @@ class ChessGameView:
         # test function
         print("User clicked screen position x =", mouseX, "y =", mouseY)
         (row, col) = self.ConvertToChessCoords((mouseX, mouseY))
-        if col < 8 and col >= 0 and row < 8 and row >= 0:
+        if 8 > col >= 0 and row < 8 and row >= 0:
             print("  Chess board units row =", row, "col =", col)
 
     # def TestRoutine(self):

@@ -1,5 +1,22 @@
+"""
+Project - Python Chess
+
+(c) All rights reserved
+Code LICENCE = GNU GPL
+
+Original work published in 2009 by:
+ Steve Osborne
+   [contact: srosborne_at_gmail.com]
+
+Enhanced 2022 version/Python3+Kengi port by:
+ Thomas Iwaszko
+   [contact: tom@kata.games]
+"""
+
 import time
 from optparse import OptionParser
+
+import pygame
 
 import katagames_engine as kengi
 from ChessAI import ChessAI_random, ChessAI_defense, ChessAI_offense
@@ -7,7 +24,6 @@ from ChessBoard import ChessBoard
 from ChessGUI_pygame import ChessGameView
 from ChessPlayer import ChessPlayer
 from ChessRules import ChessRules
-
 
 # - pour switcher sur le mode jeu via console (sans pygame)
 # import sys
@@ -84,45 +100,55 @@ def loop():
 	turnCount = 0
 	gameover = False
 	while not gameover:
-		board_st = board.GetState()
-		currentColor = player[currentPlayerIndex].GetColor()
-		# hardcoded so that player 1 is always white
-		if currentColor == 'white':
-			turnCount = turnCount + 1
-		Gui.PrintMessage("")
-		baseMsg = "TURN %s - %s (%s)" % (str(turnCount), player[currentPlayerIndex].GetName(), currentColor)
-		Gui.PrintMessage("-----%s-----" % baseMsg)
 
-		# refresh GFX
-		Gui.do_paint(board_st)
-		kengi.flip()
+		if not Gui.ready_to_quit:
+			# --- regular play ---
 
-		if rules.IsInCheck(board_st, currentColor):
-			suffx = '{} ({}) is in check'.format(
-				player[currentPlayerIndex].GetName(), player[currentPlayerIndex].GetColor()
-			)
-			Gui.PrintMessage("Warning..." + suffx)
+			board_st = board.GetState()
+			currentColor = player[currentPlayerIndex].GetColor()
+			# hardcoded so that player 1 is always white
+			if currentColor == 'white':
+				turnCount = turnCount + 1
+			Gui.PrintMessage("")
+			baseMsg = "TURN %s - %s (%s)" % (str(turnCount), player[currentPlayerIndex].GetName(), currentColor)
+			Gui.PrintMessage("--%s--" % baseMsg)
 
-		if player[currentPlayerIndex].GetType() == 'AI':
-			moveTuple = player[currentPlayerIndex].GetMove(board.GetState(), currentColor)
+			# refresh GFX
+			Gui.do_paint(board_st)
+			kengi.flip()
+
+			if rules.IsInCheck(board_st, currentColor):
+				suffx = '{} ({}) is in check'.format(
+					player[currentPlayerIndex].GetName(), player[currentPlayerIndex].GetColor()
+				)
+				Gui.PrintMessage("Warning..." + suffx)
+
+			if player[currentPlayerIndex].GetType() == 'AI':
+				moveTuple = player[currentPlayerIndex].GetMove(board.GetState(), currentColor)
+			else:
+				moveTuple = Gui.GetPlayerInput(board_st, currentColor)
+
+			moveReport = board.move_piece(moveTuple)
+			# moveReport = string like "White Bishop moves from A1 to C3" (+) "and captures ___!"
+			Gui.PrintMessage(moveReport)
+
+			# this will cause the currentPlayerIndex to toggle between 1 and 0
+			currentPlayerIndex = (currentPlayerIndex + 1) % 2
+			if AIvsAI and AIpause:
+				time.sleep(AIpauseSeconds)
+			if rules.IsCheckmate(board.GetState(), player[currentPlayerIndex].color):
+				Gui.ready_to_quit = True
+
 		else:
-			moveTuple = Gui.GetPlayerInput(board_st, currentColor)
-
-		moveReport = board.move_piece(
-			moveTuple)  # moveReport = string like "White Bishop moves from A1 to C3" (+) "and captures ___!"
-		Gui.PrintMessage(moveReport)
-		# this will cause the currentPlayerIndex to toggle between 1 and 0
-		currentPlayerIndex = (currentPlayerIndex + 1) % 2
-		if AIvsAI and AIpause:
-			time.sleep(AIpauseSeconds)
-		if rules.IsCheckmate(board.GetState(), player[currentPlayerIndex].color):
-			gameover = True
-
-	Gui.PrintMessage("CHECKMATE!")
-	winnerIndex = (currentPlayerIndex + 1) % 2
-	Gui.PrintMessage(
-		player[winnerIndex].GetName() + " (" + player[winnerIndex].GetColor() + ") won the game!")
-	Gui.EndGame(board_st)
+			# --- end game ---
+			Gui.PrintMessage("CHECKMATE!")
+			winnerIndex = (currentPlayerIndex + 1) % 2
+			Gui.PrintMessage(
+				player[winnerIndex].GetName() + " (" + player[winnerIndex].GetColor() + ") won the game!")
+			Gui.EndGame(board_st)
+			for e in pygame.event.get():
+				if e.type == pygame.KEYDOWN:
+					gameover = True
 
 
 parser = OptionParser()
@@ -143,7 +169,7 @@ parser.add_option(
 	action="store", default=0, help="Sets time to pause between moves in AI vs. AI games (default = 0)"
 )
 
-(options, args) = parser.parse_args()
+(giv_options, args) = parser.parse_args()
 
 if __name__ == '__main__':
 	# before calling SetUp, need to init pygame etc.
@@ -152,7 +178,7 @@ if __name__ == '__main__':
 	# pygame.init()
 	# pygame.display.init()
 	# pygame.display.set_mode(W_SIZE)
-	SetUp(options)
+	SetUp(giv_options)
 	loop()
 	kengi.quit()
 
