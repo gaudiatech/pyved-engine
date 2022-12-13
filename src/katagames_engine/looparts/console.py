@@ -116,18 +116,21 @@ class CustomConsole:
         #self.parent_screen = screen
 
         self.rect = pygame.Rect(rect)
+        self.base_x, self.base_y = self.rect[0], self.rect[1]
+
         self.size = self.rect.size
 
+        self._fontsize = 18
         if fontobj is None:
-            self.font = pygame.font.Font(None, 18)
+            self.font = pygame.font.Font(None, self._fontsize)
         else:
             self.font = fontobj
         # en remplacement de:
         # adhoc_ft_size = CONSOLE_FT_SIZE if (ftsize is None) else ftsize
         # print('CONSOLE uses font {}, size{}'.format(fontpath, adhoc_ft_size))
         # self.font = pygame.font.Font(fontpath, adhoc_ft_size)
-
         self.font_height = self.font.get_linesize()
+
         self.max_lines = int((self.size[1] / self.font_height) - 1)
         ftdim = self.font.size(omega_ascii_letters)
         kappa = ftdim[0] / len(omega_ascii_letters)
@@ -157,6 +160,18 @@ class CustomConsole:
         self.add_functions_calls(functions)
 
         self.cb_func = None
+
+    @property
+    def font_size(self):
+        return self._fontsize
+
+    @font_size.setter
+    def font_size(self, new_val):
+        self._fontsize = new_val
+        self.font = pygame.font.Font(None, new_val)
+        # need to update this, as well
+        self.font_height = self.font.get_linesize()
+        self.changed = True
 
     def set_motd(self, msg):
         self.message_of_the_day = msg.splitlines()
@@ -254,7 +269,7 @@ class CustomConsole:
                     self.li_raw_lines_labels.append(None)
                 else:
                     label_surf = self.font.render(line, False, self.txt_color_o, (0, 0, 0))
-                    dpos = (1, y_pos+self.line_disp_yoffset)
+                    dpos = (self.base_x, self.base_y+y_pos+self.line_disp_yoffset)
                     # self.txt_layer.blit(label_surf, dpos )
                     self.li_raw_lines_labels.append([label_surf, dpos])
                 y_pos += self.font_height
@@ -263,7 +278,7 @@ class CustomConsole:
                 self.li_raw_lines_labels.append(None)
             else:
                 last_label = self.font.render(self.format_input_line(), False, self.txt_color_i)
-                last_pos = (1, self.size[1] - self.font_height + self.line_disp_yoffset)
+                last_pos = (self.base_x, self.base_y + self.size[1] - self.font_height + self.line_disp_yoffset)
                 # self.txt_layer.blit(last_label, last_pos)
                 self.li_raw_lines_labels.append([last_label, last_pos])
 
@@ -273,7 +288,7 @@ class CustomConsole:
             self.changed = False
 
         self.bg_layer.fill(self.bg_color)
-        self.scrref.blit(self.bg_layer, (0, 0))
+        self.scrref.blit(self.bg_layer, (self.base_x, self.base_y))
 
         for liraw_elt in self.li_raw_lines_labels:
             if liraw_elt:
