@@ -179,11 +179,13 @@ class ChessGameView:
                     self.dessin_piece_centree(self.white_king, (r, c), -18)
 
     def EndGame(self, board):
-        self.PrintMessage("Press any key to exit.")
+        if not self.ready_to_quit:
+            self.PrintMessage("Press any key to exit.")
+            self.ready_to_quit = True
+
         self.do_paint(board)  # draw board to show end game status
         # TODO remove this flip
         kengi.flip()
-        self.ready_to_quit = True
 
     def GetPlayerInput(self, board, currentColor) -> tuple:
         """
