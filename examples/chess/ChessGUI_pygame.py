@@ -2,6 +2,7 @@ import katagames_engine as kengi
 from ChessBoard import ChessBoard
 from ChessRules import ChessRules
 from ScrollingTextBox import ScrollingTextBox
+from chess_defs import ChessEvents
 
 
 W_SIZE = (850, 500)
@@ -14,19 +15,29 @@ def load_img(assetname):
     return pygame.image.load('images/' + assetname)
 
 
-class ChessGameView:
+class ChessGameView(kengi.EvListener):
     BG_COLOR = (125, 110, 120)  #  '#06170e' # dark green  #
 
     OFFSET_X = 64
     OFFSET_Y = 175
 
-    def __init__(self, scr_ref):
+    def __init__(self, screenref):
+        super().__init__()
+
         self.Rules = ChessRules()
-        self.screen = scr_ref
+        self.board = None  # update from outside
+        self.curr_color = 'white'  # player active, updated from outside
+
+        self._fluo_squares = None  # qd qq chose est select ->affiche ou on peut bouger
+        self.possibleDestinations = None
+
+        # gui
+        self.fromSquareChosen = self.toSquareChosen = None
+        self._sortie_subloop = self._sortie_subloop2 = None
 
         # self.textBox = ScrollingTextBox(self.screen, 525, 825, 50, 450)
         # -* Hacking begins *-
-        self.textBox = kengi.console.CustomConsole(scr_ref, (self.OFFSET_X, 4, 640, 133))
+        self.textBox = kengi.console.CustomConsole(screenref, (self.OFFSET_X, 4, 640, 133))
         self.textBox.active = True
         self.textBox.bg_color = self.BG_COLOR  # customize console
         self.textBox.font_size = 25
@@ -71,8 +82,9 @@ class ChessGameView:
 
     def PrintMessage(self, message):
         # prints a string to the area to the right of the board
+        # print('envoi [{}] ds la console...'.format(message))
         self.textBox.Add(message)
-        self.textBox.draw()
+        # self.textBox.draw()
 
     def ConvertToScreenCoords(self, chessSquareTuple):
         # converts a (row,col) chessSquare into the pixel location of the upper-left corner of the square
@@ -90,9 +102,9 @@ class ChessGameView:
         col = (X - self.OFFSET_X) / self.square_size
         return int(row), int(col)
 
-    def do_paint(self, board, highlightSquares=None):
-        self.screen.fill(self.BG_COLOR)
-        self.textBox.draw()
+    def drawboard(self, scrsurf, board):
+        scrsurf.fill(self.BG_COLOR)
+
         boardSize = len(board)  # should be always 8, but here we can avoid magic numbers
 
         # draw blank board
@@ -101,10 +113,10 @@ class ChessGameView:
             for c in range(boardSize):
                 (screenX, screenY) = self.ConvertToScreenCoords((r, c))
                 if current_square:
-                    self.screen.blit(self.brown_square, (screenX, screenY))
+                    scrsurf.blit(self.brown_square, (screenX, screenY))
                     current_square = (current_square + 1) % 2
                 else:
-                    self.screen.blit(self.white_square, (screenX, screenY))
+                    scrsurf.blit(self.white_square, (screenX, screenY))
                     current_square = (current_square + 1) % 2
             current_square = (current_square + 1) % 2
 
@@ -121,7 +133,7 @@ class ChessGameView:
                 screenY = screenY + self.square_size / 2
                 notation = chessboard_obj.ConvertToAlgebraicNotation_col(c)
                 renderedLine = self.fontDefault.render(notation, antialias, color)
-                self.screen.blit(renderedLine, (screenX, screenY))
+                scrsurf.blit(renderedLine, (screenX, screenY))
 
         # left and right - display rows
         for r in range(boardSize):
@@ -131,52 +143,54 @@ class ChessGameView:
                 screenY = screenY + self.square_size / 2
                 notation = chessboard_obj.ConvertToAlgebraicNotation_row(r)
                 renderedLine = self.fontDefault.render(notation, antialias, color)
-                self.screen.blit(renderedLine, (screenX, screenY))
+                scrsurf.blit(renderedLine, (screenX, screenY))
 
         # highlight squares if specified
-        if highlightSquares:
-            for square in highlightSquares:
-                (screenX, screenY) = self.ConvertToScreenCoords(square)
-                self.screen.blit(self.cyan_square, (screenX, screenY))
+        if self._fluo_squares is not None:
+            for e in self._fluo_squares:
+                (screenX, screenY) = self.ConvertToScreenCoords(e)
+                scrsurf.blit(self.cyan_square, (screenX, screenY))
+
+        self.textBox.draw()
 
         # draw pieces
         for r in range(boardSize):
             for c in range(boardSize):
                 if board[r][c] == 'bP':
-                    self.dessin_piece_centree(self.black_pawn, (r, c))
+                    self.dessin_piece_centree(scrsurf, self.black_pawn, (r, c))
 
                 if board[r][c] == 'bR':
-                    self.dessin_piece_centree(self.black_rook, (r, c))
+                    self.dessin_piece_centree(scrsurf, self.black_rook, (r, c))
 
                 if board[r][c] == 'bT':
-                    self.dessin_piece_centree(self.black_knight, (r, c))
+                    self.dessin_piece_centree(scrsurf, self.black_knight, (r, c))
 
                 if board[r][c] == 'bB':
-                    self.dessin_piece_centree(self.black_bishop, (r, c), -13)
+                    self.dessin_piece_centree(scrsurf, self.black_bishop, (r, c), -13)
 
                 if board[r][c] == 'bQ':
-                    self.dessin_piece_centree(self.black_queen, (r, c))
+                    self.dessin_piece_centree(scrsurf, self.black_queen, (r, c))
 
                 if board[r][c] == 'bK':
-                    self.dessin_piece_centree(self.black_king, (r, c), -18)
+                    self.dessin_piece_centree(scrsurf, self.black_king, (r, c), -18)
 
                 if board[r][c] == 'wP':
-                    self.dessin_piece_centree(self.white_pawn, (r, c))
+                    self.dessin_piece_centree(scrsurf, self.white_pawn, (r, c))
 
                 if board[r][c] == 'wR':
-                    self.dessin_piece_centree(self.white_rook, (r, c))
+                    self.dessin_piece_centree(scrsurf, self.white_rook, (r, c))
 
                 if board[r][c] == 'wT':
-                    self.dessin_piece_centree(self.white_knight, (r, c))
+                    self.dessin_piece_centree(scrsurf, self.white_knight, (r, c))
 
                 if board[r][c] == 'wB':
-                    self.dessin_piece_centree(self.white_bishop, (r, c), -13)
+                    self.dessin_piece_centree(scrsurf, self.white_bishop, (r, c), -13)
 
                 if board[r][c] == 'wQ':
-                    self.dessin_piece_centree(self.white_queen, (r, c))
+                    self.dessin_piece_centree(scrsurf, self.white_queen, (r, c))
 
                 if board[r][c] == 'wK':
-                    self.dessin_piece_centree(self.white_king, (r, c), -18)
+                    self.dessin_piece_centree(scrsurf, self.white_king, (r, c), -18)
 
     def EndGame(self, board):
         if not self.ready_to_quit:
@@ -185,103 +199,93 @@ class ChessGameView:
 
         self.do_paint(board)  # draw board to show end game status
         # TODO remove this flip
-        kengi.flip()
+        # kengi.flip()
 
-    def GetPlayerInput(self, board, currentColor) -> tuple:
-        """
-        format returned: (from_row,from_col), (to_row,to_col)
-        """
-        fromSquareChosen = 0
+    def _gere_square_chosen(self, board):
+        fromSquareChosen = []
         toSquareChosen = 0
-        while not fromSquareChosen or not toSquareChosen:
-            squareClicked = []
-            pygame.event.set_blocked(pygame.MOUSEMOTION)
-            e = pygame.event.wait()
-            if e.type == pygame.KEYDOWN:
-                if e.key == pygame.K_ESCAPE:
-                    fromSquareChosen = 0
-                    fromTuple = []
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                (mouseX, mouseY) = pygame.mouse.get_pos()
-                print(mouseX, mouseY)
-                squareClicked = self.ConvertToChessCoords((mouseX, mouseY))
-                if squareClicked[0] < 0 or squareClicked[0] > 7 or squareClicked[1] < 0 or squareClicked[1] > 7:
-                    squareClicked = []  # not a valid chess square
-            if e.type == pygame.QUIT:  # the "x" kill button
-                pygame.quit()
-                sys.exit(0)
-
-            if not fromSquareChosen and not toSquareChosen:
-                self.do_paint(board)
-                if len(squareClicked) != 0:
-                    (r, c) = squareClicked
-                    if currentColor == 'black' and 'b' in board[r][c]:
-                        if len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
-                            fromSquareChosen = 1
-                            fromTuple = squareClicked
-                    elif currentColor == 'white' and 'w' in board[r][c]:
-                        if len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
-                            fromSquareChosen = 1
-                            fromTuple = squareClicked
-
-            elif fromSquareChosen and not toSquareChosen:
-                possibleDestinations = self.Rules.GetListOfValidMoves(board, currentColor, fromTuple)
-
-                # TODO remove the extra flip!!
-                self.do_paint(board, possibleDestinations)
-                kengi.flip()
-
-                if squareClicked != []:
-                    (r, c) = squareClicked
-                    if squareClicked in possibleDestinations:
-                        toSquareChosen = 1
-                        toTuple = squareClicked
-                    elif currentColor == 'black' and 'b' in board[r][c]:
-                        if squareClicked == fromTuple:
-                            fromSquareChosen = 0
-                        elif len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
-                            fromSquareChosen = 1
-                            fromTuple = squareClicked
-                        else:
-                            fromSquareChosen = 0  # piece is of own color, but no possible moves
-                    elif currentColor == 'white' and 'w' in board[r][c]:
-                        if squareClicked == fromTuple:
-                            fromSquareChosen = 0
-                        elif len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
-                            fromSquareChosen = 1
-                            fromTuple = squareClicked
-                        else:
-                            fromSquareChosen = 0
-                    else:  # blank square or opposite color piece not in possible destinations clicked
+        squareClicked = self.fromSquareChosen
+        currentColor = None
+        fromTuple = (0, 0)
+        if not fromSquareChosen and not toSquareChosen:
+            # self.do_paint(self.screen, board)
+            if squareClicked:
+                (r, c) = squareClicked
+                if currentColor == 'black' and 'b' in board[r][c]:
+                    if len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
+                        fromSquareChosen = 1
+                        fromTuple = squareClicked
+                elif currentColor == 'white' and 'w' in board[r][c]:
+                    if len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
+                        fromSquareChosen = 1
+                        fromTuple = squareClicked
+        elif fromSquareChosen and not toSquareChosen:
+            if len(squareClicked):
+                (r, c) = squareClicked
+                if squareClicked in self.possibleDestinations:
+                    toSquareChosen = 1
+                    toTuple = squareClicked
+                elif currentColor == 'black' and 'b' in board[r][c]:
+                    if squareClicked == fromTuple:
                         fromSquareChosen = 0
+                    elif len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
+                        fromSquareChosen = 1
+                        fromTuple = squareClicked
+                    else:
+                        fromSquareChosen = 0  # piece is of own color, but no possible moves
+                elif currentColor == 'white' and 'w' in board[r][c]:
+                    if squareClicked == fromTuple:
+                        fromSquareChosen = 0
+                    elif len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
+                        fromSquareChosen = 1
+                        fromTuple = squareClicked
+                    else:
+                        fromSquareChosen = 0
+                else:  # blank square or opposite color piece not in possible destinations clicked
+                    fromSquareChosen = 0
 
-        return fromTuple, toTuple
+        if fromSquareChosen or toSquareChosen:
+            self._sortie_subloop = (fromSquareChosen, toSquareChosen)
 
-    def GetClickedSquare(self, mouseX, mouseY):
-        # test function
-        print("User clicked screen position x =", mouseX, "y =", mouseY)
-        (row, col) = self.ConvertToChessCoords((mouseX, mouseY))
-        if 8 > col >= 0 and row < 8 and row >= 0:
-            print("  Chess board units row =", row, "col =", col)
+    def forward_mouseev(self, ev):
+        """
+        format save to self._sortie_subloop:
+        (from_row,from_col), (to_row,to_col)
+        """
 
-    # def TestRoutine(self):
-    #     # test function
-    #     pygame.event.set_blocked(MOUSEMOTION)
-    #     while 1:
-    #         e = pygame.event.wait()
-    #         if e.type is QUIT:
-    #             return
-    #         if e.type is KEYDOWN:
-    #             if e.key is K_ESCAPE:
-    #                 pygame.quit()
-    #                 return
-    #         if e.type is MOUSEBUTTONDOWN:
-    #             (mouseX, mouseY) = pygame.mouse.get_pos()
-    #             # x is horizontal, y is vertical
-    #             # (x=0,y=0) is upper-left corner of the screen
-    #             self.GetClickedSquare(mouseX, mouseY)
+        board = self.board
+        currcolor = self.curr_color
 
-    def dessin_piece_centree(self, black_pawn, case, voffset=-10):
+        (mouseX, mouseY) = ev.pos
+        squareClicked = self.ConvertToChessCoords((mouseX, mouseY))
+        if (not (0 <= squareClicked[0] <= 7)) or (not(0 <= squareClicked[1] <= 7)):  # TODO internaliser ds convert..
+            # set all None, bc its not a valid chess square
+            self._fluo_squares = None
+            self.possibleDestinations = None
+            self.fromSquareChosen = None
+            return
+
+        if not self.fromSquareChosen:
+            self.fromSquareChosen = squareClicked
+            fromTuple = tuple(squareClicked)
+            # TODO set fromTuple properly
+
+            self.possibleDestinations = self.Rules.GetListOfValidMoves(board.GetState(), currcolor, fromTuple)
+            if len(self.possibleDestinations):
+                self._fluo_squares = list(self.possibleDestinations)
+            else:
+                self._fluo_squares = None
+
+        # self._gere_square_chosen(board.GetState())
+        else:
+            if squareClicked in self.possibleDestinations:
+                self.toSquareChosen = squareClicked
+                self.pev(ChessEvents.MoveChosen, from_cell=self.fromSquareChosen, to_cell=self.toSquareChosen)
+            self._fluo_squares = None
+            self.possibleDestinations = None
+            self.fromSquareChosen = None
+
+    def dessin_piece_centree(self, screenref, black_pawn, case, voffset=-10):
         (screenX, screenY) = self.ConvertToScreenCoords(case)
         # on souhaite que le centre de la case & le centre de l'image coincident
         # Pour cela, on calcule le coin en haut à gauche qui va bien...
@@ -291,7 +295,7 @@ class ChessGameView:
         goodx = centre_case[0] - tmp[0] // 2
         goody = centre_case[1] - tmp[1] // 2
         goody += voffset
-        self.screen.blit(black_pawn, (goodx, goody))
+        screenref.blit(black_pawn, (goodx, goody))
 
 
 # if __name__ == "__main__":

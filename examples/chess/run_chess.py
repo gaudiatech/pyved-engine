@@ -1,50 +1,43 @@
 """
 Project - Python Chess
+(c) All rights reserved | Code LICENCE = GNU GPL
 
-(c) All rights reserved
-Code LICENCE = GNU GPL
+This is a joint work. Authors are:
 
-Original work published in 2009 by:
- Steve Osborne
+- Steve Osborne (the very first prototype, encoding game rules)
    [contact: srosborne_at_gmail.com]
 
-Enhanced 2022 version/Python3+Kengi port by:
- Thomas Iwaszko
+- Thomas Iwaszko (port to python3+kengi, game improvement)
    [contact: tom@kata.games]
 """
-
 import time
-from optparse import OptionParser
-
-import pygame
 
 import katagames_engine as kengi
-from ChessAI import ChessAI_random, ChessAI_defense, ChessAI_offense
 from ChessBoard import ChessBoard
 from ChessGUI_pygame import ChessGameView
-from ChessPlayer import ChessPlayer
 from ChessRules import ChessRules
+from chess.chess_defs import ChessEvents
+from players import ChessPlayer, ChessAI_random, ChessAI_defense, ChessAI_offense
 
-# - pour switcher sur le mode jeu via console (sans pygame)
-# import sys
-# sys.argv = [sys.argv[0], "-t" ] #"small.txt"]
 
-# if debug mode:
-# self.Board = ChessBoard(2)
-
-# 0 for normal board setup; see ChessBoard class for other options (for testing purposes)
+# 0 for normal board setup;
+# see ChessBoard class for other options (for testing purposes)
+# e.g. the debug mode can use arg 2 instead of 0
 board = ChessBoard(0)
-rules = ules = ChessRules()
+
+rules = ChessRules()
 player = None
-Gui = None
 AIvsAI = False
 AIpause = False
 AIpauseSeconds = 0.0
 endgame_msg_added = False
 
+# constants:
+PAUSE_SEC = 3
 
-def SetUp(options):
-    global player, Gui, AIpause, AIvsAI, AIpauseSeconds, endgame_msg_added
+
+def initchess():
+    global player, AIpause, AIvsAI, AIpauseSeconds, endgame_msg_added, PAUSE_SEC
     # gameSetupParams: Player 1 and 2 Name, Color, Human/AI level
     # if self.debugMode:
     # 	player1Name = 'Kasparov'
@@ -54,7 +47,10 @@ def SetUp(options):
     # 	player2Type = 'randomAI'
     # 	player2Color = 'black'
 
-    default_config = ('Player1', 'white', 'human', 'AI', 'black', 'defenseAI')
+    default_config = (
+        'Player1', 'white', 'human',
+        'AI', 'black', 'defenseAI'
+    )
     (player1Name, player1Color, player1Type, player2Name, player2Color, player2Type) = default_config
 
     player = [0, 0]
@@ -76,113 +72,147 @@ def SetUp(options):
     elif player2Type == 'offenseAI':
         player[1] = ChessAI_offense(player2Name, player2Color)
 
-    if 'AI' in player[0].GetType() and 'AI' in player[1].GetType():
+    if 'AI' in player[0].type and 'AI' in player[1].type:
         AIvsAI = True
     else:
         AIvsAI = False
-
-    if options.pauseSeconds > 0:
+    if PAUSE_SEC > 0:
         AIpause = True
-        AIpauseSeconds = int(options.pauseSeconds)
+        AIpauseSeconds = int(PAUSE_SEC)
     else:
         AIpause = False
 
-    # create the gui object - didn't do earlier because pygame conflicts with any gui manager (Tkinter, WxPython...)
-    # if options.text:
-    # 	guitype = 'text'
-    # 	Gui = ChessGUI_text()
-    # else:
-    # 	guitype = 'pygame'
-    Gui = ChessGameView(kengi.get_surface())
 
+class ChessTicker(kengi.EvListener):
+    def __init__(self, refview):
+        global board
+        super().__init__()
+        self.refview = refview
+        self.refview.board = board
+        self.storedinput = None  # when smth has been played!
+        self._curr_pl_idx = 0
+        self._turn_count = 0
+        self.endgame_msg_added = False
+        self.board_st = board.GetState()
+        self.ready_to_quit = False
+        self.endgame_msg_added = False
 
-def loop():
-    global endgame_msg_added
-    currentPlayerIndex = 0
-    turnCount = 0
-    gameover = False
-    while not gameover:
+    def on_move_chosen(self, ev):  # as defined in ChessEvents
+        self.storedinput = [ev.from_cell, ev.to_cell]
+        print('-- STORING - -', self.storedinput)
 
-        if not Gui.ready_to_quit:
-            # --- regular play ---
+    def on_keydown(self, ev):
+        if ev.key == kengi.pygame.K_ESCAPE:
+            self.pev(kengi.EngineEvTypes.Gameover)
 
-            board_st = board.GetState()
-            currentColor = player[currentPlayerIndex].GetColor()
-            # hardcoded so that player 1 is always white
-            if currentColor == 'white':
-                turnCount = turnCount + 1
-            Gui.PrintMessage("")
-            baseMsg = "TURN %s - %s (%s)" % (str(turnCount), player[currentPlayerIndex].GetName(), currentColor)
-            Gui.PrintMessage("--%s--" % baseMsg)
+    def on_mousedown(self, ev):
+        self.refview.forward_mouseev(ev)
 
-            # refresh GFX
-            Gui.do_paint(board_st)
-            kengi.flip()
+    def on_gameover(self, ev):
+        """
+        maybe there are other ways to exit than just pressing ESC...
+        in this method, we update the game object
+        """
+        global game_obj
+        print('gameover capté par ticker!')
+        game_obj.gameover = True
 
-            if rules.IsInCheck(board_st, currentColor):
-                suffx = '{} ({}) is in check'.format(
-                    player[currentPlayerIndex].GetName(), player[currentPlayerIndex].GetColor()
-                )
-                Gui.PrintMessage("Warning..." + suffx)
+    def on_paint(self, ev):
+        self.refview.drawboard(ev.screen, self.board_st)
 
-            if player[currentPlayerIndex].GetType() == 'AI':
-                moveTuple = player[currentPlayerIndex].GetMove(board.GetState(), currentColor)
-            else:
-                moveTuple = Gui.GetPlayerInput(board_st, currentColor)
+    def on_update(self, ev):
+        global board
+        board_st = board.GetState()
 
-            moveReport = board.move_piece(moveTuple)
-            # moveReport = string like "White Bishop moves from A1 to C3" (+) "and captures ___!"
-            Gui.PrintMessage(moveReport)
+        if not self.ready_to_quit:
 
-            # this will cause the currentPlayerIndex to toggle between 1 and 0
-            currentPlayerIndex = (currentPlayerIndex + 1) % 2
-            if AIvsAI and AIpause:
-                time.sleep(AIpauseSeconds)
-            if rules.IsCheckmate(board.GetState(), player[currentPlayerIndex].color):
-                Gui.ready_to_quit = True
+            # -- the problem with THAT type of code is that it BLOCKS the soft!
+            # if player[currentPlayerIndex].type == 'AI':
+            #     moveTuple = player[currentPlayerIndex].GetMove(board.GetState(), currentColor)
+            # else:
+            #     moveTuple = Gui.GetPlayerInput(board_st, currentColor)
+
+            # TODO repair human vs A.I. play
+
+            moveTuple = self.storedinput
+            if moveTuple:
+                moveReport = board.move_piece(moveTuple)
+                # moveReport = string like "White Bishop moves from A1 to C3" (+) "and captures ___!"
+                self.refview.PrintMessage(moveReport)
+
+                # this will cause the currentPlayerIndex to toggle between 1 and 0
+                self._curr_pl_idx = (self._curr_pl_idx + 1) % 2
+                self.refview.curr_color = ['white', 'black'][self._curr_pl_idx]
+                if AIvsAI and AIpause:
+                    time.sleep(AIpauseSeconds)
+                if rules.IsCheckmate(board.GetState(), player[self._curr_pl_idx].color):
+                    self.ready_to_quit = True
+
+                # ----
+                # - iterate game -
+                currentColor = player[self._curr_pl_idx].color
+                # hardcoded so that player 1 is always white
+                if currentColor == 'white':
+                    self._turn_count = self._turn_count + 1
+                self.refview.PrintMessage("")
+                baseMsg = "TURN %s - %s (%s)" % (str(self._turn_count), player[self._curr_pl_idx].name, currentColor)
+                self.refview.PrintMessage("--%s--" % baseMsg)
+
+                if rules.IsInCheck(board_st, currentColor):
+                    pobj = player[self._curr_pl_idx]
+                    suffx = '{} ({}) is in check'.format(pobj.name, pobj.color)
+                    self.refview.PrintMessage("Warning..." + suffx)
+
+                self.storedinput = None
 
         else:
             # --- end game ---
-            if not endgame_msg_added:
-                Gui.PrintMessage("CHECKMATE!")
-                winnerIndex = (currentPlayerIndex + 1) % 2
-                Gui.PrintMessage(
-                    player[winnerIndex].GetName() + " (" + player[winnerIndex].GetColor() + ") won the game!")
-                endgame_msg_added = True
-                Gui.EndGame(board_st)
+            if not self.endgame_msg_added:
+                self.refview.PrintMessage("CHECKMATE!")
+                winnerIndex = (self._curr_pl_idx + 1) % 2
+                self.refview.PrintMessage(
+                    player[winnerIndex].name + " (" + player[winnerIndex].color + ") won the game!")
+                self.endgame_msg_added = True
+                self.refview.EndGame(self.board_st)
 
-            for e in pygame.event.get():
-                if e.type == pygame.KEYDOWN:
-                    gameover = True
+        # self.refview.drawboard(gl_screen_ref, board_st)
 
 
-parser = OptionParser()
-parser.add_option(
-    "-d", dest="debug",
-    action="store_true", default=False, help="Enable debug mode (different starting board configuration)"
-)
-parser.add_option(
-    "-t", dest="text",
-    action="store_true", default=False, help="Use text-based GUI"
-)
-parser.add_option(
-    "-o", dest="old",
-    action="store_true", default=False, help="Use old graphics in pygame GUI"
-)
-parser.add_option(
-    "-p", dest="pauseSeconds", metavar="SECONDS",
-    action="store", default=0, help="Sets time to pause between moves in AI vs. AI games (default = 0)"
-)
+# parser = OptionParser()
+# parser.add_option(
+#     "-d", dest="debug",
+#     action="store_true", default=False, help="Enable debug mode (different starting board configuration)"
+# )
+# parser.add_option(
+#     "-t", dest="text",
+#     action="store_true", default=False, help="Use text-based GUI"
+# )
+# parser.add_option(
+#     "-o", dest="old",
+#     action="store_true", default=False, help="Use old graphics in pygame GUI"
+# )
+# parser.add_option(
+#     "-p", dest="pauseSeconds", metavar="SECONDS",
+#     action="store", default=0, help="Sets time to pause between moves in AI vs. AI games (default = 0)"
+# )
+# (giv_options, args) = parser.parse_args()
 
-(giv_options, args) = parser.parse_args()
+class MyChessGame(kengi.GameTpl):
 
-if __name__ == '__main__':
-    # before calling SetUp, need to init pygame etc.
-    kengi.init(1)
-    # -
-    # pygame.init()
-    # pygame.display.init()
-    # pygame.display.set_mode(W_SIZE)
-    SetUp(giv_options)
-    loop()
-    kengi.quit()
+    def enter(self, vms=None):
+        global evmanager, gl_screen_ref
+        kengi.init(1)
+        evmanager = kengi.get_ev_manager()
+        evmanager.setup(ChessEvents)
+        self._manager = evmanager
+        initchess()
+        gl_screen_ref = kengi.get_surface()
+
+        pygamegui = ChessGameView(gl_screen_ref)
+
+        ticker = ChessTicker(pygamegui)
+        ticker.turn_on()
+
+
+game_obj = MyChessGame()
+game_obj.loop()
