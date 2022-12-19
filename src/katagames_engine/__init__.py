@@ -34,6 +34,7 @@
   easy-to-reuse code!
 """
 import time
+from abc import ABCMeta, abstractmethod
 
 from . import _hub as hub
 from . import pal
@@ -390,7 +391,7 @@ def bulk_plugin_bind(darg: dict):
         plugin_bind(ppath, ppath)
 
 
-class GameTpl:
+class GameTpl(metaclass=ABCMeta):
     """
     the "no name" game template class. It allows to define your game in a quick way,
     by redefining one or several methods: enter, update, exit
@@ -405,10 +406,13 @@ class GameTpl:
         self.gameover = False
         self.clock = hub.kengi_inj['pygame'].time.Clock()
 
+    @abstractmethod
     def enter(self, vms=None):
-        init(1)
-        self._manager = get_ev_manager()
-        self._manager.setup()
+        """
+        one *HAS TO* bind the ev manager to self._manager,
+        and call .setup, somehow
+        """
+        raise NotImplementedError
 
     def update(self, infot):
         self._manager.post(EngineEvTypes.Update, curr_t=infot)
