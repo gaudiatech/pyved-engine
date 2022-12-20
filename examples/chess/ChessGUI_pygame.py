@@ -197,7 +197,7 @@ class ChessGameView(kengi.EvListener):
             self.PrintMessage("Press any key to exit.")
             self.ready_to_quit = True
 
-        self.do_paint(board)  # draw board to show end game status
+        self.drawboard(kengi.get_surface(), board)  # draw board to show end game status
         # TODO remove this flip
         # kengi.flip()
 
