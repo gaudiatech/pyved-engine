@@ -218,6 +218,8 @@ class StateStackCtrl(EvListener):
         super().__init__()
         self._gs_omega = all_gs
         self._stack = struct.Stack()
+        # debug
+        # print('allcodes -- ', all_gs, all_gs.last_code, all_gs.all_codes )
         self.first_state_id = all_gs.all_codes[0]  # CONVENTION: the first of the enum <=> the init gamestate id !
 
         # lets build up all gamestates objects
@@ -440,6 +442,8 @@ class GameTpl(metaclass=ABCMeta):
 
         # use enter, update, exit to handle the global "run game logic"
         self.enter()
+        # gamestart event HAS TO be pushed so the game rly starts...
+        self._manager.post(EngineEvTypes.Gamestart)
 
         while not self.gameover:
             infot = time.time()
