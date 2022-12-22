@@ -66,10 +66,13 @@ class GenericUIElement(IfaceUIElement):
         pass
 
     def get_position(self):
-        hw, hh = self._dim
-        hw = int(hw / 2)
-        hh = int(hh / 2)
-        return self._xy_coords[0]+hw, self._xy_coords[1]+hh
+        if self._curr_anchor == ANCHOR_LEFT:
+            return self._xy_coords
+        elif self._curr_anchor == ANCHOR_CENTER:
+            hw, hh = self._dim
+            hw = int(hw / 2)
+            hh = int(hh / 2)
+            return self._xy_coords[0] + hw, self._xy_coords[1] + hh
 
     def set_position(self, position):
         # args passed are absolute!
