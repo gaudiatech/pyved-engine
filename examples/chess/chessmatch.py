@@ -3,6 +3,7 @@ from ChessBoard import ChessBoard
 from ChessRules import ChessRules
 # from ScrollingTextBox import ScrollingTextBox
 from chdefs import ChessEvents
+from chess import chdefs
 from players import ChessAI_random, ChessAI_offense, ChessAI_defense, ChessPlayer
 
 
@@ -366,9 +367,10 @@ class ChessTicker(kengi.EvListener):
         # print('-- STORING - -', self.stored_human_input)
 
     def on_keydown(self, ev):
-        print('keydown')
         if ev.key == kengi.pygame.K_ESCAPE:
             self.pev(kengi.EngineEvTypes.Gameover)
+        elif self.ready_to_quit:
+            self.pev(kengi.EngineEvTypes.StatePop)
 
     def on_mousedown(self, ev):
         self.refview.forward_mouseev(ev)
@@ -378,9 +380,10 @@ class ChessTicker(kengi.EvListener):
         maybe there are other ways to exit than just pressing ESC...
         in this method, we update the game object
         """
-        global game_obj
-        print('gameover capté par ticker!')
-        game_obj.gameover = True
+        chdefs.ref_game_obj.gameover = True
+
+    def on_quit(self, ev):  # press quit button
+        self.on_gameover(ev)
 
     def on_paint(self, ev):
         self.refview.drawboard(ev.screen, self.board_st)
@@ -451,18 +454,20 @@ class ChessTicker(kengi.EvListener):
                 self.refview.PrintMessage("Warning..." + suffx)
 
 
-class ChessmatchMode(kengi.BaseGameState):
+class ChessmatchState(kengi.BaseGameState):
     # bind state_id to class is done automatically by kengi (part 1 /2)
 
     def enter(self):
-        gl_screen_ref = kengi.get_surface()
-        pygamegui = ChessGameView(gl_screen_ref)
         self.m = ChessgameModel()
-        ticker = ChessTicker(self.m, pygamegui)
-        ticker.turn_on()
+
+        pygamegui = self.v = ChessGameView(kengi.get_surface())
+
+        self.t = ChessTicker(self.m, pygamegui)
+        self.t.turn_on()
 
     def release(self):
-        pass
+        for evl in (self.v, self.t):
+            evl.turn_off()
 
 
 # ----------------
