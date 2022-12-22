@@ -30,13 +30,16 @@ class ChessgameModel:
 
     def _initplayers(self):
         default_config = (
-            'Player1', 'white', 'human',
-            'AI', 'black', 'defenseAI'
+            'AI', 'white', 'randomAI',
+            'AI', 'black', 'randomAI'
         )
         (player1Name, player1Color, player1Type, player2Name, player2Color, player2Type) = default_config
         # replace default config playertypes by what has been stored in chdefs
         player1Type, player2Type = chdefs.pltype1, chdefs.pltype2
-        print('**', player1Type, player2Type)
+        if player2Type == 'human':
+            player2Name = 'Player2'
+        if player1Type == 'human':
+            player1Name = 'Player1'
 
         self.players = [0, 0]
         if player1Type == 'human':
@@ -252,52 +255,6 @@ class ChessGameView(kengi.EvListener):
         # TODO remove this flip
         # kengi.flip()
 
-    def _gere_square_chosen(self, board):
-        fromSquareChosen = []
-        toSquareChosen = 0
-        squareClicked = self.fromSquareChosen
-        currentColor = None
-        fromTuple = (0, 0)
-        if not fromSquareChosen and not toSquareChosen:
-            # self.do_paint(self.screen, board)
-            if squareClicked:
-                (r, c) = squareClicked
-                if currentColor == 'black' and 'b' in board[r][c]:
-                    if len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
-                        fromSquareChosen = 1
-                        fromTuple = squareClicked
-                elif currentColor == 'white' and 'w' in board[r][c]:
-                    if len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
-                        fromSquareChosen = 1
-                        fromTuple = squareClicked
-        elif fromSquareChosen and not toSquareChosen:
-            if len(squareClicked):
-                (r, c) = squareClicked
-                if squareClicked in self.possibleDestinations:
-                    toSquareChosen = 1
-                    toTuple = squareClicked
-                elif currentColor == 'black' and 'b' in board[r][c]:
-                    if squareClicked == fromTuple:
-                        fromSquareChosen = 0
-                    elif len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
-                        fromSquareChosen = 1
-                        fromTuple = squareClicked
-                    else:
-                        fromSquareChosen = 0  # piece is of own color, but no possible moves
-                elif currentColor == 'white' and 'w' in board[r][c]:
-                    if squareClicked == fromTuple:
-                        fromSquareChosen = 0
-                    elif len(self.Rules.GetListOfValidMoves(board, currentColor, squareClicked)) > 0:
-                        fromSquareChosen = 1
-                        fromTuple = squareClicked
-                    else:
-                        fromSquareChosen = 0
-                else:  # blank square or opposite color piece not in possible destinations clicked
-                    fromSquareChosen = 0
-
-        if fromSquareChosen or toSquareChosen:
-            self._sortie_subloop = (fromSquareChosen, toSquareChosen)
-
     def forward_mouseev(self, ev):
         """
         format save to self._sortie_subloop:
@@ -317,15 +274,18 @@ class ChessGameView(kengi.EvListener):
             return
 
         if not self.fromSquareChosen:
-            self.fromSquareChosen = squareClicked
-            fromTuple = tuple(squareClicked)
-            # TODO set fromTuple properly
-
-            self.possibleDestinations = self.Rules.GetListOfValidMoves(board.GetState(), currcolor, fromTuple)
-            if len(self.possibleDestinations):
-                self._fluo_squares = list(self.possibleDestinations)
-            else:
-                self._fluo_squares = None
+            r, c = squareClicked
+            validselection = (self.curr_color == 'black' and 'b' == board.GetState()[r][c][0])
+            validselection = validselection or (self.curr_color == 'white' and 'w' == board.GetState()[r][c][0])
+            if validselection:
+                self.fromSquareChosen = squareClicked
+                fromTuple = tuple(squareClicked)
+                # TODO set fromTuple properly
+                self.possibleDestinations = self.Rules.GetListOfValidMoves(board.GetState(), currcolor, fromTuple)
+                if len(self.possibleDestinations):
+                    self._fluo_squares = list(self.possibleDestinations)
+                else:
+                    self._fluo_squares = None
 
         # self._gere_square_chosen(board.GetState())
         else:
@@ -399,11 +359,13 @@ class ChessTicker(kengi.EvListener):
         if self.ready_to_quit:
             # --- manage end game ---
             if not self.endgame_msg_added:
-                self.refview.PrintMessage("CHECKMATE!")
-                winnerIndex = (self._curr_pl_idx + 1) % 2
-                self.refview.PrintMessage(
-                    players[winnerIndex].name + " (" + curr_player.color + ") won the game!")
                 self.endgame_msg_added = True
+
+                self.refview.PrintMessage("CHECKMATE!")
+                winnerIndex = (self._curr_pl_idx+1) % 2
+                self.refview.PrintMessage(
+                    players[winnerIndex].name + " (" + players[winnerIndex].color + ") won the game!")
+
                 self.refview.EndGame(self.board_st)
             return
 
