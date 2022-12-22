@@ -1,13 +1,13 @@
 from abc import ABCMeta, abstractmethod
-
-import katagames_sdk as katasdk
 from .Trigger import Trigger
+from ... import _hub
 
-
-pygame = katasdk.kengi.pygame
 
 TRIG_POPUP_GENERIC_NOP = 4
 TRIG_POPUP_GENERIC_CLOSE = 5
+
+
+pygame = _hub.pygame
 
 
 class BaseGui(metaclass=ABCMeta):

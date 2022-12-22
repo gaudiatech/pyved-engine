@@ -1,10 +1,10 @@
-import katagames_sdk as katasdk
 from .DispPopup import DispPopup
 from .Trigger import Trigger
+from ... import _hub
+from ... import vscreen
 
 
-kengi = katasdk.kengi
-pygame = kengi.pygame
+pygame = _hub.pygame
 
 
 class DispCenteredPopup(DispPopup):
@@ -14,7 +14,7 @@ class DispCenteredPopup(DispPopup):
             decoree, (0, 0), titre, txt, ppsize[0], ppsize[1]
         )  # der. => forcer hauteur fenetre
 
-        scrw, scrh = kengi.get_surface().get_size()
+        scrw, scrh = vscreen.screen.get_size()
         self.actualize_position((
             int((scrw / 2) - (self.width / 2)),
             int((scrh / 2) - (self.height / 2))
@@ -110,7 +110,7 @@ class DispCenteredPopup(DispPopup):
         return [pos[0] + self.x, pos[1] + self.y]
 
     def lookup_ft_specific(self, mouse_buttons, clickpos):
-        clickpos = kengi.vscreen.proj_to_vscreen(clickpos)
+        clickpos = vscreen.proj_to_vscreen(clickpos)
         print(mouse_buttons, clickpos)
 
         if not self._presence:

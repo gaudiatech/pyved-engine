@@ -1,7 +1,7 @@
-import katagames_sdk
+from ... import _hub
 
 
-pygame = katagames_sdk.kengi.pygame
+pygame = _hub.pygame
 
 
 class Trigger:
