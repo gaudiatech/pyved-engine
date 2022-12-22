@@ -1,6 +1,5 @@
 import chdefs
 import katagames_engine as kengi
-from chdefs import ChessGstates
 
 
 kengi.bootstrap_e()
@@ -12,13 +11,20 @@ EngineEvTypes = kengi.EngineEvTypes
 
 
 def proc_start():
-    kengi.get_ev_manager().post(EngineEvTypes.StatePush, state_ident=ChessGstates.Chessmatch)
+    kengi.get_ev_manager().post(EngineEvTypes.StatePush, state_ident=chdefs.ChessGstates.Chessmatch)
+    print('apres start ->', chdefs.pltype1, chdefs.pltype2)
 
 
 class IntroCompo(kengi.EvListener):
     """
     main component for this game state
     """
+    def _update_playertypes(self):
+        chdefs.pltype1 = chdefs.OMEGA_PL_TYPES[self.idx_pl1]
+        chdefs.pltype2 = chdefs.OMEGA_PL_TYPES[self.idx_pl2]
+        self.pltypes_labels[0].text = chdefs.pltype1
+        self.pltypes_labels[1].text = chdefs.pltype2
+
     def __init__(self):
         super().__init__()
 
@@ -34,14 +40,20 @@ class IntroCompo(kengi.EvListener):
         self.title.textsize = 122
         self.title.color = 'brown'
 
+        self.pltypes_labels = [
+            kengi.gui.Label((115, 145), 'unkno type p1', color='darkblue'),
+            kengi.gui.Label((115, 205), 'unkno type p2', color='darkblue'),
+        ]
+        self._update_playertypes()
+
         # - v: buttons
         def rotatepl1():
-            self.idx_pl1 = (self.idx_pl1+1) % 4
-            print(self.idx_pl1)
+            self.idx_pl1 = (self.idx_pl1+1) % len(chdefs.OMEGA_PL_TYPES)
+            self._update_playertypes()
 
         def rotatepl2():
-            self.idx_pl2 = (self.idx_pl2+1) % 4
-            print(self.idx_pl2)
+            self.idx_pl2 = (self.idx_pl2+1) % len(chdefs.OMEGA_PL_TYPES)
+            self._update_playertypes()
 
         self.buttons = [
             kengi.gui.Button((128, 256), (200, 50), 'Start Chessmatch'),
@@ -61,7 +73,11 @@ class IntroCompo(kengi.EvListener):
 
     def on_paint(self, ev):
         ev.screen.fill('antiquewhite3')
+
         self.title.draw()
+        for lab in self.pltypes_labels:
+            lab.draw()
+
         for b in self.buttons:
             ev.screen.blit(b.image, b.rect.topleft)
 

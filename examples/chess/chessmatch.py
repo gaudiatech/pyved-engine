@@ -1,9 +1,7 @@
+import chdefs
 import katagames_engine as kengi
 from ChessBoard import ChessBoard
 from ChessRules import ChessRules
-# from ScrollingTextBox import ScrollingTextBox
-from chdefs import ChessEvents
-from chess import chdefs
 from players import ChessAI_random, ChessAI_offense, ChessAI_defense, ChessPlayer
 
 
@@ -36,6 +34,9 @@ class ChessgameModel:
             'AI', 'black', 'defenseAI'
         )
         (player1Name, player1Color, player1Type, player2Name, player2Color, player2Type) = default_config
+        # replace default config playertypes by what has been stored in chdefs
+        player1Type, player2Type = chdefs.pltype1, chdefs.pltype2
+        print('**', player1Type, player2Type)
 
         self.players = [0, 0]
         if player1Type == 'human':
@@ -330,7 +331,9 @@ class ChessGameView(kengi.EvListener):
         else:
             if squareClicked in self.possibleDestinations:
                 self.toSquareChosen = squareClicked
-                self.pev(ChessEvents.MoveChosen, from_cell=self.fromSquareChosen, to_cell=self.toSquareChosen)
+                self.pev(
+                    chdefs.ChessEvents.MoveChosen, from_cell=self.fromSquareChosen, to_cell=self.toSquareChosen
+                )
             self._fluo_squares = None
             self.possibleDestinations = None
             self.fromSquareChosen = None
