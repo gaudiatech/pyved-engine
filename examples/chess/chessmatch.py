@@ -1,18 +1,67 @@
 import katagames_engine as kengi
 from ChessBoard import ChessBoard
 from ChessRules import ChessRules
-from ScrollingTextBox import ScrollingTextBox
-from chess_defs import ChessEvents
+# from ScrollingTextBox import ScrollingTextBox
+from chdefs import ChessEvents
+from players import ChessAI_random, ChessAI_offense, ChessAI_defense, ChessPlayer
 
 
-W_SIZE = (850, 500)
-
-kengi.bootstrap_e()
+# - alias
 pygame = kengi.pygame
+
+
+# constants:
+PAUSE_SEC = 3
+W_SIZE = (850, 500)
 
 
 def load_img(assetname):
     return pygame.image.load('images/' + assetname)
+
+
+class ChessgameModel:
+    def __init__(self):
+        # 0 for normal board setup; see ChessBoard class for other options (testing purposes)
+        # e.g. the debug mode can use arg 2 instead of 0
+        self.board = ChessBoard(0)
+        self.rules = ChessRules()
+
+        self.players = None
+        self._initplayers()
+
+    def _initplayers(self):
+        default_config = (
+            'Player1', 'white', 'human',
+            'AI', 'black', 'defenseAI'
+        )
+        (player1Name, player1Color, player1Type, player2Name, player2Color, player2Type) = default_config
+
+        self.players = [0, 0]
+        if player1Type == 'human':
+            self.players[0] = ChessPlayer(player1Name, player1Color)
+        elif player1Type == 'randomAI':
+            self.players[0] = ChessAI_random(player1Name, player1Color)
+        elif player1Type == 'defenseAI':
+            self.players[0] = ChessAI_defense(player1Name, player1Color)
+        elif player1Type == 'offenseAI':
+            self.players[0] = ChessAI_offense(player1Name, player1Color)
+        if player2Type == 'human':
+            self.players[1] = ChessPlayer(player2Name, player2Color)
+        elif player2Type == 'randomAI':
+            self.players[1] = ChessAI_random(player2Name, player2Color)
+        elif player2Type == 'defenseAI':
+            self.players[1] = ChessAI_defense(player2Name, player2Color)
+        elif player2Type == 'offenseAI':
+            self.players[1] = ChessAI_offense(player2Name, player2Color)
+        if 'AI' in self.players[0].type and 'AI' in self.players[1].type:
+            AIvsAI = True
+        else:
+            AIvsAI = False
+        if PAUSE_SEC > 0:
+            AIpause = True
+            AIpauseSeconds = int(PAUSE_SEC)
+        else:
+            AIpause = False
 
 
 class ChessGameView(kengi.EvListener):
@@ -297,6 +346,128 @@ class ChessGameView(kengi.EvListener):
         goody += voffset
         screenref.blit(black_pawn, (goodx, goody))
 
+
+class ChessTicker(kengi.EvListener):
+    def __init__(self, refmod, refview):
+        super().__init__()
+        self.model = refmod
+        self.refview = refview
+        self.refview.board = refmod.board
+        self.stored_human_input = None  # when smth has been played!
+        self._curr_pl_idx = 0
+        self._turn_count = 0
+        self.endgame_msg_added = False
+        self.board_st = refmod.board.GetState()
+        self.ready_to_quit = False
+        self.endgame_msg_added = False
+
+    def on_move_chosen(self, ev):  # as defined in ChessEvents
+        self.stored_human_input = [ev.from_cell, ev.to_cell]
+        # print('-- STORING - -', self.stored_human_input)
+
+    def on_keydown(self, ev):
+        print('keydown')
+        if ev.key == kengi.pygame.K_ESCAPE:
+            self.pev(kengi.EngineEvTypes.Gameover)
+
+    def on_mousedown(self, ev):
+        self.refview.forward_mouseev(ev)
+
+    def on_gameover(self, ev):
+        """
+        maybe there are other ways to exit than just pressing ESC...
+        in this method, we update the game object
+        """
+        global game_obj
+        print('gameover capté par ticker!')
+        game_obj.gameover = True
+
+    def on_paint(self, ev):
+        self.refview.drawboard(ev.screen, self.board_st)
+
+    def on_update(self, ev):
+        board_st = self.board_st
+        players = self.model.players
+        curr_player = players[self._curr_pl_idx]
+
+        if self.ready_to_quit:
+            # --- manage end game ---
+            if not self.endgame_msg_added:
+                self.refview.PrintMessage("CHECKMATE!")
+                winnerIndex = (self._curr_pl_idx + 1) % 2
+                self.refview.PrintMessage(
+                    players[winnerIndex].name + " (" + curr_player.color + ") won the game!")
+                self.endgame_msg_added = True
+                self.refview.EndGame(self.board_st)
+            return
+
+        # -- the problem with THAT type of code is that it BLOCKS the soft!
+        # if player[currentPlayerIndex].type == 'AI':
+        #     moveTuple = player[currentPlayerIndex].GetMove(board.GetState(), currentColor)
+        # else:
+        #     moveTuple = Gui.GetPlayerInput(board_st, currentColor)
+        # TODO repair human vs A.I. play
+
+        move_report = None
+
+        if curr_player.type == 'human':
+            moveTuple = self.stored_human_input
+            if moveTuple:
+                move_report = self.model.board.move_piece(moveTuple)
+                # moveReport = string like "White Bishop moves from A1 to C3" (+) "and captures ___!"
+                self.stored_human_input = None
+
+        else:
+            tmp_ai_move = curr_player.GetMove(board_st, curr_player.color)
+            move_report = self.model.board.move_piece(tmp_ai_move)
+
+        # self.refview.drawboard(gl_screen_ref, board_st)
+
+        if move_report:  # smth has been played!
+            self.refview.PrintMessage(move_report)
+            # this will cause the currentPlayerIndex to toggle between 1 and 0
+
+            # -- iterate game --
+            self._curr_pl_idx = (self._curr_pl_idx + 1) % 2
+            curr_player = players[self._curr_pl_idx]
+            self.refview.curr_color = ['white', 'black'][self._curr_pl_idx]
+
+            # TODO repair feat.
+            # if AIvsAI and AIpause:
+            #     time.sleep(AIpauseSeconds)
+
+            if self.model.rules.IsCheckmate(self.board_st, curr_player.color):
+                self.ready_to_quit = True
+
+            currentColor = curr_player.color
+            # hardcoded so that player 1 is always white
+            if currentColor == 'white':
+                self._turn_count = self._turn_count + 1
+            self.refview.PrintMessage("")
+            baseMsg = "TURN %s - %s (%s)" % (str(self._turn_count), curr_player.name, currentColor)
+            self.refview.PrintMessage("--%s--" % baseMsg)
+            if self.model.rules.IsInCheck(board_st, currentColor):
+                suffx = '{} ({}) is in check'.format(curr_player.name, curr_player.color)
+                self.refview.PrintMessage("Warning..." + suffx)
+
+
+class ChessmatchMode(kengi.BaseGameState):
+    # bind state_id to class is done automatically by kengi (part 1 /2)
+
+    def enter(self):
+        gl_screen_ref = kengi.get_surface()
+        pygamegui = ChessGameView(gl_screen_ref)
+        self.m = ChessgameModel()
+        ticker = ChessTicker(self.m, pygamegui)
+        ticker.turn_on()
+
+    def release(self):
+        pass
+
+
+# ----------------
+#  if need to test/debug the pygame view
+# ----------------
 
 # if __name__ == "__main__":
 #     # try out some development / testing stuff if this file is run directly
