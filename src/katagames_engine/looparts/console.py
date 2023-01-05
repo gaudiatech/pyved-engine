@@ -398,10 +398,10 @@ class CustomConsole:
             self.output("Error: {0}".format(ve))
         except TypeError as te:
             tmp = "Error {0}".format(te)
-            if tmp.find('missing'):
-                self.output("Bad syntax, type help cmd for more info")
-            else:
+            if tmp.find('missing') < 0:
                 self.output(tmp)
+            else:
+                self.output("Bad syntax, type help cmd for more info")
 
     def setvar(self, name, value):
         """Sets the value of a variable"""
