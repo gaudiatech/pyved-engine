@@ -216,6 +216,8 @@ EngineEvTypes = PseudoEnum((
     'StatePush',  # contains code state_ident
     'StatePop',
 
+    'RpcReceive',  # two-level reception (->tunelling if we use the json-rpc). Has num and raw_rpc_resp attributes
+
     'NetwSend',  # [num] un N°identification & [msg] un string (Async network comms)
     'NetwReceive'  # [num] un N°identification & [msg] un string (Async network comms)
 ), _TRADITIONAL_1ST_ETYPE)
