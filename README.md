@@ -5,27 +5,48 @@
   </a>
 </p>
 
+
 What is `kengi`?
-It's a rather complex piece of software
-but its purpose is simple:
-Making your life (as a game dev) easier and more enjoyable!
 
-The best description of `kengi` depends on your perspective. It is:
+* a game engine (=a set of tools whose purpose is the rapid prototyping of video games)
+* a wrapper around the popular [pygame lib](https://github.com/pygame/pygame)
+* the abbreviation for [__k__]ata [__engi__]ne
 
-* an overlay over the the popular [pygame](https://github.com/pygame/pygame) python library
-* a game engine (=a complete framework designed for the rapid prototyping of video games)
-* a subset of the API defined by `pygame`
-* a set of helper classes and helper functions to save yourself some trouble
+Why "kata"?
+[Kata.Games](https://kata.games) denotes a new gaming platform that helps indie game developers to create and share
+digital experiences easily, all around the globe!
+Via this innovative platform, we're proud to publish all kinds of games powered by `kengi`.
 
-Lastly, `kengi` is the abbreviation of **K**ata **ENGI**ne. Why "Kata"?
 
-[Kata.Games](https://kata.games) is a new gaming platform for indie game fans!
-Via this platform, we aim at distributing all kinds of games powered by kengi!
+## Design principles
+
+1. Code readability matters. Clean, expressive code is not a luxury!
+
+2. `kengi` ships with several game templates. Proving that one
+can create real games with minimal effort using our tool is important.
+Game templates are easy to customize.
+
+3. `kengi` encourages the use of patterns such as the Mediator or MVC,
+but people should remain free to use their favorite coding style.
+
+
+## Feature Overview
+The game engine comes packed with useful features:
+1. global event queue (simplifies the use of both the Mediator and the MVC design patterns)
+2. gamestate stack, state management via events 
+3. simple GUI creation: buttons, checkboxes, *etc.* 
+4. tileset loading, sprite animation
+5. tilemap parser (based on `.tmx` or `.tsj` file formats)
+6. mathematical tools: matrices ; vectors ; gradient noise functions (->procedural generation)
+7. helper classes for coding roguelike or RPG games
+8. helper classes for coding card games (Poker, Blackjack, *etc.*)
+9. helper classes for adding artificial opponents/intelligent entities (NPCs) to your game
+10. ...
 
 
 ## Getting started
-Download the source-code (a .zip file) from Github. It is recommended to download the last tagged version,
-not the most recent commit, because the dev versions might be unstable.
+To get started, first, copy the source-code (as a .zip file) from Github. It is recommended to download the last tagged version,
+(not the most recent commit) because most recent dev versions might be unstable.
 
 Once you have the files on your computer, use the command line to navigate to the root folder of the project (one level below `src\`).
 
@@ -121,19 +142,6 @@ of a list of user-defined events. User-defined events can have attributes.
 These events, just like regular pygame events, are processed via a standard method
 `proc_event` that you need to re-define when you sub-class
 `kengi.event.EventReceiver`...
-
-
-## Kengi design principles
-1. Code layout matters. Clean, expressive code is not an option!
-
-2. `kengi` is delivered along with 6 templates, see it as minimal examples of a real game.
-A game template should be customizable very easily ;
-
-3. `kengi` is based upon a custom event manager ;
-
-4. `kengi` implements the M-V-C pattern.
-People should be free to use this pattern or keep it basic based on their preferences.
-
 
 ## General goal
 As a wise man (Joel Spolsky) once said:
