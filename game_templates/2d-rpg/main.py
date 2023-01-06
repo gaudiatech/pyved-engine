@@ -15,14 +15,16 @@ kengi.bootstrap_e()
 from app_forest import ForestState
 from app_menu_screen import MenuScreenState
 from app_overworld import OverworldState
-from myrpg_defs import GameStates
+from myrpg_defs import GameStates, MyEvTypes
 
 
 # launch the game!
 if __name__ == '__main__':
     kengi.init()
+    tmp = kengi.get_ev_manager()
+    tmp.setup(MyEvTypes)
 
-    kengi.declare_states(  # changes the game controller used behind the scene
+    kengi.declare_game_states(  # changes the game controller used behind the scene
         GameStates,
         {
             GameStates.TitleScreen: MenuScreenState,
@@ -35,3 +37,4 @@ if __name__ == '__main__':
     t.loop()
 
     kengi.quit()
+    print('clean exit -.')

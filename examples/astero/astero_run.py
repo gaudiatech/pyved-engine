@@ -341,7 +341,12 @@ class ShipCtrl(EventReceiver):
             return
 
         # update ship state/pos
-        self._ref_ship.update(ev.delta_t)
+        if not(hasattr(self, '_last_t')) or (self._last_t is None):
+            delta = 0
+        else:
+            delta = ev.curr_t - self._last_t
+        self._last_t = ev.curr_t
+        self._ref_ship.update(delta)
 
     def on_keydown(self, ev):
         if ev.key == pygame.K_SPACE:
