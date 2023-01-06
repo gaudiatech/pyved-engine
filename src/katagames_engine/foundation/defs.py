@@ -217,6 +217,7 @@ EngineEvTypes = PseudoEnum((
     'StatePop',
 
     'RpcReceive',  # two-level reception (->tunelling if we use the json-rpc). Has num and raw_rpc_resp attributes
+    'RpcError',  # contains: code, msg
 
     'NetwSend',  # [num] un N°identification & [msg] un string (Async network comms)
     'NetwReceive'  # [num] un N°identification & [msg] un string (Async network comms)
