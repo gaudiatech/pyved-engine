@@ -82,13 +82,14 @@ class EvManager:
         while kappa > 0:
             etype, d = self._cbuffer.dequeue()
             kappa -= 1
-            if etype in self._etype_to_listenerli:
-                for lobj in self._etype_to_listenerli[etype]:
-                    if not hasattr(lobj, 'on_event'):  # on_event defined => we always use this method!
-                        adhoc_meth_name = 'on_'+self._etype_to_sncname[etype]
-                        getattr(lobj, adhoc_meth_name)(KengiEv(etype, **d))
-                    else:
-                        lobj.on_event(KengiEv(etype, **d))
+            if etype not in self._etype_to_listenerli:
+                continue
+            for lobj in self._etype_to_listenerli[etype]:
+                if hasattr(lobj, 'on_event'):  # on_event defined => we always use this method!
+                    lobj.on_event(KengiEv(etype, **d))
+                else:
+                    adhoc_meth_name = 'on_'+self._etype_to_sncname[etype]
+                    getattr(lobj, adhoc_meth_name)(KengiEv(etype, **d))
             if self.fresh_reset:
                 return
 
@@ -207,35 +208,40 @@ class EvListener(Emitter):
             self._manager = EvManager.instance()
 
         # special case: listen to every possible event!
+        card_sub_op = 0
         if hasattr(self, 'on_event') and callable(self.on_event):
-            for etn in self._manager.all_possible_etypes:
+            petypes = self._manager.all_possible_etypes
+            for etn in petypes:
                 self._tracked_ev.append(etn)
-                self._manager.subscribe(etn, self)
+                card_sub_op += 1
+
+        else:
+            # introspection & detection des on_* ... où le caractère étoile
+            # signifie tt type d'évènement connu du moteur, que ce soit un event engine ou un event custom ajouté
+            every_method = [method_name for method_name in dir(self) if callable(getattr(self, method_name))]
+            callbacks_only = [mname for mname in every_method if self._manager.regexp.match(mname)]
+
+            # let's PRINT crucial WARNING messages, if there is a on_unknwEvent found
+            for e in every_method:
+                if e[:3] == 'on_' and (e not in callbacks_only):
+                    rawmsg = '!!! BIG WARNING !!!\n    listener #{} that is{}\n'
+                    rawmsg += '    has been turned -ON- but its method "{}" cannot be called (Unknown event type)'
+                    w_msg = rawmsg.format(self.id, self, e)
+                    print(w_msg)
+
+            for cbname in callbacks_only:
+                # remove 'on_' prefix and convert Back to CamlCase
+                self._tracked_ev.append(to_camelcase(cbname[3:]))
+            card_sub_op += len(callbacks_only)
+
+        # -- done counting sub_op ---
+        if card_sub_op > 0:
             self._is_active = True
-            return
-
-        # introspection & detection des on_*
-        # où * représente tout type d'évènement connu du moteur, que ce soit un event engine ou un event custom ajouté
-        every_method = [method_name for method_name in dir(self) if callable(getattr(self, method_name))]
-        callbacks_only = [mname for mname in every_method if self._manager.regexp.match(mname)]
-
-        # BIG WARNING- important
-        for e in every_method:
-            if e[:3] == 'on_' and (e not in callbacks_only):
-                rawmsg = '!!! BIG WARNING !!!\n    listener #{} that is{}\n'
-                rawmsg += '    has been turned -ON- but its method "{}" cannot be called (Unknown event type)'
-                w_msg = rawmsg.format(self.id, self, e)
-                print(w_msg)
-
-        for cbname in callbacks_only:
-            # remove 'on_' prefix and convert Back to CamlCase
-            self._tracked_ev.append(to_camelcase(cbname[3:]))
-
-        # enregistrement de son activité d'écoute auprès du evt manager
-        for evname in self._tracked_ev:
-            self._manager.subscribe(evname, self)
-
-        self._is_active = True
+            # enregistrement de son activité d'écoute auprès du evt manager
+            for evname in self._tracked_ev:
+                self._manager.subscribe(evname, self)
+        else:
+            print('***WARNING: non-valid turn_on operation, class:', self.__class__, 'cannot find valid on_* methods')
 
     def turn_off(self):
         # opération contraire

@@ -24,7 +24,8 @@ def _enum_engine_ev_types(*sequential, **named):
     return enum_builder_generic(True, defs.FIRST_ENGIN_TYPE, *sequential, **named)
 
 
-EngineEvTypes = _enum_engine_ev_types(
+# disable on purpose this legacy system!
+_EngineEvTypes = _enum_engine_ev_types(
     'LogicUpdate',
     'Paint',
     'RefreshScreen',

@@ -38,34 +38,29 @@ from abc import ABCMeta, abstractmethod
 
 from . import _hub as hub
 from . import pal
+from . import state_management as _state_sm
 from . import struct
 from . import tankui
 from .Injector import Injector
 from ._BaseGameState import BaseGameState
-from .__version__ import ENGI_VERSION
+from .__version__ import ENGI_VERSION as _VER_CST
 from .compo import gfx
 from .compo import vscreen
 from .compo.modes import GameModeMger, BaseGameMode
 from .compo.vscreen import flip
-from .foundation import defs  # needed for the vm!
+from .foundation import defs  # it's needed for the vm!
 from .foundation import event2
 from .foundation.defs import STD_SCR_SIZE, KengiEv, Singleton
-from .foundation.event2 import EvListener, Emitter, EngineEvTypes, game_events_enum
+from .foundation.event2 import Emitter, EvListener, EngineEvTypes, game_events_enum
 from .foundation.interfaces import PygameIface
+from .state_management import declare_game_states
 from .util import underscore_format, camel_case_format
-
 
 _active_state = False
 _gameticker = None
-_multistate_flag = False
-_stack_based_ctrl = None
 one_plus_init = False
-state_stack = None
 _stored_kbackend = None
-ver = ENGI_VERSION
 pbackend_name = ''  # can be modified from elsewhere
-
-LD_HGC_SIG = (2, 'niobepolis')
 
 
 class Objectifier:
@@ -74,7 +69,7 @@ class Objectifier:
 
 
 def _show_ver_infos():
-    print(f'KENGI - ver {ENGI_VERSION}, built on top of ')
+    print(f'KENGI - ver {_VER_CST}, built on top of ')
 
 
 def is_ready():
@@ -105,8 +100,8 @@ def bootstrap_e(print_ver_info=True):
     event2.EvManager.instance().a_event_source = _stored_kbackend
 
     # TODO quick fix this part!
-    #event.create_manager()
-    #_gameticker = event.GameTicker()
+    # event.create_manager()
+    # _gameticker = event.GameTicker()
 
     # dry import
     vscreen.cached_pygame_mod = hub.pygame
@@ -122,7 +117,7 @@ def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
         conventionw, conventionh = STD_SCR_SIZE
         if gfx_mode_code != 0:
             adhoc_upscaling = gfx_mode_code
-            taille_surf_dessin = int(conventionw/gfx_mode_code), int(conventionh/gfx_mode_code)
+            taille_surf_dessin = int(conventionw / gfx_mode_code), int(conventionh / gfx_mode_code)
         else:
             adhoc_upscaling = 1
             taille_surf_dessin = screen_dim
@@ -159,37 +154,6 @@ def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
 _joy = None
 
 
-def init(gfc_mode=1, caption=None, maxfps=60, screen_dim=None):
-    global _gameticker, _joy
-    bootstrap_e()
-
-    pygm = hub.pygame
-    pygm.init()
-    pygm.mixer.init()
-
-    jc = _stored_kbackend.joystick_count()
-    if jc > 0:
-        # ------ init the joystick ------
-
-        _joy = _stored_kbackend.joystick_init(0)
-        name = _stored_kbackend.joystick_info(0)
-        print(name + ' detected')
-
-        # numaxes = _joy.get_numaxes()
-        # numballs = _joy.get_numballs()
-        # numbuttons = _joy.get_numbuttons()
-        # numhats = _joy.get_numhats()
-        # print(numaxes, numballs, numbuttons, numhats)
-
-    screen_param(gfc_mode, screen_dim=screen_dim)
-    if caption is None:
-        caption = f'untitled demo, uses KENGI ver {ENGI_VERSION}'
-    pygm.display.set_caption(caption)
-
-    # TODO quick fix this part
-    # _gameticker.maxfps = maxfps
-
-
 def get_surface():
     global _active_state
     if not is_ready():
@@ -210,110 +174,6 @@ def get_surface():
 #     )
 
 
-class StateStackCtrl(EvListener):
-    def __init__(self, all_gs, stmapping):
-    # old sig:
-    # def __init__(self, existing_ticker, gamestates_enum, glvars_pymodule, stmapping):
-
-        super().__init__()
-        self._gs_omega = all_gs
-        self._stack = struct.Stack()
-        # debug
-        # print('allcodes -- ', all_gs, all_gs.last_code, all_gs.all_codes )
-        self.first_state_id = all_gs.all_codes[0]  # CONVENTION: the first of the enum <=> the init gamestate id !
-
-        # lets build up all gamestates objects
-        self._st_container = struct.StContainer()
-
-        # relation avec stcontainer
-        self._st_container.setup(all_gs, stmapping, None)
-
-        # if -1 in stmapping:  # TODO fix architecture, engine shouldnt know bout SDK feat
-        #     self.first_state_id = -1
-        # else:
-        #     self.first_state_id = 0
-        self.__state_stack = struct.Stack()
-
-    # redefinition
-    # def halt(self):
-    #     while self.get_curr_state_ident() is not None:
-    #         self._pop_state()
-    #     self.ticker.halt()
-
-    def get_curr_state_ident(self):
-        return self.__state_stack.peek()
-
-    # --- ---
-    #  MÉTIER
-    # --- ---
-    def _push_state(self, state_obj):
-        tmp = self.__state_stack.peek()
-        curr_state = self._st_container.retrieve(tmp)
-        curr_state.pause()
-
-        self.__state_stack.push(state_obj.get_id())
-        state_obj.enter()
-
-    def _pop_state(self):
-        self.__only_the_pop_part()
-
-        # FOLLOW - UP
-        if self.__state_stack.count() == 0:
-            # TODO needs repair?
-            # self.ticker.halt()
-            pass
-            print('state count 0')
-        else:
-            tmp = self.__state_stack.peek()
-            state_obj = self._st_container.retrieve(tmp)
-            state_obj.resume()
-
-    def _change_state(self, state_obj):
-        self.__only_the_pop_part()
-        # FOLLOW - UP
-        self.__state_stack.push(state_obj.get_id())
-        state_obj.enter()
-
-    # Warning! never, ever call this method without some kind of follow-up (private method)
-    def __only_the_pop_part(self):
-        tmp = self.__state_stack.pop()
-        state_obj = self._st_container.retrieve(tmp)
-        state_obj.release()
-
-    # --------------------
-    #  CALLBACKS
-    # --------------------
-    # def proc_event(self, ev, source):
-    #     if ev.type == _hub.pygame.QUIT or ev.type == EngineEvTypes.GAMEENDS:
-    #         self.halt()
-
-    def on_state_change(self, ev):
-        state_obj = self._st_container.retrieve(ev.state_ident)
-        self._change_state(state_obj)
-
-    def on_state_push(self, ev):
-        state_obj = self._st_container.retrieve(ev.state_ident)
-        self._push_state(state_obj)
-
-    def on_state_pop(self, ev):
-        self._pop_state()
-
-    def on_gamestart(self, ev):
-        self.__state_stack.push(self.first_state_id)
-        self._st_container.retrieve(self.first_state_id).enter()
-
-
-def declare_game_states(gs_enum, assoc_gscode_gscls):
-    """
-    :param gs_enum: enum of every single gamestate code
-    :param assoc_gscode_gscls: a dict that binds a gamestate code to a gamestate class
-    """
-    global state_ctrl
-    state_ctrl = StateStackCtrl(gs_enum, assoc_gscode_gscls)
-    state_ctrl.turn_on()
-    print('* gamestates control is OPERATIONAL *')
-
-
 class _MyGameCtrl(event2.EvListener):
     MAXFPS = 75
 
@@ -326,6 +186,9 @@ class _MyGameCtrl(event2.EvListener):
         self.gameover = True
 
     def loop(self):
+        if state_management.multistate_flag:  # force this, otherwise the 1st state enter method isnt called
+            self.pev(event2.EngineEvTypes.Gamestart)
+
         while not self.gameover:
             self.pev(event2.EngineEvTypes.Update)
             self.pev(event2.EngineEvTypes.Paint, screen=vscreen.screen)
@@ -334,63 +197,12 @@ class _MyGameCtrl(event2.EvListener):
             self._clock.tick(self.MAXFPS)
 
 
-# --- deprec, was used before event sys 4 ---
-
-# def get_game_ctrl():
-#     global _multistate_flag, _stack_based_ctrl, _gameticker
-#     if _multistate_flag:
-#         return _stack_based_ctrl
-#     else:
-#         return _gameticker
-
-
 def get_game_ctrl():
     return _MyGameCtrl()
 
 
 def get_ev_manager():  # saves some time
     return event2.EvManager.instance()
-
-
-def quit():  # we keep the "quit" name bc of pygame
-    global _active_state, _multistate_flag, _stack_based_ctrl
-
-    if not _active_state:
-        return
-
-    if _multistate_flag:
-        _multistate_flag = False
-        _stack_based_ctrl = None
-    if hub.kengi_inj.is_loaded('ascii') and hub.ascii.is_ready():
-        hub.ascii.reset()
-
-    # TODO quick fix this part
-    # event.EventManager.instance().hard_reset()
-    # event.CogObj.reset_class_state()
-    event2.EvManager.instance().hard_reset()
-
-    vscreen.init2_done = False
-    pyg = get_injector()['pygame']
-    pyg.mixer.quit()
-    pyg.quit()
-    _active_state = False
-
-
-def get_injector():
-    return hub.kengi_inj
-
-
-def plugin_bind(plugin_name, pypath):
-    hub.kengi_inj.register(plugin_name, pypath)
-
-
-def bulk_plugin_bind(darg: dict):
-    """
-    :param darg: association extension(plug-in) name to a pypath
-    :return:
-    """
-    for pname, ppath in darg.items():
-        plugin_bind(ppath, ppath)
 
 
 class GameTpl(metaclass=ABCMeta):
@@ -423,7 +235,7 @@ class GameTpl(metaclass=ABCMeta):
         pyg = hub.kengi_inj['pygame']
         pk = pyg.key.get_pressed()
         if pk[pyg.K_ESCAPE] or self.gameover:
-            return LD_HGC_SIG
+            return 2, 'niobepolis'
         flip()
         self.clock.tick(self.MAXFPS)
 
@@ -453,13 +265,77 @@ class GameTpl(metaclass=ABCMeta):
 
 
 # ----------------------------
-# Stuff related to lazy import
+#  init & quit
+# ----------------------------
+def init(gfc_mode=1, caption=None, maxfps=60, screen_dim=None):
+    global _gameticker, _joy
+    bootstrap_e()
+    pygm = hub.pygame
+    pygm.init()
+    pygm.mixer.init()
+
+    jc = _stored_kbackend.joystick_count()
+    if jc > 0:
+        # ------ init the joystick ------
+        _joy = _stored_kbackend.joystick_init(0)
+        name = _stored_kbackend.joystick_info(0)
+        print(name + ' detected')
+        # numaxes = _joy.get_numaxes()
+        # numballs = _joy.get_numballs()
+        # numbuttons = _joy.get_numbuttons()
+        # numhats = _joy.get_numhats()
+        # print(numaxes, numballs, numbuttons, numhats)
+
+    screen_param(gfc_mode, screen_dim=screen_dim)
+    if caption is None:
+        caption = f'untitled demo, uses KENGI ver {_VER_CST}'
+    pygm.display.set_caption(caption)
+
+
+def quit():  # we keep the "quit" name bc of pygame
+    global _active_state
+    if _active_state:
+        if _state_sm.multistate_flag:
+            _state_sm.multistate_flag = False
+            _state_sm.stack_based_ctrl.turn_off()
+            _state_sm.stack_based_ctrl = None
+        if hub.kengi_inj.is_loaded('ascii') and hub.ascii.is_ready():
+            hub.ascii.reset()
+
+        event2.EvManager.instance().hard_reset()
+        vscreen.init2_done = False
+        pyg = get_injector()['pygame']
+        pyg.mixer.quit()
+        pyg.quit()
+        _active_state = False
+
+
+# ----------------------------
+#  Related to lazy import
 # ----------------------------
 pygame = PygameIface()
 
 
+def get_injector():
+    return hub.kengi_inj
+
+
+def plugin_bind(plugin_name, pypath):
+    hub.kengi_inj.register(plugin_name, pypath)
+
+
+def bulk_plugin_bind(darg: dict):
+    """
+    :param darg: association extension(plug-in) name to a pypath
+    :return:
+    """
+    for pname, ppath in darg.items():
+        plugin_bind(ppath, ppath)
+
+
 def __getattr__(attr_name):
-    if not is_ready():
-        raise AttributeError(f"kengi cannot lazy load, it hasnt bootstrap yet! (user request: {attr_name})")
-    else:
+    if 'attr_name' in ('ver', 'vernum'):
+        return _VER_CST
+    if is_ready():
         return getattr(hub, attr_name)
+    raise AttributeError(f"kengi cannot lazy load, it hasnt bootstrap yet! (user request: {attr_name})")
