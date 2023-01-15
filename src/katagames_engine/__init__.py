@@ -334,7 +334,7 @@ def bulk_plugin_bind(darg: dict):
 
 
 def __getattr__(attr_name):
-    if 'attr_name' in ('ver', 'vernum'):
+    if attr_name in ('ver', 'vernum'):
         return _VER_CST
     if is_ready():
         return getattr(hub, attr_name)
