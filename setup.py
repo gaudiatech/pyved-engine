@@ -25,6 +25,8 @@ setup(
 
         "katagames_engine.compo",
 
+        "katagames_engine.looparts",  # to be sure we get looparts/rogue.py, looparts/tabletop.py, etc.
+
         "katagames_engine.looparts.ai",
         "katagames_engine.looparts.demolib",
         "katagames_engine.looparts.gui",
@@ -37,9 +39,9 @@ setup(
         "katagames_engine.looparts.tmx.pytiled_parser",
         "katagames_engine.looparts.tmx.pytiled_parser.parsers",
         "katagames_engine.looparts.tmx.pytiled_parser.parsers.json",
-        "katagames_engine.looparts.tmx.pytiled_parser.parsers.tmx"
+        "katagames_engine.looparts.tmx.pytiled_parser.parsers.tmx",
         ],
-    include_package_data=True,  # to be sure we get looparts/rogue.py, looparts/tabletop.py, etc.
+    include_package_data=True,
     install_requires=install_requires,
     description='game engine built on top of python/pygame',
     license='LGPL3',
