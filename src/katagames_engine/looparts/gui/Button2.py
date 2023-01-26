@@ -1,4 +1,5 @@
 from ... import _hub as inj
+from ...compo.vscreen import proj_to_vscreen
 
 # from ... import event
 from ...foundation.event2 import EvListener
@@ -29,11 +30,13 @@ class Button2(EvListener):
         self._text = text
         self._hit = False
 
-        # dawing
-        self.font = font
+        if font is None:
+            self.font = pygame.font.Font(None, 18)  # default
+        else:
+            self.font = font
         self.txt = text
 
-        size = font.size(text)
+        size = self.font.size(text)
         self.tmp_size = size
         self.position = position_on_screen
         self.collision_rect = pygame.Rect(self.position, size).inflate(padding_value, padding_value)
@@ -96,8 +99,8 @@ class Button2(EvListener):
     #     events.RootEventSource.instance().stop()
 
     def on_mousedown(self, event):
-        pos = event.pos
-        if self.collision_rect.collidepoint(pos):
+        ptested = proj_to_vscreen(event.pos)
+        if self.collision_rect.collidepoint(ptested):
             if self._callback:
                 self._callback()
 
