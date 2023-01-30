@@ -1,21 +1,21 @@
 from ... import _hub as inj
 from ...compo.vscreen import proj_to_vscreen
-
 # from ... import event
 from ...foundation.event2 import EvListener
+from .BaseGuiElement import BaseGuiElement
+
 
 pygame = inj.pygame
 
 
-def test_func():
-    print("Button clicked!")
+class Button2(EvListener, BaseGuiElement):
 
-
-class Button2(EvListener):
     HIDEOUS_PURPLE = (255, 0, 255)
 
     def __init__(self, font, text, position_on_screen, callback=None, draw_background=True):
-        super().__init__()
+        BaseGuiElement.__init__(self)
+        EvListener.__init__(self)
+
         padding_value = 12  # pixels
 
         if draw_background:
@@ -38,10 +38,13 @@ class Button2(EvListener):
 
         size = self.font.size(text)
         self.tmp_size = size
-        self.position = position_on_screen
-        self.collision_rect = pygame.Rect(self.position, size).inflate(padding_value, padding_value)
-        self.collision_rect.topleft = self.position
+        # cp
+        self._dim[0], self._dim[1] = size
 
+        # self.position = position_on_screen
+
+        self.collision_rect = pygame.Rect(self._abs_pos, size).inflate(padding_value, padding_value)
+        self.collision_rect.topleft = self._abs_pos
         self.image = None
         self.refresh_img()
 
@@ -62,7 +65,7 @@ class Button2(EvListener):
         )
         self.image.blit(textimg, blit_dest)
 
-        #  TODO is this useful?
+        # TODO is this useful?
         # if self.bg_color == self.HIDEOUS_PURPLE:
         #     self.image.set_colorkey((self.bg_color))
         #     box_color = (190,) * 3
@@ -72,6 +75,41 @@ class Button2(EvListener):
     # pour des raisons pratiques (raccourci)
     def get_size(self):
         return self.image.get_size()
+
+    # redefine!
+    def get_dimensions(self):
+        return self.image.get_size()
+
+    def get_relative_rect(self):
+        pass
+
+    def set_relative_pos(self, position):
+        pass
+
+    def draw(self):
+        # print( self._abs_pos)
+        self._scrref.blit(self.image, self._abs_pos)
+        # print('eiduateluidetlaui')
+
+    def kill(self):
+        pass
+
+    def check_hover(self, time_delta: float, hovered_higher_element: bool) -> bool:
+        pass
+
+    def hover_point(self, hover_x: float, hover_y: float) -> bool:
+        pass
+
+    def set_image(self, new_image):
+        pass
+
+    def set_active(self, activate_mode: bool):
+        pass
+
+    # - redefine!
+    def set_pos(self, position):
+        self._abs_pos[0], self._abs_pos[1] = position
+        self.collision_rect.topleft = position
 
     def proc_event(self, ev, source):
         if ev.type == pygame.KEYDOWN:
@@ -104,12 +142,12 @@ class Button2(EvListener):
             if self._callback:
                 self._callback()
 
-    def on_mouseup(self, event):
-        pos = event.pos
-        # print('button: mouse button up detected! x,y = {}'.format(pos))
-
-    def on_mousemotion(self, event):
-        pass
+    # def on_mouseup(self, event):
+    #     pos = event.pos
+    #     # print('button: mouse button up detected! x,y = {}'.format(pos))
+    #
+    # def on_mousemotion(self, event):
+    #     pass
 
     def set_callback(self, callback):
         self._callback = callback
@@ -120,8 +158,6 @@ class Button2(EvListener):
         """
         pass
 
-    def update(self):
-        pass
     #     """
     #     Actually not needed. (only need if this module is run as a script)
     #     """

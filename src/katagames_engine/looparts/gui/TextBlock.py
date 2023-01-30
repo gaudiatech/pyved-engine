@@ -4,7 +4,6 @@ from ... import _hub as inj
 pygame = inj.pygame
 
 
-
 def create_txtblock_surf(text, ft_obj, alignment_f=0.0, debug=0, color=(0, 0, 0), bg_color=None):
     """
     goal = to produce a pygame surface

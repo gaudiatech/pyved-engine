@@ -1,19 +1,17 @@
 import random
-from typing import Union, Tuple
-
-from .interfaces.element_interface import IfaceUIElement
-from ...foundation import event2 as evmodule
-from ...compo import vscreen
+from katagames_engine.looparts.gui.BaseGuiElement import BaseGuiElement, ANCHOR_LEFT, ANCHOR_RIGHT, ANCHOR_CENTER
 from ... import _hub
+from ...compo import vscreen
+from ...foundation import event2 as evmodule
 
 
 pygame = _hub.pygame
 
-# SPATIAL_INFO = Union[pygame.math.Vector2, Tuple[int, int], Tuple[float, float]]  pose pb en web context , parce que pygame used
-ANCHOR_CENTER, ANCHOR_RIGHT, ANCHOR_LEFT = range(34151, 34151+3)
+# pose pb en web context , parce que pygame used
+# SPATIAL_INFO = Union[pygame.math.Vector2, Tuple[int, int], Tuple[float, float]]
 
 
-class GenericUIElement(IfaceUIElement):
+class GenericUIElement(BaseGuiElement):
     """
     almost abstract element, all it contains is the minimal code,
     so it can be visually debugged
@@ -228,31 +226,6 @@ class AugmentedSprite(GenericUIElement):
             return False
 
 
-class WidgetContainer(GenericUIElement):
-    LTR = 1
-    EXPAND = 2
-
-    def __init__(self, pos, size, widget_list, layout_type=LTR):
-        super().__init__(pos, size)
-        self.content = list()
-        self.content.extend(widget_list)
-
-        # adjust positions automatically!
-        if layout_type == self.LTR:
-            c_pos = [0, 0]
-            for w in widget_list:
-                w.set_position(c_pos)
-                c_pos[0] += w.get_dimensions()[0]
-                c_pos[1] = self._xy_coords[1]
-
-        elif layout_type == self.EXPAND:
-            bsupx, bsupy = self._dim
-            increm = bsupx // (+2-1+len(self.content))  # +2 because of left & right margin, -1 bc two spaces if 3 elem
-            c_pos = [increm, self._xy_coords[1] + (self._dim[1] // 2)]
-            for w in widget_list:
-                w.set_position(c_pos)
-                c_pos[0] += increm
-
 
 class _SprLikeLabel(pygame.sprite.Sprite):
     # TODO make it a UIelement
@@ -284,79 +257,3 @@ class _SprLikeLabel(pygame.sprite.Sprite):
         self._color = value
         self.image = self._font.render(self._txt, False, value)
         self.rect = self.image.get_rect()
-
-
-class Label(GenericUIElement):
-
-    def __init__(self, position, text, txtsize=35, color=None, anchoring=ANCHOR_LEFT, debugmode=False):
-        self._used_text = text
-        self._used_color = color
-        self._txtsize = txtsize
-        self._inner_spr = _SprLikeLabel(text, txtsize, color)
-        super().__init__(position, self._inner_spr.rect.size, anchoring, debugmode)
-
-    # --- define all properties ---
-    @property
-    def textsize(self):
-        return self._txtsize
-
-    @textsize.setter
-    def textsize(self, newv):
-        self._txtsize = newv
-        self.rebuild()
-
-    @property
-    def text(self):
-        return self._used_text
-
-    # modifiying text => rebuild step
-    @text.setter
-    def text(self, newtext):
-        self._used_text = newtext
-        self.rebuild()
-
-    @property
-    def color(self):
-        return self._inner_spr.color
-
-    @color.setter
-    def color(self, newval):
-        self._used_color = newval
-        self.rebuild()
-    # --- all properties defined ---
-
-    def rebuild(self) -> None:
-        """
-        called if the spr has changed (or the color)
-        :return:
-        """
-        self._inner_spr = _SprLikeLabel(self._used_text, self._txtsize, self._used_color)
-        super().__init__(self.get_position(), self._inner_spr.rect.size, self._curr_anchor, self._debug_mode)
-
-    def draw(self):
-        super().draw()
-        topleft_coords = self._xy_coords
-        self._cached_scr_ref.blit(self._inner_spr.image, topleft_coords)
-
-
-if __name__ == '__main__':
-    pygame.init()
-    scr = pygame.display.set_mode((400, 300))
-    gameover = False
-    cl = pygame.time.Clock()
-    central_obj = _SprLikeLabel('salut', 'steelblue')
-
-    while not gameover:
-        for ev in pygame.event.get():
-            if ev.type == pygame.QUIT:
-                gameover = True
-            elif ev.type == pygame.KEYDOWN:
-                central_obj.color = random.choice(('antiquewhite2', 'orange', 'pink', 'yellow'))
-
-            scr.fill('grey22')
-            scr.blit(central_obj.image, central_obj.rect.topleft)
-            pygame.display.update()
-            cl.tick(60)
-
-    pygame.quit()
-    print('test over')

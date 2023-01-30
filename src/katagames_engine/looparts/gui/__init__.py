@@ -1,18 +1,16 @@
 """
-sub-module dedicated to GUI management/creation,
- belongs to the kata engine
+sub-module dedicated to GUI management/creation. This belongs to the 'Kengi' engine
 """
-
 from .Button import Button
 from .Button2 import Button2
 from .DispCenteredPopup import DispCenteredPopup
+from .Label import Label
 from .TextBlock import TextBlock
 from .Trigger import Trigger
 from .WidgetBo import WidgetBo
+from .WidgetContainer import WidgetContainer
 from .base import ANCHOR_CENTER, ANCHOR_RIGHT, ANCHOR_LEFT  # bring codes here
 from .base import AugmentedSprite
-from .base import Label
-from .base import WidgetContainer
 from .text import ImgBasedFont
 from ... import _hub
 from ...foundation.event2 import EvListener
