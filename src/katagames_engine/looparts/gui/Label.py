@@ -17,6 +17,8 @@ class Label(BaseGuiElement):
         self.image = self.small_font.render(txt_string, False, self._used_color)
         self._dim = self.image.get_size()
 
+        self._debug = False
+
     @property
     def text(self):
         return self._text
@@ -25,6 +27,9 @@ class Label(BaseGuiElement):
     def text(self, v):
         self._text = v
         self.image = self.small_font.render(v, False, 'orange')
+        self._dim = self.image.get_size()
+        if self._parent:
+            self._parent.recompute()
 
     def get_relative_rect(self):
         pass
@@ -100,8 +105,10 @@ class Label(BaseGuiElement):
     #     super().__init__(self.get_position(), self._inner_spr.rect.size, self._curr_anchor, self._debug_mode)
 
     def draw(self):
-        super().draw()
-        topleft_coords = self._abs_pos  # self._xy_coords
+        # super().draw()
+        self._scrref.blit(self.image, self._abs_pos)
+        if self._debug:
+            pygame.draw.rect(self._scrref, 'red', self.get_abs_rect(), 1)
         # self._cached_scr_ref.blit(self._inner_spr.image, topleft_coords)
 
 

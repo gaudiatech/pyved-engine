@@ -1,8 +1,8 @@
+from .BaseGuiElement import BaseGuiElement
 from ... import _hub as inj
 from ...compo.vscreen import proj_to_vscreen
-# from ... import event
 from ...foundation.event2 import EvListener
-from .BaseGuiElement import BaseGuiElement
+from ...foundation.event2 import EvManager
 
 
 pygame = inj.pygame
@@ -12,9 +12,12 @@ class Button2(EvListener, BaseGuiElement):
 
     HIDEOUS_PURPLE = (255, 0, 255)
 
-    def __init__(self, font, text, position_on_screen, callback=None, draw_background=True):
+    def __init__(self, font, text, position_on_screen, draw_background=True, callback=None, tevent=None):
         BaseGuiElement.__init__(self)
         EvListener.__init__(self)
+
+        if position_on_screen:
+            self._abs_pos = list(position_on_screen)
 
         padding_value = 12  # pixels
 
@@ -25,24 +28,30 @@ class Button2(EvListener, BaseGuiElement):
             self.bg_color = self.HIDEOUS_PURPLE
             self.fg_color = (0, 0, 0)
 
-        # data
-        self._callback = callback
+        # - callback func management !
+        if callback and tevent:
+            raise ValueError('cannot have callback & tevent set at the same time!')
+        self._callback = None
+        if callback:
+            self._callback = callback
+        elif tevent:
+            def push_event():
+                nonlocal tevent
+                EvManager.instance().post(tevent)
+            self._callback = push_event
+
+        # - rest of the init, data etc.
         self._text = text
         self._hit = False
-
         if font is None:
             self.font = pygame.font.Font(None, 18)  # default
         else:
             self.font = font
         self.txt = text
-
         size = self.font.size(text)
         self.tmp_size = size
         # cp
         self._dim[0], self._dim[1] = size
-
-        # self.position = position_on_screen
-
         self.collision_rect = pygame.Rect(self._abs_pos, size).inflate(padding_value, padding_value)
         self.collision_rect.topleft = self._abs_pos
         self.image = None
@@ -87,9 +96,7 @@ class Button2(EvListener, BaseGuiElement):
         pass
 
     def draw(self):
-        # print( self._abs_pos)
         self._scrref.blit(self.image, self._abs_pos)
-        # print('eiduateluidetlaui')
 
     def kill(self):
         pass
@@ -167,4 +174,3 @@ class Button2(EvListener, BaseGuiElement):
     #         screen.fill((100, 0, 0))
     #         screen.blit(self.image, self.position)
     #         pygame.display.flip()
-

@@ -1,3 +1,5 @@
+import math
+
 from .BaseGuiElement import BaseGuiElement
 from ... import _hub
 
@@ -26,30 +28,66 @@ class WidgetContainer(BaseGuiElement):
                 self.dictmode = 0
                 self.content.extend(widget_list)
 
+        for elt in self.content:
+            elt._parent = self
+        # reposition elements that belong to this(self) container
+        self.spacing = spacing
+        self.layout_type = layout_type
+        self.recompute()
+
+    def recompute(self):
         # adjust positions automatically!
-        if layout_type == self.LTR:
+        if self.layout_type == self.LTR:
             c_pos = [0, 0]
             for w in self.content:
                 w.set_pos(
-                    (self._abs_pos[0]+c_pos[0], self._abs_pos[1])
+                    (self._abs_pos[0] + c_pos[0], self._abs_pos[1])
                 )
-                c_pos[0] += w.get_dimensions()[0]+spacing
+                c_pos[0] += w.get_dimensions()[0] + self.spacing
 
-        elif layout_type == self.EXPAND:
-            p = self.get_pos()
-            bsupx, bsupy = self._dim
-            increm = bsupx // (
-                        +2 - 1 + len(self.content))  # +2 because of left & right margin, -1 bc two spaces if 3 elem
-            c_pos = [increm, p[1] + (self._dim[1] // 2)]
+        # ----------------------
+        # the 'expand' layout
+        elif self.layout_type == self.EXPAND:
+            px, py, bsupx, bsupy = self.get_abs_rect()
+
+            c_pos = [px+1, py+(bsupy//2)]  # vertical align:center
+            s = 0
+            for w in self.content:
+                s += w.get_dimensions()[0]
+            blank_total_space = bsupx - s
+            auto_spacing = math.floor(blank_total_space / (len(self.content)-1))
+
             for w in self.content:
                 w.set_pos(c_pos)
-                c_pos[0] += increm
+                c_pos[0] += w.get_dimensions()[0]+auto_spacing
 
-        for w in self.content:
-            print(w.get_pos())
+        # ----------------------
+        # the 'flow' layout
+        elif self.layout_type == self.FLOW:
+            basex, basey, container_w, container_h = self.get_abs_rect()
+            curr_p = [basex, basey]
 
+            prevwidget_w, prevwidget_h = 0, 0
+            k = 0
+            for w in self.content:
+                if k:
+                    curr_p[0] += (prevwidget_w + self.spacing)
+                if w.get_dimensions()[0]+curr_p[0] > container_w+basex:
+                    curr_p[0] = basex
+                    curr_p[1] += prevwidget_h
+
+                w.set_pos(curr_p)
+                prevwidget_w, prevwidget_h = w.get_dimensions()
+                k += 1
+
+    # redef!
+    def set_debug_flag(self, v=True):
+        super().set_debug_flag(v)
         for elt in self.content:
-            elt._parent = self
+            elt.set_debug_flag(v)
+
+    def update_pos_from_child(self, a, b):
+        pass
 
     def __getitem__(self, item):
         if not self.dictmode:

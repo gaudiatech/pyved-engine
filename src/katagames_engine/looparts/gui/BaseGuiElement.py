@@ -175,18 +175,11 @@ class BaseGuiElement(metaclass=ABCMeta):
     #     """
     #     pass
 
-    @property
-    def debug_mode(self):
+    def get_debug_flag(self):
         return self._debug
 
-    @debug_mode.setter
-    def debug_mode(self, newmode: bool):
-        """
-        Enables a debug mode for the element which displays layer information on top of it in
-        a tiny font.
-        :param newmode: True or False to enable or disable the mode.
-        """
-        self._debug = newmode
+    def set_debug_flag(self, v=True):
+        self._debug = bool(v)
 
     @abstractmethod
     def set_image(self, new_image):
