@@ -28,6 +28,10 @@ class BaseGuiElement(metaclass=ABCMeta):
         # not all widgets can be de-activated
         self._active = True
 
+    @property
+    def active(self):
+        return self._active
+
     def get_abs_rect(self):
         """
         The absolute positioning rect.
@@ -189,12 +193,12 @@ class BaseGuiElement(metaclass=ABCMeta):
         :param new_image: The new image to set.
         """
 
-    @abstractmethod
-    def set_active(self, activate_mode: bool):
+    def set_active(self, activate_mode=True):
         """
         tag the widget as active/inactive,
         which determines if the widget will draw itself and process events or not
         """
+        self._active = activate_mode
 
     def set_anchoring(self, anch_code: int):
         """

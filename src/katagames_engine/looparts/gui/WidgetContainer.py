@@ -16,6 +16,8 @@ class WidgetContainer(BaseGuiElement):
         super().__init__()
         assert isinstance(layout_type, int)
 
+        self._active = False
+
         self.set_pos(pos)
         self.set_dimensions(size)
         self.content = list()
@@ -34,6 +36,18 @@ class WidgetContainer(BaseGuiElement):
         self.spacing = spacing
         self.layout_type = layout_type
         self.recompute()
+
+    # -- redef!
+    def set_active(self, activate_mode=True):
+        if activate_mode:
+            print('xxx Activation de l\'element', self)
+        else:
+            print(self, ' est désactivé!')
+
+        super().set_active(activate_mode)
+
+        for e in self.content:
+            e.set_active(activate_mode)
 
     def recompute(self):
         # adjust positions automatically!
@@ -101,11 +115,12 @@ class WidgetContainer(BaseGuiElement):
         pass
 
     def draw(self):
+        if not self._active:
+            return
+        for elt in self.content:
+            elt.draw()
         if self._debug:
             pygame.draw.rect(self._scrref, 'red', self.get_abs_rect(), 1)
-
-        for elt in self.content:
-            elt.draw()  # refscr.blit(b.image, b.position)
 
     def kill(self):
         pass
@@ -125,5 +140,3 @@ class WidgetContainer(BaseGuiElement):
     def set_image(self, new_image):
         pass
 
-    def set_active(self, activate_mode: bool):
-        pass

@@ -16,6 +16,11 @@ class Button2(EvListener, BaseGuiElement):
         BaseGuiElement.__init__(self)
         EvListener.__init__(self)
 
+        # - specific attributes
+        # already has self._active THIS ATTR means (display/no display & can react/cannot react) at the same time
+        # we need another ATTR to say the Button has to be drawn but is disabled right now, for example!
+        self._enabled = True
+
         if position_on_screen:
             self._abs_pos = list(position_on_screen)
 
@@ -57,14 +62,37 @@ class Button2(EvListener, BaseGuiElement):
         self.image = None
         self.refresh_img()
 
+    # - redef
+    def set_active(self, activate_mode=True):
+        super().set_active(activate_mode)
+        if activate_mode:
+            self.turn_on()
+        else:
+            self.turn_off()
+
+    @property
+    def enabled(self):
+        return self._enabled
+
+    def set_enabled(self, boolv=True):
+        x = self._enabled
+        self._enabled = bool(boolv)
+        if self._enabled != x:
+            self.refresh_img()  # need a re-draw, bc a disabled button has to have a different image/to look different
+
     def refresh_img(self):
         self.image = pygame.Surface(self.collision_rect.size).convert()
         self.image.fill(self.bg_color)
 
+        spe_color = list(self.fg_color)
+        for i in range(3):
+            spe_color[i] = int(spe_color[i]/3)
+        adhoc_txt_color = self.fg_color if self._enabled else spe_color
+
         if self.bg_color != self.HIDEOUS_PURPLE:
-            textimg = self.font.render(self.txt, True, self.fg_color, self.bg_color)
+            textimg = self.font.render(self.txt, True, adhoc_txt_color, self.bg_color)
         else:
-            textimg = self.font.render(self.txt, False, self.fg_color)
+            textimg = self.font.render(self.txt, False, adhoc_txt_color)
 
         ssdest = self.image.get_size()
         ssource = textimg.get_size()
@@ -96,7 +124,8 @@ class Button2(EvListener, BaseGuiElement):
         pass
 
     def draw(self):
-        self._scrref.blit(self.image, self._abs_pos)
+        if self._active:
+            self._scrref.blit(self.image, self._abs_pos)
 
     def kill(self):
         pass
@@ -108,9 +137,6 @@ class Button2(EvListener, BaseGuiElement):
         pass
 
     def set_image(self, new_image):
-        pass
-
-    def set_active(self, activate_mode: bool):
         pass
 
     # - redefine!
@@ -144,17 +170,10 @@ class Button2(EvListener, BaseGuiElement):
     #     events.RootEventSource.instance().stop()
 
     def on_mousedown(self, event):
-        ptested = proj_to_vscreen(event.pos)
-        if self.collision_rect.collidepoint(ptested):
-            if self._callback:
+        if self._active and self._enabled and self._callback:
+            ptested = proj_to_vscreen(event.pos)
+            if self.collision_rect.collidepoint(ptested):
                 self._callback()
-
-    # def on_mouseup(self, event):
-    #     pos = event.pos
-    #     # print('button: mouse button up detected! x,y = {}'.format(pos))
-    #
-    # def on_mousemotion(self, event):
-    #     pass
 
     def set_callback(self, callback):
         self._callback = callback
