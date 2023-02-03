@@ -52,7 +52,7 @@ class Button2(EvListener, BaseGuiElement):
             self.font = pygame.font.Font(None, 18)  # default
         else:
             self.font = font
-        self.txt = text
+        self._txt = text
         size = self.font.size(text)
         self.tmp_size = size
         # cp
@@ -62,10 +62,20 @@ class Button2(EvListener, BaseGuiElement):
         self.image = None
         self.refresh_img()
 
+    @property
+    def label(self):
+        return self._txt
+
+    @label.setter
+    def label(self, newstr):
+        self._txt = newstr
+        self.refresh_img()
+
     # - redef
-    def set_active(self, activate_mode=True):
-        super().set_active(activate_mode)
-        if activate_mode:
+    def set_active(self, newmode=True):
+        bv = bool(newmode)
+        super().set_active(bv)
+        if bv:
             self.turn_on()
         else:
             self.turn_off()
@@ -90,9 +100,9 @@ class Button2(EvListener, BaseGuiElement):
         adhoc_txt_color = self.fg_color if self._enabled else spe_color
 
         if self.bg_color != self.HIDEOUS_PURPLE:
-            textimg = self.font.render(self.txt, True, adhoc_txt_color, self.bg_color)
+            textimg = self.font.render(self._txt, True, adhoc_txt_color, self.bg_color)
         else:
-            textimg = self.font.render(self.txt, False, adhoc_txt_color)
+            textimg = self.font.render(self._txt, False, adhoc_txt_color)
 
         ssdest = self.image.get_size()
         ssource = textimg.get_size()
