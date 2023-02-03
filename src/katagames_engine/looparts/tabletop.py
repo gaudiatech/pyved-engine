@@ -68,6 +68,26 @@ class StandardCard:
         }[x]
 
     @property
+    def numeric(self):
+        x = self._code[0]
+        f = {
+            '2': 2,
+            '3': 3,
+            '4': 4,
+            '5': 5,
+            '6': 6,
+            '7': 7,
+            '8': 8,
+            '9': 9,
+            'T': 10,
+            'J': 11,
+            'Q': 12,
+            'K': 13,
+            'A': 14
+        }
+        return f[x]
+
+    @property
     def suit(self):
         return self._code[1]
 
@@ -131,6 +151,34 @@ class PokerHand(BaseHandOfCards):
     def __len__(self):
         return len(self.content)
 
+    def get_highest_num(self):
+        h = 0
+        for card_obj in self.content:
+            if card_obj.numeric > h:
+                h = card_obj.numeric
+        print(h)
+        return h
+
+    def is_royal(self):
+        # the IMPOSSIBLE luck ;)
+        a = self.is_flush()
+        b = self.is_straight()
+        c = self.get_highest_num() == 14
+        print(a, b, c)
+        return a and b and c   # last test= test if ace
+
+    def has_pair1(self):
+        return str(self.value)[0] == '2'
+
+    def has_pair2(self):
+        return str(self.value)[0] == '3'
+
+    def is_trips(self):
+        return str(self.value)[0] == '4'
+
+    def is_four_oak(self):
+        return str(self.value)[0] == '8'
+
     def is_straight(self):
         """
         a hand is a straight if, when sorted, the current card's rank + 1 is the same as the next card
@@ -144,6 +192,9 @@ class PokerHand(BaseHandOfCards):
             if values[n] + 1 != values[n+1]:
                 return False
         return True
+
+    def is_full(self):
+        return str(self.value)[0] == '7'
 
     def is_flush(self):
         """a hand is a flush if all the cards are of the same suit
