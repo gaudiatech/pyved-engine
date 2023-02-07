@@ -1,8 +1,8 @@
 import re
 import time
 
-from .defs import EngineEvTypes, KengiEv, PseudoEnum
-from .defs import to_camelcase, to_snakecase, CircularBuffer, Singleton
+from katagames_engine.foundation.defs import EngineEvTypes, KengiEv, PseudoEnum
+from katagames_engine.foundation.defs import to_camelcase, to_snakecase, CircularBuffer, Singleton
 
 
 _FIRST_LISTENER_ID = 72931
@@ -42,6 +42,7 @@ class EvManager:
         return self._cbuffer.get_size()
 
     def post(self, etype, **kwargs):
+        t = int(etype)  # ~= assert its an int that is posted
         self._cbuffer.enqueue((etype, kwargs))
 
     def set_interval(self, delay, etype, **kwargs):

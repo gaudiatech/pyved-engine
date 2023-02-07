@@ -1,11 +1,11 @@
 from .BaseGuiElement import BaseGuiElement
-from ... import _hub as inj
+from ... import _hub
 from ...compo.vscreen import proj_to_vscreen
-from ...foundation.event2 import EvListener
-from ...foundation.event2 import EvManager
 
 
-pygame = inj.pygame
+pygame = _hub.pygame
+EvListener = _hub.events.EvListener
+EvManager = _hub.events.EvManager
 
 
 class Button2(EvListener, BaseGuiElement):

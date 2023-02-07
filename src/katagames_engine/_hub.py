@@ -3,10 +3,11 @@ Keep this file separate from __init__.py!
 its important, bc all sub-modules in kengi may import _hub
 in order to refer to other dependencies/sub-modules
 """
-from .Injector import Injector
 
+from .core.Injector import Injector as _Injector
+from .core import events
 
-kengi_inj = Injector({
+kengi_inj = _Injector({
     'ai': '.looparts.ai',
     'anim': '.looparts.anim',
     'ascii': '.looparts.ascii',

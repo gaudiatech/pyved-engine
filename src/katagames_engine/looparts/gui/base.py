@@ -1,11 +1,10 @@
-import random
 from katagames_engine.looparts.gui.BaseGuiElement import BaseGuiElement, ANCHOR_LEFT, ANCHOR_RIGHT, ANCHOR_CENTER
 from ... import _hub
 from ...compo import vscreen
-from ...foundation import event2 as evmodule
 
 
 pygame = _hub.pygame
+EngineEvTypes = _hub.events.EngineEvTypes
 
 # pose pb en web context , parce que pygame used
 # SPATIAL_INFO = Union[pygame.math.Vector2, Tuple[int, int], Tuple[float, float]]
@@ -210,7 +209,7 @@ class AugmentedSprite(GenericUIElement):
         if self._is_active:
             super().proc_event(event)
 
-            if event.type == evmodule.EngineEvTypes.Paint:
+            if event.type == EngineEvTypes.Paint:
                 self.draw()
 
             if event.type == pygame.MOUSEBUTTONDOWN:

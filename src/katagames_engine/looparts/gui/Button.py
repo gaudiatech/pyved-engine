@@ -1,10 +1,10 @@
-from ... import _hub as inj
+from ... import _hub
 # from ... import event
 
 
-pygame = inj.pygame
+pygame = _hub.pygame
+event = _hub.events
 # EventReceiver = event.EventReceiver
-from ...foundation import event2 as event
 
 
 # class ButtonPanel(EventReceiver):

@@ -41,20 +41,20 @@ from . import pal
 from . import state_management as _state_sm
 from . import struct
 from . import tankui
-from .Injector import Injector
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION as _VER_CST
 from .compo import gfx
 from .compo import vscreen
 from .compo.modes import GameModeMger, BaseGameMode
 from .compo.vscreen import flip
+from .core import events
+from .core.events import Emitter, EvListener, EngineEvTypes, game_events_enum
 from .foundation import defs  # it's needed for the vm!
-from .foundation import event2
 from .foundation.defs import STD_SCR_SIZE, KengiEv, Singleton
-from .foundation.event2 import Emitter, EvListener, EngineEvTypes, game_events_enum
 from .foundation.interfaces import PygameIface
 from .state_management import declare_game_states
 from .util import underscore_format, camel_case_format
+
 
 _active_state = False
 _gameticker = None
@@ -97,7 +97,7 @@ def bootstrap_e(print_ver_info=True):
     # we know that kengi_inj has been updated, so we can build a primal backend
     from .foundation.pbackends import build_primalbackend
     _stored_kbackend = build_primalbackend(pbackend_name)  # by default: local ctx
-    event2.EvManager.instance().a_event_source = _stored_kbackend
+    events.EvManager.instance().a_event_source = _stored_kbackend
 
     # TODO quick fix this part!
     # event.create_manager()
@@ -174,7 +174,7 @@ def get_surface():
 #     )
 
 
-class _MyGameCtrl(event2.EvListener):
+class _MyGameCtrl(events.EvListener):
     MAXFPS = 75
 
     def __init__(self):
@@ -187,11 +187,11 @@ class _MyGameCtrl(event2.EvListener):
 
     def loop(self):
         if state_management.multistate_flag:  # force this, otherwise the 1st state enter method isnt called
-            self.pev(event2.EngineEvTypes.Gamestart)
+            self.pev(events.EngineEvTypes.Gamestart)
 
         while not self.gameover:
-            self.pev(event2.EngineEvTypes.Update)
-            self.pev(event2.EngineEvTypes.Paint, screen=vscreen.screen)
+            self.pev(events.EngineEvTypes.Update)
+            self.pev(events.EngineEvTypes.Paint, screen=vscreen.screen)
             self._manager.update()
             flip()
             self._clock.tick(self.MAXFPS)
@@ -202,7 +202,7 @@ def get_game_ctrl():
 
 
 def get_ev_manager():  # saves some time
-    return event2.EvManager.instance()
+    return events.EvManager.instance()
 
 
 class GameTpl(metaclass=ABCMeta):
@@ -302,7 +302,7 @@ def quit():  # we keep the "quit" name bc of pygame
         if hub.kengi_inj.is_loaded('ascii') and hub.ascii.is_ready():
             hub.ascii.reset()
 
-        event2.EvManager.instance().hard_reset()
+        events.EvManager.instance().hard_reset()
         vscreen.init2_done = False
         pyg = get_injector()['pygame']
         pyg.mixer.quit()

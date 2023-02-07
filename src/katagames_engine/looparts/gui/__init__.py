@@ -13,7 +13,6 @@ from .base import ANCHOR_CENTER, ANCHOR_RIGHT, ANCHOR_LEFT  # bring codes here
 from .base import AugmentedSprite
 from .text import ImgBasedFont
 from ... import _hub
-from ...foundation.event2 import EvListener
 
 
 pygame = _hub.pygame
@@ -44,7 +43,8 @@ class Etiquette:
         self.img = self.ft_obj.render(self._text, True, self._color)
 
 
-class TextInput(EvListener):  # TODO on devrait pas utiliser eventreceiver juste pr un bouton/widget!
+class TextInput:
+    # TODO fix bugs: avant on utilisait EvListener juste pr un bouton/widget, ca a été retiré mais bug probable now!
     # utiliser des Container de préférence + eventuellement structure hierarchique
     """
     Simple text entry component.

@@ -1,4 +1,4 @@
-from .foundation.event2 import EvListener
+from ._hub import events
 from .struct import Stack, StContainer
 
 
@@ -7,7 +7,7 @@ stack_based_ctrl = None
 state_stack = None
 
 
-class StateStackCtrl(EvListener):
+class StateStackCtrl(events.EvListener):
     def __init__(self, all_gs, stmapping):
         super().__init__()
         self._gs_omega = all_gs
