@@ -9,10 +9,32 @@ PokerHand = kengi.tabletop.PokerHand
 pygame = kengi.pygame
 
 
-# init cartes & tirage
-# lcards = [kengi.tabletop.StandardCard.at_random() for _ in range(5)]
+# ----------------- debug strength of cards ------------------
+# pl_cards = [
+#     StdCard('8d'),
+#     StdCard('3s'),
+# ]
+# dealer_cards = [
+#     StdCard('5h'),
+#     StdCard('Th'),
+# ]
+# shared_cards = [
+#     StdCard('4s'),
+#     StdCard('Qh'),
+#     StdCard('Kh'),
+#     StdCard('Kd'),
+#     StdCard('As')
+# ]
+# dhand = kengi.tabletop.find_best_ph(dealer_cards+shared_cards)
+# phand = kengi.tabletop.find_best_ph(pl_cards+shared_cards)
+# print(dhand, '\n', phand)
+# print(dhand.value, '\n', phand.value)
+# print(phand.value > dhand.value)
+# import sys
+# sys.exit(0)
 
-#     OMEGA_SYM = ('2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A')  OMEGA_SUIT = ('c', 'd', 'h', 's')
+
+# OMEGA_SYM = ('2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A')  OMEGA_SUIT = ('c', 'd', 'h', 's')
 lcards = [
     StdCard('Tc'),
     StdCard('Jc'),

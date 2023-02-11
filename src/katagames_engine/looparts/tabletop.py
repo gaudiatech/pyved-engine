@@ -264,12 +264,13 @@ class PokerHand(BaseHandOfCards):
         returns an integer that represents a score given to the hand.
         """
         card_count = dict()  # the count of each card rank (we ignore the suit for now)
-        for tsym in StandardCard.OMEGA_SYM:
-            card_count[tsym] = 0
+        for card_sym in StandardCard.OMEGA_SYM:
+            nsym = self.adhoc_mapping(card_sym)
+            card_count[nsym] = 0
 
         for card in self.content:
-            x = card.code[0]
-            card_count[x] += 1
+            nsym = self.adhoc_mapping(card.code[0])
+            card_count[nsym] += 1
 
         # count number of unique cards
         unique_count = 0
@@ -309,6 +310,7 @@ class PokerHand(BaseHandOfCards):
 
         # print out the values of the cards in order from greatest to least with 2 digits for each card
         # in order to generate a point value
+
         sorted_card_count = sorted(list(card_count.items()), key=operator.itemgetter(1, 0), reverse=True)
         for keyval in sorted_card_count:
             if keyval[1] != 0:
