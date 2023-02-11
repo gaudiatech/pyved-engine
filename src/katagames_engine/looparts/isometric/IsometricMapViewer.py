@@ -1,14 +1,13 @@
-import collections
 import math
 
 from .isosm_config import NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG, SCROLL_STEP
 from ... import _hub
-# from ... import event
 from ...compo import vscreen as core
-from ...foundation.event2 import EngineEvTypes, EvListener
 
 
-# EngineEvTypes = event.EngineEvTypes
+# - aliases
+EngineEvTypes = _hub.events.EngineEvTypes
+EvListener = _hub.events.EvListener
 
 # --------------------------------------------
 # optimization

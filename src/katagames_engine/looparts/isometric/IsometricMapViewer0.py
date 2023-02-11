@@ -2,10 +2,10 @@ import collections
 
 from .isosm_config import NOT_ALL_FLAGS, FLIPPED_VERTICALLY_FLAG, FLIPPED_HORIZONTALLY_FLAG, SCROLL_STEP
 from ... import _hub
-from ... import event2
 from ...compo import vscreen
 
 
+event2 = _hub.events
 pygame = _hub.pygame
 EngineEvTypes = event2.EngineEvTypes
 Receiver = event2.EvListener
