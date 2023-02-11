@@ -12,7 +12,7 @@ class WidgetContainer(BaseGuiElement):
     EXPAND = 2
     FLOW = 3
 
-    def __init__(self, pos, size, layout_type, widget_list=None, spacing=0):
+    def __init__(self, pos, size, layout_type, widget_list=None, spacing=0, vspacing=0):
         super().__init__()
         assert isinstance(layout_type, int)
 
@@ -34,6 +34,7 @@ class WidgetContainer(BaseGuiElement):
             elt._parent = self
         # reposition elements that belong to this(self) container
         self.spacing = spacing
+        self.vspacing = vspacing
         self.layout_type = layout_type
         self.recompute()
 
@@ -64,7 +65,8 @@ class WidgetContainer(BaseGuiElement):
         elif self.layout_type == self.EXPAND:
             px, py, bsupx, bsupy = self.get_abs_rect()
 
-            c_pos = [px+1, py+(bsupy//2)]  # vertical align:center
+            delta = 0  # use (bsupy//2), if u want vertical align:center of the anchor point(topleft)
+            c_pos = [px+1, py+delta]
             s = 0
             for w in self.content:
                 s += w.get_dimensions()[0]
@@ -88,7 +90,7 @@ class WidgetContainer(BaseGuiElement):
                     curr_p[0] += (prevwidget_w + self.spacing)
                 if w.get_dimensions()[0]+curr_p[0] > container_w+basex:
                     curr_p[0] = basex
-                    curr_p[1] += prevwidget_h
+                    curr_p[1] += prevwidget_h + self.vspacing
 
                 w.set_pos(curr_p)
                 prevwidget_w, prevwidget_h = w.get_dimensions()
