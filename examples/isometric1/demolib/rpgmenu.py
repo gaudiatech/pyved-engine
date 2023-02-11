@@ -19,8 +19,8 @@ INFO_GREEN = kengi.polarbear.INFO_GREEN
 DEFAULT_FONT_SIZE = 11
 MENU_ITEM_COLOR = pygame.Color(150, 145, 130)
 MENU_SELECT_COLOR = pygame.Color(128, 250, 230)
-ReceiverObj = kengi.event.EventReceiver
-EngineEvTypes = kengi.event.EngineEvTypes
+ReceiverObj = kengi.EvListener
+EngineEvTypes = kengi.EngineEvTypes
 
 
 class MenuItem(object):

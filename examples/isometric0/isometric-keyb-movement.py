@@ -41,7 +41,7 @@ def game_init():
     global screen, tilemap, tilemap2, viewer, manager, mypc, paint_ev, mv_offset
     # aliases
     kengi.init(2)
-    manager = kengi.event2.EvManager.instance()
+    manager = kengi.events.EvManager.instance()
     manager.setup()
     screen = kengi.get_surface()
 
@@ -73,8 +73,8 @@ def game_init():
     # TODO port Pbge to kengi CogObj+EventReceiver+event system,
     #  so we can avoid using pygame.USEREVENT and viewer() like here
 
-    CgmEvent = kengi.event2.KengiEv
-    paint_ev = CgmEvent(kengi.event2.EngineEvTypes.Paint, screen=kengi.get_surface())
+    CgmEvent = kengi.events.KengiEv
+    paint_ev = CgmEvent(kengi.events.EngineEvTypes.Paint, screen=kengi.get_surface())
     mypc.x += 0.5
     mv_offset = 0.5
 
@@ -108,7 +108,7 @@ def game_update(infot=None):
         # display
         # manager.post(paint_ev)
 
-        manager.post(kengi.event2.EngineEvTypes.Paint, screen=kengi.get_surface())
+        manager.post(kengi.events.EngineEvTypes.Paint, screen=kengi.get_surface())
         manager.update()
         kengi.flip()
 

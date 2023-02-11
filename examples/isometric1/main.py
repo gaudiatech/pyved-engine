@@ -1,22 +1,22 @@
 import katagames_engine as kengi
+
 kengi.bootstrap_e()
 
+
+# TODO need to unify this! Use what's already in kengi.*
 import demolib.animobs as animobs
 import demolib.dialogue as dialogue
 import demolib.pathfinding as pathfinding
-# import isometric_maps
-from defs import MyEvTypes, MAXFPS, DEBUG
+from defs import MyEvTypes
 import math
 
 
-kengi.init(2, maxfps=MAXFPS)
 # will polarbear crash the game if this line isnt added, after kengi.init?
 # kengi.polarbear.my_state.screen = kengi.get_surface()
 
 # - aliases
 pygame = kengi.pygame  # alias to keep on using pygame, easily
-CgmEvent = kengi.event.CgmEvent
-EngineEvTypes = kengi.event.EngineEvTypes
+EngineEvTypes = kengi.EngineEvTypes
 
 # global variables
 conv_viewer = None
@@ -27,7 +27,7 @@ maps = list()
 map_viewer = None
 mypc = mynpc = None
 path_ctrl = None
-screen = kengi.get_surface()  # retrieve the surface used for display
+screen = None
 tilemap_height = tilemap_width = 0
 
 
@@ -59,13 +59,14 @@ class MovementPath:
                     self.goal = ob
         self.path = pathfinding.AStarPath(
             mymap, self.pos_to_index((mapob.x, mapob.y)), self.pos_to_index(dest), self.tile_is_blocked,
-            mymap.clamp_pos_int, blocked_tiles = self.blocked_tiles
+            mymap.clamp_pos_int, blocked_tiles=self.blocked_tiles
         )
         if not self.path.results:
             print("No path found!")
         if self.path.results:
             self.path.results.pop(0)
-        self.all_the_way_to_dest = not (dest in self.blocked_tiles or self.tile_is_blocked(mymap, *self.pos_to_index(dest)))
+        self.all_the_way_to_dest = not (
+                    dest in self.blocked_tiles or self.tile_is_blocked(mymap, *self.pos_to_index(dest)))
         if self.path.results and not self.all_the_way_to_dest:
             self.path.results.pop(-1)
         self.animob = None
@@ -95,11 +96,11 @@ class MovementPath:
                     nx, ny = self.path.results.pop(0)
 
                 # De-clamp the nugoal coordinates.
-                nx = min([nx, nx-self.mymap.width, nx+self.mymap.width], key=lambda x: abs(x-self.mapob.x))
-                ny = min([ny, ny-self.mymap.height, ny+self.mymap.height], key=lambda y: abs(y-self.mapob.y))
+                nx = min([nx, nx - self.mymap.width, nx + self.mymap.width], key=lambda x: abs(x - self.mapob.x))
+                ny = min([ny, ny - self.mymap.height, ny + self.mymap.height], key=lambda y: abs(y - self.mapob.y))
 
                 self.animob = animobs.MoveModel(
-                    self.mapob, dest=(nx,ny), speed=0.25
+                    self.mapob, dest=(nx, ny), speed=0.25
                 )
             else:
                 # print((self.mapob.x,self.mapob.y))
@@ -124,57 +125,54 @@ class NPC(kengi.isometric.model.IsometricMapObject):
 # --------------------------------------------
 # Define controllers etc
 # --------------------------------------------
-class BasicCtrl(kengi.event.EventReceiver):
-    def proc_event(self, gdi, source):
-        global conversation_ongoing, map_viewer, mypc, current_tilemap, current_path
+class BasicCtrl(kengi.EvListener):
 
-        if gdi.type in (pygame.MOUSEMOTION, pygame.MOUSEBUTTONUP, pygame.MOUSEBUTTONUP):
-            if conversation_ongoing:
-                pass  # block all movement when the conversation is active
-            else:
-                cursor = map_viewer.cursor
-                if cursor:
-                    cursor.update(map_viewer, gdi)
-                if gdi.type == pygame.MOUSEBUTTONUP and gdi.button == 1:
-                    current_path = MovementPath(mypc, map_viewer.cursor.get_pos(), maps[current_tilemap])
-                    if DEBUG:
-                        print('movement path has been set')
+    def _proc_mouse_ev(self, ev):
+        global mypc, map_viewer, current_path
+        if ev.type == EngineEvTypes.Mouseup:
+            current_path = MovementPath(mypc, map_viewer.cursor.get_pos(), maps[current_tilemap])
+            print('movement path has been set', current_path)
 
-        elif gdi.type == pygame.KEYDOWN:
-            if gdi.key == pygame.K_ESCAPE:
-                if conversation_ongoing:
-                    # abort
-                    self.pev(MyEvTypes.ConvEnds)
-                else:
-                    self.pev(EngineEvTypes.GAMEENDS)
-            elif gdi.key == pygame.K_m:
-                # mouse_x, mouse_y = pygame.mouse.get_pos()
-                # print(viewer.map_x(mouse_x, mouse_y, return_int=False),
-                #       viewer.map_y(mouse_x, mouse_y, return_int=False))
-                # print(viewer.relative_x(0, 0), viewer.relative_y(0, 0))
-                # print(viewer.relative_x(0, 19), viewer.relative_y(0, 19))
-                pass
-            elif gdi.key == pygame.K_d and mypc.x < tilemap_width - 1.5:
-                mypc.x += 0.1
-            elif gdi.key == pygame.K_a and mypc.x > -1:
-                mypc.x -= 0.1
-            elif gdi.key == pygame.K_w and mypc.y > -1:
-                mypc.y -= 0.1
-            elif gdi.key == pygame.K_s and mypc.y < tilemap_height - 1.5:
-                mypc.y += 0.1
-            elif gdi.key == pygame.K_TAB:
-                current_tilemap = 1 - current_tilemap
-                map_viewer.switch_map(maps[current_tilemap])
+    def on_mouseup(self, gdi):
+        global map_viewer
+        if conversation_ongoing:
+            pass  # block all movement when the conversation is active
+        else:
+            cursor = map_viewer.cursor
+            if cursor:
+                cursor.update(map_viewer, gdi)
+            self._proc_mouse_ev(gdi)
+
+    # def proc_event(self, gdi):
+    #     global conversation_ongoing, map_viewer, mypc, current_tilemap, current_path
+    #     if gdi.type == pygame.KEYDOWN:
+    #         if gdi.key == pygame.K_ESCAPE:
+    #             if conversation_ongoing:
+    #                 # abort
+    #                 self.pev(MyEvTypes.ConvEnds)
+    #             else:
+    #                 self.pev(EngineEvTypes.GAMEENDS)
+    #         elif gdi.key == pygame.K_d and mypc.x < tilemap_width - 1.5:
+    #             mypc.x += 0.1
+    #         elif gdi.key == pygame.K_a and mypc.x > -1:
+    #             mypc.x -= 0.1
+    #         elif gdi.key == pygame.K_w and mypc.y > -1:
+    #             mypc.y -= 0.1
+    #         elif gdi.key == pygame.K_s and mypc.y < tilemap_height - 1.5:
+    #             mypc.y += 0.1
+    #         elif gdi.key == pygame.K_TAB:
+    #             current_tilemap = 1 - current_tilemap
+    #             map_viewer.switch_map(maps[current_tilemap])
 
 
-class PathCtrl(kengi.event.EventReceiver):
+class PathCtrl(kengi.EvListener):
     def __init__(self):
         super().__init__()
 
-    def proc_event(self, event, source):
+    def on_event(self, event):
         global current_path, conv_viewer, conversation_ongoing
 
-        if event.type == EngineEvTypes.LOGICUPDATE:
+        if event.type == EngineEvTypes.Update:
             if current_path is not None:
                 ending_reached = current_path()
                 if ending_reached:
@@ -215,7 +213,7 @@ def _add_map_entities(gviewer):
 
     gviewer.set_focused_object(mypc)
     # force: center on avatar op.
-    #mypc.x += 0.5
+    # mypc.x += 0.5
 
 
 def _init_specific_stuff():
@@ -232,8 +230,8 @@ def _init_specific_stuff():
     cursor_image = pygame.image.load("assets/half-floor-tile.png").convert_alpha()
     cursor_image.set_colorkey((255, 0, 255))
     map_viewer.cursor = kengi.isometric.extras.IsometricMapQuarterCursor(0, 0, cursor_image, maps[0].layers[1])
-    pctrl = PathCtrl()
 
+    pctrl = PathCtrl()
     map_viewer.turn_on()
     pctrl.turn_on()
 
@@ -241,14 +239,18 @@ def _init_specific_stuff():
     bctrl.turn_on()
 
 
-def run_game():
+if __name__ == '__main__':
+    kengi.init(2)
+    screen = kengi.get_surface()  # retrieve the surface used for display
+
+    emg = kengi.get_ev_manager()
+    emg.setup()
+
     _init_specific_stuff()
+
     gctrl = kengi.get_game_ctrl()
     gctrl.turn_on()
     gctrl.loop()
+
     kengi.quit()
     print('bye!')
-
-
-if __name__ == '__main__':
-    run_game()

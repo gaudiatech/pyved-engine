@@ -9,9 +9,8 @@ frects = kengi.polarbear.frects
 default_border = kengi.polarbear.default_border
 draw_text = kengi.polarbear.draw_text
 pygame = kengi.pygame
-
-EngineEvTypes = kengi.event.EngineEvTypes
-EventReceiver = kengi.event.EventReceiver
+EngineEvTypes = kengi.EngineEvTypes
+EventReceiver = kengi.EvListener
 
 
 class Offer(object):
