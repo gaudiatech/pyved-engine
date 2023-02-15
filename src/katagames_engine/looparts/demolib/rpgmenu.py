@@ -3,10 +3,9 @@ import glob
 import random
 from ... import _hub
 # from ... import event
-from ...foundation.event2 import Emitter, EngineEvTypes
+from katagames_engine.core.events import Emitter, EngineEvTypes
 from ...compo import vscreen as core
-from ...foundation import event2
-
+from ...core import events
 
 pygame = _hub.pygame  # alias to keep on using pygame, easily
 Frect = _hub.polarbear.frects.Frect

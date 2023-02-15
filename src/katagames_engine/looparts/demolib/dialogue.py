@@ -3,7 +3,7 @@ import json
 from . import rpgmenu
 from ... import _hub
 from ... import pal
-from ...foundation.event2 import EvListener, EngineEvTypes
+from katagames_engine.core.events import EvListener, EngineEvTypes
 
 
 frects = _hub.polarbear.frects
