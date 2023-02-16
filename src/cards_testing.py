@@ -67,6 +67,9 @@ class MaquetteJc(kengi.GameTpl):
         self._manager.setup()
         self.scr_ref = kengi.get_surface()
 
+    def init_video(self):
+        pass
+
     def update(self, infot):
         global lcards, p_hand
         # - event detection facon pygame

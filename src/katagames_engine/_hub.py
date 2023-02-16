@@ -10,18 +10,18 @@ from .core.Injector import Injector as Injector
 
 kengi_inj = Injector({
     'ai': '.looparts.ai',
+    'demolib': '.looparts.demolib',
+    'gui': '.looparts.gui',
+    'isometric': '.looparts.isometric',
+    'polarbear': '.looparts.polarbear',
+    'tmx': '.looparts.tmx',
     'anim': '.looparts.anim',
     'ascii': '.looparts.ascii',
-    'demolib': '.looparts.demolib',
-    'polarbear': '.looparts.polarbear',
     'console': '.looparts.console',
-    'gui': '.looparts.gui',
-    'legacy': '.looparts.legacy',
-    'tabletop': '.looparts.tabletop',
-    'sysconsole': '.looparts.sysconsole',
-    'isometric': '.looparts.isometric',
-    'tmx': '.looparts.tmx',
     'rogue': '.looparts.rogue',
+    'rpg': '.looparts.rpg',
+    'sysconsole': '.looparts.sysconsole',
+    'tabletop': '.looparts.tabletop',
     'terrain': '.looparts.terrain',
 }, 'katagames_engine')
 

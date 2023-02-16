@@ -2,18 +2,32 @@ print('-'*32)
 print('kengi [RPG submodule] is being loaded')
 print('-'*32)
 
+
 import math
 from math import floor
 
-from coremon_main import CgmEvent, EventManager
-from coremon_main.Singleton import Singleton
-from defs_bo import const
-from defs_bo.ev_types import MyEvTypes
-from defs_bo.fighter_stats import PrimaryStats, SecStats
-from tools.op_cfg_file import dico_repr_from_cfg_file
+from ..foundation.defs import Singleton
+
+
+# from coremon_main import CgmEvent, EventManager
+# from coremon_main.Singleton import Singleton
+# from defs_bo import const
+# from defs_bo.ev_types import MyEvTypes
+# from defs_bo.fighter_stats import PrimaryStats, SecStats
+# from tools.op_cfg_file import dico_repr_from_cfg_file
 
 
 CODE_FULL_LIFE = -9999
+
+
+class Character:
+    def __init__(self, cname, **kwargs):
+        pass
+
+
+class Weapon:
+    def __init__(self, cname, **kwargs):
+        pass
 
 
 @Singleton
