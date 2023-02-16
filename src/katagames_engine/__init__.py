@@ -221,12 +221,20 @@ class GameTpl(metaclass=ABCMeta):
         self.clock = hub.kengi_inj['pygame'].time.Clock()
 
     @abstractmethod
+    def init_video(self):
+        raise NotImplementedError
+
+    def setup_ev_manager(self):
+        self._manager.setup()
+
     def enter(self, vms=None):
         """
-        one *HAS TO* bind the ev manager to self._manager,
-        and call .setup, somehow
+        Careful if you redefine this:
+        one *HAS TO* bind the ev manager to self._manager and call .setup, somehow
         """
-        raise NotImplementedError
+        self._manager = events.EvManager.instance()
+        self.init_video()
+        self.setup_ev_manager()
 
     def update(self, infot):
         self._manager.post(EngineEvTypes.Update, curr_t=infot)
