@@ -1,4 +1,4 @@
-from katagames_engine.looparts.gui.BaseGuiElement import BaseGuiElement, ANCHOR_LEFT, ANCHOR_RIGHT, ANCHOR_CENTER
+from .BaseGuiElement import BaseGuiElement, ANCHOR_LEFT, ANCHOR_RIGHT, ANCHOR_CENTER
 from ... import _hub
 from ...compo import vscreen
 
@@ -15,6 +15,9 @@ class GenericUIElement(BaseGuiElement):
     almost abstract element, all it contains is the minimal code,
     so it can be visually debugged
     """
+
+    def set_relative_pos(self, position):
+        pass
 
     def __init__(self, position0, dimensions0, anchoring=None, debugmode=False):
         super().__init__()

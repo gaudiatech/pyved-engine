@@ -30,7 +30,7 @@ class _PyModulePromise:
         nam = self.name
         if self.__class__.verbose and nam != 'pygame':  # print a debug info.
             print(f' lazy loading: {nam}')
-        if self._py_path[0] == '.':
+        if (pck_arg is not None) and self._py_path[0] == '.':
             self._ref_module = importlib.import_module(self._py_path, pck_arg)
         else:
             self._ref_module = importlib.import_module(self._py_path)
@@ -43,13 +43,17 @@ class Injector:
     module name <-> instance of LazyModule
     """
 
-    def __init__(self, module_listing, pack_arg='katagames_engine'):
+    def __init__(self, module_listing, package_arg):
         self._listing = dict()
         for mname, pypath in module_listing.items():
-            obj = _PyModulePromise(mname, pypath, pack_arg)
+            obj = _PyModulePromise(mname, pypath, package_arg)
             self._listing[obj.name] = obj
         self._man_set = dict()
         self._loading_done = False
+
+    def hack_package_arg(self, new_val):  # useful for the katasdk
+        for prom_obj in self._listing.values():
+            prom_obj.pck_arg = new_val
 
     def __contains__(self, item):
         if item in self._man_set:

@@ -1,8 +1,8 @@
 import re
 import time
 
-from katagames_engine.foundation.defs import EngineEvTypes, KengiEv, PseudoEnum
-from katagames_engine.foundation.defs import to_camelcase, to_snakecase, CircularBuffer, Singleton
+from ..foundation.defs import EngineEvTypes, KengiEv, PseudoEnum
+from ..foundation.defs import to_camelcase, to_snakecase, CircularBuffer, Singleton
 
 
 _FIRST_LISTENER_ID = 72931

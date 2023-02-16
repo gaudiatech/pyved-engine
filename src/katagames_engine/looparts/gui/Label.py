@@ -6,13 +6,17 @@ pygame = _hub.pygame
 
 class Label(BaseGuiElement):
 
-    def __init__(self, position, txt_string, txt_size):
+    def __init__(self, position, txt_string, txt_size=10, color=None, anchoring=None):
         super().__init__()
         self.set_pos(position)
 
         self._text = txt_size
         self._txtsize = txt_size
+
         self._used_color = 'orange'
+        if color:  # init color
+            setattr(self, 'color', color)
+
         self.small_font = pygame.font.Font(None, txt_size)
         self.image = self.small_font.render(txt_string, False, self._used_color)
         self._dim = self.image.get_size()
