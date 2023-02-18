@@ -1,12 +1,14 @@
 import collections
 import glob
 import random
+
 from ... import _hub
-# from ... import event
-from katagames_engine.core.events import Emitter, EngineEvTypes
 from ...compo import vscreen as core
 from ...core import events
 
+
+Emitter = events.Emitter
+EngineEvTypes = events.EngineEvTypes
 pygame = _hub.pygame  # alias to keep on using pygame, easily
 Frect = _hub.polarbear.frects.Frect
 ANCHOR_CENTER = _hub.polarbear.frects.ANCHOR_CENTER
@@ -21,7 +23,7 @@ DEFAULT_FONT_SIZE = 11
 MENU_ITEM_COLOR = pygame.Color(150, 145, 130)
 MENU_SELECT_COLOR = pygame.Color(128, 250, 230)
 
-ReceiverObj = event2.EvListener
+ReceiverObj = events.EvListener
 
 
 class MenuItem(object):

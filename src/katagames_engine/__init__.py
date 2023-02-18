@@ -43,6 +43,7 @@ from . import struct
 from . import tankui
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION as _VER_CST
+from ._hub import Injector  # needed so the katasdk can operate
 from .compo import gfx
 from .compo import vscreen
 from .compo.modes import GameModeMger, BaseGameMode

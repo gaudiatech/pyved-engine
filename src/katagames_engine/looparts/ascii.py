@@ -1,5 +1,3 @@
-import pygame
-
 from .. import _hub
 from .. import struct
 from ..compo import vscreen
@@ -161,7 +159,7 @@ def set_char_size(v):
 
     decoded = base64.b64decode(_EMB_TILEMAPS_PNGF[_char_size])
     filelike_bdata = io.BytesIO(decoded)
-    _curr_spritesheet = _pyg.image.load(filelike_bdata)
+    _curr_spritesheet = _hub.pygame.image.load(filelike_bdata)
     _curr_spritesheet.set_colorkey('black')
 
     if _KFont.inst:
@@ -198,7 +196,7 @@ class _KFont:
             inp = list(karray_or_txt)
         else:
             inp = karray_or_txt
-        rez = _pyg.surface.Surface((_char_size * len(inp), _char_size))
+        rez = _hub.pygame.surface.Surface((_char_size * len(inp), _char_size))
         rez.fill((0, 0, 0))
         char_destpos = [0, 0]
         for elt in inp:
@@ -206,14 +204,16 @@ class _KFont:
             rez.blit(s, char_destpos)
             char_destpos[0] += _char_size
         # replace fg color
-        fres = _pyg.surface.Surface((_char_size * len(inp), _char_size))
+        fres = _hub.pygame.surface.Surface((_char_size * len(inp), _char_size))
         if bg_color is None:
             fres.fill((255, 0, 255))
             fres.set_colorkey((255, 0, 255))
         else:
             fres.fill(bg_color)
 
-        _pyg.transform.threshold(fres, rez, (255, 255, 255), (0, 0, 0), _pyg.Color(fg_color), inverse_set=True)
+        _hub.pygame.transform.threshold(
+            fres, rez, (255, 255, 255), (0, 0, 0), _hub.pygame.Color(fg_color), inverse_set=True
+        )
         return fres
 
     def fetch(self, k):
@@ -227,7 +227,7 @@ class _KFont:
         if k in self.cached_letters:
             r = self.cached_letters[k]
         else:
-            r = _pyg.surface.Surface((_char_size, _char_size)).convert()
+            r = _hub.pygame.surface.Surface((_char_size, _char_size)).convert()
             r.fill((255, 0, 255))
             r.blit(
                 self.surf, (0, 0), (_char_size * (k % nbparcol), _char_size * (k // nbparcol), _char_size, _char_size)
@@ -239,6 +239,5 @@ class _KFont:
 
 _char_size = 12  # default
 _curr_spritesheet = None
-_pyg = _hub.pygame
 _alphabet = _KFont()
 _screen = _matrix = None

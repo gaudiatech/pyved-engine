@@ -3,26 +3,27 @@ Keep this file separate from __init__.py!
 its important, bc all sub-modules in kengi may import _hub
 in order to refer to other dependencies/sub-modules
 """
-
-from .core.Injector import Injector as _Injector
 from .core import events
 
-kengi_inj = _Injector({
+from .core.Injector import Injector as Injector
+
+
+kengi_inj = Injector({
     'ai': '.looparts.ai',
+    'demolib': '.looparts.demolib',
+    'gui': '.looparts.gui',
+    'isometric': '.looparts.isometric',
+    'polarbear': '.looparts.polarbear',
+    'tmx': '.looparts.tmx',
     'anim': '.looparts.anim',
     'ascii': '.looparts.ascii',
-    'demolib': '.looparts.demolib',
-    'polarbear': '.looparts.polarbear',
     'console': '.looparts.console',
-    'gui': '.looparts.gui',
-    'legacy': '.looparts.legacy',
-    'tabletop': '.looparts.tabletop',
-    'sysconsole': '.looparts.sysconsole',
-    'isometric': '.looparts.isometric',
-    'tmx': '.looparts.tmx',
     'rogue': '.looparts.rogue',
+    'rpg': '.looparts.rpg',
+    'sysconsole': '.looparts.sysconsole',
+    'tabletop': '.looparts.tabletop',
     'terrain': '.looparts.terrain',
-})
+}, 'katagames_engine')
 
 
 def __getattr__(targ_sm_name):
