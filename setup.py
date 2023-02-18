@@ -24,7 +24,7 @@ setup(
         "katagames_engine.foundation",
 
         "katagames_engine.compo",
-
+        "katagames_engine.core",
         "katagames_engine.looparts",  # to be sure we get looparts/rogue.py, looparts/tabletop.py, etc.
 
         "katagames_engine.looparts.ai",
