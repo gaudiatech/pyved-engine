@@ -12,7 +12,7 @@ class JsonBasedSprSheet:
     def __init__(self, required_infos, ck=None):
         if isinstance(required_infos, str):
             filename_no_ext = required_infos
-            self.sheet_surf = _hub.pygame.image.load(filename_no_ext+'.png')
+            self.sheet_surf = _hub.pygame.image.load(filename_no_ext + '.png')
             json_def_file = open(required_infos + '.json', 'r')
         else:
             fptr, json_def_file = required_infos
@@ -187,6 +187,7 @@ class Spritesheet:
     handles sprite sheets in an optimized way!
     REMARK: When calling images_at the rect is the format: (x, y, x + offset, y + offset)
     """
+
     def __init__(self, resource_info, chosen_scale=1):
         """
         :param resource_info: either pygame.Surface or filepath
@@ -200,18 +201,27 @@ class Spritesheet:
         if float(chosen_scale) != 1.0:
             homo = _hub.pygame.transform.scale
             w, h = self._sheet.get_size()
-            self._sheet = homo(self._sheet, (chosen_scale*w, chosen_scale*h))
+            self._sheet = homo(self._sheet, (chosen_scale * w, chosen_scale * h))
 
         # can be init later
         self._per_line_img_quant = 0
-        self._size = 0
+        self._card = 0
         self._tilesize = None
 
-        self.colorkey = None
+        self._colorkey = None
 
         # goal: speed-up
         self.cache = defaultdict(lambda: None)
         self._spacing = 0
+
+    @property
+    def colorkey(self):
+        return self._colorkey
+
+    @colorkey.setter
+    def colorkey(self, v):
+        self._colorkey = v
+        self._cache_update()
 
     @property
     def card(self):
@@ -229,8 +239,8 @@ class Spritesheet:
             self._card = count_tiles
         else:
             sz = self._sheet.get_size()
-            self._per_line_img_quant = sz[0]//self._tilesize[0]
-            self._card = (sz[1]//self._tilesize[1]) * self._per_line_img_quant
+            self._per_line_img_quant = sz[0] // self._tilesize[0]
+            self._card = (sz[1] // self._tilesize[1]) * self._per_line_img_quant
 
         self._spacing = spacing
         # - debug
@@ -238,27 +248,27 @@ class Spritesheet:
         #     f'infos dans Spritesheet saisies depuis dehors:\n___tilesize {self._tilesize}\n'
         #     + '___count_img {count_tiles}\n___nbcol {nb_columns}\n___spacing {spacing}'
         # )
-        self.cache.clear()
+        self._cache_update()
 
-        pg = _hub.pygame
+    def _cache_update(self):
         # re - populate the whole cache!
-        tc = self._size
-        spacing = self._spacing
+        self.cache.clear()
+        pg = _hub.pygame
+
+        if self._tilesize is None:
+            return
         tile_w, tile_h = self._tilesize
-        # print('tilesize dans gfx.Spritesheet-->', self._tilesize)
-        nb_columns = self._per_line_img_quant
         ident = 0
-        curr_line = 0
-        nb_lines = self._card//self._per_line_img_quant
-        # print('nb_lines:', nb_lines)
-        for curr_line in range(1, nb_lines+1):
-            for column in range(1, self._per_line_img_quant+1):
-                adhocx = -tile_w + column*tile_w + (column-1)*self._spacing
-                adhocy = -tile_h + curr_line*tile_h + (curr_line-1)*self._spacing
+        nb_lines = self._card // self._per_line_img_quant
+        for curr_line in range(1, nb_lines + 1):
+            for column in range(1, self._per_line_img_quant + 1):
+                adhocx = -tile_w + column * tile_w + (column - 1) * self._spacing
+                adhocy = -tile_h + curr_line * tile_h + (curr_line - 1) * self._spacing
                 decoupe = pg.Rect(adhocx, adhocy, tile_w, tile_h)
-                # - debug
-                # print(decoupe)
-                self.cache[ident] = self._sheet.subsurface(decoupe)
+                y = self._sheet.subsurface(decoupe)
+                if self._colorkey is not None:
+                    y.set_colorkey(self._colorkey)
+                self.cache[ident] = y
                 ident += 1
 
     @property
@@ -270,8 +280,8 @@ class Spritesheet:
 
     def image_at(self, rectangle):
         y = self._sheet.subsurface(rectangle).copy()
-        if self.colorkey:
-            y.set_colorkey(self.colorkey)
+        if self._colorkey:
+            y.set_colorkey(self._colorkey)
         return y
 
     # USE WITH CAUTION! This method provides no optimization
@@ -295,7 +305,7 @@ class Spritesheet:
             tw, th = self._tilesize
             # map kval -> to a rect
             i, j = kval % self._per_line_img_quant, int(kval / self._per_line_img_quant)
-            rect_obj = _hub.pygame.Rect(i*tw, j*th, tw, th)
+            rect_obj = _hub.pygame.Rect(i * tw, j * th, tw, th)
             # crop from the sheet save & return the result
             y = self.cache[kval] = self.image_at(rect_obj)
         return y
@@ -305,5 +315,5 @@ class Spritesheet:
         """Loads a strip of images and returns them as a list, rect must cut out the img rank 0"""
         rect = rect_img0
         tw, th = rect[2], rect[3]
-        tups = [(rect[0] + x*tw, rect[1], tw, th) for x in range(image_count)]
+        tups = [(rect[0] + x * tw, rect[1], tw, th) for x in range(image_count)]
         return self.images_at(tups, colorkey)
