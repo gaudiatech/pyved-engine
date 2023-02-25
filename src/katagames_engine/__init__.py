@@ -237,6 +237,9 @@ class GameTpl(metaclass=ABCMeta):
         self.init_video()
         self.setup_ev_manager()
 
+        # gamestart event HAS TO be pushed so the game rly starts...
+        self._manager.post(EngineEvTypes.Gamestart)
+
     def update(self, infot):
         self._manager.post(EngineEvTypes.Update, curr_t=infot)
         self._manager.post(EngineEvTypes.Paint, screen=vscreen.screen)
@@ -263,8 +266,6 @@ class GameTpl(metaclass=ABCMeta):
 
         # use enter, update, exit to handle the global "run game logic"
         self.enter()
-        # gamestart event HAS TO be pushed so the game rly starts...
-        self._manager.post(EngineEvTypes.Gamestart)
 
         while not self.gameover:
             infot = time.time()
