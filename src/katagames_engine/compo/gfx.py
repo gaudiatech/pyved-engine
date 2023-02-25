@@ -10,6 +10,7 @@ from .. import _hub
 
 class JsonBasedSprSheet:
     def __init__(self, required_infos, ck=None):
+
         if isinstance(required_infos, str):
             filename_no_ext = required_infos
             self.sheet_surf = _hub.pygame.image.load(filename_no_ext + '.png')
@@ -50,6 +51,8 @@ class BaseCfont:
         raise NotImplementedError
 
     def __init__(self):
+        self.forcing_transparency = False
+
         self._sheet = None
         self._init_sheet_attr()
 
@@ -156,7 +159,15 @@ class BaseCfont:
         """
         aw, ah = self.compute_width(textstr, spacing), self.car_height[' ']
         res = _hub.pygame.Surface((aw, ah))
+
+        opt0 = self.forcing_transparency
+        ck_tmp_color = (255, 0, 255)
+        if opt0:
+            res.fill(ck_tmp_color)
         self.text_to_surf(textstr, res, (0, 0), spacing)
+        if opt0:
+            res.set_colorkey(ck_tmp_color)
+
         return res
 
 
