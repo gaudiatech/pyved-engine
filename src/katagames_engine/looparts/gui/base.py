@@ -107,8 +107,9 @@ class GenericUIElement(BaseGuiElement):
         pass
 
     def draw(self):
-        if not self._cached_scr_ref:
-            self._cached_scr_ref = vscreen.screen
+        if self._cached_scr_ref is None:
+            self._cached_scr_ref = vscreen.get_screen()
+
         if self._debug_mode:
             pygame.draw.rect(
                 self._cached_scr_ref,
@@ -196,17 +197,22 @@ class AugmentedSprite(GenericUIElement):
         self.callback = None  # can be used whenever the element is clicked!
 
     # redefine
-    def set_position(self, position):
-        super().set_position(position)
-        self._inner_sprite.rect.center = position
+    # def set_position(self, position):
+    #     super().set_position(position)
+    #     self._inner_sprite.rect.center = position
+
+    def set_position(self, pos):
+        # super().set_position(pos)
+        self._xy_coords[0], self._xy_coords[1] = pos
+
+        self._inner_sprite.rect.topleft = pos
+        print('-set_position sur AugmentedSprite:', pos)
 
     def draw(self):
-        super().draw()
-
-        self._cached_scr_ref.blit(self._inner_sprite.image, self._inner_sprite.rect.topleft)
-    #
-    # def on_mousedown(self, ev):
-    #     print('x')
+        scr = vscreen.get_screen()
+        scr.blit(self._inner_sprite.image, self._inner_sprite.rect.topleft)
+        if self._debug:
+            pygame.draw.rect(scr, 'red', (self._inner_sprite.rect.topleft, self._inner_sprite.image.get_size()), 1)
 
     def proc_event(self, event) -> bool:  # event: pygame.event.Event
         if self._is_active:

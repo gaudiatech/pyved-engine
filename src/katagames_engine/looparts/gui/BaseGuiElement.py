@@ -60,7 +60,7 @@ class BaseGuiElement(metaclass=ABCMeta):
         """
         return self._abs_pos
 
-    def set_pos(self, position):
+    def set_position(self, position):
         """
         Method to directly set the absolute screen rect position of an element.
         Warning! This can impact parent container if one is defined

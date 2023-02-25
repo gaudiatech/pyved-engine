@@ -11,6 +11,8 @@ EvManager = _hub.events.EvManager
 class Button2(EvListener, BaseGuiElement):
 
     HIDEOUS_PURPLE = (255, 0, 255)
+    DEFAULT_BG_COLOR = (75, 75, 80)
+    DISABLED_COLOR = (133, 133, 133)
 
     def __init__(self, font, text, position_on_screen, draw_background=True, callback=None, tevent=None):
         BaseGuiElement.__init__(self)
@@ -27,7 +29,7 @@ class Button2(EvListener, BaseGuiElement):
         padding_value = 12  # pixels
 
         if draw_background:
-            self.bg_color = (100, 100, 100)
+            self.bg_color = self.DEFAULT_BG_COLOR
             self.fg_color = (255, 255, 255)
         else:
             self.bg_color = self.HIDEOUS_PURPLE
@@ -91,13 +93,11 @@ class Button2(EvListener, BaseGuiElement):
             self.refresh_img()  # need a re-draw, bc a disabled button has to have a different image/to look different
 
     def refresh_img(self):
-        self.image = pygame.Surface(self.collision_rect.size).convert()
+        w, h = self.collision_rect.size
+        self.image = pygame.Surface((w+8, h)).convert()
         self.image.fill(self.bg_color)
 
-        spe_color = list(self.fg_color)
-        for i in range(3):
-            spe_color[i] = int(spe_color[i]/3)
-        adhoc_txt_color = self.fg_color if self._enabled else spe_color
+        adhoc_txt_color = self.fg_color if self._enabled else self.DISABLED_COLOR
 
         if self.bg_color != self.HIDEOUS_PURPLE:
             textimg = self.font.render(self._txt, True, adhoc_txt_color, self.bg_color)
@@ -136,6 +136,8 @@ class Button2(EvListener, BaseGuiElement):
     def draw(self):
         if self._active:
             self._scrref.blit(self.image, self._abs_pos)
+            # mega-debug
+            # pygame.draw.rect(self._scrref, 'red', pygame.Rect(self._abs_pos, self.get_size()), 1)
 
     def kill(self):
         pass
@@ -150,7 +152,7 @@ class Button2(EvListener, BaseGuiElement):
         pass
 
     # - redefine!
-    def set_pos(self, position):
+    def set_position(self, position):
         self._abs_pos[0], self._abs_pos[1] = position
         self.collision_rect.topleft = position
 

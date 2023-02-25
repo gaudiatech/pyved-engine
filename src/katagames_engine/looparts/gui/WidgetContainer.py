@@ -18,7 +18,7 @@ class WidgetContainer(BaseGuiElement):
 
         self._active = False
 
-        self.set_pos(pos)
+        self.set_position(pos)
         self.set_dimensions(size)
         self.content = list()
         if widget_list is not None:
@@ -51,11 +51,15 @@ class WidgetContainer(BaseGuiElement):
             e.set_active(activate_mode)
 
     def recompute(self):
+        print(self.get_abs_rect(), 'recomputing positions...')
+        print('layout?', self.layout_type, '//', self.LTR,  self.EXPAND, self.FLOW,)
+        print(len(self.content), 'elements')
+
         # adjust positions automatically!
         if self.layout_type == self.LTR:
             c_pos = [0, 0]
             for w in self.content:
-                w.set_pos(
+                w.set_position(
                     (self._abs_pos[0] + c_pos[0], self._abs_pos[1])
                 )
                 c_pos[0] += w.get_dimensions()[0] + self.spacing
@@ -74,7 +78,7 @@ class WidgetContainer(BaseGuiElement):
             auto_spacing = math.floor(blank_total_space / (len(self.content)-1))
 
             for w in self.content:
-                w.set_pos(c_pos)
+                w.set_position(c_pos)
                 c_pos[0] += w.get_dimensions()[0]+auto_spacing
 
         # ----------------------
@@ -92,7 +96,7 @@ class WidgetContainer(BaseGuiElement):
                     curr_p[0] = basex
                     curr_p[1] += prevwidget_h + self.vspacing
 
-                w.set_pos(curr_p)
+                w.set_position(curr_p)
                 prevwidget_w, prevwidget_h = w.get_dimensions()
                 k += 1
 
@@ -117,12 +121,11 @@ class WidgetContainer(BaseGuiElement):
         pass
 
     def draw(self):
-        if not self._active:
-            return
-        for elt in self.content:
-            elt.draw()
-        if self._debug:
-            pygame.draw.rect(self._scrref, 'red', self.get_abs_rect(), 1)
+        if self._active:
+            if self._debug:
+                pygame.draw.rect(self._scrref, 'red', self.get_abs_rect(), 1)
+            for elt in self.content:
+                elt.draw()
 
     def kill(self):
         pass
