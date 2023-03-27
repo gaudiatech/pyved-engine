@@ -144,7 +144,7 @@ class MyGame:
         self.wanna_quit = False
 
         self.clock = pygame.time.Clock()
-        self.scr = kengi.core.get_screen()
+        self.scr = kengi.get_surface()
         scr_size = self.scr.get_size()
 
         self.tilemap = kengi.tmx.data.load_tmx('level.tmx')  # -> Tilemap instance

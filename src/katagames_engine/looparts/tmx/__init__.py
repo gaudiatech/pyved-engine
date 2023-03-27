@@ -7,7 +7,7 @@ joint work:
 - wkta-tom <thomas@gaudia-tech.com>
 """
 
-# from . import misc
+from . import misc
 from . import data
 from . import pytiled_parser
 
