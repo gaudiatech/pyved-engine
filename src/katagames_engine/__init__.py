@@ -220,6 +220,7 @@ class GameTpl(metaclass=ABCMeta):
         self._manager = None
         self.gameover = False
         self.clock = hub.kengi_inj['pygame'].time.Clock()
+        self.nxt_game = 'niobepolis'
 
     @abstractmethod
     def init_video(self):
@@ -247,7 +248,7 @@ class GameTpl(metaclass=ABCMeta):
         pyg = hub.kengi_inj['pygame']
         pk = pyg.key.get_pressed()
         if pk[pyg.K_ESCAPE] or self.gameover:
-            return 2, 'niobepolis'
+            return 2, self.nxt_game
         flip()
         self.clock.tick(self.MAXFPS)
 
