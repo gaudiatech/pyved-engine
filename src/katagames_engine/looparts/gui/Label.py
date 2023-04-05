@@ -7,24 +7,27 @@ pygame = _hub.pygame
 class Label(BaseGuiElement):
 
     def __init__(self, position, txt_string, txt_size=10, color=None, anchoring=None, replacemt_ft=None):
-        super().__init__()
-        self.set_position(position)
-
-        self._text = txt_size
-        self._txtsize = txt_size
-
-        self._used_color = 'orange'
-        if color:  # init color
-            setattr(self, 'color', color)
-
+        self.small_font = pygame.font.Font(None, txt_size)
         if replacemt_ft:
             self.small_font = replacemt_ft
-        else:
-            self.small_font = pygame.font.Font(None, txt_size)
-        self.image = self.small_font.render(txt_string, False, self._used_color)
-        self._dim = self.image.get_size()
 
+        super().__init__()
+        self.set_position(position)
+        self._text = txt_string
+        self._txtsize = txt_size
+        self._used_color = 'black'
+        if color:
+            self._used_color = color
+
+        self.image = self._dim = None
         self._debug = False
+        self.rebuild()
+
+    def rebuild(self):
+        self.image = self.small_font.render(self._text, False, self._used_color)
+        self._dim = self.image.get_size()
+        if self._parent:
+            self._parent.recompute()
 
     @property
     def text(self):
@@ -33,10 +36,7 @@ class Label(BaseGuiElement):
     @text.setter
     def text(self, v):
         self._text = v
-        self.image = self.small_font.render(v, False, 'orange')
-        self._dim = self.image.get_size()
-        if self._parent:
-            self._parent.recompute()
+        self.rebuild()
 
     def get_relative_rect(self):
         pass
@@ -57,9 +57,6 @@ class Label(BaseGuiElement):
         pass
 
     def set_image(self, new_image):
-        pass
-
-    def set_active(self, activate_mode: bool):
         pass
 
     # def __init__(self, position, text, txtsize=35, color=None, anchoring=ANCHOR_LEFT, debugmode=False):
@@ -97,9 +94,6 @@ class Label(BaseGuiElement):
     def color(self, newval):
         self._used_color = newval
         self.rebuild()
-
-    def rebuild(self):
-        pass
 
     # --- all properties defined ---
 

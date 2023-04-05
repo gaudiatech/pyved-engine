@@ -195,18 +195,18 @@ class AugmentedSprite(GenericUIElement):
 
         super().__init__((0, 0), img_dim, anchoring)
         self.callback = None  # can be used whenever the element is clicked!
+        self.hovered = False
 
-    # redefine
-    # def set_position(self, position):
-    #     super().set_position(position)
-    #     self._inner_sprite.rect.center = position
+    @property
+    def rect(self):
+        return self._inner_sprite.rect
+
+    def get_position(self):
+        return self._inner_sprite.rect.topleft
 
     def set_position(self, pos):
-        # super().set_position(pos)
         self._xy_coords[0], self._xy_coords[1] = pos
-
         self._inner_sprite.rect.topleft = pos
-        print('-set_position sur AugmentedSprite:', pos)
 
     def draw(self):
         scr = vscreen.get_screen()
