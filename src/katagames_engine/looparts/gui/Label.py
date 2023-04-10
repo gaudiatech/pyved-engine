@@ -7,9 +7,11 @@ pygame = _hub.pygame
 class Label(BaseGuiElement):
 
     def __init__(self, position, txt_string, txt_size=10, color=None, anchoring=None, replacemt_ft=None):
-        self.small_font = pygame.font.Font(None, txt_size)
-        if replacemt_ft:
+        
+        if replacemt_ft is not None:
             self.small_font = replacemt_ft
+        else:
+            self.small_font = pygame.font.Font(None, txt_size)
 
         super().__init__()
         self.set_position(position)
