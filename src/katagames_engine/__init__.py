@@ -43,14 +43,14 @@ from . import struct
 from . import tankui
 from ._BaseGameState import BaseGameState
 from .__version__ import ENGI_VERSION as _VER_CST
-from ._hub import Injector  # needed so the katasdk can operate
+from ._hub import Injector
 from .compo import gfx
 from .compo import vscreen
 from .compo.modes import GameModeMger, BaseGameMode
-from .compo.vscreen import flip
+from .compo.vscreen import flip, proj_to_vscreen
 from .core import events
 from .core.events import Emitter, EvListener, EngineEvTypes, game_events_enum
-from .foundation import defs  # it's needed for the vm!
+from .foundation import defs
 from .foundation.defs import STD_SCR_SIZE, KengiEv, Singleton
 from .foundation.interfaces import PygameIface
 from .state_management import declare_game_states
