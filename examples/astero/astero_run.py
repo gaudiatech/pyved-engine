@@ -1,43 +1,139 @@
 import math
 import random
-import time
 
+# import katagames_sdk as katasdk
 import katagames_engine as kengi
+kengi.bootstrap_e()
 
 
-kengi.bootstrap_e()  # so pygame can be used rn
-
-
-# game constants
-BG_COLOR = (0, 25, 0)
+# Const.
+BG_COLOR = (0, 33, 25)  # rgb format
 SHIP_COLOR = (119, 255, 0)
 BULLET_COLOR = SHIP_COLOR
-NB_ROCKS = 3
+NB_ROCKS = 4
+INSTR = """\
+AsteroTempl prototype\n\
+**GOAL** Destroy every single asteroid.\n\
+**CONTROLS** Use:\n> Left/Right arrows to turn {gamepad> the left stick}\n> Up/Down arrows to control speed {gamepad>Right/Left trigger}\n> Space bar to shoot {gamepad> the A button}\
+"""
+LAST_LINE = '{gamepad> the START button}'
 
+# Aliases
+# kengi = katasdk.kengi
 pygame = kengi.pygame
-CogObject = kengi.event2.Emitter
-EventReceiver = kengi.event2.EvListener
-EngineEvTypes = kengi.event2.EngineEvTypes
+
+# Misc.
 bullets = list()
 scr_size = [0, 0]
 music_snd = None
 view = ctrl = None
-Vector2 = pygame.math.Vector2
+Vector2 = kengi.pygame.math.Vector2
 
 MyEvTypes = kengi.game_events_enum((
-    'PlayerChange',  # contains: new_pos, angle
-    'PlayerstateChange'
+    'PlayerChanges',  # contains: new_pos, angle
 ))
 
-lu_event = p_event = None
+PREFIX_ASSET = ''  # 'user_assets/'
 
 
 def img_load(img_name):
-    return pygame.image.load(img_name)
+    return pygame.image.load(PREFIX_ASSET + img_name)
 
 
 def snd_load(path):
-    return pygame.mixer.Sound(path)
+    return pygame.mixer.Sound(PREFIX_ASSET+path)
+
+
+class ShipModel(kengi.Emitter):
+    MISSILE_SPEED = 3
+    SPEED_CAP = 192
+    THRUST_VAL = 0.823
+    DELTA_ANGLE = 0.051
+
+    def __init__(self):
+        super().__init__()
+        self.scr_size = sw, sh = kengi.vscreen.get_screen().get_size()
+        self._position = Vector2(sw // 2, sh // 2)
+        self._orientation = Vector2(1, 0)
+        self._curr_speed = 0.0  # can be negative too
+
+    def reset(self):
+        self._position[:] = (scr_size[0] // 2, scr_size[1] // 2)
+        self._orientation[:] = (1, 0)
+        self._curr_speed = 0.0
+
+    @property
+    def pos(self):
+        return self._position.x, self._position.y
+
+    @property
+    def orientation(self):
+        return self._orientation.as_polar()[1]  # returns a value in RAD
+
+    def _clamp_n_broadcast_state(self):
+        xcap, ycap = self.scr_size
+        if self._position.x < 0:
+            self._position.x += xcap
+        elif self._position.x >= xcap:
+            self._position.x -= xcap
+        if self._position.y < 0:
+            self._position.y += ycap
+        elif self._position.y >= ycap:
+            self._position.y -= ycap
+        self.pev(MyEvTypes.PlayerChanges, pos=self.pos, orientation=self.orientation)
+
+    def update(self, dt):
+        speedvector = Vector2()
+        speedvector.from_polar((1, math.degrees(self.orientation)))
+        speedvector.x *= self._curr_speed
+        speedvector.y *= self._curr_speed
+        self._position.x += dt * speedvector.x
+        self._position.y += dt * speedvector.y
+        self._clamp_n_broadcast_state()
+
+    def ccw_rotate(self):
+        _, b = self._orientation.as_polar()
+        b += self.DELTA_ANGLE
+        self._orientation.from_polar((1, b))
+        self._clamp_n_broadcast_state()
+
+    def cw_rotate(self):
+        _, b = self._orientation.as_polar()
+        b -= self.DELTA_ANGLE
+        self._orientation.from_polar((1, b))
+        self._clamp_n_broadcast_state()
+
+    def interp_direction(self, given_or):
+        self._orientation.from_polar((1, given_or))
+
+    def accelerate(self, v):
+        self._curr_speed += self.THRUST_VAL * (1 + v)
+        if self._curr_speed > self.SPEED_CAP:
+            self._curr_speed = self.SPEED_CAP
+        self._clamp_n_broadcast_state()
+
+    def brake(self, v):
+        if self._curr_speed > 0:
+            self._curr_speed -= (1/v)*0.1*self._curr_speed
+            if self._curr_speed < 5:
+                self._curr_speed = 0
+
+    def shoot(self):
+        global bullets
+        sh_pos = Vector2(self.pos)
+        b_speed = Vector2()
+        b_speed.from_polar((self.MISSILE_SPEED, math.degrees(self.orientation)))
+        bullets.append((sh_pos, b_speed))
+
+    def get_position(self):
+        return self._position
+
+    def get_scr_pos(self):
+        return int(self._position.x), int(self._position.y)
+
+    def set_position(self, new_pos):
+        self._position.x, self._position.y = new_pos
+        self._commit_new_pos()
 
 
 class RockSprite(pygame.sprite.Sprite):
@@ -88,116 +184,7 @@ class RockSprite(pygame.sprite.Sprite):
         self.vy *= -1
 
 
-class ShipModel(kengi.event2.Emitter):
-    MISSILE_SPEED = 3
-    SPEED_CAP = 192
-    THRUST_VAL = 0.823
-    DELTA_ANGLE = 0.051
-
-    def __init__(self):
-        super().__init__()
-        self.scr_size = sw, sh = kengi.vscreen.get_screen().get_size()
-
-        # instantanné
-        self._position = Vector2(sw // 2, sh // 2)
-        self._orientation = Vector2(1, 0)
-
-        # vitesse variable
-        self._curr_speed = 0.0  # can be negative too
-
-    def reset(self):
-        self._position[:] = (scr_size[0] // 2, scr_size[1] // 2)
-        self._orientation[:] = (1, 0)
-        self._curr_speed = 0.0
-        # only new state & stats
-
-        self.pev(MyEvTypes.PlayerstateChange, orientation=self.orientation, speed=self._curr_speed)
-        self.pev(MyEvTypes.PlayerChange, pos=self.pos, orientation=self.orientation)
-
-    @property
-    def pos(self):
-        return self._position.x, self._position.y
-
-    @property
-    def orientation(self):
-        return self._orientation.as_polar()[1]  # returns a value in RAD
-
-    def _clamp_n_broadcast_state(self):
-        xcap, ycap = self.scr_size
-
-        if self._position.x < 0:
-            self._position.x = xcap + self._position.x
-        if self._position.x > xcap:
-            self._position.x = self._position.x - xcap
-        if self._position.y < 0:
-            self._position.y = ycap + self._position.y
-        if self._position.y > ycap:
-            self._position.y = self._position.y - ycap
-
-        self.pev(MyEvTypes.PlayerChange, pos=self.pos, orientation=self.orientation)
-
-    def update(self, dt):
-        speedvector = Vector2()
-        speedvector.from_polar((1, math.degrees(self.orientation)))
-        speedvector.x *= self._curr_speed
-        speedvector.y *= self._curr_speed
-
-        self._position.x += dt * speedvector.x
-        self._position.y += dt * speedvector.y
-
-        self._clamp_n_broadcast_state()
-
-    def ccw_rotate(self):
-        _, b = self._orientation.as_polar()
-        b += self.DELTA_ANGLE
-        self._orientation.from_polar((1, b))
-        self.pev(MyEvTypes.PlayerstateChange, orientation=b, speed=self._curr_speed)
-        self._clamp_n_broadcast_state()
-
-    def cw_rotate(self):
-        _, b = self._orientation.as_polar()
-        b -= self.DELTA_ANGLE
-        self._orientation.from_polar((1, b))
-        self.pev(MyEvTypes.PlayerstateChange, orientation=b, speed=self._curr_speed)
-        self._clamp_n_broadcast_state()
-
-    def interp_direction(self, given_or):
-        # find how to multiply g_or before we compare (+/- 2 pi)
-        self._orientation.from_polar((1, given_or))
-        self.pev(MyEvTypes.PlayerstateChange, orientation=given_or, speed=self._curr_speed)
-        self._clamp_n_broadcast_state()
-
-    def accelerate(self, v):
-        tmp = self._curr_speed + self.THRUST_VAL * (v+1)
-        if tmp <= self.SPEED_CAP:
-            self._curr_speed = tmp
-            _, b = self._orientation.as_polar()
-            self.pev(MyEvTypes.PlayerstateChange, orientation=b, speed=self._curr_speed)
-            self._clamp_n_broadcast_state()
-
-    def brake(self, v):
-        if self._curr_speed <= 0:
-            return
-        tmp = self._curr_speed - (1.97+v)
-        if tmp < 1:
-            self._curr_speed = 0
-        else:
-            self._curr_speed = tmp
-        _, b = self._orientation.as_polar()
-        self.pev(MyEvTypes.PlayerstateChange, orientation=b, speed=self._curr_speed)
-
-    def shoot(self):
-        global bullets
-        sh_pos = Vector2(self.pos)
-        b_speed = Vector2()
-        b_speed.from_polar((self.MISSILE_SPEED, math.degrees(self.orientation)))
-        bullets.append((sh_pos, b_speed))
-
-    def get_scr_pos(self):
-        return int(self._position.x), int(self._position.y)
-
-
-class TinyWorldView(EventReceiver):
+class TinyWorldView(kengi.EvListener):
     RAD = 5
 
     def __init__(self, ref_mod, rocksm):
@@ -215,13 +202,7 @@ class TinyWorldView(EventReceiver):
 
         self._draw_player(ev.screen)
 
-    # we could disp. the info like Headup display...?
-    #
-    # def on_playerstate_change(self, ev):
-    #     print('new speed', ev.speed)
-    #     print('new orientation', ev.orientation)
-
-    def on_player_change(self, ev):
+    def on_player_changes(self, ev):
         self.curr_angle = ev.orientation
         self.curr_pos = ev.pos
 
@@ -233,8 +214,6 @@ class TinyWorldView(EventReceiver):
     def _draw_player(self, surf):
         orientation = self.curr_angle
         pt_central = self.curr_pos
-        # pygame.draw.circle(surf, SHIP_COLOR, pt_central, 13)
-        # return
         tv = [
             Vector2(), Vector2(), Vector2()
         ]
@@ -246,183 +225,177 @@ class TinyWorldView(EventReceiver):
                  Vector2(*pt_central)]
         for i in range(3):
             pt_li[i] += tv[i]
-        # pt_li.reverse()
         pygame.draw.polygon(surf, SHIP_COLOR, pt_li, 2)
 
 
-class ShipCtrl(EventReceiver):
+class ShipCtrl(kengi.EvListener):
     def __init__(self, ref_mod, rocksm):
         super().__init__()
         self._ref_ship = ref_mod
         self._ref_rocks = rocksm
         self.last_tick = None
-
         self._horz = Vector2(1, 0)
         self._joystick_target = Vector2(0, 0)
         self.curr_thrust = 0
         self.curr_brake = 0
 
     def on_stickmotion(self, ev):
-        if ev.axis == 5:  # right trigger
-            if ev.value > 0.:
-                self.curr_thrust = ev.value
-            else:
-                self.curr_thrust = 0
-
-        elif ev.axis == 4:  # left trigger
-            if ev.value > 0.:
-                self.curr_brake = ev.value
-            else:
-                self.curr_brake = 0
-
-        elif ev.axis == 0:
-            self._joystick_target.x = ev.value
-
-        elif ev.axis == 1:
-            self._joystick_target.y = -ev.value
+        if ev.side == 'left':
+            self._joystick_target.x, self._joystick_target.y = ev.pos
 
     def on_gamepaddown(self, ev):
         if 'A' == ev.button:
             self._ref_ship.shoot()
 
+        elif ev.button == 'rTrigger':  # right trigger -> more speed
+            if ev.value > 0.5:
+                self.curr_thrust = 1
+            else:
+                self.curr_thrust = 0
+
+        elif ev.button == 'lTrigger':
+            if ev.value > 0.5:
+                self.curr_brake = 1
+            else:
+                self.curr_brake = 0
+
+    def on_keydown(self, ev):
+        if ev.key == pygame.K_SPACE:
+            self._ref_ship.shoot()
+
     def on_update(self, ev):
         global music_snd, game_obj
-
-        if self._joystick_target.length() > 0.44:
-            self._ref_ship.interp_direction(-math.radians(self._joystick_target.as_polar()[1]))
-
         ba = pygame.key.get_pressed()
+
+        accel = stoppin = False
         if ba[pygame.K_UP]:
-            self.curr_thrust = 0.75
+            accel = True
         if ba[pygame.K_DOWN]:
-            self.curr_brake = 0.77
+            stoppin = True
         if ba[pygame.K_RIGHT]:
             self._ref_ship.ccw_rotate()
         if ba[pygame.K_LEFT]:
             self._ref_ship.cw_rotate()
 
-        if self.curr_brake > 0:
-            self._ref_ship.brake(self.curr_brake)
+        if self.last_tick is not None:
+            tmp = ev.curr_t - self.last_tick
         else:
-            if self.curr_thrust > 0:
-                self._ref_ship.accelerate(self.curr_thrust)
+            tmp = 0
+        self.last_tick = ev.curr_t
 
-        # handle bullets
-        for b in bullets:
-            b[0].x += b[1].x
-            b[0].y += b[1].y
-        remove = set()
-        rb = set()
-        for elt in self._ref_rocks:
-            for idx, b in enumerate(bullets):
-                if elt.rect.collidepoint((b[0].x, b[0].y)):
-                    remove.add(elt)
-                    elt.zombie = True
-                    rb.add(idx)
-                    break
-            if not elt.zombie and not elt.immunity:
-                if elt.rect.collidepoint(self._ref_ship.pos):
-                    elt.inv_speed()
-                    self._ref_ship.reset()
-            elt.update()
-        if len(remove):
-            for tmp in remove:
-                tmp.destroyed()
-                self._ref_rocks.remove(tmp)
-            rbplus = list(rb)
-            rbplus.sort(reverse=True)
-            while len(rbplus) > 0:
-                del bullets[rbplus.pop()]
+        if self._joystick_target.length() > 0.44:
+            self._ref_ship.interp_direction(math.radians(self._joystick_target.as_polar()[1]))
 
-        if len(self._ref_rocks) == 0:
-            # clean de-pop game
+        if accel or self.curr_thrust > 0:
+            self._ref_ship.accelerate(1.666)
+        if stoppin or self.curr_brake > 0:
+            self._ref_ship.brake(0.993)
+
+        self._ref_ship.update(tmp)
+
+        if len(self._ref_rocks):
+            # there are rocks left in the space...
+            for b in bullets:
+                b[0].x += b[1].x
+                b[0].y += b[1].y
+            remove = set()
+            rb = set()
+            for elt in self._ref_rocks:
+                for idx, b in enumerate(bullets):
+                    if elt.rect.collidepoint((b[0].x, b[0].y)):
+                        remove.add(elt)
+                        elt.zombie = True
+                        rb.add(idx)
+                        break
+                if not elt.zombie and not elt.immunity:
+                    if elt.rect.collidepoint(self._ref_ship.pos):
+                        elt.inv_speed()
+                        self._ref_ship.reset()
+                elt.update()
+            if len(remove):
+                for tmp in remove:
+                    tmp.destroyed()
+                    self._ref_rocks.remove(tmp)
+                rbplus = list(rb)
+                rbplus.sort(reverse=True)
+                while len(rbplus) > 0:
+                    del bullets[rbplus.pop()]
+        else:  # proper exit
             music_snd.stop()
             game_obj.gameover = True
-            return
-
-        # update ship state/pos
-        if not(hasattr(self, '_last_t')) or (self._last_t is None):
-            delta = 0
-        else:
-            delta = ev.curr_t - self._last_t
-        self._last_t = ev.curr_t
-        self._ref_ship.update(delta)
-
-    def on_keydown(self, ev):
-        if ev.key == pygame.K_SPACE:
-            self._ref_ship.shoot()
-        elif ev.key == pygame.K_RETURN:
-            print(self._ref_ship.pos)
-            print(self._ref_ship.orientation)
 
 
-def print_mini_tutorial():
-    howto_infos = """HOW TO PLAY:
-    * use arrows to move
-    * use SPACE to shoot"""
-    print('-' * 32)
-    for line in howto_infos.split('\n'):
-        print(line)
-    print('-' * 32)
+class IntroV(kengi.EvListener):
+    OFFSET_START_BT_Y = 66
+    OFFSET_ADDON_TXT_Y = 128
+    LABELS_BINF_Y = 25
 
-
-class IntroV(EventReceiver):
     def __init__(self):
         super().__init__()
         self.img = img_load('(astero)enter_start.png')
         self.dim = self.img.get_size()
-        self.intro_state = True
+        self.painting = True
+        ft = pygame.font.Font(None, 21)
+        txtcolor = 'antiquewhite2'
+        self.labels = [ft.render(sline, False, txtcolor) for sline in INSTR.splitlines()]
+        self.labels[0] = ft.render(INSTR.splitlines()[0], False, 'yellow')  # replace to have a title color
+        self.gamepad_label = ft.render(LAST_LINE, False, txtcolor)
 
     def on_paint(self, ev):
-        if self.intro_state:
-            ev.screen.fill((0, 0, 0))
-            ev.screen.blit(self.img, ((scr_size[0] - self.dim[0]) // 2, (scr_size[1] - self.dim[1]) // 2))
+        if self.painting:
+            midpt_x = scr_size[0] // 2
+            midpt_y = scr_size[1] // 2
+            ev.screen.fill((11, 11, 11))
+            for k, labl in enumerate(self.labels):
+                ev.screen.blit(labl, (midpt_x-(labl.get_width()//2), self.LABELS_BINF_Y + 31*k))
+            ev.screen.blit(
+                self.img,
+                (midpt_x-(self.img.get_width()//2), self.OFFSET_START_BT_Y + midpt_y)
+            )
+            ev.screen.blit(self.gamepad_label, (midpt_x-(self.gamepad_label.get_width()//2), midpt_y+self.OFFSET_ADDON_TXT_Y))
 
     def _begin_game(self):
         global music_snd
+        self.painting = False
         pygame.mixer.init()
         music_snd = snd_load('(astero)ndimensions-zik.ogg')
         music_snd.set_volume(0.25)
         music_snd.play(-1)
-        self.intro_state = False
 
     def on_gamepaddown(self, ev):
-        if self.intro_state and ev.button == 'Start':
+        if 'Start' == ev.button:
             self._begin_game()
 
     def on_keydown(self, ev):
-        if self.intro_state and ev.key == pygame.K_RETURN:
+        if ev.key == pygame.K_RETURN:
             self._begin_game()
 
 
-class AsteroGame(kengi.GameTpl):
+class Astero(kengi.GameTpl):
 
-    def enter(self, vmstate=None):
-        global scr_size, view, ctrl, lu_event, p_event
-
+    def init_video(self):
         kengi.init(2)
-        self._manager = kengi.get_ev_manager()
+
+    def setup_ev_manager(self):
         self._manager.setup(MyEvTypes)
 
+    def enter(self, vms=None):
+        global scr_size
+        super().enter(vms)
         scr_size[0], scr_size[1] = kengi.get_surface().get_size()
-        introv = IntroV()
         shipm = ShipModel()
         li = [RockSprite() for _ in range(NB_ROCKS)]
-        view = TinyWorldView(shipm, li)
-        ctrl = ShipCtrl(shipm, li)
-        view.turn_on()
-        ctrl.turn_on()
-        introv.turn_on()
-        game_ctrl = kengi.get_game_ctrl()
-        game_ctrl.turn_on()
-
-    def exit(self, vmstate=None):
-        self._manager.update()  # flush events
-        kengi.quit()
+        gcomponents = [
+            TinyWorldView(shipm, li),
+            ShipCtrl(shipm, li),
+            IntroV()
+        ]
+        for compo in gcomponents:
+            compo.turn_on()
 
 
-game_obj = AsteroGame()
+game_obj = Astero()
+# web
+# katasdk.gkart_activation(game_obj)
 
-if __name__ == '__main__':
-    print_mini_tutorial()
-    game_obj.loop()
+game_obj.loop()
