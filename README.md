@@ -118,6 +118,8 @@ and then run the `main.py` file found in the corresponding game template folder.
 testing demos without installation is possible if you  open the project with an IDE like PyCharm and
 configure two root folders: `src/` and `game_templates/`.
 
+If you wish to test more advanced features of the engine,
+we recommand that you check the [kengi-showcase repo](https://github.com/wkta/kengi-showcase)
 
 ## Mini tutorial
 If you're familiar with `pygame`, getting used to `kengi` is really easy.
