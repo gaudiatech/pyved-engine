@@ -41,8 +41,8 @@ class IntroCompo(kengi.EvListener):
         self.title.color = 'brown'
 
         self.pltypes_labels = [
-            kengi.gui.Label((115, 145), 'unkno type p1', color='darkblue'),
-            kengi.gui.Label((115, 205), 'unkno type p2', color='darkblue'),
+            kengi.gui.Label((115, 145), 'unkno type p1', txt_size=28, color='darkblue'),
+            kengi.gui.Label((115, 205), 'unkno type p2', txt_size=28, color='darkblue'),
         ]
         self._update_playertypes()
 
