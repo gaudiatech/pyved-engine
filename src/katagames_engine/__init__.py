@@ -36,6 +36,8 @@
 import time
 from abc import ABCMeta, abstractmethod
 
+from ._ecs_pattern import entity, component, EntityManager, System, SystemManager
+
 from . import _hub as hub
 from . import pal
 from . import state_management as _state_sm
