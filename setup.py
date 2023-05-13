@@ -10,33 +10,33 @@ if os.path.isfile(requirements_file):
     with open(requirements_file) as fp:
         whats_required = fp.read().splitlines()
 
-# need sys so we can include katagames_engine
+# need sys so we can include pyved_engine
 import sys
 sys.path.append('src')
-from katagames_engine.__version__ import ENGI_VERSION
+from pyved_engine.__version__ import ENGI_VERSION
 
 from setuptools import setup
 
 pck_list=[
-    "katagames_engine",
-    "katagames_engine.foundation",
-    "katagames_engine.compo",
-    "katagames_engine.core",
-    "katagames_engine.looparts",  # to be sure we get looparts/rogue.py, looparts/tabletop.py, etc.
-    "katagames_engine.looparts.ai",
-    "katagames_engine.looparts.demolib",
-    "katagames_engine.looparts.gui",
-    "katagames_engine.looparts.isometric",
-    "katagames_engine.looparts.polarbear",
-    "katagames_engine.looparts.tmx",
-    "katagames_engine.looparts.tmx.pytiled_parser",
-    "katagames_engine.looparts.tmx.pytiled_parser.parsers",
-    "katagames_engine.looparts.tmx.pytiled_parser.parsers.json",
-    "katagames_engine.looparts.tmx.pytiled_parser.parsers.tmx",
+    "pyved_engine",
+    "pyved_engine.foundation",
+    "pyved_engine.compo",
+    "pyved_engine.core",
+    "pyved_engine.looparts",  # to be sure we get looparts/rogue.py, looparts/tabletop.py, etc.
+    "pyved_engine.looparts.ai",
+    "pyved_engine.looparts.demolib",
+    "pyved_engine.looparts.gui",
+    "pyved_engine.looparts.isometric",
+    "pyved_engine.looparts.polarbear",
+    "pyved_engine.looparts.tmx",
+    "pyved_engine.looparts.tmx.pytiled_parser",
+    "pyved_engine.looparts.tmx.pytiled_parser.parsers",
+    "pyved_engine.looparts.tmx.pytiled_parser.parsers.json",
+    "pyved_engine.looparts.tmx.pytiled_parser.parsers.tmx",
 ]
 
 setup(
-    name='kengi',
+    name='pyved-engine',
     version=str(ENGI_VERSION),
     description='A game engine built on python/pygame',
     keywords=['Python', 'Pygame', 'Game Engine'],
@@ -45,7 +45,7 @@ setup(
     license='LGPL3',
     package_dir={'': 'src'},
     packages=pck_list,
-    url="https://github.com/gaudiatech/kengi",
+    url="https://github.com/gaudiatech/pyved-engine",
     install_requires=whats_required,
     include_package_data=True
 )

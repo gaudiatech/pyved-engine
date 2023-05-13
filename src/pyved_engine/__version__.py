@@ -1,7 +1,7 @@
 VYEAR_2DIG = 23  # remember to use only 2 digits
-VMONTH = 4
+VMONTH = 5
 _idx = 1  # 1 =alpha, 2 =beta, 3 =release candidate, 0 =legit release
-VRANK = 4
+VRANK = 1
 
 """
 We target this standard format:
