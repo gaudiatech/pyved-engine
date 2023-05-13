@@ -1,2 +1,0 @@
-
-gameover = False
