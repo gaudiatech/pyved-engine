@@ -23,7 +23,7 @@ kengi_inj = Injector({
     'sysconsole': '.looparts.sysconsole',
     'tabletop': '.looparts.tabletop',
     'terrain': '.looparts.terrain',
-}, 'katagames_engine')
+}, 'pyved_engine')
 
 
 def __getattr__(targ_sm_name):
