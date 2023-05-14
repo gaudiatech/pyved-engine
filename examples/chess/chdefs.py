@@ -1,7 +1,7 @@
 """
 define game modes & custom events in this file
 """
-import katagames_engine as kengi
+import pyved_engine as kengi
 
 
 ChessGstates = kengi.struct.enum(

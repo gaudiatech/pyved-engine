@@ -1,5 +1,5 @@
 import chdefs
-import katagames_engine as kengi
+import pyved_engine as kengi
 from ChessBoard import ChessBoard
 from ChessRules import ChessRules
 from players import ChessAI_random, ChessAI_offense, ChessAI_defense, ChessPlayer

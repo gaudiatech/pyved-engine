@@ -11,7 +11,7 @@ This is a joint work. Authors are:
    [contact: tom@kata.games]
 """
 import chdefs
-import katagames_engine as kengi
+import pyved_engine as kengi
 from chdefs import ChessGstates
 from chessintro import ChessintroState
 from chessmatch import ChessmatchState
