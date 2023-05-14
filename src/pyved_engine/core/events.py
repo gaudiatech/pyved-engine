@@ -1,5 +1,6 @@
 import re
 import time
+import weakref
 
 from ..foundation.defs import EngineEvTypes, KengiEv, PseudoEnum
 from ..foundation.defs import to_camelcase, to_snakecase, CircularBuffer, Singleton
@@ -171,13 +172,12 @@ class EvManager:
 
 
 class Emitter:
-    _free_listener_id = _FIRST_LISTENER_ID
+    __free_id = _FIRST_LISTENER_ID
 
     def __init__(self):
         self._manager = None
-        cls = self.__class__
-        self._lid = cls._free_listener_id
-        cls._free_listener_id += 1
+        self._lid = Emitter.__free_id
+        Emitter.__free_id = Emitter.__free_id + 1
 
     def pev(self, evtype, **kwargs):
         if self._manager is None:
@@ -186,12 +186,14 @@ class Emitter:
 
 
 class EvListener(Emitter):
+    _index_obj = dict()
 
     def __init__(self):
         super().__init__()
         self._is_active = False
         self._inspection_res = set()
         self._tracked_ev = list()
+        print('creation listener', self._lid)
 
     @property
     def active(self):
@@ -200,6 +202,21 @@ class EvListener(Emitter):
     @property
     def id(self):
         return self._lid
+
+    @classmethod
+    def lookup(cls, ident):
+        """
+        returns None if no listener that has `ident` as an identifier, has called .bind()
+        the ad-hoc listener otherwise
+        """
+        try:
+            return cls._index_obj[ident]
+        except KeyError:
+            return None
+
+    def bind(self):
+        self.__class__._index_obj[self.id] = self
+        return self.id
 
     def turn_on(self):
         if self._is_active:
