@@ -99,6 +99,18 @@ This is only one possibilty, very similar to how you
 define games using `pygame-ce`. In *the docs* you will see better,
 more efficient ways to define your games.
 
+## Documentation
+
+Its still very rough, some help is needed to improve that part!
+All files to build the documentation can be found within the `docs\` folder.
+
+To read/preview the current version of docs:
+```shell
+pip install -r requirements.txt
+mkdocs build
+mkdocs serve
+```
+
 ## Mini tutorial
 If you're familiar with `pygame`, getting used to `pyved-engine` is really easy.
 Navigate to the `src/` folder. There, you see a very basic example that uses only pygame:
