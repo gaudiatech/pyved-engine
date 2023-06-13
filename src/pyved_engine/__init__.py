@@ -111,47 +111,51 @@ def bootstrap_e(print_ver_info=True):
 
 
 def screen_param(gfx_mode_code, paintev=None, screen_dim=None):
-    global _active_state
-    if isinstance(gfx_mode_code, int) and -1 < gfx_mode_code <= 3:
-        if gfx_mode_code == 0 and screen_dim is None:
-            ValueError(f'graphic mode 0 required an extra valid screen_dim argument(provided by user: {screen_dim})')
+    global _active_state, config
 
-        # from here, we know that the gfx_mode_code is 100% valid
-        conventionw, conventionh = STD_SCR_SIZE
-        if gfx_mode_code != 0:
-            adhoc_upscaling = gfx_mode_code
-            taille_surf_dessin = int(conventionw / gfx_mode_code), int(conventionh / gfx_mode_code)
-        else:
-            adhoc_upscaling = 1
-            taille_surf_dessin = screen_dim
-            print(adhoc_upscaling, taille_surf_dessin)
-        # ---------------------------------
-        #  legacy code, not modified in july22. It's complex but
-        # it works so dont modify unless you really know what you're doing ;)
-        # ---------------------------------
-        if vscreen.stored_upscaling is None:  # stored_upscaling isnt relevant <= webctx
-            _active_state = True
-            pygame_surf_dessin = hub.pygame.display.set_mode(taille_surf_dessin)
-            vscreen.set_virtual_screen(pygame_surf_dessin)
-        else:
-
-            pygame_surf_dessin = hub.pygame.surface.Surface(taille_surf_dessin)
-            vscreen.set_virtual_screen(pygame_surf_dessin)
-            vscreen.set_upscaling(adhoc_upscaling)
-            if paintev:
-                paintev.screen = pygame_surf_dessin
-            if _active_state:
-                return
-            _active_state = True
-
-            if gfx_mode_code:
-                pgscreen = hub.pygame.display.set_mode(STD_SCR_SIZE)
-            else:
-                pgscreen = hub.pygame.display.set_mode(taille_surf_dessin)
-            vscreen.set_realpygame_screen(pgscreen)
-    else:
+    if not isinstance(gfx_mode_code, int) and (1 <= gfx_mode_code <= 3):
         e_msg = f'graphic mode requested({gfx_mode_code}: {type(gfx_mode_code)}) isnt a valid one! Expected type: int'
         raise ValueError(e_msg)
+
+    # from here, we know that the gfx_mode_code is 100% valid
+    conventionw, conventionh = STD_SCR_SIZE
+    if gfx_mode_code != 0:
+        adhoc_upscaling = gfx_mode_code
+        taille_surf_dessin = int(conventionw / gfx_mode_code), int(conventionh / gfx_mode_code)
+    else:
+        if screen_dim is None:
+            raise ValueError(f'graphic mode 0 required a valid screen_dim arg (provided by user: {screen_dim})')
+        adhoc_upscaling = 1
+        taille_surf_dessin = screen_dim
+
+    config.SCR_SIZE = taille_surf_dessin
+    config.UPSCALING = adhoc_upscaling
+
+    # ---------------------------------
+    #  legacy code, not modified in july22. It's complex but
+    # it works so dont modify unless you really know what you're doing ;)
+    # ---------------------------------
+    if vscreen.stored_upscaling is None:  # stored_upscaling isnt relevant <= webctx
+        _active_state = True
+        pygame_surf_dessin = hub.pygame.display.set_mode(taille_surf_dessin)
+        vscreen.set_virtual_screen(pygame_surf_dessin)
+    else:
+
+        pygame_surf_dessin = hub.pygame.surface.Surface(taille_surf_dessin)
+        vscreen.set_virtual_screen(pygame_surf_dessin)
+        vscreen.set_upscaling(adhoc_upscaling)
+        if paintev:
+            paintev.screen = pygame_surf_dessin
+        if _active_state:
+            return
+        _active_state = True
+
+        if gfx_mode_code:
+            pgscreen = hub.pygame.display.set_mode(STD_SCR_SIZE)
+        else:
+            pgscreen = hub.pygame.display.set_mode(taille_surf_dessin)
+        vscreen.set_realpygame_screen(pgscreen)
+
 
 
 _joy = None
@@ -280,9 +284,19 @@ class GameTpl(metaclass=ABCMeta):
 # ----------------------------
 #  init & quit
 # ----------------------------
+class _Config:
+    MAXFPS = 45
+    SCR_SIZE = (None, None)
+    UPSCALING = None  # not defined, yet
+
+
+config = _Config
+
+
 def init(gfc_mode=1, caption=None, maxfps=60, screen_dim=None):
-    global _gameticker, _joy
+    global _gameticker, _joy, config
     bootstrap_e()
+    config.MAXFPS = int(maxfps)
     pygm = hub.pygame
     pygm.init()
     pygm.mixer.init()
