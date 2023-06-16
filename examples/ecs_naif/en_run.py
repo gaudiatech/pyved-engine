@@ -19,9 +19,8 @@ def launch_game():
     # declare pool of entities + all game systems
     entity_pool = pyv.EntityManager()
     _player = Player(
-        x=0, y=256,
-        angle=0.0, thrust=0.0,
-        hp=None, max_hp=125,
+        x=128, y=32,
+        max_hp=125,
         li_perks=['toughGuy', 'kamikaze'],
     )
     entity_pool.add(_player)

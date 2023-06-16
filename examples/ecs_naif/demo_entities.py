@@ -14,15 +14,15 @@ class MobPosition:
 
 @component
 class DirMobileBehavior:
-    angle: float
-    thrust: float
-    delta_angle: float = 0
+    angle: float = 0.0
+    thrust: float = 0.0
+    delta_angle: float = 0.0
 
 
 @component
 class Health:
-    hp: int
     max_hp: int
+    hp: int = None
 
 
 @component
@@ -34,5 +34,7 @@ class Perks:
 #  ENTITIES
 # ----------------------------------------
 @entity
-class Player(DirMobileBehavior, MobPosition, Health, Perks):
+class Player(DirMobileBehavior, Health, MobPosition, Perks):  # WARNING: order matters a lot!
+    # You have to use the REVERSE order:
+    # compos that hav only default values <<-- mixed compos <<-- compos that have only un-initialized values
     pass
