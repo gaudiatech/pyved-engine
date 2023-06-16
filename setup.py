@@ -4,7 +4,7 @@ import os
 
 lib_folder = os.path.dirname(os.path.realpath(__file__))
 
-requirements_file = lib_folder + '/requirements.txt'
+requirements_file = lib_folder + '/runtime-req.txt'
 whats_required = [] # Here we'll get content of requirements.txt
 if os.path.isfile(requirements_file):
     with open(requirements_file) as fp:
