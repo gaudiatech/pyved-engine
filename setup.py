@@ -35,10 +35,17 @@ pck_list=[
     "pyved_engine.looparts.tmx.pytiled_parser.parsers.tmx",
 ]
 
+this_directory = Path(__file__).parent
+long_desc = (this_directory / "README.md").read_text()
+
 setup(
     name='pyved-engine',
     version=str(ENGI_VERSION),
-    description='A game engine built on python/pygame',
+
+    description='Custom game engine built upon python/pygame',    
+    long_description=long_desc,
+    long_description_content_type='text/markdown',
+    
     keywords=['Python', 'Pygame', 'Game Engine'],
     author='moonb3ndr et al.',
     author_email='thomas.iw@kata.games',
