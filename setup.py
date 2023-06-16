@@ -1,5 +1,6 @@
 from distutils.core import setup
 import os
+from pathlib import Path
 
 
 lib_folder = os.path.dirname(os.path.realpath(__file__))
