@@ -1,5 +1,5 @@
 from ... import _hub
-from ...compo import vscreen as core
+from ... import vars
 
 
 ANCHOR_UPPERLEFT = (0, 0)
@@ -31,7 +31,7 @@ class Frect(object):
             x0 = prect.left + (prect.w // 2) * self.anchor[0]
             y0 = prect.top + (prect.h // 2) * self.anchor[1]
         else:
-            sw, sh = core.get_screen().get_size()
+            sw, sh = vars.screen.get_size()
             x0 = (sw // 2) * self.anchor[0]
             y0 = (sh // 2) * self.anchor[1]
         return pygame.Rect(self.dx + x0, self.dy + y0, self.w, self.h)

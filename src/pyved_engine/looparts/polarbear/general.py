@@ -5,6 +5,7 @@ from . import frects
 from . import image
 from .image import TEXT_COLOR, truncline, render_text
 from ... import _hub
+from ... import vars
 from ...compo import vscreen
 
 
@@ -58,7 +59,7 @@ class Border(object):
     def render(self, dest, scr=None):
         """Draw this decorative border at dest on screen."""
         if scr is None:
-            scr = vscreen.get_screen()
+            scr = vars.screen
 
         # We're gonna draw a decorative border to surround the provided area.
         if self.border == None:
@@ -224,7 +225,7 @@ POSTERS = list()
 
 my_state = GameState()
 # fix: add ref to screen
-my_state.screen = vscreen.get_screen()
+my_state.screen = vars.screen
 
 # The FPS the rules runs at.
 FPS = 30

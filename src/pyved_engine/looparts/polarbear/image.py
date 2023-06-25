@@ -1,8 +1,7 @@
 import weakref
 from itertools import chain
-
+from ... import vars
 from ... import _hub
-from ...compo import vscreen as core
 
 
 DEFAULT_COLOR_KEY = (255, 0, 255)
@@ -87,7 +86,7 @@ def draw_text(font, text, rect, color=TEXT_COLOR, justify=-1, antialias=True, de
     if dest_surface:
         dsu = dest_surface
     else:
-        dsu = core.get_screen()
+        dsu = vars.screen
 
     # myimage = render. ...
     render_text(font, text, rect.width, color, justify, antialias, dsuu=dsu, moff=rect.topleft)
@@ -119,7 +118,7 @@ class Image(object):
             self.bitmap.fill(color_key)
             self.bitmap.set_colorkey(color_key, flags)
 
-        self.scrref = core.get_screen()
+        self.scrref = vars.screen
 
         self.fname = fname
         self.flags = flags
@@ -176,7 +175,7 @@ class Image(object):
 
         dest_c = self.get_rect(frame)
         dest_c.center = dest
-        dest_surface = dest_surface or core.get_screen()  # new way to retrieve the surface used for display
+        dest_surface = dest_surface or vars.screen  # new way to retrieve the surface used for display
 
         dest_surface.blit(self.bitmap, dest_c, area)
 

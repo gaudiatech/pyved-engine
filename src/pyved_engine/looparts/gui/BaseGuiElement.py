@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from ...compo.vscreen import get_screen
+from ... import vars
 
 
 ANCHOR_LEFT, ANCHOR_RIGHT, ANCHOR_CENTER = range(34151, 34151+3)
@@ -14,11 +14,8 @@ class BaseGuiElement(metaclass=ABCMeta):
     def __init__(self):
         self._id = self.__class__.free_gui_id
         self.__class__.free_gui_id -= 1
-
         self._parent = None
-
-        self._scrref = get_screen()
-
+        self._scrref = vars.screen
         self._debug = 0
         self._abs_pos = [0, 0]
         self._dim = [None, None]
