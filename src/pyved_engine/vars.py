@@ -14,3 +14,4 @@ max_fps = 45  # will be replaced by whatever is passed to pyv.init(...)
 
 images = dict()
 sounds = dict()
+screen = None

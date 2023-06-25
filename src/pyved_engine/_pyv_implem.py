@@ -15,6 +15,7 @@ __all__ = [  # the full PYV INTERFACE/API SPECIFICATION
     'draw_circle',
     'draw_polygon',
     'draw_rect',
+    'get_ev_manager',
     'get_game_ctrl',
     'get_surface',
     'get_ready_flag',
@@ -100,7 +101,7 @@ class _MyGameCtrl(events.EvListener):
 
         while not self.gameover:
             self.pev(events.EngineEvTypes.Update)
-            self.pev(events.EngineEvTypes.Paint, screen=vscreen.screen)
+            self.pev(events.EngineEvTypes.Paint, screen=vars.screen)
             self._manager.update()
             _flip_screen()
             self._clock.tick(vars.max_fps)
@@ -172,6 +173,10 @@ def init(gfc_mode=1, caption=None, maxfps=60, screen_dim=None):
     _ref_pygame.display.set_caption(caption)
 
 
+def get_ev_manager():
+    return events.EvManager.instance()
+
+
 def get_game_ctrl():
     global _existing_game_ctrl
     if _existing_game_ctrl is None:
@@ -190,7 +195,7 @@ def get_surface():
         raise Exception('calling kengi.get_surface() while the engine isnt ready! (no previous bootstrap op.)')
     if not _init_flag:
         raise Exception('kengi.init has not been called yet')
-    return vscreen.screen
+    return vars.screen
 
 
 def get_version():
@@ -217,6 +222,8 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None):
 
 def close_game():
     global _init_flag, _existing_game_ctrl
+    vars.screen = None
+
     vars.images.clear()
     vars.sounds.clear()
     _existing_game_ctrl = None

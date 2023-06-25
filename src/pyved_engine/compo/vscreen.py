@@ -1,4 +1,5 @@
 from ..foundation import defs
+from .. import vars
 
 
 _vsurface = None
@@ -6,7 +7,6 @@ _vsurface_required = True
 
 cached_pygame_mod = None  # init from outside when one calls kengi.bootstrap_e
 special_flip = 0  # flag, set it to 1 when using web ctx
-screen = None
 stored_upscaling = 1
 defacto_upscaling = None
 
@@ -35,9 +35,9 @@ def flip():
     if not special_flip:  # flag can be off if the extra blit/transform has to disabled (web ctx)
         realscreen = cached_pygame_mod.display.get_surface()
         if 1 == stored_upscaling:
-            realscreen.blit(screen, (0, 0))
+            realscreen.blit(vars.screen, (0, 0))
         else:
-            cached_pygame_mod.transform.scale(screen, defs.STD_SCR_SIZE, realscreen)
+            cached_pygame_mod.transform.scale(vars.screen, defs.STD_SCR_SIZE, realscreen)
 
     cached_pygame_mod.display.update()
 
@@ -73,15 +73,11 @@ def set_realpygame_screen(ref_surf):
 
 
 def set_virtual_screen(ref_surface):
-    global screen, screen_rank, defacto_upscaling
-    screen = ref_surface
-    w = screen.get_size()[0]
+    global screen_rank, defacto_upscaling
+    vars.screen = ref_surface
+    w = vars.screen.get_size()[0]
     defacto_upscaling = 960/w
     screen_rank += 1
-
-
-def get_screen():
-    return screen
 
 
 def proj_to_vscreen(org_screen_pos):
