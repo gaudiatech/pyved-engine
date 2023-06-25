@@ -1,16 +1,14 @@
-import katagames_engine as kengi
+import pyved_engine as pyv
 
-kengi.bootstrap_e()
+pyv.bootstrap_e()
 
-from UthCtrl import UthCtrl
-from UthModel import UthModel, StandardCard, PokerHand
-from UthView import UthView
-from poker.pokerdefs import MyEvTypes
+from mvc_components import UthModel, UthView, UthCtrl
+from pokerdefs import MyEvTypes
 
 
-ReceiverObj = kengi.event2.EvListener
-EngineEvTypes = kengi.event2.EngineEvTypes
-pygame = kengi.pygame
+ReceiverObj = pyv.EvListener
+EngineEvTypes = pyv.EngineEvTypes
+pygame = pyv.pygame
 alea_xx = lambda_hand = epic_hand = list()
 
 
@@ -27,12 +25,12 @@ def _init_and_tests():
     deja_pioche = set()
     future_main = list()
     for _ in range(5):
-        card = StandardCard.at_random(deja_pioche)
+        card = pyv.tabletop.StandardCard.at_random(deja_pioche)
         print(card, '|', card.code)
         deja_pioche.add(card.code)
         future_main.append(card)
 
-    ma_main = PokerHand(future_main)
+    ma_main = pyv.tabletop.PokerHand(future_main)
     print(ma_main)
     print('-- fin tests affichage --')
     print()
@@ -46,7 +44,7 @@ def _init_and_tests():
     print()
 
 
-class MyGameCtrl(kengi.event2.EvListener):
+class MyGameCtrl(pyv.EvListener):
     MAXFPS = 75
 
     def __init__(self):
@@ -59,10 +57,10 @@ class MyGameCtrl(kengi.event2.EvListener):
 
     def loop(self):
         while self.active_gameloop:
-            self.pev(kengi.event2.EngineEvTypes.Update)
-            self.pev(kengi.event2.EngineEvTypes.Paint, screen=kengi.get_surface())
+            self.pev(pyv.EngineEvTypes.Update)
+            self.pev(pyv.EngineEvTypes.Paint, screen=pyv.get_surface())
             self._manager.update()
-            kengi.flip()
+            pyv.flip()
             self._clock.tick(self.MAXFPS)
 
 
@@ -71,25 +69,25 @@ def run_game():
     _init_and_tests()
 
     # ---- extra tests on model ----
-    print('ex. de scores:')
-    alea_xx = PokerHand([
-        StandardCard('2h'), StandardCard('5s'), StandardCard('9d'), StandardCard('Kd'), StandardCard('Tc')
-    ])
-    print('   _', alea_xx.value)
-
-    lambda_hand = PokerHand([
-        StandardCard('Ah'), StandardCard('Jc'), StandardCard('Ts'), StandardCard('5s'), StandardCard('3d')
-    ])
-    print('   _', lambda_hand.value)
-    # - royal flush
-    epic_hand = PokerHand([
-        StandardCard('Ad'), StandardCard('Qd'), StandardCard('Kd'), StandardCard('Td'), StandardCard('Jd')
-    ])
-    print('   _', epic_hand.value)
+    # print('ex. de scores:')
+    # alea_xx = PokerHand([
+    #     StandardCard('2h'), StandardCard('5s'), StandardCard('9d'), StandardCard('Kd'), StandardCard('Tc')
+    # ])
+    # print('   _', alea_xx.value)
+    #
+    # lambda_hand = PokerHand([
+    #     StandardCard('Ah'), StandardCard('Jc'), StandardCard('Ts'), StandardCard('5s'), StandardCard('3d')
+    # ])
+    # print('   _', lambda_hand.value)
+    # # - royal flush
+    # epic_hand = PokerHand([
+    #     StandardCard('Ad'), StandardCard('Qd'), StandardCard('Kd'), StandardCard('Td'), StandardCard('Jd')
+    # ])
+    # print('   _', epic_hand.value)
 
     # ------- init kengi ------
-    kengi.init(0, screen_dim=(1920, 1080))
-    kengi.event2.EvManager.instance().setup(MyEvTypes)
+    pyv.init(0, screen_dim=(1920, 1080))
+    pyv.get_ev_manager().setup(MyEvTypes)
 
     # >>> the game loop
     mod = UthModel()
