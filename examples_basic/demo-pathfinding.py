@@ -84,12 +84,12 @@ class PfDemoCtrl(pyv.EvListener):
                 self._m.cursor_pos[0] += 1
 
     def on_quit(self, ev):
-        print(ev)
         self.pev(pyv.EngineEvTypes.Gameover)
 
     def on_keydown(self, ev):
         if ev.key == pyv.pygame.K_ESCAPE:
             self.pev(pyv.EngineEvTypes.Gameover)
+            print('envoi event Gameover')
 
         elif ev.key == pyv.pygame.K_BACKSPACE:
             self._m.last_res = None
@@ -117,30 +117,19 @@ class PfDemoCtrl(pyv.EvListener):
 
 
 if __name__ == '__main__':
-    # -----------------
-    # Init. game
-    # -----------------
     model = PfDemoModel()
-    pyv.init(2, caption='demo-pathfinding uses kengi')
-    pyv.preload_assets()
 
-    manager = pyv.get_ev_manager()
-    manager.setup()
-    receivers = [
-        PfDemoView(model),
-        PfDemoCtrl(model),
-        pyv.get_game_ctrl()
-    ]
-    for r in receivers:
-        r.turn_on()
-
-    # misc.
+    # prints out a mini-tutoriel: How to use this demo?
     INSTR_DEMO[-1] = INSTR_DEMO[-1].format(model.start_pos, model.end_pos)
-    for line in INSTR_DEMO:  # prints out info, how to use this demo
+    for line in INSTR_DEMO:
         print(line)
 
-    # -----------------
-    # Launch the game
-    # -----------------
-    receivers[-1].loop()  # game loop per se
-    pyv.quit()
+    # init. game
+    pyv.init(2, caption='demo-pathfinding uses kengi')
+    manager = pyv.get_ev_manager()
+    manager.setup()
+    for recv_obj in (PfDemoView(model), PfDemoCtrl(model), pyv.get_game_ctrl()):
+        recv_obj.turn_on()
+    # game loop, then close
+    pyv.get_game_ctrl().loop()
+    pyv.close_game()

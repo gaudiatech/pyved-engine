@@ -61,14 +61,8 @@ for card_cod in StdCard.all_card_codes():
 
 class MaquetteJc(pyv.GameTpl):
 
-    def enter(self, vms=None):
-        pyv.init(2)
-        self._manager = pyv.get_ev_manager()
-        self._manager.setup()
-        self.scr_ref = pyv.get_surface()
-
-    def init_video(self):
-        pass
+    def get_video_mode(self):
+        return 2
 
     def update(self, infot):
         global lcards, p_hand
@@ -83,13 +77,13 @@ class MaquetteJc(pyv.GameTpl):
                     self.gameover = True
 
         # - maj graphique
-        self.scr_ref.fill('darkgreen')
+        pyv.get_surface().fill('darkgreen')
         images = list()
         for card_obj in p_hand:
             images.append(my_assets[card_obj.code])
 
         for k, img in enumerate(images):
-            self.scr_ref.blit(img, (32+k*55, 256) )
+            pyv.get_surface().blit(img, (32+k*55, 256) )
         pyv.flip()
 
 

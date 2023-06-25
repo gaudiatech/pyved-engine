@@ -1,50 +1,38 @@
 import math
 import random
 
-# import katagames_sdk as katasdk
-import pyved_engine as kengi
-kengi.bootstrap_e()
+import pyved_engine as pyv
 
 
-# Const.
-BG_COLOR = (0, 33, 25)  # rgb format
-SHIP_COLOR = (119, 255, 0)
-BULLET_COLOR = SHIP_COLOR
-NB_ROCKS = 4
+pyv.bootstrap_e()
+
+
+# CONSTANTS
+BG_COLOR = (0, 33, 25) 
+BULLET_COLOR = (119, 255, 0)
 INSTR = """\
 AsteroTempl prototype\n\
 **GOAL** Destroy every single asteroid.\n\
 **CONTROLS** Use:\n> Left/Right arrows to turn {gamepad> the left stick}\n> Up/Down arrows to control speed {gamepad>Right/Left trigger}\n> Space bar to shoot {gamepad> the A button}\
 """
 LAST_LINE = '{gamepad> the START button}'
+NB_ROCKS = 4
+# can be useful for webctx
+# PREFIX_ASSET = ''
+SHIP_COLOR = BULLET_COLOR
 
-# Aliases
-# kengi = katasdk.kengi
-pygame = kengi.pygame
-
-# Misc.
+# Local vars
 bullets = list()
 scr_size = [0, 0]
 music_snd = None
 view = ctrl = None
-Vector2 = kengi.pygame.math.Vector2
-
-MyEvTypes = kengi.game_events_enum((
+Vector2 = pyv.pygame.math.Vector2
+MyEvTypes = pyv.game_events_enum((
     'PlayerChanges',  # contains: new_pos, angle
 ))
 
-PREFIX_ASSET = ''  # 'user_assets/'
 
-
-def img_load(img_name):
-    return pygame.image.load(PREFIX_ASSET + img_name)
-
-
-def snd_load(path):
-    return pygame.mixer.Sound(PREFIX_ASSET+path)
-
-
-class ShipModel(kengi.Emitter):
+class ShipModel(pyv.Emitter):
     MISSILE_SPEED = 3
     SPEED_CAP = 192
     THRUST_VAL = 0.823
@@ -52,7 +40,7 @@ class ShipModel(kengi.Emitter):
 
     def __init__(self):
         super().__init__()
-        self.scr_size = sw, sh = kengi.vscreen.get_screen().get_size()
+        self.scr_size = sw, sh = pyv.get_surface().get_size()
         self._position = Vector2(sw // 2, sh // 2)
         self._orientation = Vector2(1, 0)
         self._curr_speed = 0.0  # can be negative too
@@ -136,18 +124,19 @@ class ShipModel(kengi.Emitter):
         self._commit_new_pos()
 
 
-class RockSprite(pygame.sprite.Sprite):
+class RockSprite(pyv.Sprite):
     snd = None
 
     def __init__(self):
         super().__init__()
-        if self.__class__.snd:
-            pass
-        else:
-            self.__class__.snd = snd_load('(astero)explosion_002.wav')
+
+        if self.__class__.snd is None:
+            self.__class__.snd = pyv.vars.sounds['(astero)explosion_002'] 
             self.__class__.snd.set_volume(0.66)
-        self.image = img_load('(astero)rock.png')
+
+        self.image = pyv.vars.images['(astero)rock']
         self.image.set_colorkey((0xff, 0, 0xff))
+
         pos = [random.randint(0, scr_size[0] - 1), random.randint(0, scr_size[1] - 1)]
         self.rect = self.image.get_rect()
         self.rect.topleft = pos
@@ -184,7 +173,7 @@ class RockSprite(pygame.sprite.Sprite):
         self.vy *= -1
 
 
-class TinyWorldView(kengi.EvListener):
+class TinyWorldView(pyv.EvListener):
     RAD = 5
 
     def __init__(self, ref_mod, rocksm):
@@ -198,7 +187,7 @@ class TinyWorldView(kengi.EvListener):
         for rock_spr in self.ref_rocksm:
             ev.screen.blit(rock_spr.image, rock_spr.rect.topleft)
         for b in bullets:
-            pygame.draw.circle(ev.screen, BULLET_COLOR, (b[0].x, b[0].y), 3, 0)
+            pyv.draw_circle(ev.screen, BULLET_COLOR, (b[0].x, b[0].y), 3, 0)
 
         self._draw_player(ev.screen)
 
@@ -209,7 +198,7 @@ class TinyWorldView(kengi.EvListener):
     def _draw_rocks(self, refscreen):
         for rockinfo in self.ref_rocksm:
             pos = rockinfo.rect.topleft
-            pygame.draw.circle(refscreen, SHIP_COLOR, pos, 25, 2)
+            pyv.draw_circle(refscreen, SHIP_COLOR, pos, 25, 2)
 
     def _draw_player(self, surf):
         orientation = self.curr_angle
@@ -225,10 +214,10 @@ class TinyWorldView(kengi.EvListener):
                  Vector2(*pt_central)]
         for i in range(3):
             pt_li[i] += tv[i]
-        pygame.draw.polygon(surf, SHIP_COLOR, pt_li, 2)
+        pyv.draw_polygon(surf, SHIP_COLOR, pt_li, 2)
 
 
-class ShipCtrl(kengi.EvListener):
+class ShipCtrl(pyv.EvListener):
     def __init__(self, ref_mod, rocksm):
         super().__init__()
         self._ref_ship = ref_mod
@@ -260,21 +249,21 @@ class ShipCtrl(kengi.EvListener):
                 self.curr_brake = 0
 
     def on_keydown(self, ev):
-        if ev.key == pygame.K_SPACE:
+        if ev.key == pyv.pygame.K_SPACE:
             self._ref_ship.shoot()
 
     def on_update(self, ev):
         global music_snd, game_obj
-        ba = pygame.key.get_pressed()
+        ba = pyv.pygame.key.get_pressed()
 
         accel = stoppin = False
-        if ba[pygame.K_UP]:
+        if ba[pyv.pygame.K_UP]:
             accel = True
-        if ba[pygame.K_DOWN]:
+        if ba[pyv.pygame.K_DOWN]:
             stoppin = True
-        if ba[pygame.K_RIGHT]:
+        if ba[pyv.pygame.K_RIGHT]:
             self._ref_ship.ccw_rotate()
-        if ba[pygame.K_LEFT]:
+        if ba[pyv.pygame.K_LEFT]:
             self._ref_ship.cw_rotate()
 
         if self.last_tick is not None:
@@ -321,21 +310,22 @@ class ShipCtrl(kengi.EvListener):
                 while len(rbplus) > 0:
                     del bullets[rbplus.pop()]
         else:  # proper exit
-            music_snd.stop()
+            pyv.vars.sounds['(astero)ndimensions-zik'].stop()
+
             game_obj.gameover = True
 
 
-class IntroV(kengi.EvListener):
+class IntroV(pyv.EvListener):
     OFFSET_START_BT_Y = 66
     OFFSET_ADDON_TXT_Y = 128
     LABELS_BINF_Y = 25
 
     def __init__(self):
         super().__init__()
-        self.img = img_load('(astero)enter_start.png')
+        self.img = pyv.vars.images['(astero)enter_start']
         self.dim = self.img.get_size()
         self.painting = True
-        ft = pygame.font.Font(None, 21)
+        ft = pyv.pygame.font.Font(None, 21)
         txtcolor = 'antiquewhite2'
         self.labels = [ft.render(sline, False, txtcolor) for sline in INSTR.splitlines()]
         self.labels[0] = ft.render(INSTR.splitlines()[0], False, 'yellow')  # replace to have a title color
@@ -357,32 +347,42 @@ class IntroV(kengi.EvListener):
     def _begin_game(self):
         global music_snd
         self.painting = False
-        pygame.mixer.init()
-        music_snd = snd_load('(astero)ndimensions-zik.ogg')
-        music_snd.set_volume(0.25)
-        music_snd.play(-1)
+        pyv.vars.sounds['(astero)ndimensions-zik'].set_volume(0.25)
+        pyv.vars.sounds['(astero)ndimensions-zik'].play(-1)
 
     def on_gamepaddown(self, ev):
         if 'Start' == ev.button:
             self._begin_game()
 
     def on_keydown(self, ev):
-        if ev.key == pygame.K_RETURN:
+        if ev.key == pyv.pygame.K_RETURN:
             self._begin_game()
 
 
-class Astero(kengi.GameTpl):
+class Astero(pyv.GameTpl):
 
-    def init_video(self):
-        kengi.init(2)
+    def get_video_mode(self):
+        return 2
 
-    def setup_ev_manager(self):
-        self._manager.setup(MyEvTypes)
+    def list_game_events(self):
+        return MyEvTypes
 
     def enter(self, vms=None):
         global scr_size
         super().enter(vms)
-        scr_size[0], scr_size[1] = kengi.get_surface().get_size()
+
+        pyv.preload_assets({
+            'sounds': [
+                '(astero)explosion_002.wav',
+                '(astero)ndimensions-zik.ogg',
+            ],
+            'images': [
+                '(astero)rock.png',
+                '(astero)enter_start.png',
+            ]
+        })
+
+        scr_size[0], scr_size[1] = pyv.get_surface().get_size()
         shipm = ShipModel()
         li = [RockSprite() for _ in range(NB_ROCKS)]
         gcomponents = [
@@ -394,8 +394,10 @@ class Astero(kengi.GameTpl):
             compo.turn_on()
 
 
-game_obj = Astero()
-# web
-# katasdk.gkart_activation(game_obj)
-
-game_obj.loop()
+if __name__ == '__main__':
+    game_obj = Astero()
+    # Web
+    # katasdk.gkart_activation(game_obj)
+    
+    # Local:
+    game_obj.loop()

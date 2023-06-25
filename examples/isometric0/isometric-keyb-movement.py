@@ -1,16 +1,16 @@
-import pyved_engine as kengi
-kengi.bootstrap_e()
+import pyved_engine as pyv
+pyv.bootstrap_e()
 
 
 # const
 FPS_PBGE = 30
 
-pygame = kengi.pygame  # alias to keep on using pygame, easily
+pygame = pyv.pygame  # alias to keep on using pygame, easily
 screen = None
 tilemap = tilemap2 = None
-pbge = kengi.polarbear
+pbge = pyv.polarbear
 
-isometric_maps = kengi.isometric
+isometric_maps = pyv.isometric
 
 
 def get_maps():
@@ -40,10 +40,10 @@ current_tilemap = 0
 def game_init():
     global screen, tilemap, tilemap2, viewer, manager, mypc, paint_ev, mv_offset
     # aliases
-    kengi.init(2)
-    manager = kengi.events.EvManager.instance()
+    pyv.init(2)
+    manager = pyv.events.EvManager.instance()
     manager.setup()
-    screen = kengi.get_surface()
+    screen = pyv.get_surface()
 
     # model
     tilemap = isometric_maps.model.IsometricMap.load(['xassets', ], 'test_map.tmx')
@@ -73,8 +73,8 @@ def game_init():
     # TODO port Pbge to kengi CogObj+EventReceiver+event system,
     #  so we can avoid using pygame.USEREVENT and viewer() like here
 
-    CgmEvent = kengi.events.KengiEv
-    paint_ev = CgmEvent(kengi.events.EngineEvTypes.Paint, screen=kengi.get_surface())
+    CgmEvent = pyv.events.KengiEv
+    paint_ev = CgmEvent(pyv.events.EngineEvTypes.Paint, screen=pyv.get_surface())
     mypc.x += 0.5
     mv_offset = 0.5
 
@@ -108,13 +108,13 @@ def game_update(infot=None):
         # display
         # manager.post(paint_ev)
 
-        manager.post(kengi.events.EngineEvTypes.Paint, screen=kengi.get_surface())
+        manager.post(pyv.events.EngineEvTypes.Paint, screen=pyv.get_surface())
         manager.update()
-        kengi.flip()
+        pyv.flip()
 
 
 if __name__ == '__main__':
     game_init()
     while keep_going:
         game_update()
-    kengi.quit()
+    pyv.close_game()

@@ -18,15 +18,14 @@ from chessmatch import ChessmatchState
 
 
 class DummyCls(kengi.GameTpl):
-    def init_video(self):
-        kengi.init(1)
+    def get_video_mode(self):
+        return 1
 
-    def setup_ev_manager(self):
-        self._manager.setup(chdefs.ChessEvents)
+    def list_game_events(self):
+        return chdefs.ChessEvents
 
     def enter(self, vms=None):
         super().enter()
-
         kengi.declare_game_states(
             ChessGstates,  # Warning it will start with the state in this
             {
