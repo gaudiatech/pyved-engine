@@ -65,33 +65,6 @@ class Objectifier:
         self.__dict__.update(entries)
 
 
-class _MyGameCtrl(events.EvListener):
-    MAXFPS = 75
-
-    def __init__(self):
-        super().__init__()
-        self._clock = hub.kengi_inj['pygame'].time.Clock()
-        self.gameover = False
-
-    def on_gameover(self, ev):
-        self.gameover = True
-
-    def loop(self):
-        if state_management.multistate_flag:  # force this, otherwise the 1st state enter method isnt called
-            self.pev(events.EngineEvTypes.Gamestart)
-
-        while not self.gameover:
-            self.pev(events.EngineEvTypes.Update)
-            self.pev(events.EngineEvTypes.Paint, screen=vscreen.screen)
-            self._manager.update()
-            flip()
-            self._clock.tick(self.MAXFPS)
-
-
-def get_game_ctrl():
-    return _MyGameCtrl()
-
-
 def get_ev_manager():  # saves some time
     return events.EvManager.instance()
 
@@ -104,46 +77,53 @@ class GameTpl(metaclass=ABCMeta):
     INFO_STOP_MSG = 'kengi.GameTpl->the loop() call has ended.'
     ERR_LOCK_MSG = 'kengi.GameTpl.loop called while SAFETY_LOCK is on!'
     SAFETY_LOCK = False  # can be set to True from outside, if you don't want a game to call .loop()
-    MAXFPS = 75
 
     def __init__(self):
-        self._manager = None
         self.gameover = False
-        self.clock = hub.kengi_inj['pygame'].time.Clock()
         self.nxt_game = 'niobepolis'
+        self._manager = None
+        self.clock = None
 
     @abstractmethod
-    def init_video(self):
+    def get_video_mode(self):
         raise NotImplementedError
 
-    def setup_ev_manager(self):
-        self._manager.setup()
+    def list_game_events(self):
+        """
+        :return: all specific/custom game events
+        """
+        return None
 
     def enter(self, vms=None):
         """
         Careful if you redefine this:
-        one *HAS TO* bind the ev manager to self._manager and call .setup, somehow
+        one *HAS TO*
+         - init video
+         - set the gameticker
+         - set the _manager attribute (bind the ev manager to self._manager)
+         - call self._manager.setup(...) with args
         """
+        init(self.get_video_mode())
+        self.clock = vars.game_ticker  # bind
         self._manager = events.EvManager.instance()
-        self.init_video()
-        self.setup_ev_manager()
-
-        # gamestart event HAS TO be pushed so the game rly starts...
-        self._manager.post(EngineEvTypes.Gamestart)
+        self._manager.setup(self.list_game_events())
+        self._manager.post(EngineEvTypes.Gamestart)  # pushed to notify that we have really started playing
 
     def update(self, infot):
+        pyg = hub.kengi_inj['pygame']
+        pk = pyg.key.get_pressed()
+        if pk[pyg.K_ESCAPE]:
+            self.gameover = True
+            return 2, self.nxt_game
+
         self._manager.post(EngineEvTypes.Update, curr_t=infot)
         self._manager.post(EngineEvTypes.Paint, screen=vscreen.screen)
         self._manager.update()
-        pyg = hub.kengi_inj['pygame']
-        pk = pyg.key.get_pressed()
-        if pk[pyg.K_ESCAPE] or self.gameover:
-            return 2, self.nxt_game
         flip()
-        self.clock.tick(self.MAXFPS)
+        self.clock.tick(vars.max_fps)
 
     def exit(self, vms=None):
-        quit()
+        close_game()
 
     def loop(self):
         """
@@ -203,6 +183,9 @@ def bulk_plugin_bind(darg: dict):
 def __getattr__(attr_name):
     if attr_name in ('ver', 'vernum'):
         return get_version()
+
+    if attr_name == 'Sprite':
+        return _hub.pygame.sprite.Sprite
 
     if get_ready_flag():
         return getattr(hub, attr_name)

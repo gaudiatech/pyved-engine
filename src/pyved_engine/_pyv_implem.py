@@ -1,24 +1,26 @@
 from . import _hub
 from . import events
+from . import state_management as _st_management_module
 from . import vars
 from .__version__ import ENGI_VERSION as _VER_CST
 from .compo import vscreen
-from . import state_management as _st_management_module
+from .compo.vscreen import flip as _flip_screen
 
+# We avoid polluting the "pyv.*" namespace also we make it very clear what is the list of
+# functions that are made available when typing "import pyved_engine as pyv"
 
-# PYV INTERFACE/API CLEAR SPECIFICATION,
-# plus we avoid polluting the [pyv.] namespace
-__all__ = [
-    # (1) the API
+__all__ = [  # the full PYV INTERFACE/API SPECIFICATION
     'bootstrap_e',
+    'close_game',
     'draw_circle',
+    'draw_polygon',
     'draw_rect',
+    'get_game_ctrl',
     'get_surface',
     'get_ready_flag',
     'get_version',
     'init',
     'preload_assets',
-    'quit',
 ]
 
 
@@ -28,11 +30,12 @@ _init_flag = False  # if set to True, means the display is active right now
 _pyv_backend = None
 _ref_pygame = None
 _joystick = None
+_existing_game_ctrl = None
 
 
-# --------------------------
-#  private functions
-# --------------------------
+# -------------------------------
+#  private functions AND classes
+# -------------------------------
 def _screen_param(gfx_mode_code, paintev=None, screen_dim=None):
     global _init_flag
     if isinstance(gfx_mode_code, int) and -1 < gfx_mode_code <= 3:
@@ -81,6 +84,28 @@ def _show_ver_infos():
     print(f'KENGI - ver {_VER_CST}, built on top of ')
 
 
+class _MyGameCtrl(events.EvListener):
+
+    def __init__(self):
+        super().__init__()
+        self._clock = vars.game_ticker
+        self.gameover = False
+
+    def on_gameover(self, ev):
+        self.gameover = True
+
+    def loop(self):
+        # if state_management.multistate_flag:  # force this, otherwise the 1st state enter method isnt called
+        #     self.pev(events.EngineEvTypes.Gamestart)
+
+        while not self.gameover:
+            self.pev(events.EngineEvTypes.Update)
+            self.pev(events.EngineEvTypes.Paint, screen=vscreen.screen)
+            self._manager.update()
+            _flip_screen()
+            self._clock.tick(vars.max_fps)
+
+
 # --------------------------
 #  public functions
 # --------------------------
@@ -108,19 +133,26 @@ def draw_circle(surface, color_arg, position2d, radius, width=0):
     _ref_pygame.draw.circle(surface, color_arg, position2d, radius, width)
 
 
+def draw_polygon(surface, color_arg, point_li, width=0):
+    _ref_pygame.draw.polygon(surface, color_arg, point_li, width)
+
+
 def draw_rect(surface, color_arg, rect_obj, width=0):
     _ref_pygame.draw.rect(surface, color_arg, rect_obj, width)
 
 
 def init(gfc_mode=1, caption=None, maxfps=60, screen_dim=None):
-    global _joystick, _ref_pygame
+    global _joystick, _ref_pygame, _existing_game_ctrl
     bootstrap_e()
 
     _ref_pygame = _hub.kengi_inj['pygame']
     _ref_pygame.init()
-    _ref_pygame.mixer.init()
+    _ref_pygame.mixer.init()  # activate sounds
+
     vars.game_ticker = _ref_pygame.time.Clock()
     vars.max_fps = maxfps
+
+    _existing_game_ctrl = _MyGameCtrl()
 
     jc = _pyv_backend.joystick_count()
     if jc > 0:
@@ -135,12 +167,16 @@ def init(gfc_mode=1, caption=None, maxfps=60, screen_dim=None):
         # print(numaxes, numballs, numbuttons, numhats)
 
     _screen_param(gfc_mode, screen_dim=screen_dim)
-
     if caption is None:
         caption = f'untitled demo, uses KENGI ver {_VER_CST}'
     _ref_pygame.display.set_caption(caption)
 
 
+def get_game_ctrl():
+    global _existing_game_ctrl
+    if _existing_game_ctrl is None:
+        raise Exception('get_game_ctrl called, while engine is not init.')
+    return _existing_game_ctrl
 
 
 def get_ready_flag():
@@ -161,12 +197,30 @@ def get_version():
     return _VER_CST
 
 
-def preload_assets():
-    print('dans preload --------------> okéé')
+def preload_assets(adhoc_dict: dict, prefix_asset_folder=None):
+    """
+    expected to find the (mandatory) key 'images',
+    also we may find the (optionnal) key 'sounds'
+    :param prefix_asset_folder:
+    :param adhoc_dict:
+    :return:
+    """
+    for gfx_elt in adhoc_dict['images']:
+        filepath = gfx_elt if (prefix_asset_folder is None) else prefix_asset_folder + gfx_elt
+        vars.images[gfx_elt.split('.')[0]] = _ref_pygame.image.load(filepath)
+
+    if 'sounds' in adhoc_dict:
+        for snd_elt in adhoc_dict['sounds']:
+            filepath = snd_elt if (prefix_asset_folder is None) else prefix_asset_folder + snd_elt
+            vars.sounds[snd_elt.split('.')[0]] = _ref_pygame.mixer.Sound(filepath)
 
 
-def quit():  # we've kept thi "quit" name because of pygame
-    global _init_flag
+def close_game():
+    global _init_flag, _existing_game_ctrl
+    vars.images.clear()
+    vars.sounds.clear()
+    _existing_game_ctrl = None
+
     if _init_flag:
         _init_flag = False
 
@@ -180,6 +234,5 @@ def quit():  # we've kept thi "quit" name because of pygame
 
         events.EvManager.instance().hard_reset()
         vscreen.init2_done = False
-        pyg = _hub.pygame
-        pyg.mixer.quit()
-        pyg.quit()
+        _hub.pygame.mixer.quit()
+        _hub.pygame.quit()

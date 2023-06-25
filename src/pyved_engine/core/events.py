@@ -156,13 +156,13 @@ class EvManager:
         for evname, eid in EngineEvTypes.content.items():
             names.append(to_snakecase(evname))
 
-        if given_extra_penum is not None:
+        if given_extra_penum is None:
+            self._cached_extra_penum = None
+        else:
             self._cached_extra_penum = given_extra_penum
             self._known_ev_types.update(given_extra_penum.content)
             for evname, eid in given_extra_penum.content.items():
                 names.append(to_snakecase(evname))
-        else:
-            self._cached_extra_penum = None
 
         # force a {refresh regexp} op!
         self._refresh_regexp(names)
