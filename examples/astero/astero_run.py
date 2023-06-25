@@ -2,7 +2,7 @@ import math
 import random
 
 # import katagames_sdk as katasdk
-import katagames_engine as kengi
+import pyved_engine as kengi
 kengi.bootstrap_e()
 
 

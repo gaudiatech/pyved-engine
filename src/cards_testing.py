@@ -1,12 +1,12 @@
-import katagames_engine as kengi
+import pyved_engine as pyv
 
-kengi.bootstrap_e()
+pyv.bootstrap_e()
 
 
 # aliases
-StdCard = kengi.tabletop.StandardCard
-PokerHand = kengi.tabletop.PokerHand
-pygame = kengi.pygame
+StdCard = pyv.tabletop.StandardCard
+PokerHand = pyv.tabletop.PokerHand
+pygame = pyv.pygame
 
 
 # ----------------- debug strength of cards ------------------
@@ -25,8 +25,8 @@ pygame = kengi.pygame
 #     StdCard('Kd'),
 #     StdCard('As')
 # ]
-# dhand = kengi.tabletop.find_best_ph(dealer_cards+shared_cards)
-# phand = kengi.tabletop.find_best_ph(pl_cards+shared_cards)
+# dhand = pyv.tabletop.find_best_ph(dealer_cards+shared_cards)
+# phand = pyv.tabletop.find_best_ph(pl_cards+shared_cards)
 # print(dhand, '\n', phand)
 # print(dhand.value, '\n', phand.value)
 # print(phand.value > dhand.value)
@@ -44,7 +44,7 @@ lcards = [
 ]
 print(lcards[-1].numeric)
 
-p_hand = kengi.tabletop.PokerHand(lcards)
+p_hand = pyv.tabletop.PokerHand(lcards)
 str_fulsh = p_hand.is_royal()  # p_hand.is_straight() and p_hand.is_flush()
 print(' ---', str_fulsh)
 
@@ -52,20 +52,20 @@ print(p_hand)
 print(p_hand.value)
 
 # - le chargement des assets se fait comme ceci:
-spr_sheet = kengi.gfx.JsonBasedSprSheet('cartes')
+spr_sheet = pyv.gfx.JsonBasedSprSheet('cartes')
 my_assets = dict()
 for card_cod in StdCard.all_card_codes():
     y = PokerHand.adhoc_mapping(card_cod[0]).lstrip('0') + card_cod[1].upper()  # convert card code to path
     my_assets[card_cod] = spr_sheet[f'{y}.png']
 
 
-class MaquetteJc(kengi.GameTpl):
+class MaquetteJc(pyv.GameTpl):
 
     def enter(self, vms=None):
-        kengi.init(2)
-        self._manager = kengi.get_ev_manager()
+        pyv.init(2)
+        self._manager = pyv.get_ev_manager()
         self._manager.setup()
-        self.scr_ref = kengi.get_surface()
+        self.scr_ref = pyv.get_surface()
 
     def init_video(self):
         pass
@@ -77,7 +77,7 @@ class MaquetteJc(kengi.GameTpl):
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_SPACE:
                     # new draw of cards
-                    lcards = [kengi.tabletop.StandardCard.at_random() for _ in range(5)]
+                    lcards = [pyv.tabletop.StandardCard.at_random() for _ in range(5)]
                     p_hand = PokerHand(lcards)
                 elif e.key == pygame.K_ESCAPE:
                     self.gameover = True
@@ -90,7 +90,7 @@ class MaquetteJc(kengi.GameTpl):
 
         for k, img in enumerate(images):
             self.scr_ref.blit(img, (32+k*55, 256) )
-        kengi.flip()
+        pyv.flip()
 
 
 g = MaquetteJc()

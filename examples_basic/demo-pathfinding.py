@@ -1,8 +1,8 @@
-import katagames_engine as kengi
+import pyved_engine as pyv
+pyv.bootstrap_e()
 
-kengi.bootstrap_e()
 
-# constants
+# All constants
 BG_COLOR = 'antiquewhite2'
 COLOR_PALETTE = {
     0: (144, 105, 151),
@@ -10,8 +10,7 @@ COLOR_PALETTE = {
 }
 DEBUG_MSG = '** computing path **'
 INSTR_DEMO = [
-    '||KENGI pathfinding demo||',
-    'Controls: ',
+    '||KENGI pathfinding demo||', 'Controls: ',
     '- ARROW keys',
     '- SPACE to set blocking/non-blocking',
     '- BACKSPACE to clear last computed result',
@@ -22,9 +21,6 @@ MAP_DIM = (14, 9)
 OFFSETS = (22, 22)
 START_DISP = (30, 30)
 
-# alias
-pygame = kengi.pygame
-
 
 class PfDemoModel:
     def __init__(self):
@@ -33,13 +29,13 @@ class PfDemoModel:
         self.end_pos = list(MAP_DIM)
         self.end_pos[0] -= 1
         self.end_pos[1] -= 1
-        self.the_map = kengi.struct.BoolMatrix(MAP_DIM)
+        self.the_map = pyv.struct.BoolMatrix(MAP_DIM)
         self.the_map.set_all(False)  # False means non-blocking
         self.curr_color_code = 0
         self.last_res = None
 
 
-class PfDemoView(kengi.EvListener):
+class PfDemoView(pyv.EvListener):
     def __init__(self, modref):
         super().__init__()
         self._m = modref
@@ -60,15 +56,15 @@ class PfDemoView(kengi.EvListener):
                 if self._m.last_res is not None:
                     if (i, j) in self._m.last_res:
                         chosen_color = 'orange'
-                pygame.draw.circle(ev.screen, chosen_color, pos, 10, 0)
+                pyv.draw_circle(ev.screen, chosen_color, pos, 10, 0)
 
         # show the cursor
         a = -10 + self._m.cursor_pos[0] * OFFSETS[0] + START_DISP[0]
         b = -10 + self._m.cursor_pos[1] * OFFSETS[1] + START_DISP[1]
-        pygame.draw.rect(ev.screen, 'navyblue', (a, b, 20, 20), 1)
+        pyv.draw_rect(ev.screen, 'navyblue', (a, b, 20, 20), 1)
 
 
-class PfDemoCtrl(kengi.EvListener):
+class PfDemoCtrl(pyv.EvListener):
     def __init__(self, modelref):
         super().__init__()
         self._m = modelref
@@ -89,54 +85,62 @@ class PfDemoCtrl(kengi.EvListener):
 
     def on_quit(self, ev):
         print(ev)
-        self.pev(kengi.EngineEvTypes.Gameover)
+        self.pev(pyv.EngineEvTypes.Gameover)
 
     def on_keydown(self, ev):
-        if ev.key == pygame.K_ESCAPE:
-            self.pev(kengi.EngineEvTypes.Gameover)
+        if ev.key == pyv.pygame.K_ESCAPE:
+            self.pev(pyv.EngineEvTypes.Gameover)
 
-        elif ev.key == pygame.K_BACKSPACE:
+        elif ev.key == pyv.pygame.K_BACKSPACE:
             self._m.last_res = None
 
-        elif ev.key == pygame.K_RETURN:
+        elif ev.key == pyv.pygame.K_RETURN:
             print(DEBUG_MSG)
-            pathfinding_result = kengi.terrain.DijkstraPathfinder.find_path(
+            pathfinding_result = pyv.terrain.DijkstraPathfinder.find_path(
                 self._m.the_map, self._m.start_pos, self._m.end_pos
             )
             print(pathfinding_result)
             self._m.last_res = pathfinding_result
 
-        elif ev.key == pygame.K_SPACE:
+        elif ev.key == pyv.pygame.K_SPACE:
             i, j = self._m.cursor_pos
             self._m.the_map.set_val(i, j, not self._m.the_map.get_val(i, j))
 
-        elif ev.key == pygame.K_UP:
+        elif ev.key == pyv.pygame.K_UP:
             self.move_cursor('up')
-        elif ev.key == pygame.K_DOWN:
+        elif ev.key == pyv.pygame.K_DOWN:
             self.move_cursor('down')
-        elif ev.key == pygame.K_LEFT:
+        elif ev.key == pyv.pygame.K_LEFT:
             self.move_cursor('left')
-        elif ev.key == pygame.K_RIGHT:
+        elif ev.key == pyv.pygame.K_RIGHT:
             self.move_cursor('right')
 
 
 if __name__ == '__main__':
+    # -----------------
+    # Init. game
+    # -----------------
     model = PfDemoModel()
+    pyv.init(2, caption='demo-pathfinding uses kengi')
+    pyv.preload_assets()
 
-    # prints out info, how to use this demo
-    INSTR_DEMO[-1] = INSTR_DEMO[-1].format(model.start_pos, model.end_pos)
-    for line in INSTR_DEMO:
-        print(line)
-
-    kengi.init(2, caption='demo-pathfinding uses kengi')
-    manager = kengi.get_ev_manager()
+    manager = pyv.get_ev_manager()
     manager.setup()
     receivers = [
         PfDemoView(model),
         PfDemoCtrl(model),
-        kengi.get_game_ctrl()
+        pyv.get_game_ctrl()
     ]
     for r in receivers:
         r.turn_on()
-    receivers[-1].loop()
-    kengi.quit()
+
+    # misc.
+    INSTR_DEMO[-1] = INSTR_DEMO[-1].format(model.start_pos, model.end_pos)
+    for line in INSTR_DEMO:  # prints out info, how to use this demo
+        print(line)
+
+    # -----------------
+    # Launch the game
+    # -----------------
+    receivers[-1].loop()  # game loop per se
+    pyv.quit()
