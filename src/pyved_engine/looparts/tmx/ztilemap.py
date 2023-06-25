@@ -11,7 +11,7 @@ WINDOW_HEIGHT = 768  # 16 * 48 or 32 * 24 or 64 * 12
 TILESIZE = 64
 BLACK = (0, 0, 0)
 
-kengi = katasdk.kengi
+kengi = katasdk.pyv
 pygame = kengi.pygame
 TileLayerCls = pytiled_parser.layer.TileLayer
 ObjLayerCls = pytiled_parser.layer.ObjectLayer
