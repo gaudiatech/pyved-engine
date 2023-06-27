@@ -117,6 +117,9 @@ class PfDemoCtrl(pyv.EvListener):
 
 
 if __name__ == '__main__':
+    # -------------------
+    #  demo STyle 2
+    # -------------------
     model = PfDemoModel()
 
     # prints out a mini-tutoriel: How to use this demo?

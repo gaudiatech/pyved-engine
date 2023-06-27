@@ -395,6 +395,10 @@ class Astero(pyv.GameTpl):
 
 
 if __name__ == '__main__':
+    # -------------------
+    #  demo STyle 3
+    # -------------------
+
     game_obj = Astero()
     # Web
     # katasdk.gkart_activation(game_obj)

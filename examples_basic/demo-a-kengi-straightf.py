@@ -1,6 +1,4 @@
-import katagames_engine as kengi
-kengi.init(2, caption='demo-a uses kengi / straightforward variant')
-pygame = kengi.pygame
+import pyved_engine as pyv
 
 
 # constants
@@ -19,11 +17,12 @@ class SharedVars:
 
 
 def event_handling(ev_queue, state):
+    pygame = pyv.pygame
     for ev in ev_queue:
         if ev.type == pygame.QUIT:
             state.game_over = True
 
-        elif ev.type == pygame.KEYDOWN:
+        elif ev.type == pyv.pygame.KEYDOWN:
             if ev.key == pygame.K_ESCAPE:
                 state.game_over = True
             elif ev.key == pygame.K_SPACE:
@@ -40,27 +39,39 @@ def event_handling(ev_queue, state):
 
 
 def play_game():
+    # -------------------
+    #  demo STyle 1
+    # -------------------
+    pyv.init(2, caption='demo-a uses kengi / straightforward variant')
+
     av_pos = [240, 135]
     game_st = SharedVars()
-    screen = kengi.get_surface()
+    screen = pyv.get_surface()
     scr_size = screen.get_size()
-    clock = pygame.time.Clock()
+    clock = pyv.vars.game_ticker  # pre-defined Clock in the pyved_engine!!
 
-    while not game_st.game_over:
-        event_handling(pygame.event.get(), game_st)
+    while not game_st.game_over:  # <----- my own game loop
 
+        event_handling(pyv.pygame.event.get(), game_st)
         av_pos[1] = (av_pos[1] + game_st.av_y_speed) % scr_size[1]
-
         screen.fill(BG_COLOR)
         pl_color = COLOR_PALETTE[game_st.curr_color_code]
-        pygame.draw.circle(screen, pl_color, av_pos, 15, 0)
-        kengi.flip()
+        pyv.draw_circle(screen, pl_color, av_pos, 15, 0)
+        pyv.flip()
         clock.tick(60)
 
 
+"""
+Right now (June 2023), there are 3 ways to define your game:
+
+ 1/ use any event system you like(the new one, or pygame legacy event system) + define your own game loop
+ 2/ use the new event system + objects from Pyv that can post/subscribe to events
+ 3/ use the pyv.GameTpl and redefine the .get_video_mode() method
+"""
+
 if __name__ == '__main__':
-    print(" KENGI straightforward variant of ~~~ Demo A | controls:")
+    print(" Pyved_engine straightforward variant of ~~~ Demo A | controls:")
     print("UP/DOWN arrow, SPACE, ESCAPE")
     play_game()
-    kengi.quit()
+    pyv.close_game()
     print('bye.')
