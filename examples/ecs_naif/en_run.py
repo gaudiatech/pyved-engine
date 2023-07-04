@@ -4,19 +4,19 @@ from demo_systems import SysInput, SysEntityMover, SysView2D
 
 
 pyv.bootstrap_e()
-pygame = pyv.pygame
+# global vars
+clock = None
+game_systems = pyv.SystemManager()
 
 
-def launch_game():
-    # init imported pygame modules
-    # pygame.init()
-    pyv.init(1)
+def init_game():
+    global clock, game_systems
+    pyv.init(pyv.RETRO_MODE, maxfps=45, caption='my game (ECS fashion)')
+    clock = pyv.vars.game_ticker
 
-    pygame.display.set_caption('my game (ECS fashion)')
-    # screen = pygame.display.set_mode((800, 500))
-    clock = pygame.time.Clock()
-
-    # declare pool of entities + all game systems
+    # -----------------------
+    #  Declare the pool of entities + all game systems
+    # -----------------------
     entity_pool = pyv.EntityManager()
     _player = Player(
         x=128, y=32,
@@ -25,24 +25,27 @@ def launch_game():
     )
     entity_pool.add(_player)
 
-    game_systems = pyv.SystemManager([  # Instantiate all systems!
+    game_systems.declare_systems([  # Instantiate all systems!
         SysInput(entity_pool),
         SysEntityMover(entity_pool),
         SysView2D(entity_pool, pyv.get_surface())
     ])
 
-    # -------
-    # STANDARDIZED launch game + game loop, here it's the procedural format
+
+def ecs_std_game_loop():
+    """
+    here's THE STANDARDIZED way to implement the game loop
+    (it's in the procedural format) when using the ECS pattern...
+    """
     game_systems.init_all()
-
-    while not game_systems['SysInput'].gameover:  # game loop per se
+    while not game_systems['SysInput'].gameover:  # the game loop per se
         game_systems.proc_all()
-
         pyv.flip()
-        clock.tick_busy_loop(pyv.config.MAXFPS)
-
+        clock.tick(pyv.vars.max_fps)
     game_systems.cleanup_all()
 
 
 if __name__ == '__main__':
-    launch_game()
+    print('Hint: Press SPACE to change the player gfx')
+    init_game()
+    ecs_std_game_loop()

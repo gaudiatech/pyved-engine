@@ -122,15 +122,24 @@ class SystemManager:
     System manager
     """
 
-    def __init__(self, system_list):
+    def __init__(self):
         """
         :param system_list: an ordered sequence with systems, expected type is Iterable[System]
         such that
         for each pair of elements elt_i, elt_j we have classname(elt_i) != classname(elt_j)
         """
+        self._system_list = None
+        self._name_to_sys = dict()
+
+        self._system_with_start_list = None
+        self._system_with_update_list = None
+        self._system_with_stop_list = None
+
+    def declare_systems(self, system_list):
         self._system_list = tuple(system_list)
 
-        self._name_to_sys = dict()
+        self._name_to_sys.clear()
+
         for e in self._system_list:
             cls_name = e.__class__.__name__
             if cls_name in self._name_to_sys:

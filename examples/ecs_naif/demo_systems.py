@@ -11,6 +11,8 @@ class SysInput(pyv.System):
 
     def proc(self):
         pygame = pyv.pygame
+        pl_obj = next(self.entities.get_by_class(Player))
+
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 self.gameover = True
@@ -18,10 +20,10 @@ class SysInput(pyv.System):
             elif ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_ESCAPE:
                     self.gameover = True
+                elif ev.key == pygame.K_SPACE:
+                    pl_obj.style = (pl_obj.style + 1) % 3
                 else:
-                    pl_obj = next(self.entities.get_by_class(Player))
                     if ev.key == pygame.K_UP:
-                        pl_obj = next(self.entities.get_by_class(Player))
                         pl_obj.thrust = +2.845
                     if ev.key == pygame.K_DOWN:
                         pl_obj.thrust = pl_obj.thrust/2
@@ -60,7 +62,7 @@ class SysEntityMover(pyv.System):
             pl_obj.y += speedvector.y
 
             # clamp coords!
-            xcap, ycap = pyv.config.SCR_SIZE
+            xcap, ycap = pyv.vars.screen.get_size()
             if pl_obj.x < 0:
                 pl_obj.x += xcap
             elif pl_obj.x >= xcap:
@@ -73,6 +75,7 @@ class SysEntityMover(pyv.System):
 
 
 class SysView2D(pyv.System):
+    BG_COLOR = '#787878'
     SHIP_COLOR = '#22feb4'
     RAD = 17
 
@@ -80,34 +83,63 @@ class SysView2D(pyv.System):
         self.entities = entities
         self.screen = screen
 
-    def _draw_player(self):
-        surf = self.screen
-        pmath = pyv.pygame.math
+        self.player_img = pyv.gfx.Spritesheet('topdown-shooter-spritesheet.png')
+        self.player_img.set_infos((32, 32))
+        self.player_img.colorkey = (0, 0, 0)
 
-        # fetch player pos & orientation
+    def _draw_player(self):
+        pass
+        # surf = self.screen
+        # pmath = pyv.pygame.math
+        #
+        # # fetch player pos & orientation
+        # pl_obj = next(self.entities.get_by_class(Player))
+        # pt_central = (pl_obj.x, pl_obj.y)
+        # orientation = pl_obj.angle
+        #
+        # tv = [
+        #     pmath.Vector2(),
+        #     pmath.Vector2(),
+        #     pmath.Vector2()
+        # ]
+        # tv[0].from_polar((self.RAD * 1.25, math.degrees(orientation + (2.0 * math.pi / 3))))
+        # tv[1].from_polar((self.RAD * 3, math.degrees(orientation)))
+        # tv[2].from_polar((self.RAD * 1.25, math.degrees(orientation - (2.0 * math.pi / 3))))
+        # pt_li = [
+        #     pmath.Vector2(*pt_central),
+        #     pmath.Vector2(*pt_central),
+        #     pmath.Vector2(*pt_central)
+        # ]
+        # for i in range(3):
+        #     pt_li[i] += tv[i]
+        #
+        # pyv.draw_polygon(surf, self.SHIP_COLOR, pt_li, 2)
+
+    # @staticmethod
+    # def rot_center(image, angle):
+    #     """rotate an image while keeping its center and size"""
+    #     orig_rect = image.get_rect()
+    #     rot_image = pyv.pygame.transform.rotate(image, angle)
+    #     rot_rect = orig_rect.copy()
+    #     rot_rect.center = rot_image.get_rect().center
+    #     rot_image = rot_image.subsurface(rot_rect).copy()
+    #     return rot_image
+
+    @staticmethod
+    def blitRotateCenter(surf, image, topleft, angle):
+        rotated_image = pyv.pygame.transform.rotate(image, angle)
+        new_rect = rotated_image.get_rect(center=image.get_rect(topleft=topleft).center)
+        surf.blit(rotated_image, new_rect)
+
+    def _draw_player(self):
         pl_obj = next(self.entities.get_by_class(Player))
         pt_central = (pl_obj.x, pl_obj.y)
-        orientation = pl_obj.angle
+        orientation = -math.degrees(pl_obj.angle)
 
-        tv = [
-            pmath.Vector2(),
-            pmath.Vector2(),
-            pmath.Vector2()
-        ]
-        tv[0].from_polar((self.RAD * 1.25, math.degrees(orientation + (2.0 * math.pi / 3))))
-        tv[1].from_polar((self.RAD * 3, math.degrees(orientation)))
-        tv[2].from_polar((self.RAD * 1.25, math.degrees(orientation - (2.0 * math.pi / 3))))
-        pt_li = [
-            pmath.Vector2(*pt_central),
-            pmath.Vector2(*pt_central),
-            pmath.Vector2(*pt_central)
-        ]
-        for i in range(3):
-            pt_li[i] += tv[i]
-        pyv.pygame.draw.polygon(surf, self.SHIP_COLOR, pt_li, 2)
+        self.blitRotateCenter(self.screen, self.player_img.image_by_rank(pl_obj.style), pt_central, orientation)
 
     def proc(self):
-        self.screen.fill('darkblue')
+        self.screen.fill(self.BG_COLOR)
         # - super basic draw
         # pl_obj = next(self.entities.get_by_class(Player))
         # pyv.pygame.draw.circle(self.screen, 'red', (pl_obj.x, pl_obj.y), 8)
