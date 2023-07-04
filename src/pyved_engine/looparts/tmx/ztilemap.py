@@ -2,7 +2,9 @@
 from pathlib import Path
 
 from . import pytiled_parser
-import katagames_sdk as katasdk
+# import pyved_engine as katasdk
+from ... import _hub
+from ... import gfx
 
 # game settings
 # Ensure no partial squares with these values
@@ -11,7 +13,7 @@ WINDOW_HEIGHT = 768  # 16 * 48 or 32 * 24 or 64 * 12
 TILESIZE = 64
 BLACK = (0, 0, 0)
 
-kengi = katasdk.pyv
+kengi = _hub
 pygame = kengi.pygame
 TileLayerCls = pytiled_parser.layer.TileLayer
 ObjLayerCls = pytiled_parser.layer.ObjectLayer
@@ -69,7 +71,7 @@ class CustomTiledMap:
         my_tileset = None
         for firstgid, obj in tm.tilesets.items():
             self.firstgid = firstgid
-            new_sprsheet = kengi.gfx.Spritesheet(ts_path+obj.image.as_posix())  #gpath+ '/' + obj.image.as_posix() )
+            new_sprsheet = gfx.Spritesheet(ts_path+obj.image.as_posix())  # gpath+ '/' + obj.image.as_posix() )
 
             # hot fix suite au massacre de pytiled_parser (retrait brutal attr)
             if not isinstance(obj.spacing, int):
