@@ -11,30 +11,25 @@ This is a joint work. Authors are:
    [contact: tom@kata.games]
 """
 import chdefs
-import pyved_engine as kengi
+import pyved_engine as pyv
 from chdefs import ChessGstates
 from chessintro import ChessintroState
 from chessmatch import ChessmatchState
 
 
-class DummyCls(kengi.GameTpl):
+class DummyCls(pyv.GameTpl):
     def get_video_mode(self):
         return 1
 
     def list_game_events(self):
         return chdefs.ChessEvents
 
-    def enter(self, vms=None):
-        super().enter()
-        kengi.declare_game_states(
-            ChessGstates,  # Warning it will start with the state in this
-            {
-                ChessGstates.Chessintro: ChessintroState,
-                # bind state_id to class is done automatically by kengi (part 1 /2)
-                ChessGstates.Chessmatch: ChessmatchState
-            },
-            self
-        )
+    def list_game_states(self):
+        mapping = {  # do this to bind state_id to the ad-hoc class!
+            ChessGstates.Chessintro: ChessintroState,
+            ChessGstates.Chessmatch: ChessmatchState
+        }
+        return ChessGstates, mapping
 
 
 chdefs.ref_game_obj = game_obj = DummyCls()

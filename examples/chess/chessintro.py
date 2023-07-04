@@ -1,21 +1,21 @@
 import chdefs
-import pyved_engine as kengi
+import pyved_engine as pyv
 
 
-kengi.bootstrap_e()
+pyv.bootstrap_e()
 
 
 # - alias
-pygame = kengi.pygame
-EngineEvTypes = kengi.EngineEvTypes
+pygame = pyv.pygame
+EngineEvTypes = pyv.EngineEvTypes
 
 
 def proc_start():
-    kengi.get_ev_manager().post(EngineEvTypes.StatePush, state_ident=chdefs.ChessGstates.Chessmatch)
+    pyv.get_ev_manager().post(EngineEvTypes.StatePush, state_ident=chdefs.ChessGstates.Chessmatch)
     print('apres start ->', chdefs.pltype1, chdefs.pltype2)
 
 
-class IntroCompo(kengi.EvListener):
+class IntroCompo(pyv.EvListener):
     """
     main component for this game state
     """
@@ -35,14 +35,14 @@ class IntroCompo(kengi.EvListener):
         # - v: labels
         # current sig is:
         # (position, text, txtsize=35, color=None, anchoring=ANCHOR_LEFT, debugmode=False)
-        sw = kengi.get_surface().get_width()
-        self.title = kengi.gui.Label((sw//2, 100), 'The game of chess', anchoring=kengi.gui.ANCHOR_CENTER)
+        sw = pyv.get_surface().get_width()
+        self.title = pyv.gui.Label((sw//2, 100), 'The game of chess', anchoring=pyv.gui.ANCHOR_CENTER)
         self.title.textsize = 122
         self.title.color = 'brown'
 
         self.pltypes_labels = [
-            kengi.gui.Label((115, 145), 'unkno type p1', txt_size=28, color='darkblue'),
-            kengi.gui.Label((115, 205), 'unkno type p2', txt_size=28, color='darkblue'),
+            pyv.gui.Label((115, 145), 'unkno type p1', txt_size=28, color='darkblue'),
+            pyv.gui.Label((115, 205), 'unkno type p2', txt_size=28, color='darkblue'),
         ]
         self._update_playertypes()
 
@@ -56,11 +56,11 @@ class IntroCompo(kengi.EvListener):
             self._update_playertypes()
 
         self.buttons = [
-            kengi.gui.Button((128, 256), (200, 50), 'Start Chessmatch'),
-            kengi.gui.Button((128 + 200 + 25, 140), (60, 60), ' > '),
-            kengi.gui.Button((128 - 25 - 60, 140), (60, 60), ' < '),
-            kengi.gui.Button((128+200+25, 200), (60, 60), ' > '),
-            kengi.gui.Button((128-25-60, 200), (60, 60), ' < '),
+            pyv.gui.Button((128, 256), (200, 50), 'Start Chessmatch'),
+            pyv.gui.Button((128 + 200 + 25, 140), (60, 60), ' > '),
+            pyv.gui.Button((128 - 25 - 60, 140), (60, 60), ' < '),
+            pyv.gui.Button((128+200+25, 200), (60, 60), ' > '),
+            pyv.gui.Button((128-25-60, 200), (60, 60), ' < '),
         ]
 
         self.buttons[0].callback = proc_start
@@ -95,7 +95,7 @@ class IntroCompo(kengi.EvListener):
             print('[DummyV] unhandled key is pressed')
 
 
-class ChessintroState(kengi.BaseGameState):
+class ChessintroState(pyv.BaseGameState):
     def __init__(self, ident):
         super().__init__(ident)
         self.icompo = None

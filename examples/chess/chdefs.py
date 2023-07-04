@@ -1,15 +1,15 @@
 """
 define game modes & custom events in this file
 """
-import pyved_engine as kengi
+import pyved_engine as pyv
 
 
-ChessGstates = kengi.struct.enum(
+ChessGstates = pyv.struct.enum(
     'Chessintro',
     'Chessmatch',
 )
 
-ChessEvents = kengi.game_events_enum((
+ChessEvents = pyv.game_events_enum((
     'MoveChosen',  # contains: from_cell, to_cell
 ))
 

@@ -1,12 +1,12 @@
 import chdefs
-import pyved_engine as kengi
+import pyved_engine as pyv
 from ChessBoard import ChessBoard
 from ChessRules import ChessRules
 from players import ChessAI_random, ChessAI_offense, ChessAI_defense, ChessPlayer
 
 
 # - alias
-pygame = kengi.pygame
+pygame = pyv.pygame
 
 
 # constants:
@@ -69,7 +69,7 @@ class ChessgameModel:
             AIpause = False
 
 
-class ChessGameView(kengi.EvListener):
+class ChessGameView(pyv.EvListener):
     BG_COLOR = (125, 110, 120)  #  '#06170e' # dark green  #
 
     OFFSET_X = 64
@@ -91,7 +91,7 @@ class ChessGameView(kengi.EvListener):
 
         # self.textBox = ScrollingTextBox(self.screen, 525, 825, 50, 450)
         # -* Hacking begins *-
-        self.textBox = kengi.console.CustomConsole(screenref, (self.OFFSET_X, 4, 640, 133))
+        self.textBox = pyv.console.CustomConsole(screenref, (self.OFFSET_X, 4, 640, 133))
         self.textBox.active = True
         self.textBox.bg_color = self.BG_COLOR  # customize console
         self.textBox.font_size = 25
@@ -251,9 +251,9 @@ class ChessGameView(kengi.EvListener):
             self.PrintMessage("Press any key to exit.")
             self.ready_to_quit = True
 
-        self.drawboard(kengi.get_surface(), board)  # draw board to show end game status
+        self.drawboard(pyv.get_surface(), board)  # draw board to show end game status
         # TODO remove this flip
-        # kengi.flip()
+        # pyv.flip()
 
     def forward_mouseev(self, ev):
         """
@@ -311,7 +311,7 @@ class ChessGameView(kengi.EvListener):
         screenref.blit(black_pawn, (goodx, goody))
 
 
-class ChessTicker(kengi.EvListener):
+class ChessTicker(pyv.EvListener):
     def __init__(self, refmod, refview):
         super().__init__()
         self.model = refmod
@@ -330,10 +330,10 @@ class ChessTicker(kengi.EvListener):
         # print('-- STORING - -', self.stored_human_input)
 
     def on_keydown(self, ev):
-        if ev.key == kengi.pygame.K_ESCAPE:
-            self.pev(kengi.EngineEvTypes.Gameover)
+        if ev.key == pyv.pygame.K_ESCAPE:
+            self.pev(pyv.EngineEvTypes.Gameover)
         elif self.ready_to_quit:
-            self.pev(kengi.EngineEvTypes.StatePop)
+            self.pev(pyv.EngineEvTypes.StatePop)
 
     def on_mousedown(self, ev):
         self.refview.forward_mouseev(ev)
@@ -419,13 +419,13 @@ class ChessTicker(kengi.EvListener):
                 self.refview.PrintMessage("Warning..." + suffx)
 
 
-class ChessmatchState(kengi.BaseGameState):
+class ChessmatchState(pyv.BaseGameState):
     # bind state_id to class is done automatically by kengi (part 1 /2)
 
     def enter(self):
         self.m = ChessgameModel()
 
-        pygamegui = self.v = ChessGameView(kengi.get_surface())
+        pygamegui = self.v = ChessGameView(pyv.get_surface())
 
         self.t = ChessTicker(self.m, pygamegui)
         self.t.turn_on()
