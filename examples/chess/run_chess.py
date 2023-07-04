@@ -19,7 +19,7 @@ from chessmatch import ChessmatchState
 
 class DummyCls(pyv.GameTpl):
     def get_video_mode(self):
-        return 1
+        return pyv.HIGHRES_MODE
 
     def list_game_events(self):
         return chdefs.ChessEvents

@@ -12,6 +12,8 @@ from .state_management import declare_game_states
 # of functions that are made available when typing "import pyved_engine as pyv" ...
 # By adding the following def:
 
+HIGHRES_MODE, RETRO_MODE, LOWRES_MODE = 1, 2, 3
+
 __all__ = [  # the full PYV INTERFACE/API SPECIFICATION
     'bootstrap_e',
     'close_game',
@@ -26,6 +28,11 @@ __all__ = [  # the full PYV INTERFACE/API SPECIFICATION
     'get_version',
     'init',
     'preload_assets',
+
+    # non callables:
+    'HIGHRES_MODE',
+    'RETRO_MODE',
+    'LOWRES_MODE'
 ]
 
 
