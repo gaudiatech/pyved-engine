@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 
 from . import _hub
 from . import vars
-from ._pyv_implem import close_game, init, get_ev_manager
+from ._pyv_implem import close_game, init, get_ev_manager, declare_game_states
 from .compo.vscreen import flip as _flip_screen
 from .core.events import EngineEvTypes
 
@@ -53,6 +53,13 @@ class GameTpl(metaclass=ABCMeta):
         """
         return None
 
+    def list_game_states(self):
+        """
+        :return: all specific states(scenes) of the game!
+        None, None should be returned as a signal that game doesnt need to use the state manager!
+        """
+        return None, None
+
     def enter(self, vms=None):
         """
         Careful if you redefine this:
@@ -67,6 +74,11 @@ class GameTpl(metaclass=ABCMeta):
         self._manager = get_ev_manager()
         self._manager.setup(self.list_game_events())
         self._manager.post(EngineEvTypes.Gamestart)  # pushed to notify that we have really started playing
+
+        gs_enum, mapping = self.list_game_states()
+
+        if gs_enum is not None:
+            declare_game_states(gs_enum, mapping, self)
 
     def update(self, infot):
         pyg = _hub.kengi_inj['pygame']

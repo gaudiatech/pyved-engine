@@ -50,7 +50,6 @@ from .core.events import Emitter, EvListener, EngineEvTypes, game_events_enum
 from .foundation import defs
 from .foundation.defs import STD_SCR_SIZE, KengiEv, Singleton
 from .foundation.interfaces import PygameIface
-from .state_management import declare_game_states
 from .util import underscore_format, camel_case_format
 
 # expose all that exists within the pyv interface implementation!!

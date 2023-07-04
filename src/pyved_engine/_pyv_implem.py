@@ -5,13 +5,17 @@ from . import vars
 from .__version__ import ENGI_VERSION as _VER_CST
 from .compo import vscreen
 from .compo.vscreen import flip as _flip_screen
+from .state_management import declare_game_states
 
-# We avoid polluting the "pyv.*" namespace also we make it very clear what is the list of
-# functions that are made available when typing "import pyved_engine as pyv"
+
+# Lets avoid polluting the "pyv.*" namespace and lets make it very clear what's the list
+# of functions that are made available when typing "import pyved_engine as pyv" ...
+# By adding the following def:
 
 __all__ = [  # the full PYV INTERFACE/API SPECIFICATION
     'bootstrap_e',
     'close_game',
+    'declare_game_states',
     'draw_circle',
     'draw_polygon',
     'draw_rect',

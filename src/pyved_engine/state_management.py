@@ -80,6 +80,7 @@ def declare_game_states(gs_enum, assoc_gscode_gscls, refgame):
     """
     :param gs_enum: enum of every single gamestate code
     :param assoc_gscode_gscls: a dict that binds a gamestate code to a gamestate class
+    :param refgame: ref on the object whose type inherits from pyv.GameTpl
     """
     global stack_based_ctrl, multistate_flag
     multistate_flag = True
