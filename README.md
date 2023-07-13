@@ -1,6 +1,6 @@
 
-<p style="text-align:center;">
-<img src="https://gaudia-tech.com/shared/pyv-logo.jpg" alt="pyv logo" />
+<p align="center">
+  <img src="https://gaudia-tech.com/shared/pyv-logo.jpg" alt="pyv logo" />
 </p>
 
 Introducing `pyved-engine`, a Python package that provides
@@ -14,11 +14,11 @@ array of built-in modules for seamless management of game assets, AI integration
 procedural generation, and other advanced features. Join our vibrant community
 today and unlock the full potential of your game development with **Pyv**!
 
-<p style="text-align:center;">
-<a href="https://discord.gg/SHdJhcWvQD">
-<img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
-<br>Join our Discord
-</a>
+<p align="center">
+  <a href="https://discord.gg/SHdJhcWvQD">
+  <img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
+  <br>Join our Discord
+  </a>
 </p>
 
 ### Why not simply use Pygame?
