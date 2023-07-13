@@ -1,14 +1,85 @@
-<img src="https://gaudia-tech.com/shared/pyved-engine-logo.png"/>
-<p align="center">
-  <a href="https://discord.gg/SHdJhcWvQD">join us on Discord<br>
-    <img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
-  </a>
+
+<p style="text-align:center;">
+<img src="https://gaudia-tech.com/shared/pyv-logo.jpg" alt="pyv logo" />
 </p>
 
+Introducing `pyved-engine`, a Python package that provides
+a powerful and efficient 2D game engine named **Pyv**.
 
-What is `pyved-engine`?
+Designed to streamline game development **Pyv** offers a comprehensive set of
+tools for rapid prototyping and game production.
 
-* a game engine (=a set of tools whose purpose is the rapid prototyping of video games)
+Create captivating and bug-free applications effortlessly. **Pyv** offers an
+array of built-in modules for seamless management of game assets, AI integration,
+procedural generation, and other advanced features. Join our vibrant community
+today and unlock the full potential of your game development with **Pyv**!
+
+<p style="text-align:center;">
+<a href="https://discord.gg/SHdJhcWvQD">
+<img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
+<br>Join our Discord
+</a>
+</p>
+
+### Why not simply use Pygame?
+
+There seems to be some confusion within the community regarding the
+distinction between a Python package and a game engine. It's important to
+note that Pygame, while being a Python package, does not offer the comprehensive
+set of features found in a dedicated 2D game engine. As a result, it may not
+fulfill all the requirements necessary for developing a fully-fledged game.
+
+### How can a game engine help me?
+
+A game engine provides invaluable time-saving benefits by storing a collection
+of useful and reusable code snippets within its framework.
+Instead of reinventing the wheel and wasting your precious time by re-writing
+generic code for video games, you can leverage the power of the engine.
+
+By referring to the comprehensive documentation, you can quickly learn how to
+implement various functionalities such as pathfinding or loading spritesheets.
+With simple function or method calls, you can seamlessly integrate these
+features into your game, saving precious development time and effort!
+
+### Getting started
+
+To install our Python package, simply type:
+```shell
+pip install pyved-engine
+```
+Once **Pyv** is available on your system, to begin,
+open a command line and create a new game by typing the following command:
+```shell
+pyv-cli create [MyGame]
+```
+Replace [MyGame] with any fancy name you prefer for your game. This command
+will initialize your project and generate a boilerplate source code. For the
+sake of clarity, we have copied the boilerplate code below:
+
+```python
+import pyved_engine as pyv
+
+pyv.init(pyv.HD_MODE)
+```
+
+### Read/improve the technical documentation
+
+The documentation isn't finished. Your help would be very appreciated to improve
+that part. Files used to build the documentation can be found within the `docs\`
+folder, there is also the `mkdocs.yml` file that is located at the root folder of
+the project.
+
+To preview the bleeding edge version of docs, you can type:
+```shell
+mkdocs build
+mkdocs serve
+```
+If it doesn't work, remember that you needed the `mkdocs` python lib first.
+To fix this rapidly you can type: `pip install -r requirements.txt`
+
+For now, the documentation is available in only two languages: English and French.
+
+of video games)
 * a wrapper around the popular [pygame lib](https://github.com/pygame/pygame)
 * the abbreviation for [__k__]ata [__engi__]ne
 
@@ -17,6 +88,8 @@ Why "kata"?
 digital experiences easily, all around the globe!
 Via this innovative platform, we're proud to publish all kinds of games powered by `pyved-engine`.
 
+
+# For advanced user
 
 ## Design principles
 
@@ -99,17 +172,6 @@ This is only one possibilty, very similar to how you
 define games using `pygame-ce`. In *the docs* you will see better,
 more efficient ways to define your games.
 
-## Documentation
-
-Its still very rough, some help is needed to improve that part!
-All files to build the documentation can be found within the `docs\` folder.
-
-To read/preview the current version of docs:
-```shell
-pip install -r requirements.txt
-mkdocs build
-mkdocs serve
-```
 
 ## Mini tutorial
 If you're familiar with `pygame`, getting used to `pyved-engine` is really easy.

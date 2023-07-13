@@ -57,7 +57,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'pyvedengine = cmdline.__main__:main'
+            'pyv-cli = cmdline.__main__:main'
         ]
     }
 )
