@@ -1,6 +1,6 @@
 import json
-import defs
-import katagames_engine as kengi
+from . import defs
+import pyved_engine as kengi
 from . import rpgmenu
 
 
@@ -92,11 +92,11 @@ class ConversationView(EventReceiver):
             self.existing_menu.turn_off()
         super().turn_off()
 
-    def proc_event(self, ev, source):
-        if ev.type == EngineEvTypes.PAINT:
+    def on_event(self, ev):
+        if ev.type == EngineEvTypes.Paint:
             self.render()
 
-        elif ev.type == EngineEvTypes.LOGICUPDATE:
+        elif ev.type == EngineEvTypes.Update:
             if self.curr_offer is not None:
                 if self.dialog_upto_date:
                     return

@@ -2,8 +2,8 @@ import collections
 import glob
 import random
 
-import katagames_engine as kengi
-from defs import MyEvTypes
+import pyved_engine as kengi
+from .defs import MyEvTypes
 
 
 pygame = kengi.pygame  # alias to keep on using pygame, easily
@@ -207,7 +207,7 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
         # Do an initial arrangement of the menu.
         self.arrange()
 
-    def proc_event(self, pc_input, source):
+    def on_event(self, pc_input):
         """
         since may 2022,
         the new way to return "choice" values, is via posting an event
@@ -219,7 +219,7 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
         #     # Redraw the menu on each timer event.
         #     self.render()
         #     kengi.flip()
-        if pc_input.type == EngineEvTypes.PAINT:
+        if pc_input.type == EngineEvTypes.Paint:
             self.render()
 
         elif pc_input.type == pygame.KEYDOWN:
@@ -249,7 +249,7 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
                 self.pev(MyEvTypes.ConvChoice, value=self.quick_keys[pc_input.key])
                 self.no_choice_made = False
 
-        elif pc_input.type == pygame.MOUSEBUTTONDOWN:
+        elif pc_input.type == EngineEvTypes.Mousedown:  #pygame.MOUSEBUTTONDOWN:
             if pc_input.button == 1:
                 mouse_pos = kengi.vscreen.proj_to_vscreen(pygame.mouse.get_pos())
 
@@ -261,7 +261,7 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
             elif pc_input.button == 5:
                 self.top_item = min(self.top_item + 1, self._the_highest_top)
 
-        elif pc_input.type == pygame.MOUSEBUTTONUP:
+        elif pc_input.type == EngineEvTypes.Mouseup:  #pygame.MOUSEBUTTONUP:
             mouse_pos = kengi.vscreen.proj_to_vscreen(pygame.mouse.get_pos())
             if pc_input.button == 1:
                 moi = self.get_mouseover_item(mouse_pos)
@@ -271,7 +271,7 @@ class Menu(ReceiverObj, Frect):  # N.B (tom) it would be better to inherit from 
             elif pc_input.button == 3 and self.can_cancel:
                 self.no_choice_made = False
 
-        elif pc_input.type == pygame.MOUSEMOTION:
+        elif pc_input.type == EngineEvTypes.Mousemotion:  #pygame.MOUSEMOTION:
             mouse_pos = kengi.vscreen.proj_to_vscreen(pygame.mouse.get_pos())
             moi = self.get_mouseover_item(mouse_pos)
             if moi is not None:

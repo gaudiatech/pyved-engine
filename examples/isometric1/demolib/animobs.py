@@ -1,6 +1,8 @@
-import katagames_engine as kengi
+import pyved_engine as kengi
+
 
 pygame = kengi.pygame  # alias to keep on using pygame, easily
+
 
 import math
 

@@ -1,22 +1,22 @@
-import katagames_engine as kengi
+import pyved_engine as pyv
 
-kengi.bootstrap_e()
+pyv.bootstrap_e()
 
 
-# TODO need to unify this! Use what's already in kengi.*
+# TODO need to unify this! You should use what is already in pyv.*
 import demolib.animobs as animobs
 import demolib.dialogue as dialogue
 import demolib.pathfinding as pathfinding
-from defs import MyEvTypes
+from demolib.defs import MyEvTypes
 import math
 
 
-# will polarbear crash the game if this line isnt added, after kengi.init?
-# kengi.polarbear.my_state.screen = kengi.get_surface()
+# will polarbear crash the game if this line isnt added, after pyv.init?
+# pyv.polarbear.my_state.screen = pyv.get_surface()
 
 # - aliases
-pygame = kengi.pygame  # alias to keep on using pygame, easily
-EngineEvTypes = kengi.EngineEvTypes
+pygame = pyv.pygame  # alias to keep on using pygame, easily
+EngineEvTypes = pyv.EngineEvTypes
 
 # global variables
 conv_viewer = None
@@ -31,7 +31,7 @@ screen = None
 tilemap_height = tilemap_width = 0
 
 
-class Character(kengi.isometric.model.IsometricMapObject):
+class Character(pyv.isometric.model.IsometricMapObject):
     def __init__(self, x, y):
         super().__init__()
         self.x = x
@@ -109,7 +109,7 @@ class MovementPath:
                 return True
 
 
-class NPC(kengi.isometric.model.IsometricMapObject):
+class NPC(pyv.isometric.model.IsometricMapObject):
     def __init__(self, x, y):
         super().__init__()
         self.x = x
@@ -125,7 +125,7 @@ class NPC(kengi.isometric.model.IsometricMapObject):
 # --------------------------------------------
 # Define controllers etc
 # --------------------------------------------
-class BasicCtrl(kengi.EvListener):
+class BasicCtrl(pyv.EvListener):
 
     def _proc_mouse_ev(self, ev):
         global mypc, map_viewer, current_path
@@ -165,7 +165,7 @@ class BasicCtrl(kengi.EvListener):
     #             map_viewer.switch_map(maps[current_tilemap])
 
 
-class PathCtrl(kengi.EvListener):
+class PathCtrl(pyv.EvListener):
     def __init__(self):
         super().__init__()
 
@@ -192,10 +192,10 @@ class PathCtrl(kengi.EvListener):
 def _load_maps():
     global maps, tilemap_width, tilemap_height
     maps.append(
-        kengi.isometric.model.IsometricMap.load(['assets', ], 'test_map.tmx')
+        pyv.isometric.model.IsometricMap.load(['assets', ], 'test_map.tmx')
     )
     maps.append(
-        kengi.isometric.model.IsometricMap.load(['assets', ], 'test_map2.tmx')
+        pyv.isometric.model.IsometricMap.load(['assets', ], 'test_map2.tmx')
     )
     tilemap_width, tilemap_height = maps[0].width, maps[0].height
 
@@ -220,7 +220,7 @@ def _init_specific_stuff():
     global map_viewer, maps
 
     _load_maps()
-    map_viewer = kengi.isometric.IsometricMapViewer(  # TODO unify
+    map_viewer = pyv.isometric.IsometricMapViewer(  # TODO unify
         maps[0], screen,
         up_scroll_key=pygame.K_UP, down_scroll_key=pygame.K_DOWN,
         left_scroll_key=pygame.K_LEFT, right_scroll_key=pygame.K_RIGHT
@@ -229,7 +229,7 @@ def _init_specific_stuff():
 
     cursor_image = pygame.image.load("assets/half-floor-tile.png").convert_alpha()
     cursor_image.set_colorkey((255, 0, 255))
-    map_viewer.cursor = kengi.isometric.extras.IsometricMapQuarterCursor(0, 0, cursor_image, maps[0].layers[1])
+    map_viewer.cursor = pyv.isometric.extras.IsometricMapQuarterCursor(0, 0, cursor_image, maps[0].layers[1])
 
     pctrl = PathCtrl()
     map_viewer.turn_on()
@@ -240,17 +240,17 @@ def _init_specific_stuff():
 
 
 if __name__ == '__main__':
-    kengi.init(2)
-    screen = kengi.get_surface()  # retrieve the surface used for display
+    pyv.init(2)
+    screen = pyv.get_surface()  # retrieve the surface used for display
 
-    emg = kengi.get_ev_manager()
+    emg = pyv.get_ev_manager()
     emg.setup()
 
     _init_specific_stuff()
 
-    gctrl = kengi.get_game_ctrl()
+    gctrl = pyv.get_game_ctrl()
     gctrl.turn_on()
     gctrl.loop()
 
-    kengi.quit()
+    pyv.quit()
     print('bye!')
