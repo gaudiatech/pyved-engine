@@ -130,6 +130,9 @@ draw_polygon = _pygame.draw.polygon
 def init(opt_arg=None):
     # in theory the Pyv backend_name can be hacked prior to a pyv.init() call
     # Now, let's  build a primal backend
+    v = vars.ENGINE_VERSION_STR
+    print(f'pyved-engine {v}')
+
     from .foundation.pbackends import build_primalbackend
     _pyv_backend = build_primalbackend(vars.backend_name)
 

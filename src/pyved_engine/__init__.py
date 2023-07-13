@@ -12,13 +12,11 @@
 """
 from . import _hub
 from .api import *
-
-
-_VERSION_STR = '23.7a1'  # a read-only value, can get it via the func. below
+from . import vars
 
 
 def get_version():
-    return _VERSION_STR
+    return vars.ENGINE_VERSION_STR
 
 
 # the basic API is expanded via our special "hub" component
