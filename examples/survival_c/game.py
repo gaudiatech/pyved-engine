@@ -12,13 +12,14 @@ NZ = 8
 
 def init_game():
     # here only to ensure that pyv is able to dynamically load Add-ons
-    print('Test the hub:')
-    for _ in range(3):
-        obj = pyv.tabletop.StandardCard.at_random()
-        print('    ', obj)
+    # print('Test the hub:')
+    # for _ in range(3):
+    #     obj = pyv.tabletop.StandardCard.at_random()
+    #     print('    ', obj)
     # --- done testing!
 
-    gl_vars.screen = pyv.create_screen(SCR_SIZE)
+    pyv.vars.screen = pyv.create_screen(SCR_SIZE)
+    pyv.vars.clock = pyv.create_clock()
 
     # Define archetype
     pyv.define_archetype("Zombie", ["Position2d", "Health", "Color"])
@@ -69,7 +70,7 @@ def run_zombie_demo():
 
         # Render game graphics
         pyv.flip()
-        gl_vars.clock.tick(MAX_FPS)
+        pyv.vars.clock.tick(MAX_FPS)
 
 
 if __name__ == '__main__':

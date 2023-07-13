@@ -1,6 +1,6 @@
-from pyved_engine.api import *
 
 
-clock = create_clock()
-screen = surface_create((0, 0))
-running = True
+NB_STYLES = 4  # styles for the avatar
+
+space_pressed = False  # used by the input system
+running = True  # used in game.py | game loop

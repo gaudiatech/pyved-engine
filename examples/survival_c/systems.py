@@ -6,7 +6,8 @@ Adding all game-specific systems here!
 import random
 
 import gl_vars
-from pyved_engine.api import *
+import pyved_engine as pyv
+from pyved_engine import *  # need to import all constants for keys etc.
 
 
 __all__ = [  # Careful: the order specified below... It really matters!
@@ -15,11 +16,6 @@ __all__ = [  # Careful: the order specified below... It really matters!
     'update_positions',
     'render_graphics',
 ]
-
-
-# -------- internal stuff -----------
-_pressed_space = False
-NB_STYLES = 4
 
 
 def _blitRotateCenter(surf, image, topleft, angle):
@@ -51,13 +47,13 @@ def update_positions(entities, components):
 
 
 def render_graphics(entities, components):
-    gl_vars.screen.fill((0, 0, 0))  # Clear screen before rendering
+    pyv.vars.screen.fill((0, 0, 0))  # Clear screen before rendering
 
     for entity in entities:
         if archetype_of(entity) == "Zombie":
             x, y = entity["Position2d"]
             color = entity["Color"]
-            draw_polygon(gl_vars.screen, color, [(x, y), (x + 20, y), (x + 10, y + 20)])
+            draw_polygon(pyv.vars.screen, color, [(x, y), (x + 20, y), (x + 10, y + 20)])
 
         if "Gun" in entity:
             # - old way to draw the player
@@ -70,21 +66,19 @@ def render_graphics(entities, components):
             #               (x + 10 + 20 * math.cos(angle), y + 10 + 20 * math.sin(angle)), 2)
 
             # - new way to draw the player
-            _draw_player(gl_vars.screen)
+            _draw_player(pyv.vars.screen)
 
 
 def handle_player_input(entities, components):
-    global _pressed_space
-
     keys = get_pressed_keys()
     player = find_by_archetype("Player")
     if keys[K_SPACE]:
         _pressed_space = True
     else:
-        if _pressed_space:
+        if gl_vars.space_pressed:
             _pressed_space = False
             x = player["Gfx"]["Style"]
-            player["Gfx"]["Style"] = (x + 1) % NB_STYLES
+            player["Gfx"]["Style"] = (x + 1) % gl_vars.NB_STYLES
     if keys[K_UP]:
         player["Position2d"][1] -= 2
     elif keys[K_DOWN]:
