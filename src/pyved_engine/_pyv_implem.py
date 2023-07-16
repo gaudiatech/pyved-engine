@@ -213,24 +213,6 @@ def get_version():
     return _VER_CST
 
 
-def preload_assets(adhoc_dict: dict, prefix_asset_folder=None):
-    """
-    expected to find the (mandatory) key 'images',
-    also we may find the (optionnal) key 'sounds'
-    :param prefix_asset_folder:
-    :param adhoc_dict:
-    :return:
-    """
-    for gfx_elt in adhoc_dict['images']:
-        filepath = gfx_elt if (prefix_asset_folder is None) else prefix_asset_folder + gfx_elt
-        vars.images[gfx_elt.split('.')[0]] = _ref_pygame.image.load(filepath)
-
-    if 'sounds' in adhoc_dict:
-        for snd_elt in adhoc_dict['sounds']:
-            filepath = snd_elt if (prefix_asset_folder is None) else prefix_asset_folder + snd_elt
-            vars.sounds[snd_elt.split('.')[0]] = _ref_pygame.mixer.Sound(filepath)
-
-
 def close_game():
     global _init_flag, _existing_game_ctrl
     vars.screen = None

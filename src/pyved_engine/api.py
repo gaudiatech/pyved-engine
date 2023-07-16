@@ -33,6 +33,7 @@ from .classes import Spritesheet as _Spritesheet
 # from . import _hub
 import time
 from .core.events import EvManager
+from .core_classes import Objectifier
 
 
 # -- enrish with a class
@@ -155,6 +156,24 @@ def run_game():
 
 
 # --- rest of functions ---
+def preload_assets(adhoc_dict: dict, prefix_asset_folder=None):
+    """
+    expected to find the (mandatory) key 'images',
+    also we may find the (optionnal) key 'sounds'
+    :param prefix_asset_folder:
+    :param adhoc_dict:
+    :return:
+    """
+    for gfx_elt in adhoc_dict['images']:
+        filepath = gfx_elt if (prefix_asset_folder is None) else prefix_asset_folder + gfx_elt
+        vars.images[gfx_elt.split('.')[0]] = _pygame.image.load(filepath)
+
+    if 'sounds' in adhoc_dict:
+        for snd_elt in adhoc_dict['sounds']:
+            filepath = snd_elt if (prefix_asset_folder is None) else prefix_asset_folder + snd_elt
+            vars.sounds[snd_elt.split('.')[0]] = _pygame.mixer.Sound(filepath)
+
+
 def init(opt_arg=None):
     # in theory the Pyv backend_name can be hacked prior to a pyv.init() call
     # Now, let's  build a primal backend
@@ -179,6 +198,10 @@ def proj_to_vscreen(xy_pair):
 
 def close_game():
     _pygame.quit()
+
+    vars.images.clear()
+    vars.sounds.clear()
+
     vars.gameover = False
 
 

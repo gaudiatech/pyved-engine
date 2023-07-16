@@ -1,17 +1,15 @@
-import time
-from abc import ABCMeta, abstractmethod
-
-from . import _hub
-from . import vars
-from ._pyv_implem import close_game, init, get_ev_manager, declare_game_states
-from .compo.vscreen import flip as _flip_screen
-from .core.events import EngineEvTypes
+# import time
+# from abc import ABCMeta, abstractmethod
+# from . import _hub
+# from . import vars
+# from ._pyv_implem import close_game, init, get_ev_manager, declare_game_states
+# from .compo.vscreen import flip as _flip_screen
+# from .core.events import EngineEvTypes
 
 
 __all__ = [
     'ConfigStorage',
-    'Objectifier',
-    'GameTpl'
+    'Objectifier'
 ]
 
 
