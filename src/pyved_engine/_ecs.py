@@ -25,7 +25,7 @@ def delete_entity(entity):
     _entities.remove(entity)
 
 
-def initialize_entity(entity, values):
+def init_entity(entity, values):
     entity.update(values)
 
 

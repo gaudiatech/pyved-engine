@@ -1,42 +1,33 @@
 import random
 
-import gl_vars
 import pyved_engine as pyv
+import shared
 import systems
 
 
-MAX_FPS = 45
-SCR_SIZE = (800, 600)
-NZ = 8
+@pyv.declare_begin
+def prep_zombiegame():
+    pyv.init()
 
-
-def init_game():
-    # here only to ensure that pyv is able to dynamically load Add-ons
-    # print('Test the hub:')
-    # for _ in range(3):
-    #     obj = pyv.tabletop.StandardCard.at_random()
-    #     print('    ', obj)
-    # --- done testing!
-
-    pyv.vars.screen = pyv.create_screen(SCR_SIZE)
-    pyv.vars.clock = pyv.create_clock()
-
-    # Define archetype
     pyv.define_archetype("Zombie", ["Position2d", "Health", "Color"])
     pyv.define_archetype("Player", ["Position2d", "Speed", "Gun", "Gfx"])
 
     # Create zombies
-    zombies = [None] * NZ
-    for i in range(NZ):
+    zombies = [None] * shared.NZ
+    for i in range(shared.NZ):
         zombies[i] = pyv.new_from_archetype("Zombie")
-        pyv.initialize_entity(zombies[i], {"Position2d": (random.randint(100, 700), random.randint(100, 500)),
-                                           "Health": random.randint(50, 100),
-                                           "Color": (
-                                               random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))})
+        pyv.init_entity(
+            zombies[i],
+            {
+                "Position2d": (random.randint(100, 700), random.randint(100, 500)),
+                "Health": random.randint(50, 100),
+                "Color": [random.randint(0, 255) for _ in range(3)]
+            }
+        )
 
     # Create player
     player = pyv.new_from_archetype("Player")
-    pyv.initialize_entity(
+    pyv.init_entity(
         player,
         {
             "Position2d": (400, 300),
@@ -52,29 +43,21 @@ def init_game():
             }
         }
     )
-
-    # Add systems to the ECS
-    pyv.bulk_add_systems(systems)
+    pyv.bulk_add_systems(systems)  # get any system found in module 'systems', add it to the ECS manager
 
 
-def run_zombie_demo():
-    init_game()  # Game setup
+@pyv.declare_update
+def maj_zombiegame():
+    for event in pyv.fetch_events():
+        if event.type == pyv.QUIT:
+            pyv.vars.gameover = True
+    pyv.systems_proc()  # run everything described in systems
 
-    while gl_vars.running:
-        for event in pyv.fetch_events():
-            if event.type == pyv.QUIT:
-                gl_vars.running = False
 
-        # Run systems
-        pyv.systems_proc()
-
-        # Render game graphics
-        pyv.flip()
-        pyv.vars.clock.tick(MAX_FPS)
+@pyv.declare_end
+def zombie_gameover():
+    pyv.close_game()
 
 
 if __name__ == '__main__':
-    pyv.init()
-    run_zombie_demo()
-    pyv.close_game()
-    print('clean exit')
+    pyv.run_game()

@@ -127,6 +127,34 @@ draw_line = _pygame.draw.line
 draw_polygon = _pygame.draw.polygon
 
 
+# --------------
+#  3 decorators + the game_exec func to make gameloops standardized
+# --------------
+def declare_begin(gfunc):  # decorator!
+    vars.beginfunc_ref = gfunc
+    return gfunc
+
+
+def declare_update(gfunc):  # decorator!
+    vars.updatefunc_ref = gfunc
+    return gfunc
+
+
+def declare_end(gfunc):  # decorator!
+    vars.endfunc_ref = gfunc
+    return gfunc
+
+
+def run_game():
+    vars.beginfunc_ref()
+    while not vars.gameover:
+        vars.updatefunc_ref()
+        flip()  # commit gfx mem to screen
+        vars.clock.tick(vars.max_fps)
+    vars.endfunc_ref()
+
+
+# --- rest of functions ---
 def init(opt_arg=None):
     # in theory the Pyv backend_name can be hacked prior to a pyv.init() call
     # Now, let's  build a primal backend
@@ -140,6 +168,9 @@ def init(opt_arg=None):
     events.EvManager.instance().a_event_source = _pyv_backend
     _pygame.init()
 
+    vars.screen = create_screen(vars.disp_size)
+    vars.clock = create_clock()
+
 
 # TODO repair that feature
 def proj_to_vscreen(xy_pair):
@@ -148,6 +179,7 @@ def proj_to_vscreen(xy_pair):
 
 def close_game():
     _pygame.quit()
+    vars.gameover = False
 
 
 def create_clock():

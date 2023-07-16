@@ -4,8 +4,7 @@ systems.py
 Adding all game-specific systems here!
 """
 import random
-
-import gl_vars
+import shared
 import pyved_engine as pyv
 from pyved_engine import *  # need to import all constants for keys etc.
 
@@ -18,7 +17,7 @@ __all__ = [  # Careful: the order specified below... It really matters!
 ]
 
 
-def _blitRotateCenter(surf, image, topleft, angle):
+def _blit_rot_center(surf, image, topleft, angle):
     rotated_image = surface_rotate(image, angle)
     new_rect = rotated_image.get_rect(center=image.get_rect(topleft=topleft).center)
     surf.blit(rotated_image, new_rect)
@@ -26,10 +25,10 @@ def _blitRotateCenter(surf, image, topleft, angle):
 
 def _draw_player(scr):
     pl_obj = find_by_archetype("Player")
-    gfx, pos2d, g = dissect_entity(pl_obj, ["Gfx", "Position2d", "Gun"])
+    ma_gfx, pos2d, g = dissect_entity(pl_obj, ["Gfx", "Position2d", "Gun"])
     angle = g["Angle"]
-    player_spritesheet, player_style = gfx["Spritesheet"], gfx["Style"]
-    _blitRotateCenter(scr, player_spritesheet.image_by_rank(player_style), pos2d, angle)
+    player_spritesheet, player_style = ma_gfx["Spritesheet"], ma_gfx["Style"]
+    _blit_rot_center(scr, player_spritesheet.image_by_rank(player_style), pos2d, angle)
 
 
 # -------- SYSTEM_FUNC per se ------
@@ -75,10 +74,10 @@ def handle_player_input(entities, components):
     if keys[K_SPACE]:
         _pressed_space = True
     else:
-        if gl_vars.space_pressed:
+        if shared.space_pressed:
             _pressed_space = False
             x = player["Gfx"]["Style"]
-            player["Gfx"]["Style"] = (x + 1) % gl_vars.NB_STYLES
+            player["Gfx"]["Style"] = (x + 1) % shared.NB_STYLES
     if keys[K_UP]:
         player["Position2d"][1] -= 2
     elif keys[K_DOWN]:
