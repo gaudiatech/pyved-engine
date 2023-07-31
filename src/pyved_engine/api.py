@@ -21,6 +21,11 @@ from .core.events import Emitter, EvListener, EngineEvTypes, game_events_enum
 from ._classes import BaseGameState
 from .state_management import declare_game_states
 
+# non callables:
+HIGHRES_MODE = 1
+RETRO_MODE = 2
+LOWRES_MODE = 3
+
 
 # -----------------------
 # all imports HERE hav been written only to help us, with the implem of API
