@@ -69,15 +69,18 @@ def render_graphics(entities, components):
 
 
 def handle_player_input(entities, components):
+    global _pressed_space
     keys = get_pressed_keys()
     player = find_by_archetype("Player")
     if keys[K_SPACE]:
-        _pressed_space = True
+        shared.space_pressed = True
     else:
         if shared.space_pressed:
-            _pressed_space = False
+            shared.space_pressed = False
             x = player["Gfx"]["Style"]
             player["Gfx"]["Style"] = (x + 1) % shared.NB_STYLES
+            # print('style changes -> trigger')
+
     if keys[K_UP]:
         player["Position2d"][1] -= 2
     elif keys[K_DOWN]:
