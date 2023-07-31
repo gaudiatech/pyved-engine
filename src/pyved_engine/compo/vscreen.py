@@ -81,4 +81,6 @@ def set_virtual_screen(ref_surface):
 
 
 def proj_to_vscreen(org_screen_pos):
-    return conv_to_vscreen(*org_screen_pos)
+    # TODO repair
+    # return conv_to_vscreen(*org_screen_pos)
+    return org_screen_pos

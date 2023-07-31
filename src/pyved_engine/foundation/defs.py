@@ -117,7 +117,7 @@ class PseudoEnum:
 
         self._first = enumcode0
         self.content = EnumSeed(given_str_iterable, enumcode0)  # name to code
-        print(self.content)
+
         self.inv_map = {v: k for k, v in self.content.items()}  # code to name
 
         tmp_omega = list()

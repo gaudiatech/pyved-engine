@@ -1,5 +1,6 @@
 import re
 from . import _hub
+from pathlib import Path
 
 
 FONT = 'consolas'
@@ -21,3 +22,12 @@ def drawtext(msg, size=50, color=(255, 255, 255), aliased=False):
 def underscore_format(name):
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
+def path_to_img_infos(filepath):
+    """
+    :param filepath: for example /users/tom/machin.png
+    :return: both the future image name(identifier) that is "machin" and a filename thing to load: "machin.png"
+    """
+    pobj = Path(filepath)
+    return pobj.stem, pobj.name
