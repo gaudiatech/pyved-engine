@@ -1,14 +1,6 @@
 import random
 
-from model import ChessRules, BaseChessPlayer
-
-
-
-# if __name__ == "__main__":
-#     p = ChessPlayer("Kasparov", "black")
-#     print(p.name)
-#     print(p.color)
-#     print(p.type)
+from model import ChessRules, BaseChessPlayer, ChessBoard, C_WHITE, C_BLACK, EC_SYM
 
 
 class ChessAI(BaseChessPlayer):
@@ -23,9 +15,8 @@ class ChessAI_random(ChessAI):
     randomly picks any legal move
     """
 
-    def GetMove(self, board, color):
-        # print "In ChessAI_random.GetMove"
-
+    def GetMove(self, refboard, color):
+        board = refboard.state
         myPieces = self.GetMyPiecesWithLegalMoves(board, color)
 
         # pick a random piece, then a random legal move for that piece
@@ -73,8 +64,9 @@ class ChessAI_defense(ChessAI_random):
         self.piecePriority = protectionPriority
         ChessAI.__init__(self, name, color)
 
-    def GetMove(self, board, color):
+    def GetMove(self, refboard, color):
         # print "In ChessAI_defense.GetMove"
+        board = refboard.state
 
         myPieces = self.GetMyPiecesWithLegalMoves(board, color)
         enemyPieces = self.GetEnemyPiecesWithLegalMoves(board, color)
@@ -161,7 +153,7 @@ class ChessAI_defense(ChessAI_random):
                 fromPiece = board[fromSquare_r][fromSquare_c]
                 toPiece = board[toSquare_r][toSquare_c]
                 board[toSquare_r][toSquare_c] = fromPiece
-                board[fromSquare_r][fromSquare_c] = 'e'
+                board[fromSquare_r][fromSquare_c] = EC_SYM
 
                 for enemy_p in enemyPieces:
                     enemy_moves = self.Rules.GetListOfValidMoves(board, enemyColor_full, enemy_p)
@@ -210,21 +202,19 @@ class ChessAI_defense(ChessAI_random):
         return capturePieceMoves
 
     def GetMovesThatPutEnemyInCheck(self, board, color, protectedMoveTuples):
-        # print "In GetMovesThatPutEnemyInCheck"
-        if color == "black":
-            myColor = 'b'
-            enemyColor = 'w'
-            enemyColor_full = 'white'
-        else:
-            myColor = 'w'
-            enemyColor = 'b'
-            enemyColor_full = 'black'
 
-        movesThatPutEnemyInCheck = []
+        # print "In GetMovesThatPutEnemyInCheck"
+        if color == C_BLACK:
+            enemyColor_full = C_WHITE
+        elif color == C_WHITE:
+            enemyColor_full = C_BLACK
+        else:
+            raise ValueError()
+
+        movesThatPutEnemyInCheck = list()
         for mt in protectedMoveTuples:
             if self.Rules.DoesMovePutPlayerInCheck(board, enemyColor_full, mt[0], mt[1]):
                 movesThatPutEnemyInCheck.append(mt)
-
         return movesThatPutEnemyInCheck
 
     def PiecePositions(self, board, color, pieceType):
@@ -292,9 +282,42 @@ class ChessAI_defense(ChessAI_random):
 
 
 class ChessAI_offense(ChessAI_defense):
-    # Same as defense AI, except capturing enemy piece is higher priority than protecting own pieces
-    def GetMove(self, board, color):
+    """
+    same as defense AI, except capturing enemy piece is higher priority than protecting own pieces
+    """
+
+    def __init__(self, name, color):
+        super().__init__(name, color)
+        self._opening = None
+
+    def _move_from_opening(self, refboard):
+        if refboard.turn == 0:
+            return ChessAI.conv_move('e2e4')
+
+        if self._opening == 'smith-morra':
+            if refboard.turn == 2:
+                return ChessAI.conv_move('d2d4')
+            if refboard.turn == 4:
+                return ChessAI.conv_move('b1c3')
+
+        elif self._opening == 'gp-attack':
+            if refboard.turn == 2:
+                return ChessAI.conv_move('b1c3')
+            if refboard.turn == 4:
+                return ChessAI.conv_move('f2f4')
+
+    def GetMove(self, refboard, color):
+        # Tom's add-on. If AI player is playing white -> select one opening amongst:
+        # - the grand prix attack
+        # - the smith-morra gambit
+        if refboard.turn == 0 and color == C_WHITE:
+            self._opening = random.choice(('smith-morra', 'gp-attack'))
+        if self._opening is not None:
+            tmp = self._move_from_opening(refboard)
+            if tmp is not None:
+                return tmp
         # print "In ChessAI_offense.GetMove"
+        board = refboard.state
 
         myPieces = self.GetMyPiecesWithLegalMoves(board, color)
         enemyPieces = self.GetEnemyPiecesWithLegalMoves(board, color)
@@ -336,25 +359,38 @@ class ChessAI_offense(ChessAI_defense):
             return ChessAI_random.GetMove(self, board, color)
 
 
-# if __name__ == "__main__":
-#     from ChessBoard import ChessBoard
-#     import pygame
-#     pygame.init()
-#     scr = pygame.display.set_mode((800, 466))
-#     cb = ChessBoard(3)
-#     board = cb.GetState()
-#     c_color = 'black'
-#     from ChessGUI_pygame import ChessGameView
-#     gui = ChessGameView(scr)
-#     gui.do_paint(board, highlightSquares=[])
-#     pygame.display.flip()
-#     defense = ChessAI_defense('Bob', 'black')
-#     myPieces = defense.GetMyPiecesWithLegalMoves(board, c_color)
-#     enemyPieces = defense.GetEnemyPiecesWithLegalMoves(board, c_color)
-#     protectedMoveTuples = defense.GetProtectedMoveTuples(board, c_color, myPieces, enemyPieces)
-#     movesThatPutEnemyInCheck = defense.GetMovesThatPutEnemyInCheck(board, c_color, protectedMoveTuples)
-#     print("MyPieces = ", cb.ConvertSquareListToAlgebraicNotation(myPieces))
-#     print("enemyPieces = ", cb.ConvertSquareListToAlgebraicNotation(enemyPieces))
-#     print("protectedMoveTuples = ", cb.ConvertMoveTupleListToAlgebraicNotation(protectedMoveTuples))
-#     print("movesThatPutEnemyInCheck = ", cb.ConvertMoveTupleListToAlgebraicNotation(movesThatPutEnemyInCheck))
-#     c = input("Press any key to quit.")
+if __name__ == "__main__":
+    scr_size = (800, 766)
+    import pygame
+
+    pygame.init()
+    scr = pygame.display.set_mode(scr_size)
+    cb = ChessBoard(3)
+    board = cb.state
+    c_color = C_BLACK
+
+    from chessmatch import ChessGameView
+    gui = ChessGameView(scr)
+    gui.drawboard(scr, board, highlight=[])
+    pygame.display.flip()
+
+    defense = ChessAI_defense('Bob', 'black')
+    myPieces = defense.GetMyPiecesWithLegalMoves(board, c_color)
+    enemyPieces = defense.GetEnemyPiecesWithLegalMoves(board, c_color)
+    protectedMoveTuples = defense.GetProtectedMoveTuples(board, c_color, myPieces, enemyPieces)
+    movesThatPutEnemyInCheck = defense.GetMovesThatPutEnemyInCheck(board, c_color, protectedMoveTuples)
+
+    print("MyPieces = ", cb.ConvertSquareListToAlgebraicNotation(myPieces))
+    print("enemyPieces = ", cb.ConvertSquareListToAlgebraicNotation(enemyPieces))
+    print("protectedMoveTuples = ", cb.ConvertMoveTupleListToAlgebraicNotation(protectedMoveTuples))
+    print("movesThatPutEnemyInCheck = ", cb.ConvertMoveTupleListToAlgebraicNotation(movesThatPutEnemyInCheck))
+
+    stop = False
+    while not stop:
+        for ev in pygame.event.get():
+            if ev.type == pygame.KEYDOWN:
+                stop=True
+        gui.drawboard(scr, board, highlight=[])
+        pygame.display.flip()
+
+    pygame.quit()

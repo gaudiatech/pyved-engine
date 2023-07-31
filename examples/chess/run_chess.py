@@ -8,7 +8,7 @@ This is a joint work. Authors are:
    [contact: srosborne_at_gmail.com]
 
 - Thomas Iwaszko (port to python3+kengi, game improvement)
-   [contact: tom@kata.games]
+   [contact: thomas.iw@kata.games]
 """
 import chdefs
 import pyved_engine as pyv

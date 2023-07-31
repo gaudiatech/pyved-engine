@@ -110,4 +110,4 @@ if __name__ == "__main__":
 	cb = ChessBoard(0)
 	
 	gui = ChessGUI_text()
-	gui.Draw(cb.GetState())
+	gui.Draw(cb.state)

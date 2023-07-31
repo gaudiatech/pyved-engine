@@ -89,8 +89,8 @@ class PythonChessAIStats:
         currentPlayerIndex = 0
         turnCount = 0
 
-        while not self.Rules.IsCheckmate(self.Board.GetState(), self.player[currentPlayerIndex].color):
-            board = self.Board.GetState()
+        while not self.Rules.IsCheckmate(self.Board.state, self.player[currentPlayerIndex].color):
+            board = self.Board.state
             currentColor = self.player[currentPlayerIndex].color
             # hardcoded so that player 1 is always white
             if currentColor == 'white':
@@ -99,7 +99,7 @@ class PythonChessAIStats:
                     print(" {}".format(turnCount), end='')
                 if turnCount > 200:
                     return (turnCount, -1)  # Call it a draw... otherwise some games can go on forever.
-            moveTuple = self.player[currentPlayerIndex].GetMove(self.Board.GetState(), currentColor)
+            moveTuple = self.player[currentPlayerIndex].GetMove(self.Board.state, currentColor)
             moveReport = self.Board.move_piece(
                 moveTuple)  # moveReport = string like "White Bishop moves from A1 to C3" (+) "and captures ___!"
             # print moveReport
