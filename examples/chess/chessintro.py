@@ -2,9 +2,6 @@ import chdefs
 import pyved_engine as pyv
 
 
-pyv.bootstrap_e()
-
-
 # - alias
 pygame = pyv.pygame
 EngineEvTypes = pyv.EngineEvTypes

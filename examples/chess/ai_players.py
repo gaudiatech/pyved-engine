@@ -1,9 +1,9 @@
 import random
 
-from model import ChessRules, BaseChessPlayer, ChessBoard, C_WHITE, C_BLACK, EC_SYM
+from model import ChessPlayer, ChessRules, ChessBoard, C_WHITE, C_BLACK, EC_SYM
 
 
-class ChessAI(BaseChessPlayer):
+class ChessAI(ChessPlayer):
     def __init__(self, name, color: str):
         super().__init__(name, color)
         self._type = 'AI'
@@ -16,18 +16,17 @@ class ChessAI_random(ChessAI):
     """
 
     def GetMove(self, refboard, color):
-        board = refboard.state
-        myPieces = self.GetMyPiecesWithLegalMoves(board, color)
+        myPieces = self.GetMyPiecesWithLegalMoves(refboard, color)
 
         # pick a random piece, then a random legal move for that piece
         fromTuple = myPieces[random.randint(0, len(myPieces) - 1)]
-        legalMoves = self.Rules.GetListOfValidMoves(board, color, fromTuple)
+        legalMoves = self.Rules.GetListOfValidMoves(refboard, color, fromTuple)
         toTuple = legalMoves[random.randint(0, len(legalMoves) - 1)]
 
         moveTuple = (fromTuple, toTuple)
         return moveTuple
 
-    def GetMyPiecesWithLegalMoves(self, board, color):
+    def GetMyPiecesWithLegalMoves(self, board_obj, color):
         # print "In ChessAI_random.GetMyPiecesWithLegalMoves"
         if color == "black":
             myColor = 'b'
@@ -40,9 +39,9 @@ class ChessAI_random(ChessAI):
         myPieces = []
         for row in range(8):
             for col in range(8):
-                piece = board[row][col]
+                piece = board_obj.state[row][col]
                 if myColor in piece:
-                    if len(self.Rules.GetListOfValidMoves(board, color, (row, col))) > 0:
+                    if len(self.Rules.GetListOfValidMoves(board_obj, color, (row, col))) > 0:
                         myPieces.append((row, col))
 
         return myPieces
@@ -66,17 +65,15 @@ class ChessAI_defense(ChessAI_random):
 
     def GetMove(self, refboard, color):
         # print "In ChessAI_defense.GetMove"
-        board = refboard.state
-
-        myPieces = self.GetMyPiecesWithLegalMoves(board, color)
-        enemyPieces = self.GetEnemyPiecesWithLegalMoves(board, color)
+        myPieces = self.GetMyPiecesWithLegalMoves(refboard, color)
+        enemyPieces = self.GetEnemyPiecesWithLegalMoves(refboard, color)
 
         # Get "protected" moves - move piece such that opponent can't capture it next turn
-        protectedMoveTuples = self.GetProtectedMoveTuples(board, color, myPieces, enemyPieces)
+        protectedMoveTuples = self.GetProtectedMoveTuples(refboard, color, myPieces, enemyPieces)
 
         # Top priority - pick a protected move that puts the enemy in check
         # print "Looking for move that puts enemy in check..."
-        movesThatPutEnemyInCheck = self.GetMovesThatPutEnemyInCheck(board, color, protectedMoveTuples)
+        movesThatPutEnemyInCheck = self.GetMovesThatPutEnemyInCheck(refboard, color, protectedMoveTuples)
         if len(movesThatPutEnemyInCheck) > 0:
             # print "Picking move that puts enemy in check"
             return movesThatPutEnemyInCheck[random.randint(0, len(movesThatPutEnemyInCheck) - 1)]
@@ -85,7 +82,7 @@ class ChessAI_defense(ChessAI_random):
         # piecePriority set when class instantiated
         for pieceType in self.piecePriority:
             # print "Looking for move that protects my "+pieceType+"..."
-            piecesProtectedMoves = self.GetMovesThatProtectPiece(board, color, pieceType, protectedMoveTuples)
+            piecesProtectedMoves = self.GetMovesThatProtectPiece(refboard, color, pieceType, protectedMoveTuples)
             if len(piecesProtectedMoves) > 0:
                 # print "Picking move that removes "+pieceType+" from danger"
                 return piecesProtectedMoves[random.randint(0, len(piecesProtectedMoves) - 1)]
@@ -93,7 +90,7 @@ class ChessAI_defense(ChessAI_random):
         # Priority #3 - pick a protected move that will capture one of the enemy's pieces
         for pieceType in self.piecePriority:
             # print "Looking for move that captures enemy "+pieceType+"..."
-            capturePieceMoves = self.GetMovesThatCaptureEnemyPiece(board, color, pieceType, protectedMoveTuples)
+            capturePieceMoves = self.GetMovesThatCaptureEnemyPiece(refboard, color, pieceType, protectedMoveTuples)
             if len(capturePieceMoves) > 0:
                 # print "Picking move that captures enemy "+pieceType
                 return capturePieceMoves[random.randint(0, len(capturePieceMoves) - 1)]
@@ -105,9 +102,9 @@ class ChessAI_defense(ChessAI_random):
         else:
             # If there aren't any protected moves, revert to random AI
             # print "No protected move exists; going to random's GetMove"
-            return ChessAI_random.GetMove(self, board, color)
+            return ChessAI_random.GetMove(self, refboard, color)
 
-    def GetEnemyPiecesWithLegalMoves(self, board, color):
+    def GetEnemyPiecesWithLegalMoves(self, board_obj, color):
         # print "In GetEnemyPiecesWithLegalMoves"
         if color == "black":
             myColor = 'b'
@@ -122,82 +119,71 @@ class ChessAI_defense(ChessAI_random):
         enemyPieces = []
         for row in range(8):
             for col in range(8):
-                piece = board[row][col]
+                piece = board_obj.state[row][col]
                 if enemyColor in piece:
-                    if len(self.Rules.GetListOfValidMoves(board, enemyColor_full, (row, col))) > 0:
+                    if len(self.Rules.GetListOfValidMoves(board_obj, enemyColor_full, (row, col))) > 0:
                         enemyPieces.append((row, col))
 
         return enemyPieces
 
-    def GetProtectedMoveTuples(self, board, color, myPieces, enemyPieces):
-        # print "In GetProtectedMoveTuples"
-        if color == "black":
-            myColor = 'b'
-            enemyColor = 'w'
-            enemyColor_full = 'white'
-        else:
-            myColor = 'w'
-            enemyColor = 'b'
-            enemyColor_full = 'black'
+    def GetProtectedMoveTuples(self, board_obj, my_color, myPieces, enemyPieces):
+        enemy_color = C_BLACK if my_color == C_WHITE else C_WHITE
+
         # Get possible moves that opponent can't get next turn
-        protectedMoveTuples = []
+        safe_moves = list()
+        risky_moves = set()
+
         for my_p in myPieces:
-            my_legalMoves = self.Rules.GetListOfValidMoves(board, color, my_p)
-            toBeRemoved = []
-            for my_m in my_legalMoves:
-                # make hypothetical move
-                fromSquare_r = my_p[0]
-                fromSquare_c = my_p[1]
-                toSquare_r = my_m[0]
-                toSquare_c = my_m[1]
-                fromPiece = board[fromSquare_r][fromSquare_c]
-                toPiece = board[toSquare_r][toSquare_c]
-                board[toSquare_r][toSquare_c] = fromPiece
-                board[fromSquare_r][fromSquare_c] = EC_SYM
+            risky_moves.clear()
+            my_legalMoves = self.Rules.GetListOfValidMoves(board_obj, my_color, my_p)
+
+            for my_move in my_legalMoves:
+
+                # make the hypothetical move
+                fromSquare_r, fromSquare_c = my_p
+                toSquare_r, toSquare_c = my_move
+
+                fromPiece = board_obj.state[fromSquare_r][fromSquare_c]
+                toPiece = board_obj.state[toSquare_r][toSquare_c]
+
+                board_obj.state[fromSquare_r][fromSquare_c] = EC_SYM
+                board_obj.state[toSquare_r][toSquare_c] = fromPiece
 
                 for enemy_p in enemyPieces:
-                    enemy_moves = self.Rules.GetListOfValidMoves(board, enemyColor_full, enemy_p)
+                    enemy_moves = self.Rules.GetListOfValidMoves(board_obj, enemy_color, enemy_p)
                     for enemy_m in enemy_moves:
                         if enemy_m in my_legalMoves:
-                            toBeRemoved.append(enemy_m)
+                            risky_moves.add(enemy_m)
 
-                # undo temporary move
-                board[toSquare_r][toSquare_c] = toPiece
-                board[fromSquare_r][fromSquare_c] = fromPiece
+                # undo the temporary move
+                board_obj.state[toSquare_r][toSquare_c] = toPiece
+                board_obj.state[fromSquare_r][fromSquare_c] = fromPiece
 
-            for remove_m in toBeRemoved:
-                if remove_m in my_legalMoves:
-                    my_legalMoves.remove(remove_m)
+            for elt in my_legalMoves:
+                if elt not in risky_moves:
+                    safe_moves.append((my_p, elt))
 
-            for my_m in my_legalMoves:  # now, "dangerous" moves are removed
-                protectedMoveTuples.append((my_p, my_m))
-
-        return protectedMoveTuples
+        return safe_moves
 
     def GetMovesThatProtectPiece(self, board, color, pieceType, protectedMoveTuples):
         piecesProtectedMoves = []
-        piecePositions = self.PiecePositions(board, color, pieceType)
+        piecePositions = board.get_piece_positions(color, pieceType)
         if len(piecePositions) > 0:
             for p in piecePositions:
                 if self.PieceCanBeCaptured(board, color, p):
                     piecesProtectedMoves.extend(self.GetPiecesMovesFromMoveTupleList(p, protectedMoveTuples))
         return piecesProtectedMoves
 
-    def GetMovesThatCaptureEnemyPiece(self, board, color, pieceType, protectedMoveTuples):
-        if color == "black":
-            myColor = 'b'
-            enemyColor = 'w'
-            enemyColor_full = 'white'
-        else:
-            myColor = 'w'
-            enemyColor = 'b'
-            enemyColor_full = 'black'
+    def GetMovesThatCaptureEnemyPiece(self, board, my_color, pieceType, protectedMoveTuples):
+        if my_color not in (C_BLACK, C_WHITE):
+            raise ValueError('color non-valid')
+        enemy_color = C_WHITE if my_color == C_BLACK else C_BLACK
 
         capturePieceMoves = []
-        enemyPiecePositions = self.PiecePositions(board, enemyColor, pieceType)
+        enemyPiecePositions = board.get_piece_positions(enemy_color, pieceType)
         if len(enemyPiecePositions) > 0:
             for p in enemyPiecePositions:
-                if self.PieceCanBeCaptured(board, enemyColor, p):
+                if self.PieceCanBeCaptured(board, enemy_color, p):
                     capturePieceMoves.extend(self.GetCapturePieceMovesFromMoveTupleList(p, protectedMoveTuples))
         return capturePieceMoves
 
@@ -217,34 +203,6 @@ class ChessAI_defense(ChessAI_random):
                 movesThatPutEnemyInCheck.append(mt)
         return movesThatPutEnemyInCheck
 
-    def PiecePositions(self, board, color, pieceType):
-        # returns list of piece positions; will be empty if color piece doesn't exist on board
-        if color == "black":
-            myColor = 'b'
-        else:
-            myColor = 'w'
-
-        if pieceType == "king":
-            myPieceType = 'K'
-        elif pieceType == "queen":
-            myPieceType = 'Q'
-        elif pieceType == "rook":
-            myPieceType = 'R'
-        elif pieceType == "knight":
-            myPieceType = 'T'
-        elif pieceType == "bishop":
-            myPieceType = 'B'
-        elif pieceType == "pawn":
-            myPieceType = 'P'
-
-        piecePositions = []
-        for row in range(8):
-            for col in range(8):
-                piece = board[row][col]
-                if myColor in piece and myPieceType in piece:
-                    piecePositions.append((row, col))
-        return piecePositions
-
     def PieceCanBeCaptured(self, board, color, p):
         # true if opponent can capture the piece as board currently exists.
         if color == "black":
@@ -258,7 +216,7 @@ class ChessAI_defense(ChessAI_random):
 
         for row in range(8):
             for col in range(8):
-                piece = board[row][col]
+                piece = board.state[row][col]
                 if enemyColor in piece:
                     if self.Rules.is_legal_move(board, enemyColorFull, (row, col), p):
                         return True
@@ -316,47 +274,48 @@ class ChessAI_offense(ChessAI_defense):
             tmp = self._move_from_opening(refboard)
             if tmp is not None:
                 return tmp
-        # print "In ChessAI_offense.GetMove"
-        board = refboard.state
 
-        myPieces = self.GetMyPiecesWithLegalMoves(board, color)
-        enemyPieces = self.GetEnemyPiecesWithLegalMoves(board, color)
+        # print "In ChessAI_offense.GetMove"
+        myPieces = self.GetMyPiecesWithLegalMoves(refboard, color)
+        enemyPieces = self.GetEnemyPiecesWithLegalMoves(refboard, color)
 
         # Get "protected" moves - move piece such that opponent can't capture it next turn
-        protectedMoveTuples = self.GetProtectedMoveTuples(board, color, myPieces, enemyPieces)
+        protectedMoveTuples = self.GetProtectedMoveTuples(refboard, color, myPieces, enemyPieces)
 
-        # Top priority - pick a protected move that puts the enemy in check
-        # print "Looking for move that puts enemy in check..."
-        movesThatPutEnemyInCheck = self.GetMovesThatPutEnemyInCheck(board, color, protectedMoveTuples)
-        if len(movesThatPutEnemyInCheck) > 0:
-            # print "Picking move that puts enemy in check"
-            return movesThatPutEnemyInCheck[random.randint(0, len(movesThatPutEnemyInCheck) - 1)]
-
-        # Priority #2 - pick a protected move that will capture one of the enemy's pieces
+        # Priority #1
+        # pick a protected move that will capture one of the enemy's pieces
+        # +-------------------------------------------------
         for pieceType in self.piecePriority:
             # print "Looking for move that captures enemy "+pieceType+"..."
-            capturePieceMoves = self.GetMovesThatCaptureEnemyPiece(board, color, pieceType, protectedMoveTuples)
+            capturePieceMoves = self.GetMovesThatCaptureEnemyPiece(refboard, color, pieceType, protectedMoveTuples)
             if len(capturePieceMoves) > 0:
                 # print "Picking move that captures enemy "+pieceType
                 return capturePieceMoves[random.randint(0, len(capturePieceMoves) - 1)]
 
-        # Priority #3 - pick a protected move that will move one of player's pieces out of the line of fire
+        # Priority #2
+        # pick a protected move that puts the enemy in check
+        # +-------------------------------------------------
+        movesThatPutEnemyInCheck = self.GetMovesThatPutEnemyInCheck(refboard, color, protectedMoveTuples)
+        if len(movesThatPutEnemyInCheck) > 0:
+            # print "Picking move that puts enemy in check"
+            return movesThatPutEnemyInCheck[random.randint(0, len(movesThatPutEnemyInCheck) - 1)]
+
+        # Priority #3
+        # pick a protected move that will move one of player's pieces out of the line of fire
         # piecePriority set when class instantiated
+        # +-------------------------------------------------
         for pieceType in self.piecePriority:
             # print "Looking for move that protects my "+pieceType+"..."
-            piecesProtectedMoves = self.GetMovesThatProtectPiece(board, color, pieceType, protectedMoveTuples)
+            piecesProtectedMoves = self.GetMovesThatProtectPiece(refboard, color, pieceType, protectedMoveTuples)
             if len(piecesProtectedMoves) > 0:
                 # print "Picking move that removes "+pieceType+" from danger"
                 return piecesProtectedMoves[random.randint(0, len(piecesProtectedMoves) - 1)]
 
         # If nothing from priority 1,2,and 3, then just pick any protected move
         if len(protectedMoveTuples) > 0:
-            # print "Picking random protected move"
             return protectedMoveTuples[random.randint(0, len(protectedMoveTuples) - 1)]
-        else:
-            # If there aren't any protected moves, revert to random AI
-            # print "No protected move exists; going to random's GetMove"
-            return ChessAI_random.GetMove(self, board, color)
+        # If there aren't any protected moves, revert to random AI
+        return ChessAI_random.GetMove(self, refboard, color)
 
 
 if __name__ == "__main__":
@@ -371,14 +330,14 @@ if __name__ == "__main__":
 
     from chessmatch import ChessGameView
     gui = ChessGameView(scr)
-    gui.drawboard(scr, board, highlight=[])
+    gui.drawboard(scr, board)#, highlight=[])
     pygame.display.flip()
 
     defense = ChessAI_defense('Bob', 'black')
-    myPieces = defense.GetMyPiecesWithLegalMoves(board, c_color)
-    enemyPieces = defense.GetEnemyPiecesWithLegalMoves(board, c_color)
-    protectedMoveTuples = defense.GetProtectedMoveTuples(board, c_color, myPieces, enemyPieces)
-    movesThatPutEnemyInCheck = defense.GetMovesThatPutEnemyInCheck(board, c_color, protectedMoveTuples)
+    myPieces = defense.GetMyPiecesWithLegalMoves(cb, c_color)
+    enemyPieces = defense.GetEnemyPiecesWithLegalMoves(cb, c_color)
+    protectedMoveTuples = defense.GetProtectedMoveTuples(cb, c_color, myPieces, enemyPieces)
+    movesThatPutEnemyInCheck = defense.GetMovesThatPutEnemyInCheck(cb, c_color, protectedMoveTuples)
 
     print("MyPieces = ", cb.ConvertSquareListToAlgebraicNotation(myPieces))
     print("enemyPieces = ", cb.ConvertSquareListToAlgebraicNotation(enemyPieces))
@@ -390,7 +349,7 @@ if __name__ == "__main__":
         for ev in pygame.event.get():
             if ev.type == pygame.KEYDOWN:
                 stop=True
-        gui.drawboard(scr, board, highlight=[])
+        gui.drawboard(scr, board)# highlight=[])
         pygame.display.flip()
 
     pygame.quit()

@@ -6,14 +6,14 @@ C_BLACK, C_WHITE = 'black', 'white'  # its better use such identifiers rather th
 EC_SYM = 'ee'  # empty cell symbol
 
 
-class BaseChessPlayer:
+class ChessPlayer:
     @classmethod
     def conv_move(cls, packedcoords):
         """
         utility method so i can input moves such as 'e2e4' instead of ((4,1),(4,3))
         which is very un-natural
         """
-        print('call to conv_move -->', packedcoords)
+        # print('call to conv_move -->', packedcoords)
         if len(packedcoords) != 4:
             raise ValueError('arg passed to ChessAI.conv_move has not the expected format! Received:', packedcoords)
         li_given_char = list(packedcoords)
@@ -43,8 +43,9 @@ class BaseChessPlayer:
 
 
 class ChessRules:
+    valid_moves_cache = dict()
 
-    def is_checkmate(self, board, chesscolor: str):
+    def is_checkmate(self, board_obj, chesscolor: str):
         """
         returns True if 'color' player is in checkmate, uses GetListOfValidMoves
         for each piece... If there aren't any valid moves, then return true
@@ -60,20 +61,30 @@ class ChessRules:
         myColorValidMoves = list()
         for row in range(8):
             for col in range(8):
-                piece = board[row][col]
+                piece = board_obj.state[row][col]
                 if ch_color_sym in piece:
-                    myColorValidMoves.extend(self.GetListOfValidMoves(board, chesscolor, (row, col)))
+                    myColorValidMoves.extend(self.GetListOfValidMoves(board_obj, chesscolor, (row, col)))
         return not len(myColorValidMoves)
 
-    def GetListOfValidMoves(self, board, color, fromTuple):
-        legalDestinationSpaces = list()
-        for row in range(8):
-            for col in range(8):
-                d = (row, col)
-                if self.is_legal_move(board, color, fromTuple, d):
-                    if not self.DoesMovePutPlayerInCheck(board, color, fromTuple, d):
-                        legalDestinationSpaces.append(d)
-        return legalDestinationSpaces
+    def GetListOfValidMoves(self, board_obj, color, fromTuple):
+        k = board_obj.serialize()
+        refcache = self.__class__.valid_moves_cache
+
+        try:
+            return refcache[k][fromTuple]
+        except KeyError:
+            legalDestinationSpaces = list()
+            for row in range(8):
+                for col in range(8):
+                    d = (row, col)
+                    if self.is_legal_move(board_obj, color, fromTuple, d):
+                        if not self.DoesMovePutPlayerInCheck(board_obj, color, fromTuple, d):
+                            legalDestinationSpaces.append(d)
+            if k not in refcache:
+                refcache[k] = dict()
+            refcache[k][fromTuple] = legalDestinationSpaces
+
+            return legalDestinationSpaces
 
     def is_legal_move(self, board, color, fromTuple, toTuple):
         # print "IsLegalMove with fromTuple:",fromTuple,"and toTuple:",toTuple,"color = ",color
@@ -81,8 +92,8 @@ class ChessRules:
         fromSquare_c = fromTuple[1]
         toSquare_r = toTuple[0]
         toSquare_c = toTuple[1]
-        fromPiece = board[fromSquare_r][fromSquare_c]
-        toPiece = board[toSquare_r][toSquare_c]
+        fromPiece = board.state[fromSquare_r][fromSquare_c]
+        toPiece = board.state[toSquare_r][toSquare_c]
 
         if color == C_BLACK:
             enemy_color = C_WHITE
@@ -185,7 +196,7 @@ class ChessRules:
 
         return False  # if none of the other "True"s are hit above
 
-    def DoesMovePutPlayerInCheck(self, board, color, fromTuple, toTuple):
+    def DoesMovePutPlayerInCheck(self, board_obj, color, fromTuple, toTuple):
         """
         makes a hypothetical move,
         returns True if it puts current player into check
@@ -195,18 +206,18 @@ class ChessRules:
         fromSquare_c = fromTuple[1]
         toSquare_r = toTuple[0]
         toSquare_c = toTuple[1]
-        fromPiece = board[fromSquare_r][fromSquare_c]
-        toPiece = board[toSquare_r][toSquare_c]
+        fromPiece = board_obj.state[fromSquare_r][fromSquare_c]
+        toPiece = board_obj.state[toSquare_r][toSquare_c]
 
         # make the move, then test if 'color' is in check
-        board[toSquare_r][toSquare_c] = fromPiece
-        board[fromSquare_r][fromSquare_c] = EC_SYM
+        board_obj.state[toSquare_r][toSquare_c] = fromPiece
+        board_obj.state[fromSquare_r][fromSquare_c] = EC_SYM
 
-        retval = self.IsInCheck(board, color)
+        retval = self.IsInCheck(board_obj, color)
 
         # undo temporary move
-        board[toSquare_r][toSquare_c] = toPiece
-        board[fromSquare_r][fromSquare_c] = fromPiece
+        board_obj.state[toSquare_r][toSquare_c] = toPiece
+        board_obj.state[fromSquare_r][fromSquare_c] = fromPiece
 
         return retval
 
@@ -226,14 +237,14 @@ class ChessRules:
         # First, get current player's king location
         for row in range(8):
             for col in range(8):
-                piece = board[row][col]
+                piece = board.state[row][col]
                 if 'K' in piece and myColor in piece:
                     kingTuple = (row, col)
 
         # Check if any of enemy player's pieces has a legal move to current player's king
         for row in range(8):
             for col in range(8):
-                piece = board[row][col]
+                piece = board.state[row][col]
                 if enemyColor in piece:
                     if self.is_legal_move(board, enemyColorFull, (row, col), kingTuple):
                         return True
@@ -246,7 +257,7 @@ class ChessRules:
         fromSquare_c = from_pos[1]
         toSquare_r = to_pos[0]
         toSquare_c = to_pos[1]
-        fromPiece = board[fromSquare_r][fromSquare_c]
+        fromPiece = board.state[fromSquare_r][fromSquare_c]
 
         if abs(fromSquare_r - toSquare_r) <= 1 and abs(fromSquare_c - toSquare_c) <= 1:
             # The base case: just one square apart
@@ -277,7 +288,7 @@ class ChessRules:
                 # diagonal "NW"
                 newTuple = (fromSquare_r - 1, fromSquare_c - 1)
 
-        if board[newTuple[0]][newTuple[1]] == EC_SYM:
+        if board.state[newTuple[0]][newTuple[1]] == EC_SYM:
             return self.is_clear_path(board, newTuple, to_pos)
         return False
 
@@ -287,6 +298,14 @@ class ChessBoard:
     Board layout; contains what pieces are present at each square
     """
     EMPTY_SYM = 'ee'
+
+    def serialize(self):
+        serial = ''
+        for j in range(8):
+            for i in range(8):
+                serial += self.squares[j][i]
+        serial += str(self._turn)
+        return serial
 
     def __init__(self, setup_type=0, serial=None):
         self._turn = 0
@@ -327,13 +346,31 @@ class ChessBoard:
             self.squares[4][6] = 'wR'
             self.squares[7] = [EC_SYM, EC_SYM, EC_SYM, 'wK', 'wQ', EC_SYM, 'wT', EC_SYM]
 
-    def serialize(self):
-        serial = ''
-        for j in range(8):
-            for i in range(8):
-                serial += self.squares[j][i]
-        serial += str(self._turn)
-        return serial
+    def get_piece_positions(self, color_identifier, piece_t):
+        """
+        returns list of piece positions; will be empty if color piece doesn't exist on board
+        """
+        myPieceType = {
+            'king': 'K',
+            'queen': 'Q',
+            'rook': 'R',
+            'knight': 'T',
+            'bishop': 'B',
+            'pawn': 'P'
+        }[piece_t]
+
+        if color_identifier not in (C_BLACK, C_WHITE):
+            raise ValueError('color non-valid')
+        color_tag = 'w' if (color_identifier == C_WHITE) else 'b'
+
+        piecePositions = list()
+        for row in range(8):
+            for col in range(8):
+                piece = self.squares[row][col]
+                if myPieceType in piece:
+                    if color_tag in piece:
+                        piecePositions.append((row, col))
+        return piecePositions
 
     @property
     def turn(self):
@@ -428,8 +465,15 @@ class ChessBoard:
 
 
 if __name__ == "__main__":
-    testcode = int(input('What do you wish to test? 1 for rules, 2 for board, 3 serialize > '))
-    if testcode == 3:
+    testcode = int(input('What do you wish to test? 1 for rules, 2 for board, 3 serialize, 4 pieces pos > '))
+    if testcode == 4:
+        print()
+        cb = ChessBoard(0)
+        pt = input('wat type? ')
+        col = input('wat color? ')
+        print(cb.get_piece_positions(col, pt))
+
+    elif testcode == 3:
         cb = ChessBoard(0)
         print(cb.serialize())
     elif testcode == 2:
@@ -450,6 +494,6 @@ if __name__ == "__main__":
     elif testcode == 1:
         cb = ChessBoard()
         rules = ChessRules()
-        print(rules.is_checkmate(cb.state, C_WHITE))
+        print(rules.is_checkmate(cb, C_WHITE))
         print(rules.is_clear_path(cb.state, (0, 0), (5, 5)))
         print(rules.is_clear_path(cb.state, (1, 1), (5, 5)))

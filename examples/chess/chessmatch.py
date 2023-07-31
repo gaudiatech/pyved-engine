@@ -1,15 +1,13 @@
 import chdefs
 import pyved_engine as pyv
-from ChessBoard import ChessBoard
-from ChessRules import ChessRules
-from players import ChessAI_random, ChessAI_offense, ChessAI_defense, ChessPlayer
+from ai_players import ChessAI_random, ChessAI_offense, ChessAI_defense
+from model import ChessRules, ChessBoard, ChessPlayer
 
 
-# - alias
+# --- alias
 pygame = pyv.pygame
 
-
-# constants:
+# --- constants
 PAUSE_SEC = 3
 W_SIZE = (850, 500)
 
@@ -275,13 +273,13 @@ class ChessGameView(pyv.EvListener):
 
         if not self.fromSquareChosen:
             r, c = squareClicked
-            validselection = (self.curr_color == 'black' and 'b' == board.GetState()[r][c][0])
+            validselection = (self.curr_color == 'black' and 'b' == board.state[r][c][0])
             validselection = validselection or (self.curr_color == 'white' and 'w' == board.GetState()[r][c][0])
             if validselection:
                 self.fromSquareChosen = squareClicked
                 fromTuple = tuple(squareClicked)
                 # TODO set fromTuple properly
-                self.possibleDestinations = self.Rules.GetListOfValidMoves(board.GetState(), currcolor, fromTuple)
+                self.possibleDestinations = self.Rules.GetListOfValidMoves(board, currcolor, fromTuple)
                 if len(self.possibleDestinations):
                     self._fluo_squares = list(self.possibleDestinations)
                 else:
@@ -321,7 +319,7 @@ class ChessTicker(pyv.EvListener):
         self._curr_pl_idx = 0
         self._turn_count = 0
         self.endgame_msg_added = False
-        self.board_st = refmod.board.GetState()
+        self.board_st = refmod.board.state
         self.ready_to_quit = False
         self.endgame_msg_added = False
 
@@ -377,6 +375,7 @@ class ChessTicker(pyv.EvListener):
         # TODO repair human vs A.I. play
 
         move_report = None
+        refboard = self.model.board
 
         if curr_player.type == 'human':
             moveTuple = self.stored_human_input
@@ -386,10 +385,8 @@ class ChessTicker(pyv.EvListener):
                 self.stored_human_input = None
 
         else:
-            tmp_ai_move = curr_player.GetMove(board_st, curr_player.color)
-            move_report = self.model.board.move_piece(tmp_ai_move)
-
-        # self.refview.drawboard(gl_screen_ref, board_st)
+            tmp_ai_move = curr_player.GetMove(refboard, curr_player.color)
+            move_report = refboard.move_piece(tmp_ai_move)
 
         if move_report:  # smth has been played!
             self.refview.PrintMessage(move_report)
@@ -404,7 +401,7 @@ class ChessTicker(pyv.EvListener):
             # if AIvsAI and AIpause:
             #     time.sleep(AIpauseSeconds)
 
-            if self.model.rules.IsCheckmate(self.board_st, curr_player.color):
+            if self.model.rules.is_checkmate(refboard, curr_player.color):
                 self.ready_to_quit = True
 
             currentColor = curr_player.color
@@ -414,7 +411,7 @@ class ChessTicker(pyv.EvListener):
             self.refview.PrintMessage("")
             baseMsg = "TURN %s - %s (%s)" % (str(self._turn_count), curr_player.name, currentColor)
             self.refview.PrintMessage("--%s--" % baseMsg)
-            if self.model.rules.IsInCheck(board_st, currentColor):
+            if self.model.rules.IsInCheck(refboard, currentColor):
                 suffx = '{} ({}) is in check'.format(curr_player.name, curr_player.color)
                 self.refview.PrintMessage("Warning..." + suffx)
 

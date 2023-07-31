@@ -28,14 +28,11 @@ along with this program.  If not, see https://www.gnu.org/licenses/
 """
 
 from __future__ import division  # so it turns integer division results into floats
-
 import datetime
 import random
 from optparse import OptionParser
-
-from ChessBoard import ChessBoard
-from ChessRules import ChessRules
-from players import ChessAI_random, ChessAI_defense, ChessAI_offense
+from model import ChessRules, ChessBoard, ChessPlayer
+from ai_players import ChessAI_random, ChessAI_defense, ChessAI_offense
 
 
 class PythonChessAIStats:
@@ -89,8 +86,8 @@ class PythonChessAIStats:
         currentPlayerIndex = 0
         turnCount = 0
 
-        while not self.Rules.IsCheckmate(self.Board.state, self.player[currentPlayerIndex].color):
-            board = self.Board.state
+        while not self.Rules.is_checkmate(self.Board, self.player[currentPlayerIndex].color):
+
             currentColor = self.player[currentPlayerIndex].color
             # hardcoded so that player 1 is always white
             if currentColor == 'white':
@@ -99,9 +96,9 @@ class PythonChessAIStats:
                     print(" {}".format(turnCount), end='')
                 if turnCount > 200:
                     return (turnCount, -1)  # Call it a draw... otherwise some games can go on forever.
-            moveTuple = self.player[currentPlayerIndex].GetMove(self.Board.state, currentColor)
-            moveReport = self.Board.move_piece(
-                moveTuple)  # moveReport = string like "White Bishop moves from A1 to C3" (+) "and captures ___!"
+            moveTuple = self.player[currentPlayerIndex].GetMove(self.Board, currentColor)
+            moveReport = self.Board.move_piece(moveTuple)
+            # moveReport = string like "White Bishop moves from A1 to C3" (+) "and captures ___!"
             # print moveReport
             currentPlayerIndex = (currentPlayerIndex + 1) % 2  # cause the currentPlayerIndex toggle between 1 and 0
 
