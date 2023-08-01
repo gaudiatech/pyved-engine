@@ -536,11 +536,13 @@ class ChessBoard:
 
         i0, j0 = self._prev_source_square
         self.squares[i0][j0] = self._prev_source_piece
-
         i1, j1 = self._prev_target_square
         self.squares[i1][j1] = self._prev_target_piece
 
         self._play_sequence -= 1
+
+        self._prev_source_square = None
+        self._prev_target_square = None
 
 
 if __name__ == "__main__":

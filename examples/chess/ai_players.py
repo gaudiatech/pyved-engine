@@ -28,23 +28,22 @@ class ChessAI_random(ChessAI):
 
     def GetMyPiecesWithLegalMoves(self, board_obj, color):
         # print "In ChessAI_random.GetMyPiecesWithLegalMoves"
-        if color == "black":
-            myColor = 'b'
-            enemyColor = 'w'
+        if color == C_BLACK_PLAYER:
+            my_color_prefix = 'b'
+        elif color == C_WHITE_PLAYER:
+            my_color_prefix = 'w'
         else:
-            myColor = 'w'
-            enemyColor = 'b'
+            raise ValueError('getMyPiecesWithLegalMoves received color=', color)
 
         # get list of my pieces
-        myPieces = []
+        my_pieces = list()
         for row in range(8):
             for col in range(8):
                 piece = board_obj.state[row][col]
-                if myColor in piece:
+                if my_color_prefix in piece:
                     if len(self.Rules.get_valid_moves(board_obj, color, (row, col))) > 0:
-                        myPieces.append((row, col))
-
-        return myPieces
+                        my_pieces.append((row, col))
+        return my_pieces
 
 
 class ChessAI_defense(ChessAI_random):

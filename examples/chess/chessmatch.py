@@ -286,6 +286,10 @@ class ChessTicker(pyv.EvListener):
         elif ev.key == pyv.pygame.K_SPACE:
             print('    *dump serial*')
             print(self.model.board.serialize())
+        elif ev.key == pyv.pygame.K_BACKSPACE:
+            print(' --undo move--')
+            self.model.board.undo_move()
+
         elif self.ready_to_quit:
             self.pev(pyv.EngineEvTypes.StatePop)
 
@@ -317,7 +321,6 @@ class ChessTicker(pyv.EvListener):
             # --- manage end game ---
             if not self.endgame_msg_added:
                 self.endgame_msg_added = True
-
                 self.refview.PrintMessage("CHECKMATE!")
                 winnerIndex = (curr_pl_idx+1) % 2
                 self.refview.PrintMessage(
@@ -342,7 +345,6 @@ class ChessTicker(pyv.EvListener):
                 move_report = self.model.board.move_piece(moveTuple)
                 # moveReport = string like "White Bishop moves from A1 to C3" (+) "and captures ___!"
                 self.stored_human_input = None
-
         else:
             tmp_ai_move = curr_player.GetMove(refboard, curr_player.color)
             move_report = refboard.move_piece(tmp_ai_move)
@@ -354,16 +356,18 @@ class ChessTicker(pyv.EvListener):
             # -- iterate game --
             #self._curr_pl_idx = (self._curr_pl_idx + 1) % 2
             #curr_player = players[self._curr_pl_idx]
-            self.refview.curr_color = self.model.board.curr_player  # ['white', 'black'][self._curr_pl_idx]
+            # self.refview.curr_color =  ['white', 'black'][self._curr_pl_idx]
 
             # TODO repair feat.
             # if AIvsAI and AIpause:
             #     time.sleep(AIpauseSeconds)
 
-            if self.model.rules.is_checkmate(refboard, curr_player.color):
+            if self.model.rules.is_checkmate(refboard, self.model.board.curr_player):
                 self.ready_to_quit = True
 
-            currentColor = curr_player.color
+            #currentColor = curr_player.color
+            currentColor = self.model.board.curr_player
+
             # hardcoded so that player 1 is always white
             if currentColor == 'white':
                 self._turn_count = self._turn_count + 1
