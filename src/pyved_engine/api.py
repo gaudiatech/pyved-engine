@@ -16,6 +16,7 @@ from pygame.constants import *
 from .compo import gfx
 from . import pal  # pal also added so it is includes in the api
 from . import struct
+import time
 from .core import events
 from .core.events import Emitter, EvListener, EngineEvTypes, game_events_enum
 from ._classes import BaseGameState
@@ -154,7 +155,7 @@ def declare_end(gfunc):  # decorator!
 def run_game():
     vars.beginfunc_ref()
     while not vars.gameover:
-        vars.updatefunc_ref()
+        vars.updatefunc_ref(time.time())
         flip()  # commit gfx mem to screen
         vars.clock.tick(vars.max_fps)
     vars.endfunc_ref()
