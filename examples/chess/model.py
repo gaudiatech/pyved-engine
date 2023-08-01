@@ -2,8 +2,20 @@
 model for the game of chess (whats a chess Player/a chess Board +what are the rules?)
 """
 
-C_BLACK, C_WHITE = 'black', 'white'  # its better use such identifiers rather than str
-EC_SYM = 'ee'  # empty cell symbol
+
+__all__ = [
+    'C_KING', 'C_QUEEN', 'C_ROOK', 'C_BISHOP', 'C_KNIGHT', 'C_PAWN',
+    'C_BLACK_PLAYER', 'C_WHITE_PLAYER',
+    'C_EMPTY_SQUARE',
+
+    'ChessPlayer',
+    'ChessBoard',
+    'ChessRules'
+]
+
+C_KING, C_QUEEN, C_ROOK, C_BISHOP, C_KNIGHT, C_PAWN = 'K', 'Q', 'R', 'B', 'N', '_'
+C_BLACK_PLAYER, C_WHITE_PLAYER = 'black', 'white'  # its better use such identifiers rather than str
+C_EMPTY_SQUARE = 'ee'  # empty cell symbol
 
 
 class ChessPlayer:
@@ -24,7 +36,7 @@ class ChessPlayer:
 
     def __init__(self, name, color: str):
         self._name = name
-        if color not in (C_BLACK, C_WHITE):
+        if color not in (C_BLACK_PLAYER, C_WHITE_PLAYER):
             raise ValueError('invalid player color passed!')
         self._color = color
         self._type = 'human'
@@ -51,9 +63,9 @@ class ChessRules:
         for each piece... If there aren't any valid moves, then return true
         """
 
-        if chesscolor == C_BLACK:
+        if chesscolor == C_BLACK_PLAYER:
             ch_color_sym = 'b'
-        elif chesscolor == C_WHITE:
+        elif chesscolor == C_WHITE_PLAYER:
             ch_color_sym = 'w'
         else:
             raise ValueError('ERR: invalid chesscolor arg. passed to ChessRules.is_checkmate!')
@@ -63,30 +75,30 @@ class ChessRules:
             for col in range(8):
                 piece = board_obj.state[row][col]
                 if ch_color_sym in piece:
-                    myColorValidMoves.extend(self.GetListOfValidMoves(board_obj, chesscolor, (row, col)))
+                    myColorValidMoves.extend(self.get_valid_moves(board_obj, chesscolor, (row, col)))
         return not len(myColorValidMoves)
 
-    def GetListOfValidMoves(self, board_obj, color, fromTuple):
-        k = board_obj.serialize()
-        refcache = self.__class__.valid_moves_cache
+    def get_valid_moves(self, board_obj, color, square_ij):
+        board_hash = board_obj.serialize()
+        cache = self.__class__.valid_moves_cache
+        if board_hash in cache:
+            if square_ij in cache[board_hash]:
+                return cache[board_hash][square_ij]  # rule: never compute the same thing twice!
+        else:
+            cache[board_hash] = dict()
 
-        try:
-            return refcache[k][fromTuple]
-        except KeyError:
-            legalDestinationSpaces = list()
-            for row in range(8):
-                for col in range(8):
-                    d = (row, col)
-                    if self.is_legal_move(board_obj, color, fromTuple, d):
-                        if not self.DoesMovePutPlayerInCheck(board_obj, color, fromTuple, d):
-                            legalDestinationSpaces.append(d)
-            if k not in refcache:
-                refcache[k] = dict()
-            refcache[k][fromTuple] = legalDestinationSpaces
+        legal_dest_spaces = list()
+        for row in range(8):
+            for column in range(8):
+                candidate_m = (row, column)
+                if self.is_legal_move(board_obj, color, square_ij, candidate_m):
+                    if not self.puts_player_in_check(board_obj, color, square_ij, candidate_m):
+                        legal_dest_spaces.append(candidate_m)
 
-            return legalDestinationSpaces
+        cache[board_hash][square_ij] = legal_dest_spaces
+        return legal_dest_spaces
 
-    def is_legal_move(self, board, color, fromTuple, toTuple):
+    def is_legal_move(self, board, pl_chesscolor, fromTuple, toTuple):
         # print "IsLegalMove with fromTuple:",fromTuple,"and toTuple:",toTuple,"color = ",color
         fromSquare_r = fromTuple[0]
         fromSquare_c = fromTuple[1]
@@ -95,11 +107,11 @@ class ChessRules:
         fromPiece = board.state[fromSquare_r][fromSquare_c]
         toPiece = board.state[toSquare_r][toSquare_c]
 
-        if color == C_BLACK:
-            enemy_color = C_WHITE
+        if pl_chesscolor == C_BLACK_PLAYER:
+            enemy_color = C_WHITE_PLAYER
             enemy_sym_color = 'w'
-        elif color == C_WHITE:
-            enemy_color = C_BLACK
+        elif pl_chesscolor == C_WHITE_PLAYER:
+            enemy_color = C_BLACK_PLAYER
             enemy_sym_color = 'b'
         else:
             raise ValueError('ERR: wrong arg for color in ChessRules.is_legal_move')
@@ -107,13 +119,13 @@ class ChessRules:
         if fromTuple == toTuple:
             return False
 
-        if "P" in fromPiece:
+        if C_PAWN in fromPiece:
             # Pawn
-            if color == "black":
-                if toSquare_r == fromSquare_r + 1 and toSquare_c == fromSquare_c and toPiece == EC_SYM:
+            if pl_chesscolor == C_BLACK_PLAYER:
+                if toSquare_r == fromSquare_r + 1 and toSquare_c == fromSquare_c and toPiece == C_EMPTY_SQUARE:
                     # moving forward one space
                     return True
-                if fromSquare_r == 1 and toSquare_r == fromSquare_r + 2 and toSquare_c == fromSquare_c and toPiece == EC_SYM:
+                if fromSquare_r == 1 and toSquare_r == fromSquare_r + 2 and toSquare_c == fromSquare_c and toPiece == C_EMPTY_SQUARE:
                     # black pawn on starting row can move forward 2 spaces if there is no one directly ahead
                     if self.is_clear_path(board, fromTuple, toTuple):
                         return True
@@ -122,11 +134,11 @@ class ChessRules:
                         enemy_sym_color in toPiece):  # attacking
                     return True
 
-            elif color == "white":
-                if toSquare_r == fromSquare_r - 1 and toSquare_c == fromSquare_c and toPiece == EC_SYM:
+            elif pl_chesscolor == C_WHITE_PLAYER:
+                if toSquare_r == fromSquare_r - 1 and toSquare_c == fromSquare_c and toPiece == C_EMPTY_SQUARE:
                     # moving forward one space
                     return True
-                if fromSquare_r == 6 and toSquare_r == fromSquare_r - 2 and toSquare_c == fromSquare_c and toPiece == EC_SYM:
+                if fromSquare_r == 6 and toSquare_r == fromSquare_r - 2 and toSquare_c == fromSquare_c and toPiece == C_EMPTY_SQUARE:
                     # black pawn on starting row can move forward 2 spaces if there is no one directly ahead
                     if self.is_clear_path(board, fromTuple, toTuple):
                         return True
@@ -135,18 +147,18 @@ class ChessRules:
                         enemy_sym_color in toPiece):  # attacking
                     return True
 
-        elif "R" in fromPiece:
+        elif C_ROOK in fromPiece:
             # Rook
             if (toSquare_r == fromSquare_r or toSquare_c == fromSquare_c) and (
-                    toPiece == EC_SYM or (enemy_sym_color in toPiece)):
+                    toPiece == C_EMPTY_SQUARE or (enemy_sym_color in toPiece)):
                 if self.is_clear_path(board, fromTuple, toTuple):
                     return True
 
-        elif "T" in fromPiece:
+        elif C_KNIGHT in fromPiece:
             # Knight
             col_diff = toSquare_c - fromSquare_c
             row_diff = toSquare_r - fromSquare_r
-            if toPiece == EC_SYM or (enemy_sym_color in toPiece):
+            if toPiece == C_EMPTY_SQUARE or (enemy_sym_color in toPiece):
                 if col_diff == 1 and row_diff == -2:
                     return True
                 if col_diff == 2 and row_diff == -1:
@@ -164,29 +176,29 @@ class ChessRules:
                 if col_diff == -1 and row_diff == -2:
                     return True
 
-        elif "B" in fromPiece:
+        elif C_BISHOP in fromPiece:
             # Bishop
             if (abs(toSquare_r - fromSquare_r) == abs(toSquare_c - fromSquare_c)) and (
-                    toPiece == EC_SYM or (enemy_sym_color in toPiece)):
+                    toPiece == C_EMPTY_SQUARE or (enemy_sym_color in toPiece)):
                 if self.is_clear_path(board, fromTuple, toTuple):
                     return True
 
-        elif "Q" in fromPiece:
+        elif C_QUEEN in fromPiece:
             # Queen
             if (toSquare_r == fromSquare_r or toSquare_c == fromSquare_c) and (
-                    toPiece == EC_SYM or (enemy_sym_color in toPiece)):
+                    toPiece == C_EMPTY_SQUARE or (enemy_sym_color in toPiece)):
                 if self.is_clear_path(board, fromTuple, toTuple):
                     return True
             if (abs(toSquare_r - fromSquare_r) == abs(toSquare_c - fromSquare_c)) and (
-                    toPiece == EC_SYM or (enemy_sym_color in toPiece)):
+                    toPiece == C_EMPTY_SQUARE or (enemy_sym_color in toPiece)):
                 if self.is_clear_path(board, fromTuple, toTuple):
                     return True
 
-        elif "K" in fromPiece:
+        elif C_KING in fromPiece:
             # King
             col_diff = toSquare_c - fromSquare_c
             row_diff = toSquare_r - fromSquare_r
-            if toPiece == EC_SYM or (enemy_sym_color in toPiece):
+            if toPiece == C_EMPTY_SQUARE or (enemy_sym_color in toPiece):
                 if abs(col_diff) == 1 and abs(row_diff) == 0:
                     return True
                 if abs(col_diff) == 0 and abs(row_diff) == 1:
@@ -196,7 +208,7 @@ class ChessRules:
 
         return False  # if none of the other "True"s are hit above
 
-    def DoesMovePutPlayerInCheck(self, board_obj, color, fromTuple, toTuple):
+    def puts_player_in_check(self, board_obj, color, fromTuple, toTuple):
         """
         makes a hypothetical move,
         returns True if it puts current player into check
@@ -211,7 +223,7 @@ class ChessRules:
 
         # make the move, then test if 'color' is in check
         board_obj.state[toSquare_r][toSquare_c] = fromPiece
-        board_obj.state[fromSquare_r][fromSquare_c] = EC_SYM
+        board_obj.state[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE
 
         retval = self.IsInCheck(board_obj, color)
 
@@ -288,7 +300,7 @@ class ChessRules:
                 # diagonal "NW"
                 newTuple = (fromSquare_r - 1, fromSquare_c - 1)
 
-        if board.state[newTuple[0]][newTuple[1]] == EC_SYM:
+        if board.state[newTuple[0]][newTuple[1]] == C_EMPTY_SQUARE:
             return self.is_clear_path(board, newTuple, to_pos)
         return False
 
@@ -315,19 +327,18 @@ class ChessBoard:
             self.squares.append(row)
 
         if setup_type == 0:
-            self.squares[0] = ['bR', 'bT', 'bB', 'bQ', 'bK', 'bB', 'bT', 'bR']
-            self.squares[1] = ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP']
+            self.squares[0] = ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR']
+            self.squares[1] = ['b_']*8
 
-            self.squares[6] = ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP']
-            self.squares[7] = ['wR', 'wT', 'wB', 'wQ', 'wK', 'wB', 'wT', 'wR']
+            self.squares[6] = ['w_']*8
+            self.squares[7] = ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
 
         # Debugging set-ups
         # Testing IsLegalMove
         if setup_type == 1:
-            self.squares[0] = ['bR', 'bT', 'bB', 'bQ', 'bK', 'bB', 'bT', 'bR']
-
-            self.squares[6] = ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP']
-            self.squares[7] = ['wR', 'wT', 'wB', 'wQ', 'wK', 'wB', 'wT', 'wR']
+            self.squares[0] = ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR']
+            self.squares[6] = ['w_']*8
+            self.squares[7] = ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
 
         # Testing IsInCheck, Checkmate
         if setup_type == 2:
@@ -336,7 +347,7 @@ class ChessBoard:
             self.squares[4][2] = 'bB'
             self.squares[4][6] = 'wR'
             self.squares[6][0] = 'wB'
-            self.squares[7] = [EC_SYM, EC_SYM, EC_SYM, 'wK', 'wQ', EC_SYM, 'wT', EC_SYM]
+            self.squares[7] = [C_EMPTY_SQUARE, C_EMPTY_SQUARE, C_EMPTY_SQUARE, 'wK', 'wQ', C_EMPTY_SQUARE, 'wN', C_EMPTY_SQUARE]
 
         # Testing Defensive AI
         if setup_type == 3:
@@ -344,7 +355,7 @@ class ChessBoard:
             self.squares[3][4] = 'bR'
             self.squares[4][2] = 'bB'
             self.squares[4][6] = 'wR'
-            self.squares[7] = [EC_SYM, EC_SYM, EC_SYM, 'wK', 'wQ', EC_SYM, 'wT', EC_SYM]
+            self.squares[7] = [C_EMPTY_SQUARE, C_EMPTY_SQUARE, C_EMPTY_SQUARE, 'wK', 'wQ', C_EMPTY_SQUARE, 'wN', C_EMPTY_SQUARE]
 
     def get_piece_positions(self, color_identifier, piece_t):
         """
@@ -354,14 +365,14 @@ class ChessBoard:
             'king': 'K',
             'queen': 'Q',
             'rook': 'R',
-            'knight': 'T',
+            'knight': 'N',
             'bishop': 'B',
             'pawn': 'P'
         }[piece_t]
 
-        if color_identifier not in (C_BLACK, C_WHITE):
+        if color_identifier not in (C_BLACK_PLAYER, C_WHITE_PLAYER):
             raise ValueError('color non-valid')
-        color_tag = 'w' if (color_identifier == C_WHITE) else 'b'
+        color_tag = 'w' if (color_identifier == C_WHITE_PLAYER) else 'b'
 
         piecePositions = list()
         for row in range(8):
@@ -417,17 +428,17 @@ class ChessBoard:
         else:
             name = "white "
 
-        if 'P' in p:
+        if C_PAWN in p:
             name = name + "pawn"
-        if 'R' in p:
+        if C_ROOK in p:
             name = name + "rook"
-        if 'T' in p:
+        if C_KNIGHT in p:
             name = name + "knight"
-        if 'B' in p:
+        if C_BISHOP in p:
             name = name + "bishop"
-        if 'Q' in p:
+        if C_QUEEN in p:
             name = name + "queen"
-        if 'K' in p:
+        if C_KING in p:
             name = name + "king"
 
         return name
@@ -442,12 +453,12 @@ class ChessBoard:
         toPiece = self.squares[toSquare_r][toSquare_c]
 
         self.squares[toSquare_r][toSquare_c] = fromPiece
-        self.squares[fromSquare_r][fromSquare_c] = EC_SYM
+        self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE
 
         fromPiece_fullString = self.GetFullString(fromPiece)
         toPiece_fullString = self.GetFullString(toPiece)
 
-        if toPiece == EC_SYM:
+        if toPiece == C_EMPTY_SQUARE:
             messageString = fromPiece_fullString + " moves from " + self.ConvertToAlgebraicNotation(moveTuple[0]) + \
                             " to " + self.ConvertToAlgebraicNotation(moveTuple[1])
         else:
@@ -466,6 +477,7 @@ class ChessBoard:
 
 if __name__ == "__main__":
     testcode = int(input('What do you wish to test? 1 for rules, 2 for board, 3 serialize, 4 pieces pos > '))
+
     if testcode == 4:
         print()
         cb = ChessBoard(0)
@@ -476,6 +488,7 @@ if __name__ == "__main__":
     elif testcode == 3:
         cb = ChessBoard(0)
         print(cb.serialize())
+
     elif testcode == 2:
         cb = ChessBoard(0)
         board1 = cb.state
@@ -491,9 +504,10 @@ if __name__ == "__main__":
             for c in range(8):
                 print(board2[r][c], end='')
             print("")
+
     elif testcode == 1:
         cb = ChessBoard()
         rules = ChessRules()
-        print(rules.is_checkmate(cb, C_WHITE))
-        print(rules.is_clear_path(cb.state, (0, 0), (5, 5)))
-        print(rules.is_clear_path(cb.state, (1, 1), (5, 5)))
+        print(rules.is_checkmate(cb, C_WHITE_PLAYER))
+        print(rules.is_clear_path(cb, (0, 0), (5, 5)))
+        print(rules.is_clear_path(cb, (1, 1), (5, 5)))

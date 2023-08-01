@@ -1,6 +1,6 @@
 import random
 
-from model import ChessPlayer, ChessRules, ChessBoard, C_WHITE, C_BLACK, EC_SYM
+from model import ChessPlayer, ChessRules, ChessBoard, C_WHITE_PLAYER, C_BLACK_PLAYER, C_EMPTY_SQUARE
 
 
 class ChessAI(ChessPlayer):
@@ -20,7 +20,7 @@ class ChessAI_random(ChessAI):
 
         # pick a random piece, then a random legal move for that piece
         fromTuple = myPieces[random.randint(0, len(myPieces) - 1)]
-        legalMoves = self.Rules.GetListOfValidMoves(refboard, color, fromTuple)
+        legalMoves = self.Rules.get_valid_moves(refboard, color, fromTuple)
         toTuple = legalMoves[random.randint(0, len(legalMoves) - 1)]
 
         moveTuple = (fromTuple, toTuple)
@@ -41,7 +41,7 @@ class ChessAI_random(ChessAI):
             for col in range(8):
                 piece = board_obj.state[row][col]
                 if myColor in piece:
-                    if len(self.Rules.GetListOfValidMoves(board_obj, color, (row, col))) > 0:
+                    if len(self.Rules.get_valid_moves(board_obj, color, (row, col))) > 0:
                         myPieces.append((row, col))
 
         return myPieces
@@ -121,13 +121,13 @@ class ChessAI_defense(ChessAI_random):
             for col in range(8):
                 piece = board_obj.state[row][col]
                 if enemyColor in piece:
-                    if len(self.Rules.GetListOfValidMoves(board_obj, enemyColor_full, (row, col))) > 0:
+                    if len(self.Rules.get_valid_moves(board_obj, enemyColor_full, (row, col))) > 0:
                         enemyPieces.append((row, col))
 
         return enemyPieces
 
     def GetProtectedMoveTuples(self, board_obj, my_color, myPieces, enemyPieces):
-        enemy_color = C_BLACK if my_color == C_WHITE else C_WHITE
+        enemy_color = C_BLACK_PLAYER if my_color == C_WHITE_PLAYER else C_WHITE_PLAYER
 
         # Get possible moves that opponent can't get next turn
         safe_moves = list()
@@ -135,7 +135,7 @@ class ChessAI_defense(ChessAI_random):
 
         for my_p in myPieces:
             risky_moves.clear()
-            my_legalMoves = self.Rules.GetListOfValidMoves(board_obj, my_color, my_p)
+            my_legalMoves = self.Rules.get_valid_moves(board_obj, my_color, my_p)
 
             for my_move in my_legalMoves:
 
@@ -146,11 +146,11 @@ class ChessAI_defense(ChessAI_random):
                 fromPiece = board_obj.state[fromSquare_r][fromSquare_c]
                 toPiece = board_obj.state[toSquare_r][toSquare_c]
 
-                board_obj.state[fromSquare_r][fromSquare_c] = EC_SYM
+                board_obj.state[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE
                 board_obj.state[toSquare_r][toSquare_c] = fromPiece
 
                 for enemy_p in enemyPieces:
-                    enemy_moves = self.Rules.GetListOfValidMoves(board_obj, enemy_color, enemy_p)
+                    enemy_moves = self.Rules.get_valid_moves(board_obj, enemy_color, enemy_p)
                     for enemy_m in enemy_moves:
                         if enemy_m in my_legalMoves:
                             risky_moves.add(enemy_m)
@@ -175,9 +175,9 @@ class ChessAI_defense(ChessAI_random):
         return piecesProtectedMoves
 
     def GetMovesThatCaptureEnemyPiece(self, board, my_color, pieceType, protectedMoveTuples):
-        if my_color not in (C_BLACK, C_WHITE):
+        if my_color not in (C_BLACK_PLAYER, C_WHITE_PLAYER):
             raise ValueError('color non-valid')
-        enemy_color = C_WHITE if my_color == C_BLACK else C_BLACK
+        enemy_color = C_WHITE_PLAYER if my_color == C_BLACK_PLAYER else C_BLACK_PLAYER
 
         capturePieceMoves = []
         enemyPiecePositions = board.get_piece_positions(enemy_color, pieceType)
@@ -190,16 +190,16 @@ class ChessAI_defense(ChessAI_random):
     def GetMovesThatPutEnemyInCheck(self, board, color, protectedMoveTuples):
 
         # print "In GetMovesThatPutEnemyInCheck"
-        if color == C_BLACK:
-            enemyColor_full = C_WHITE
-        elif color == C_WHITE:
-            enemyColor_full = C_BLACK
+        if color == C_BLACK_PLAYER:
+            enemyColor_full = C_WHITE_PLAYER
+        elif color == C_WHITE_PLAYER:
+            enemyColor_full = C_BLACK_PLAYER
         else:
             raise ValueError()
 
         movesThatPutEnemyInCheck = list()
         for mt in protectedMoveTuples:
-            if self.Rules.DoesMovePutPlayerInCheck(board, enemyColor_full, mt[0], mt[1]):
+            if self.Rules.puts_player_in_check(board, enemyColor_full, mt[0], mt[1]):
                 movesThatPutEnemyInCheck.append(mt)
         return movesThatPutEnemyInCheck
 
@@ -268,7 +268,7 @@ class ChessAI_offense(ChessAI_defense):
         # Tom's add-on. If AI player is playing white -> select one opening amongst:
         # - the grand prix attack
         # - the smith-morra gambit
-        if refboard.turn == 0 and color == C_WHITE:
+        if refboard.turn == 0 and color == C_WHITE_PLAYER:
             self._opening = random.choice(('smith-morra', 'gp-attack'))
         if self._opening is not None:
             tmp = self._move_from_opening(refboard)
@@ -326,7 +326,7 @@ if __name__ == "__main__":
     scr = pygame.display.set_mode(scr_size)
     cb = ChessBoard(3)
     board = cb.state
-    c_color = C_BLACK
+    c_color = C_BLACK_PLAYER
 
     from chessmatch import ChessGameView
     gui = ChessGameView(scr)

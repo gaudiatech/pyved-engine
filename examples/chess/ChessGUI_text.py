@@ -68,7 +68,7 @@ class ChessGUI_text:
 		ch = "?"
 		cmd_r = 0
 		cmd_c = 0
-		while (ch not in board[cmd_r][cmd_c] or self.Rules.GetListOfValidMoves(board,color,(cmd_r,cmd_c))==[]):
+		while (ch not in board[cmd_r][cmd_c] or self.Rules.get_valid_moves(board, color, (cmd_r, cmd_c)) == []):
 			print("Player", color)
 			cmd_r = int(input("  From row: "))
 			cmd_c = int(input("  From col: "))
@@ -80,7 +80,7 @@ class ChessGUI_text:
 				print( "  Nothing there!")
 			elif (ch not in board[cmd_r][cmd_c]):
 				print ("  That's not your piece!")
-			elif self.Rules.GetListOfValidMoves(board,color,(cmd_r,cmd_c)) == []:
+			elif self.Rules.get_valid_moves(board, color, (cmd_r, cmd_c)) == []:
 				print ("  No valid moves for that piece!")
 
 		return (cmd_r,cmd_c)
@@ -88,7 +88,7 @@ class ChessGUI_text:
 
 	def GetPlayerInput_SquareTo(self,board,color,fromTuple):
 		toTuple = ('x','x')
-		validMoveList = self.Rules.GetListOfValidMoves(board,color,fromTuple)
+		validMoveList = self.Rules.get_valid_moves(board, color, fromTuple)
 		print ("List of valid moves for piece at",fromTuple,": ", validMoveList)
 
 		while (not toTuple in validMoveList):
