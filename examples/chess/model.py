@@ -113,10 +113,9 @@ class ChessRules:
 
     def is_legal_move(self, board, pl_chesscolor, fromTuple, toTuple):
         # print "IsLegalMove with fromTuple:",fromTuple,"and toTuple:",toTuple,"color = ",color
-        fromSquare_r = fromTuple[0]
-        fromSquare_c = fromTuple[1]
-        toSquare_r = toTuple[0]
-        toSquare_c = toTuple[1]
+        fromSquare_r, fromSquare_c = fromTuple
+        toSquare_r, toSquare_c = toTuple
+
         fromPiece = board.state[fromSquare_r][fromSquare_c]
         toPiece = board.state[toSquare_r][toSquare_c]
 
@@ -142,10 +141,13 @@ class ChessRules:
                     # black pawn on starting row can move forward 2 spaces if there is no one directly ahead
                     if self.is_clear_path(board, fromTuple, toTuple):
                         return True
+                if board.jumped_over is not None:  # en passant
+                    if (toSquare_r == fromSquare_r+1) and board.jumped_over[0] == toSquare_r and board.jumped_over[1] == toSquare_c:
+                        return True
                 if toSquare_r == fromSquare_r + 1 and (
-                        toSquare_c == fromSquare_c + 1 or toSquare_c == fromSquare_c - 1) and (
-                        enemy_sym_color in toPiece):  # attacking
-                    return True
+                        toSquare_c == fromSquare_c + 1 or toSquare_c == fromSquare_c - 1):
+                    if enemy_sym_color in toPiece:  # can attack
+                        return True
 
             elif pl_chesscolor == C_WHITE_PLAYER:
                 if toSquare_r == fromSquare_r - 1 and toSquare_c == fromSquare_c and toPiece == C_EMPTY_SQUARE:
@@ -155,10 +157,13 @@ class ChessRules:
                     # black pawn on starting row can move forward 2 spaces if there is no one directly ahead
                     if self.is_clear_path(board, fromTuple, toTuple):
                         return True
+                if board.jumped_over is not None:  # en passant
+                    if (toSquare_r == fromSquare_r-1) and board.jumped_over[0] == toSquare_r and board.jumped_over[1] == toSquare_c:
+                        return True
                 if toSquare_r == fromSquare_r - 1 and (
-                        toSquare_c == fromSquare_c + 1 or toSquare_c == fromSquare_c - 1) and (
-                        enemy_sym_color in toPiece):  # attacking
-                    return True
+                        toSquare_c == fromSquare_c + 1 or toSquare_c == fromSquare_c - 1):
+                    if enemy_sym_color in toPiece:  # attacking
+                        return True
 
         elif C_ROOK in fromPiece:
             # Rook
@@ -339,13 +344,27 @@ class ChessBoard:
         else:
             return C_BLACK_PLAYER
 
+    def _load_serial(self, s):
+        elements = [s[i:i + 2] for i in range(0, 8 * 8 * 2, 2)]
+        self._play_sequence = int(s[8 * 8 * 2:])
+        for rank, elt in enumerate(elements):
+            i, j = rank // 8, rank % 8
+            self.squares[i][j] = elt
+
     def __init__(self, setup_type=0, serial=None):
         # keep all informations about the last move, so we can undo it
+        self._backup_serial = None
+
         self._prev_source_square = None
         self._prev_target_square = None
         self._prev_source_piece = None
         self._prev_target_piece = None
         self._prev_player = None
+
+        # infos to keep, in order to detect when its possible to capture "en passant"
+        self.pawn_jumped = False
+        self.jumping_pawn_loc = None
+        self.jumped_over = None
 
         self._play_sequence = 0
         self.squares = list()
@@ -357,11 +376,7 @@ class ChessBoard:
         #  init board. based on the serial
         # ------------------
         if serial is not None:
-            elements = [serial[i:i + 2] for i in range(0, 8 * 8 * 2, 2)]
-            self._play_sequence = int(serial[8 * 8 * 2:])
-            for rank, elt in enumerate(elements):
-                i, j = rank // 8, rank % 8
-                self.squares[i][j] = elt
+            self._load_serial(serial)
             return
 
         # ------------------
@@ -502,47 +517,92 @@ class ChessBoard:
         """
         cls = self.__class__
 
-        self._prev_player = self.curr_player
         fromSquare_r, fromSquare_c = self._prev_source_square = mv_tuple[0]
         toSquare_r, toSquare_c = self._prev_target_square = mv_tuple[1]
-
+        self._prev_player = self.curr_player
         self._prev_source_piece = self.squares[fromSquare_r][fromSquare_c]
         self._prev_target_piece = self.squares[toSquare_r][toSquare_c]
+        fromPiece_fullString = self.GetFullString(self._prev_source_piece)
+        toPiece_fullString = self.GetFullString(self._prev_target_piece)
+        self._backup_serial = self.serialize()
+
+        en_passant = False
+        messageString = 'ERR.'
+
+        if self.pawn_jumped:
+            if toSquare_r == self.jumped_over[0] and toSquare_c == self.jumped_over[1]:
+                en_passant = True
+
+                a, b = self.jumping_pawn_loc
+                self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square we leave
+                self.squares[a][b] = C_EMPTY_SQUARE  # capture the pawn that jumped
+                jo_r, jo_c = self.jumped_over
+                self.squares[jo_r][jo_c] = self._prev_source_piece  # occupy new location
+                self._play_sequence += 1
+
+                messageString = fromPiece_fullString + " from " + cls.to_algebraic_notation(mv_tuple[0]) + \
+                                " captures " + toPiece_fullString + " at " + cls.to_algebraic_notation(
+                    self.jumping_pawn_loc) + " (en passant)"
+                # capitalize first character of messageString
+                messageString = messageString[0].upper() + messageString[1:len(messageString)]
+
+        # reset bc its not possible to take when its more than 1 turn
+        # reset
+        self.pawn_jumped = False
+        self.jumping_pawn_loc = None
+        self.jumped_over = None
+        if en_passant:
+            return messageString
 
         self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
         self.squares[toSquare_r][toSquare_c] = self._prev_source_piece  # square newly taken
-
-        fromPiece_fullString = self.GetFullString(self._prev_source_piece)
-        toPiece_fullString = self.GetFullString(self._prev_target_piece)
+        self._play_sequence += 1
 
         if C_EMPTY_SQUARE == self._prev_target_piece:
+            capture = False
             messageString = fromPiece_fullString + " moves from " + cls.to_algebraic_notation(mv_tuple[0]) + \
                             " to " + cls.to_algebraic_notation(mv_tuple[1])
         else:
+            capture = True
             messageString = fromPiece_fullString + " from " + cls.to_algebraic_notation(mv_tuple[0]) + \
                             " captures " + toPiece_fullString + " at " + cls.to_algebraic_notation(
                 mv_tuple[1]) + "!"
 
-        # capitalize first character of messageString
-        tmp = messageString[0].upper() + messageString[1:len(messageString)]
-        messageString = tmp
-        self._play_sequence += 1
+        # FLAG: it could be possible to capture "en passant" during the next move
+        print(self._prev_source_piece)
+        if (not capture) and (C_PAWN in self._prev_source_piece):
+            if abs(self._prev_source_square[0] - self._prev_target_square[0]) > 1:
+                self.pawn_jumped = True
+                self.jumping_pawn_loc = self._prev_target_square
+                if self._prev_target_square[0] > self._prev_source_square[0]:
+                    self.jumped_over = (self._prev_source_square[0] + 1, self._prev_source_square[1])
+                else:
+                    self.jumped_over = (self._prev_source_square[0] - 1, self._prev_source_square[1])
+                print('jumped:true, over:', self.jumped_over)
 
+        # capitalize first character of messageString
+        messageString = messageString[0].upper() + messageString[1:len(messageString)]
         return messageString
 
     def undo_move(self):
         if (self._prev_source_square is None) or (self._prev_target_square is None):
             raise NotImplementedError('cannot undo more than 1 move, or undo when turn==0')
 
-        i0, j0 = self._prev_source_square
-        self.squares[i0][j0] = self._prev_source_piece
-        i1, j1 = self._prev_target_square
-        self.squares[i1][j1] = self._prev_target_piece
+        # i0, j0 = self._prev_source_square
+        # self.squares[i0][j0] = self._prev_source_piece
+        # i1, j1 = self._prev_target_square
+        # self.squares[i1][j1] = self._prev_target_piece
+        # self._play_sequence -= 1
 
-        self._play_sequence -= 1
+        self._load_serial(self._backup_serial)
 
         self._prev_source_square = None
         self._prev_target_square = None
+
+        # reset
+        self.pawn_jumped = False
+        self.jumping_pawn_loc = None
+        self.jumped_over = None
 
 
 if __name__ == "__main__":
