@@ -1,13 +1,18 @@
 import chdefs
 from ai_players import ChessAI_random, ChessAI_defense, ChessAI_offense
-from model import ChessRules, ChessBoard, ChessPlayer
+from model import ChessRules, ChessBoard, ChessPlayer, BOARDS_DEBUG
 
 
 class ChessgameMod:
     def __init__(self):
+
         # 0 for normal board setup; see ChessBoard class for other options (testing purposes)
         # e.g. the debug mode can use arg 2 instead of 0
+
+        # self.board = ChessBoard(serial=BOARDS_DEBUG['e.p.'])
+
         self.board = ChessBoard(0)
+
         self.rules = ChessRules()
 
         self.players = None

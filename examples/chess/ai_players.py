@@ -138,16 +138,9 @@ class ChessAI_defense(ChessAI_random):
             my_legalMoves = self.Rules.get_valid_moves(board_obj, my_color, my_p)
 
             for my_move in my_legalMoves:
-
-                # make the hypothetical move
-                fromSquare_r, fromSquare_c = my_p
-                toSquare_r, toSquare_c = my_move
-
-                fromPiece = board_obj.state[fromSquare_r][fromSquare_c]
-                toPiece = board_obj.state[toSquare_r][toSquare_c]
-
-                board_obj.state[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE
-                board_obj.state[toSquare_r][toSquare_c] = fromPiece
+                board_obj.move_piece(  # make an hypothetical move
+                    (my_p, my_move)
+                )
 
                 for enemy_p in enemyPieces:
                     enemy_moves = self.Rules.get_valid_moves(board_obj, enemy_color, enemy_p)
@@ -155,9 +148,8 @@ class ChessAI_defense(ChessAI_random):
                         if enemy_m in my_legalMoves:
                             risky_moves.add(enemy_m)
 
-                # undo the temporary move
-                board_obj.state[toSquare_r][toSquare_c] = toPiece
-                board_obj.state[fromSquare_r][fromSquare_c] = fromPiece
+                # undo the temporary move!
+                board_obj.undo_move()
 
             for elt in my_legalMoves:
                 if elt not in risky_moves:
@@ -329,7 +321,7 @@ if __name__ == "__main__":
     c_color = C_BLACK_PLAYER
 
     from chessmatch import ChessGameView
-    gui = ChessGameView(scr)
+    gui = ChessGameView(cb)
     gui.drawboard(scr, board)#, highlight=[])
     pygame.display.flip()
 

@@ -2,7 +2,6 @@
 model for the game of chess (whats a chess Player/a chess Board +what are the rules?)
 """
 
-
 __all__ = [
     'C_KING', 'C_QUEEN', 'C_ROOK', 'C_BISHOP', 'C_KNIGHT', 'C_PAWN',
     'C_BLACK_PLAYER', 'C_WHITE_PLAYER',
@@ -16,6 +15,20 @@ __all__ = [
 C_KING, C_QUEEN, C_ROOK, C_BISHOP, C_KNIGHT, C_PAWN = 'K', 'Q', 'R', 'B', 'N', '_'
 C_BLACK_PLAYER, C_WHITE_PLAYER = 'black', 'white'  # its better use such identifiers rather than str
 C_EMPTY_SQUARE = 'ee'  # empty cell symbol
+
+BOARDS_DEBUG = {
+    'e.p.':  # pour tester "en passant"
+        '\
+bReebBbQbKbBbNbR\
+eeb_b_b_b_b_b_b_\
+b_eebNeeeeeeeeee\
+eeeeeeeeeew_eeee\
+eeeeeeeew_eeeeee\
+eeeeeeeeeeeeeeee\
+w_w_w_w_eeeew_w_\
+wRwNwBwQwKwBwNwR\
+5',
+}
 
 
 class ChessPlayer:
@@ -316,46 +329,78 @@ class ChessBoard:
         for j in range(8):
             for i in range(8):
                 serial += self.squares[j][i]
-        serial += str(self._turn)
+        serial += str(self._play_sequence)
         return serial
 
+    @property
+    def curr_player(self):
+        if not self._play_sequence % 2:
+            return C_WHITE_PLAYER
+        else:
+            return C_BLACK_PLAYER
+
     def __init__(self, setup_type=0, serial=None):
-        self._turn = 0
+        # keep all informations about the last move, so we can undo it
+        self._prev_source_square = None
+        self._prev_target_square = None
+        self._prev_source_piece = None
+        self._prev_target_piece = None
+        self._prev_player = None
+
+        self._play_sequence = 0
         self.squares = list()
         for _ in range(8):
             row = [self.EMPTY_SYM] * 8
             self.squares.append(row)
 
+        # ------------------
+        #  init board. based on the serial
+        # ------------------
+        if serial is not None:
+            elements = [serial[i:i + 2] for i in range(0, 8 * 8 * 2, 2)]
+            self._play_sequence = int(serial[8 * 8 * 2:])
+            for rank, elt in enumerate(elements):
+                i, j = rank // 8, rank % 8
+                self.squares[i][j] = elt
+            return
+
+        # ------------------
+        #  init board. based on the setup_type code
+        # ------------------
         if setup_type == 0:
             self.squares[0] = ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR']
-            self.squares[1] = ['b_']*8
+            self.squares[1] = ['b_'] * 8
 
-            self.squares[6] = ['w_']*8
+            self.squares[6] = ['w_'] * 8
             self.squares[7] = ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
 
         # Debugging set-ups
         # Testing IsLegalMove
-        if setup_type == 1:
+        elif setup_type == 1:
             self.squares[0] = ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR']
-            self.squares[6] = ['w_']*8
+            self.squares[6] = ['w_'] * 8
             self.squares[7] = ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
 
         # Testing IsInCheck, Checkmate
-        if setup_type == 2:
+        elif setup_type == 2:
             self.squares[2][4] = 'bK'
             self.squares[3][4] = 'bR'
             self.squares[4][2] = 'bB'
             self.squares[4][6] = 'wR'
             self.squares[6][0] = 'wB'
-            self.squares[7] = [C_EMPTY_SQUARE, C_EMPTY_SQUARE, C_EMPTY_SQUARE, 'wK', 'wQ', C_EMPTY_SQUARE, 'wN', C_EMPTY_SQUARE]
+            self.squares[7] = [C_EMPTY_SQUARE, C_EMPTY_SQUARE, C_EMPTY_SQUARE, 'wK', 'wQ', C_EMPTY_SQUARE, 'wN',
+                               C_EMPTY_SQUARE]
 
         # Testing Defensive AI
-        if setup_type == 3:
+        elif setup_type == 3:
             self.squares[2][4] = 'bK'
             self.squares[3][4] = 'bR'
             self.squares[4][2] = 'bB'
             self.squares[4][6] = 'wR'
-            self.squares[7] = [C_EMPTY_SQUARE, C_EMPTY_SQUARE, C_EMPTY_SQUARE, 'wK', 'wQ', C_EMPTY_SQUARE, 'wN', C_EMPTY_SQUARE]
+            self.squares[7] = [C_EMPTY_SQUARE, C_EMPTY_SQUARE, C_EMPTY_SQUARE, 'wK', 'wQ', C_EMPTY_SQUARE, 'wN',
+                               C_EMPTY_SQUARE]
+
+        print(self.serialize())
 
     def get_piece_positions(self, color_identifier, piece_t):
         """
@@ -385,7 +430,7 @@ class ChessBoard:
 
     @property
     def turn(self):
-        return self._turn
+        return self._play_sequence
 
     @property
     def state(self):
@@ -403,20 +448,23 @@ class ChessBoard:
             newList.append(self.ConvertToAlgebraicNotation(square))
         return newList
 
-    def ConvertToAlgebraicNotation(self, coords):
+    @classmethod
+    def to_algebraic_notation(cls, coords):
         row, col = coords
         # Converts (row,col) to algebraic notation
         # (row,col) format used in Python Chess code starts at (0,0) in the upper left.
         # Algebraic notation starts in the lower left and uses "a..h" for the column.
-        return self.ConvertToAlgebraicNotation_col(col) + self.ConvertToAlgebraicNotation_row(row)
+        return ChessBoard.to_algebraic_notation_col(col) + ChessBoard.to_algebraic_notation_row(row)
 
-    def ConvertToAlgebraicNotation_row(self, row):
+    @classmethod
+    def to_algebraic_notation_row(cls, row):
         # (row,col) format used in Python Chess code starts at (0,0) in the upper left.
         # Algebraic notation starts in the lower left and uses "a..h" for the column.
         B = ['8', '7', '6', '5', '4', '3', '2', '1']
         return B[row]
 
-    def ConvertToAlgebraicNotation_col(self, col):
+    @classmethod
+    def to_algebraic_notation_col(cls, col):
         # (row,col) format used in Python Chess code starts at (0,0) in the upper left.
         # Algebraic notation starts in the lower left and uses "a..h" for the column.
         A = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
@@ -443,36 +491,56 @@ class ChessBoard:
 
         return name
 
-    def move_piece(self, moveTuple):
-        fromSquare_r = moveTuple[0][0]
-        fromSquare_c = moveTuple[0][1]
-        toSquare_r = moveTuple[1][0]
-        toSquare_c = moveTuple[1][1]
+    @property
+    def prev_player(self):
+        return self._prev_player
 
-        fromPiece = self.squares[fromSquare_r][fromSquare_c]
-        toPiece = self.squares[toSquare_r][toSquare_c]
+    def move_piece(self, mv_tuple):
+        """
+        :param mv_tuple: can be something like ([1,1], [2,6])
+        changes the state of the board
+        """
+        cls = self.__class__
 
-        self.squares[toSquare_r][toSquare_c] = fromPiece
-        self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE
+        self._prev_player = self.curr_player
+        fromSquare_r, fromSquare_c = self._prev_source_square = mv_tuple[0]
+        toSquare_r, toSquare_c = self._prev_target_square = mv_tuple[1]
 
-        fromPiece_fullString = self.GetFullString(fromPiece)
-        toPiece_fullString = self.GetFullString(toPiece)
+        self._prev_source_piece = self.squares[fromSquare_r][fromSquare_c]
+        self._prev_target_piece = self.squares[toSquare_r][toSquare_c]
 
-        if toPiece == C_EMPTY_SQUARE:
-            messageString = fromPiece_fullString + " moves from " + self.ConvertToAlgebraicNotation(moveTuple[0]) + \
-                            " to " + self.ConvertToAlgebraicNotation(moveTuple[1])
+        self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
+        self.squares[toSquare_r][toSquare_c] = self._prev_source_piece  # square newly taken
+
+        fromPiece_fullString = self.GetFullString(self._prev_source_piece)
+        toPiece_fullString = self.GetFullString(self._prev_target_piece)
+
+        if C_EMPTY_SQUARE == self._prev_target_piece:
+            messageString = fromPiece_fullString + " moves from " + cls.to_algebraic_notation(mv_tuple[0]) + \
+                            " to " + cls.to_algebraic_notation(mv_tuple[1])
         else:
-            messageString = fromPiece_fullString + " from " + self.ConvertToAlgebraicNotation(moveTuple[0]) + \
-                            " captures " + toPiece_fullString + " at " + self.ConvertToAlgebraicNotation(
-                moveTuple[1]) + "!"
+            messageString = fromPiece_fullString + " from " + cls.to_algebraic_notation(mv_tuple[0]) + \
+                            " captures " + toPiece_fullString + " at " + cls.to_algebraic_notation(
+                mv_tuple[1]) + "!"
 
         # capitalize first character of messageString
         tmp = messageString[0].upper() + messageString[1:len(messageString)]
         messageString = tmp
-
-        self._turn += 1
+        self._play_sequence += 1
 
         return messageString
+
+    def undo_move(self):
+        if (self._prev_source_square is None) or (self._prev_target_square is None):
+            raise NotImplementedError('cannot undo more than 1 move, or undo when turn==0')
+
+        i0, j0 = self._prev_source_square
+        self.squares[i0][j0] = self._prev_source_piece
+
+        i1, j1 = self._prev_target_square
+        self.squares[i1][j1] = self._prev_target_piece
+
+        self._play_sequence -= 1
 
 
 if __name__ == "__main__":

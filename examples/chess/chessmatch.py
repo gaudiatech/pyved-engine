@@ -21,12 +21,11 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
     OFFSET_X = 64
     OFFSET_Y = 175
 
-    def __init__(self, screenref):
+    def __init__(self, boardref):
         super().__init__()
 
         self.Rules = ChessRules()
-        self.board = None  # update from outside
-        self.curr_color = 'white'  # player active, updated from outside
+        self.board = boardref  # update from outside
 
         self._fluo_squares = None  # qd qq chose est select ->affiche ou on peut bouger
         self.possibleDestinations = None
@@ -37,7 +36,7 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
 
         # self.textBox = ScrollingTextBox(self.screen, 525, 825, 50, 450)
         # -* Hacking begins *-
-        self.textBox = pyv.console.CustomConsole(screenref, (self.OFFSET_X, 4, 640, 133))
+        self.textBox = pyv.console.CustomConsole(pyv.get_surface(), (self.OFFSET_X, 4, 640, 133))
         self.textBox.active = True
         self.textBox.bg_color = self.BG_COLOR  # customize console
         self.textBox.font_size = 25
@@ -121,7 +120,6 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
             current_square = (current_square + 1) % 2
 
         # draw row/column labels around the edge of the board
-        chessboard_obj = ChessBoard(0)  # need a dummy object to access some of ChessBoard's methods....
         color = (255, 255, 255)  # white
         antialias = 1
 
@@ -131,7 +129,7 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
                 (screenX, screenY) = self.ConvertToScreenCoords((r, c))
                 screenX = screenX + self.square_size / 2
                 screenY = screenY + self.square_size / 2
-                notation = chessboard_obj.ConvertToAlgebraicNotation_col(c)
+                notation = ChessBoard.to_algebraic_notation_col(c)
                 renderedLine = self.fontDefault.render(notation, antialias, color)
                 scrsurf.blit(renderedLine, (screenX, screenY))
 
@@ -141,7 +139,7 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
                 (screenX, screenY) = self.ConvertToScreenCoords((r, c))
                 screenX = screenX + self.square_size / 2
                 screenY = screenY + self.square_size / 2
-                notation = chessboard_obj.ConvertToAlgebraicNotation_row(r)
+                notation = ChessBoard.to_algebraic_notation_row(r)
                 renderedLine = self.fontDefault.render(notation, antialias, color)
                 scrsurf.blit(renderedLine, (screenX, screenY))
 
@@ -208,7 +206,7 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
         """
 
         board = self.board
-        currcolor = self.curr_color
+        curr_chesscolor = self.board.curr_player
 
         (mouseX, mouseY) = ev.pos
         squareClicked = self.ConvertToChessCoords((mouseX, mouseY))
@@ -221,13 +219,13 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
 
         if not self.fromSquareChosen:
             r, c = squareClicked
-            validselection = (self.curr_color == 'black' and 'b' == board.state[r][c][0])
-            validselection = validselection or (self.curr_color == 'white' and 'w' == board.state[r][c][0])
+            validselection = (curr_chesscolor == C_BLACK_PLAYER and 'b' == board.state[r][c][0])
+            validselection = validselection or (curr_chesscolor == C_WHITE_PLAYER and 'w' == board.state[r][c][0])
             if validselection:
                 self.fromSquareChosen = squareClicked
                 fromTuple = tuple(squareClicked)
                 # TODO set fromTuple properly
-                self.possibleDestinations = self.Rules.get_valid_moves(board, currcolor, fromTuple)
+                self.possibleDestinations = self.Rules.get_valid_moves(board, curr_chesscolor, fromTuple)
                 if len(self.possibleDestinations):
                     self._fluo_squares = list(self.possibleDestinations)
                 else:
@@ -261,13 +259,20 @@ class ChessTicker(pyv.EvListener):
     def __init__(self, refmod, refview):
         super().__init__()
         self.model = refmod
+
         self.refview = refview
         self.refview.board = refmod.board
+
         self.stored_human_input = None  # when smth has been played!
-        self._curr_pl_idx = 0
-        self._turn_count = 0
+
+        # self._curr_pl_idx = 0
+
+        # +1 when both have played!!
+        self._turn_count = refmod.board.turn//2
+
         self.endgame_msg_added = False
-        self.board_st = refmod.board.state
+
+        # self.board_st = refmod.board.state
         self.ready_to_quit = False
         self.endgame_msg_added = False
 
@@ -278,6 +283,9 @@ class ChessTicker(pyv.EvListener):
     def on_keydown(self, ev):
         if ev.key == pyv.pygame.K_ESCAPE:
             self.pev(pyv.EngineEvTypes.Gameover)
+        elif ev.key == pyv.pygame.K_SPACE:
+            print('    *dump serial*')
+            print(self.model.board.serialize())
         elif self.ready_to_quit:
             self.pev(pyv.EngineEvTypes.StatePop)
 
@@ -295,12 +303,15 @@ class ChessTicker(pyv.EvListener):
         self.on_gameover(ev)
 
     def on_paint(self, ev):
-        self.refview.drawboard(ev.screen, self.board_st)
+        self.refview.drawboard(ev.screen, self.model.board.state)
 
     def on_update(self, ev):
-        board_st = self.board_st
+        # board_st = self.board_st
         players = self.model.players
-        curr_player = players[self._curr_pl_idx]
+        pl_color = self.model.board.curr_player
+        # print('color thats now playing is: ', pl_color)
+        curr_pl_idx = ['white', 'black'].index(pl_color)
+        curr_player = players[curr_pl_idx]
 
         if self.ready_to_quit:
             # --- manage end game ---
@@ -308,11 +319,11 @@ class ChessTicker(pyv.EvListener):
                 self.endgame_msg_added = True
 
                 self.refview.PrintMessage("CHECKMATE!")
-                winnerIndex = (self._curr_pl_idx+1) % 2
+                winnerIndex = (curr_pl_idx+1) % 2
                 self.refview.PrintMessage(
                     players[winnerIndex].name + " (" + players[winnerIndex].color + ") won the game!")
 
-                self.refview.EndGame(self.board_st)
+                self.refview.EndGame(self.model.board.state)
             return
 
         # -- the problem with THAT type of code is that it BLOCKS the soft!
@@ -341,9 +352,9 @@ class ChessTicker(pyv.EvListener):
             # this will cause the currentPlayerIndex to toggle between 1 and 0
 
             # -- iterate game --
-            self._curr_pl_idx = (self._curr_pl_idx + 1) % 2
-            curr_player = players[self._curr_pl_idx]
-            self.refview.curr_color = ['white', 'black'][self._curr_pl_idx]
+            #self._curr_pl_idx = (self._curr_pl_idx + 1) % 2
+            #curr_player = players[self._curr_pl_idx]
+            self.refview.curr_color = self.model.board.curr_player  # ['white', 'black'][self._curr_pl_idx]
 
             # TODO repair feat.
             # if AIvsAI and AIpause:
@@ -369,7 +380,7 @@ class ChessmatchState(pyv.BaseGameState):
 
     def enter(self):
         self.m = ChessgameMod()
-        pygamegui = self.v = ChessGameView(pyv.get_surface())
+        pygamegui = self.v = ChessGameView(self.m.board)
         self.t = ChessTicker(self.m, pygamegui)
         self.t.turn_on()
 
