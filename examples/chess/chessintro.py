@@ -5,6 +5,10 @@ import pyved_engine as pyv
 # - alias
 pygame = pyv.pygame
 EngineEvTypes = pyv.EngineEvTypes
+Button = pyv.gui.Button2
+
+# - contsants
+BGCOLOR = 'antiquewhite3'
 
 
 def proc_start():
@@ -16,6 +20,7 @@ class IntroCompo(pyv.EvListener):
     """
     main component for this game state
     """
+
     def _update_playertypes(self):
         chdefs.pltype1 = chdefs.OMEGA_PL_TYPES[self.idx_pl1]
         chdefs.pltype2 = chdefs.OMEGA_PL_TYPES[self.idx_pl2]
@@ -33,55 +38,77 @@ class IntroCompo(pyv.EvListener):
         # current sig is:
         # (position, text, txtsize=35, color=None, anchoring=ANCHOR_LEFT, debugmode=False)
         sw = pyv.get_surface().get_width()
-        self.title = pyv.gui.Label((sw//2, 100), 'The game of chess', anchoring=pyv.gui.ANCHOR_CENTER)
+        self.title = pyv.gui.Label(
+            (-150 + (sw // 2), 100), 'The game of chess', txt_size=41, anchoring=pyv.gui.ANCHOR_CENTER
+        )
         self.title.textsize = 122
         self.title.color = 'brown'
 
         self.pltypes_labels = [
-            pyv.gui.Label((115, 145), 'unkno type p1', txt_size=28, color='darkblue'),
-            pyv.gui.Label((115, 205), 'unkno type p2', txt_size=28, color='darkblue'),
+            pyv.gui.Label((115, 145), 'unkno type p1', color='darkblue', txt_size=24),
+            pyv.gui.Label((115, 205), 'unkno type p2', color='darkblue', txt_size=24),
         ]
         self._update_playertypes()
 
         # - v: buttons
         def rotatepl1():
-            self.idx_pl1 = (self.idx_pl1+1) % len(chdefs.OMEGA_PL_TYPES)
+            self.idx_pl1 = (self.idx_pl1 + 1) % len(chdefs.OMEGA_PL_TYPES)
             self._update_playertypes()
 
         def rotatepl2():
-            self.idx_pl2 = (self.idx_pl2+1) % len(chdefs.OMEGA_PL_TYPES)
+            self.idx_pl2 = (self.idx_pl2 + 1) % len(chdefs.OMEGA_PL_TYPES)
+            self._update_playertypes()
+
+        def rotleft_pl1():
+            self.idx_pl1 = (self.idx_pl1 - 1)
+            if self.idx_pl1 < 0:
+                self.idx_pl1 = -1 + len(chdefs.OMEGA_PL_TYPES)
+            self._update_playertypes()
+
+        def rotleft_pl2():
+            self.idx_pl2 = (self.idx_pl2 - 1)
+            if self.idx_pl2 < 0:
+                self.idx_pl2 = -1 + len(chdefs.OMEGA_PL_TYPES)
             self._update_playertypes()
 
         self.buttons = [
-            pyv.gui.Button((128, 256), (200, 50), 'Start Chessmatch'),
-            pyv.gui.Button((128 + 200 + 25, 140), (60, 60), ' > '),
-            pyv.gui.Button((128 - 25 - 60, 140), (60, 60), ' < '),
-            pyv.gui.Button((128+200+25, 200), (60, 60), ' > '),
-            pyv.gui.Button((128-25-60, 200), (60, 60), ' < '),
+            Button(None, 'Start Chessmatch', (128, 256), callback=proc_start),
+            Button(None, ' > ', (128 + 200 + 25, 140), callback=rotatepl1),
+            Button(None, ' < ', (128 - 25 - 60, 140), callback=rotleft_pl1),
+            Button(None, ' > ', (128 + 200 + 25, 200), callback=rotatepl2),
+            Button(None, ' < ', (128 - 25 - 60, 200), callback=rotleft_pl2),
         ]
 
-        self.buttons[0].callback = proc_start
-        self.buttons[1].callback = rotatepl1
-        self.buttons[3].callback = rotatepl2
+        for b in self.buttons:
+            b.set_debug_flag()
+
+        # ugly fix december 22 ->bc gui.Button has problem in web ctx!
+        # img = pygame.image.load('user_assets/(astero)enter_start.png')
+        # self.buttons[0].image = img
+        # x, y = self.buttons[0].rect.topleft
+        # self.buttons[0].rect = img.get_rect()
+        # self.buttons[0].rect.topleft = (x, y)
 
     def turn_on(self):
         super().turn_on()
         print('press RETURN to start a match')
+        for b in self.buttons:
+            b.set_active()
+
+    def turn_off(self):
+        super().turn_off()
+        for b in self.buttons:
+            b.set_active(False)
 
     def on_paint(self, ev):
-        ev.screen.fill('antiquewhite3')
+        ev.screen.fill(BGCOLOR)
 
         self.title.draw()
         for lab in self.pltypes_labels:
             lab.draw()
 
         for b in self.buttons:
-            ev.screen.blit(b.image, b.rect.topleft)
-
-    def on_mousedown(self, ev):
-        for b in self.buttons:
-            if b.rect.collidepoint(ev.pos) and b.callback:
-                b.callback()
+            b.draw()  # ev.screen.blit(b.image, b.rect.topleft)
 
     def on_keydown(self, ev):
         if ev.key == pygame.K_ESCAPE:
@@ -108,4 +135,5 @@ class ChessintroState(pyv.BaseGameState):
         self.icompo.turn_off()
 
     def pause(self):
+        print('intro mise en pause')
         self.icompo.turn_off()
