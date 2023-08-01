@@ -1,8 +1,7 @@
 import chdefs
 import pyved_engine as pyv
-from ai_players import ChessAI_random, ChessAI_offense, ChessAI_defense
-from model import ChessRules, ChessBoard, ChessPlayer
-
+from model import *
+from ChessmatchMod import ChessgameMod
 
 # --- alias
 pygame = pyv.pygame
@@ -16,58 +15,7 @@ def load_img(assetname):
     return pygame.image.load('images/' + assetname)
 
 
-class ChessgameModel:
-    def __init__(self):
-        # 0 for normal board setup; see ChessBoard class for other options (testing purposes)
-        # e.g. the debug mode can use arg 2 instead of 0
-        self.board = ChessBoard(0)
-        self.rules = ChessRules()
-
-        self.players = None
-        self._initplayers()
-
-    def _initplayers(self):
-        default_config = (
-            'AI', 'white', 'randomAI',
-            'AI', 'black', 'randomAI'
-        )
-        (player1Name, player1Color, player1Type, player2Name, player2Color, player2Type) = default_config
-        # replace default config playertypes by what has been stored in chdefs
-        player1Type, player2Type = chdefs.pltype1, chdefs.pltype2
-        if player2Type == 'human':
-            player2Name = 'Player2'
-        if player1Type == 'human':
-            player1Name = 'Player1'
-
-        self.players = [0, 0]
-        if player1Type == 'human':
-            self.players[0] = ChessPlayer(player1Name, player1Color)
-        elif player1Type == 'randomAI':
-            self.players[0] = ChessAI_random(player1Name, player1Color)
-        elif player1Type == 'defenseAI':
-            self.players[0] = ChessAI_defense(player1Name, player1Color)
-        elif player1Type == 'offenseAI':
-            self.players[0] = ChessAI_offense(player1Name, player1Color)
-        if player2Type == 'human':
-            self.players[1] = ChessPlayer(player2Name, player2Color)
-        elif player2Type == 'randomAI':
-            self.players[1] = ChessAI_random(player2Name, player2Color)
-        elif player2Type == 'defenseAI':
-            self.players[1] = ChessAI_defense(player2Name, player2Color)
-        elif player2Type == 'offenseAI':
-            self.players[1] = ChessAI_offense(player2Name, player2Color)
-        if 'AI' in self.players[0].type and 'AI' in self.players[1].type:
-            AIvsAI = True
-        else:
-            AIvsAI = False
-        if PAUSE_SEC > 0:
-            AIpause = True
-            AIpauseSeconds = int(PAUSE_SEC)
-        else:
-            AIpause = False
-
-
-class ChessGameView(pyv.EvListener):
+class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
     BG_COLOR = (125, 110, 120)  #  '#06170e' # dark green  #
 
     OFFSET_X = 64
@@ -208,40 +156,40 @@ class ChessGameView(pyv.EvListener):
         # draw pieces
         for r in range(boardSize):
             for c in range(boardSize):
-                if board[r][c] == 'bP':
+                if board[r][c] == 'b'+C_PAWN:
                     self.dessin_piece_centree(scrsurf, self.black_pawn, (r, c))
 
-                if board[r][c] == 'bR':
+                if board[r][c] == 'b'+C_ROOK:
                     self.dessin_piece_centree(scrsurf, self.black_rook, (r, c))
 
-                if board[r][c] == 'bT':
+                if board[r][c] == 'b'+C_KNIGHT:
                     self.dessin_piece_centree(scrsurf, self.black_knight, (r, c))
 
-                if board[r][c] == 'bB':
+                if board[r][c] == 'b'+C_BISHOP:
                     self.dessin_piece_centree(scrsurf, self.black_bishop, (r, c), -13)
 
-                if board[r][c] == 'bQ':
+                if board[r][c] == 'b'+C_QUEEN:
                     self.dessin_piece_centree(scrsurf, self.black_queen, (r, c))
 
-                if board[r][c] == 'bK':
+                if board[r][c] == 'b'+C_KING:
                     self.dessin_piece_centree(scrsurf, self.black_king, (r, c), -18)
 
-                if board[r][c] == 'wP':
+                if board[r][c] == 'w'+C_PAWN:
                     self.dessin_piece_centree(scrsurf, self.white_pawn, (r, c))
 
-                if board[r][c] == 'wR':
+                if board[r][c] == 'w'+C_ROOK:
                     self.dessin_piece_centree(scrsurf, self.white_rook, (r, c))
 
-                if board[r][c] == 'wT':
+                if board[r][c] == 'w'+C_KNIGHT:
                     self.dessin_piece_centree(scrsurf, self.white_knight, (r, c))
 
-                if board[r][c] == 'wB':
+                if board[r][c] == 'w'+C_BISHOP:
                     self.dessin_piece_centree(scrsurf, self.white_bishop, (r, c), -13)
 
-                if board[r][c] == 'wQ':
+                if board[r][c] == 'w'+C_QUEEN:
                     self.dessin_piece_centree(scrsurf, self.white_queen, (r, c))
 
-                if board[r][c] == 'wK':
+                if board[r][c] == 'w'+C_KING:
                     self.dessin_piece_centree(scrsurf, self.white_king, (r, c), -18)
 
     def EndGame(self, board):
@@ -274,12 +222,12 @@ class ChessGameView(pyv.EvListener):
         if not self.fromSquareChosen:
             r, c = squareClicked
             validselection = (self.curr_color == 'black' and 'b' == board.state[r][c][0])
-            validselection = validselection or (self.curr_color == 'white' and 'w' == board.GetState()[r][c][0])
+            validselection = validselection or (self.curr_color == 'white' and 'w' == board.state[r][c][0])
             if validselection:
                 self.fromSquareChosen = squareClicked
                 fromTuple = tuple(squareClicked)
                 # TODO set fromTuple properly
-                self.possibleDestinations = self.Rules.GetListOfValidMoves(board, currcolor, fromTuple)
+                self.possibleDestinations = self.Rules.get_valid_moves(board, currcolor, fromTuple)
                 if len(self.possibleDestinations):
                     self._fluo_squares = list(self.possibleDestinations)
                 else:
@@ -341,7 +289,7 @@ class ChessTicker(pyv.EvListener):
         maybe there are other ways to exit than just pressing ESC...
         in this method, we update the game object
         """
-        chdefs.ref_game_obj.gameover = True
+        pyv.vars.gameover = True
 
     def on_quit(self, ev):  # press quit button
         self.on_gameover(ev)
@@ -420,16 +368,13 @@ class ChessmatchState(pyv.BaseGameState):
     # bind state_id to class is done automatically by kengi (part 1 /2)
 
     def enter(self):
-        self.m = ChessgameModel()
-
+        self.m = ChessgameMod()
         pygamegui = self.v = ChessGameView(pyv.get_surface())
-
         self.t = ChessTicker(self.m, pygamegui)
         self.t.turn_on()
 
     def release(self):
-        for evl in (self.v, self.t):
-            evl.turn_off()
+        self.t.turn_off()
 
 
 # ----------------

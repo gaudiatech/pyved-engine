@@ -85,7 +85,7 @@ class IntroCompo(pyv.EvListener):
 
     def on_keydown(self, ev):
         if ev.key == pygame.K_ESCAPE:
-            chdefs.ref_game_obj.gameover = True
+            pyv.vars.gameover = True
         elif ev.key == pygame.K_RETURN:
             proc_start()
         else:
