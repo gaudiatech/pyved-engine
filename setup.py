@@ -13,7 +13,7 @@ if os.path.isfile(requirements_file):
 import sys
 
 sys.path.append('src')
-from pyved_engine.__version__ import ENGI_VERSION
+from pyved_engine import vars
 from setuptools import setup
 
 pck_list = [
@@ -24,14 +24,17 @@ pck_list = [
     "pyved_engine.looparts",  # to be sure we get looparts/rogue.py, looparts/tabletop.py, etc.
     "pyved_engine.looparts.ai",
     "pyved_engine.looparts.demolib",
-    "pyved_engine.looparts.gui",
-    "pyved_engine.looparts.isometric",
-    "pyved_engine.looparts.polarbear",
-    "pyved_engine.looparts.tmx",
-    "pyved_engine.looparts.tmx.pytiled_parser",
-    "pyved_engine.looparts.tmx.pytiled_parser.parsers",
-    "pyved_engine.looparts.tmx.pytiled_parser.parsers.json",
-    "pyved_engine.looparts.tmx.pytiled_parser.parsers.tmx",
+    #"pyved_engine.looparts.gui",
+    'pyved_engine.add_ons.gui',
+    'pyved_engine.add_ons.tmx',
+    "pyved_engine.add_ons.tmx.pytiled_parser",
+    "pyved_engine.add_ons.tmx.pytiled_parser.parsers",
+    "pyved_engine.add_ons.tmx.pytiled_parser.parsers.json",
+    "pyved_engine.add_ons.tmx.pytiled_parser.parsers.tmx",
+
+    #"pyved_engine.looparts.isometric",
+    #"pyved_engine.looparts.polarbear",
+    #"pyved_engine.looparts.tmx",
 ]
 
 this_directory = Path(__file__).parent
@@ -39,7 +42,7 @@ long_desc = (this_directory / "README.md").read_text()
 
 setup(
     name='pyved-engine',
-    version=str(ENGI_VERSION),
+    version=str(vars.ENGINE_VERSION_STR),
 
     description='Custom game engine built upon python/pygame',
     long_description=long_desc,
