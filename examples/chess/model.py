@@ -352,6 +352,23 @@ class ChessBoard:
         en_passant = False
         messageString = 'ERR.'
 
+        if self._prev_source_piece == 'w'+C_PAWN:
+            if toSquare_r == 0:
+                # auto-promote to queen
+                self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
+                self.squares[toSquare_r][toSquare_c] = colorsym(self.curr_player)+'Q'
+                self._play_sequence += 1
+                return "White pawn moves from " + coords_to_alg(mv_tuple[0]) + \
+                            " to " + coords_to_alg(mv_tuple[1]) + ", gets promoted"
+        if self._prev_source_piece == 'b'+C_PAWN:
+            if toSquare_r == 7:
+                # auto-promote to queen
+                self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
+                self.squares[toSquare_r][toSquare_c] = colorsym(self.curr_player)+'Q'
+                self._play_sequence += 1
+                return "Black pawn moves from " + coords_to_alg(mv_tuple[0]) + \
+                            " to " + coords_to_alg(mv_tuple[1]) + ", gets promoted"
+
         if self.pawn_jumped:
             if toSquare_r == self.jumped_over[0] and toSquare_c == self.jumped_over[1]:
                 en_passant = True
