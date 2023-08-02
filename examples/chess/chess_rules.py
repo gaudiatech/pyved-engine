@@ -216,7 +216,7 @@ class ChessRules:
             if not boardref.wK_moved:  # and not ChessRules.is_player_in_check(boardref, chesscolor):
                 # TODO cmt vérifier que rien fait échec sur la ligne de deplacement?
                 coords_pt_roque = alg_to_coords('g1')
-                coords_gd_roque = alg_to_coords('c2')
+                coords_gd_roque = alg_to_coords('c1')
                 if to_sq == coords_pt_roque and (not boardref.wR8_moved):  # test petit roque
                     if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq,
                                                                                                to_sq):

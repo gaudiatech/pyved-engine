@@ -3,7 +3,6 @@ model for the game of chess (whats a chess Player/a chess Board +what are the ru
 """
 from chess_rules import *
 
-
 __all__ = [
     'C_KING', 'C_QUEEN', 'C_ROOK', 'C_BISHOP', 'C_KNIGHT', 'C_PAWN',
     'C_BLACK_PLAYER', 'C_WHITE_PLAYER',
@@ -16,7 +15,6 @@ __all__ = [
     'to_algebraic_notation_col',
     'to_algebraic_notation_row'
 ]
-
 
 BOARDS_DEBUG = {
     'e.p.':  # pour tester "en passant"
@@ -99,7 +97,7 @@ class ChessBoard:
             return chesspiece in content
         else:
             adhoc_sym = colorsym(chesscolor)
-            return content == adhoc_sym+chesspiece
+            return content == adhoc_sym + chesspiece
 
     def square_ctrled_by(self, sq, chesscolor):
         """
@@ -269,21 +267,87 @@ class ChessBoard:
     def prev_player(self):
         return self._prev_player
 
+    def do_castle(self, chesscolor, queen_side=False):
+        sym = colorsym(chesscolor)
+        if chesscolor == C_BLACK_PLAYER:
+            self.bK_moved = True
+            if queen_side:
+                self.bR1_moved = True
+            else:
+                self.bR8_moved = True
+            message_str = 'Black castles ' + ('(queen-side)' if queen_side else '(king-side)')
+            j = 0
+        elif chesscolor == C_WHITE_PLAYER:
+            self.wK_moved = True
+            if queen_side:
+                self.wR1_moved = True
+            else:
+                self.wR8_moved = True
+            message_str = 'White castles ' + ('(queen-side)' if queen_side else '(king-side)')
+            j = 7
+        else:
+            raise ValueError('non-valid chess arg:', chesscolor)
+
+        # move the king
+        self.squares[j][4] = C_EMPTY_SQUARE
+        if queen_side:
+            self.squares[j][2] = sym + C_KING
+        else:
+            self.squares[j][6] = sym + C_KING
+
+        # move the rook
+        if queen_side:
+            self.squares[j][0] = C_EMPTY_SQUARE
+            self.squares[j][3] = sym + C_ROOK
+        else:
+            self.squares[j][7] = C_EMPTY_SQUARE
+            self.squares[j][5] = sym + C_ROOK
+
+        # turn is over
+        self._play_sequence += 1
+        return message_str
+
     def move_piece(self, mv_tuple):
         """
         :param mv_tuple: can be something like ([1,1], [2,6])
         changes the state of the board
         """
-        cls = self.__class__
-
         fromSquare_r, fromSquare_c = self._prev_source_square = mv_tuple[0]
         toSquare_r, toSquare_c = self._prev_target_square = mv_tuple[1]
+
         self._prev_player = self.curr_player
         self._prev_source_piece = self.squares[fromSquare_r][fromSquare_c]
         self._prev_target_piece = self.squares[toSquare_r][toSquare_c]
+
         fromPiece_fullString = self.GetFullString(self._prev_source_piece)
         toPiece_fullString = self.GetFullString(self._prev_target_piece)
         self._backup_serial = self.serialize()
+
+        # detect castling:
+        if self._prev_source_piece in ('bK', 'wK'):
+            if fromSquare_r == toSquare_r == 7 and fromSquare_c == 4 and toSquare_c == 6:  # small castle white
+                return self.do_castle(self.curr_player)
+            if fromSquare_r == toSquare_r == 7 and fromSquare_c == 4 and toSquare_c == 2:  # large castle white
+                return self.do_castle(self.curr_player, True)
+            if fromSquare_r == toSquare_r == 0 and fromSquare_c == 4 and toSquare_c == 6:  # small castle black
+                return self.do_castle(self.curr_player)
+            if fromSquare_r == toSquare_r == 0 and fromSquare_c == 4 and toSquare_c == 2:  # large castle white
+                return self.do_castle(self.curr_player, True)
+
+        if self._prev_source_piece == 'wR':
+            if self._prev_source_square[0] == 7 and self._prev_source_square[1] == 7:
+                self.wR8_moved = True
+            elif self._prev_source_square[0] == 7 and self._prev_source_square[1] == 0:
+                self.wR1_moved = True
+        if self._prev_source_piece == 'bR':
+            if self._prev_source_square[0] == 0 and self._prev_source_square[1] == 7:
+                self.bR8_moved = True
+            elif self._prev_source_square[0] == 0 and self._prev_source_square[1] == 0:
+                self.bR1_moved = True
+        elif self._prev_source_piece == 'bK':
+            self.bK_moved = True
+        elif self._prev_source_piece == 'wK':
+            self.wK_moved = True
 
         en_passant = False
         messageString = 'ERR.'
@@ -302,8 +366,7 @@ class ChessBoard:
                 messageString = fromPiece_fullString + " from " + coords_to_alg(mv_tuple[0]) + \
                                 " captures " + toPiece_fullString + " at " + coords_to_alg(
                     self.jumping_pawn_loc) + " (en passant)"
-                # capitalize first character of messageString
-                messageString = messageString[0].upper() + messageString[1:len(messageString)]
+                messageString.capitalize()
 
         # reset bc its not possible to take when its more than 1 turn
         # reset
@@ -339,22 +402,14 @@ class ChessBoard:
                     self.jumped_over = (self._prev_source_square[0] - 1, self._prev_source_square[1])
                 print('jumped:true, over:', self.jumped_over)
 
-        # capitalize first character of messageString
-        messageString = messageString[0].upper() + messageString[1:len(messageString)]
+        messageString.capitalize()
         return messageString
 
     def undo_move(self):
         if (self._prev_source_square is None) or (self._prev_target_square is None):
             raise NotImplementedError('cannot undo more than 1 move, or undo when turn==0')
 
-        # i0, j0 = self._prev_source_square
-        # self.squares[i0][j0] = self._prev_source_piece
-        # i1, j1 = self._prev_target_square
-        # self.squares[i1][j1] = self._prev_target_piece
-        # self._play_sequence -= 1
-
         self._load_serial(self._backup_serial)
-
         self._prev_source_square = None
         self._prev_target_square = None
 
