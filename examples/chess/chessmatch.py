@@ -129,7 +129,7 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
                 (screenX, screenY) = self.ConvertToScreenCoords((r, c))
                 screenX = screenX + self.square_size / 2
                 screenY = screenY + self.square_size / 2
-                notation = ChessBoard.to_algebraic_notation_col(c)
+                notation = to_algebraic_notation_col(c)
                 renderedLine = self.fontDefault.render(notation, antialias, color)
                 scrsurf.blit(renderedLine, (screenX, screenY))
 
@@ -139,7 +139,7 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
                 (screenX, screenY) = self.ConvertToScreenCoords((r, c))
                 screenX = screenX + self.square_size / 2
                 screenY = screenY + self.square_size / 2
-                notation = ChessBoard.to_algebraic_notation_row(r)
+                notation = to_algebraic_notation_row(r)
                 renderedLine = self.fontDefault.render(notation, antialias, color)
                 scrsurf.blit(renderedLine, (screenX, screenY))
 
@@ -374,7 +374,7 @@ class ChessTicker(pyv.EvListener):
             self.refview.PrintMessage("")
             baseMsg = "TURN %s - %s (%s)" % (str(self._turn_count), curr_player.name, currentColor)
             self.refview.PrintMessage("--%s--" % baseMsg)
-            if self.model.rules.IsInCheck(refboard, currentColor):
+            if self.model.rules.is_player_in_check(refboard, currentColor):
                 suffx = '{} ({}) is in check'.format(curr_player.name, curr_player.color)
                 self.refview.PrintMessage("Warning..." + suffx)
 
