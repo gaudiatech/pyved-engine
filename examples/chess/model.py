@@ -3,6 +3,57 @@ model for the game of chess (whats a chess Player/a chess Board +what are the ru
 """
 from chess_rules import *
 
+
+# todo future model will use a class for chesspiece + an int matrix
+# i should be able to write high-level ideas such as:
+# if board['d4'].is_pawn():
+#     ...
+
+# -------------------------------------
+#  projekt below!
+# -------------------------------------
+# class ChessPiece:
+#     KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN = 'king', 'queen', 'rook', 'bishop', 'knight', 'pawn'
+#     TYPES = (KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN)
+#
+#     free_id = 2048  # abritrary
+#
+#     # warning! That trick wont work if you change chesspiece codes. Now Im using str values
+#     def __getattr__(self, attr_name):
+#         if attr_name[0:3] == 'is_':
+#             x = attr_name[3:]
+#             if x == 'white':
+#                 return lambda: self.color == C_WHITE_PLAYER
+#             elif x == 'black':
+#                 return lambda: self.color == C_BLACK_PLAYER
+#             else:
+#                 for cp_type in self.TYPES:
+#                     if x == cp_type:
+#                         return lambda: self.cp_type == x
+#         raise AttributeError('')
+#
+#     def __init__(self, color, cp_type, curr_square=None):
+#         self.p_id = self.__class__.free_id
+#         self.__class__.free_id -= 1
+#         self.color = color
+#         if color not in (C_BLACK_PLAYER, C_WHITE_PLAYER):
+#             raise ValueError('ERR: looks like the "color" arg. passed isnt valid:', color)
+#         self.cp_type = cp_type
+#         self.loc = curr_square
+#         if curr_square:
+#             if not (0 <= curr_square[0] < 8 and 0 <= curr_square[1] < 8):
+#                 raise ValueError('ERR: looks like the curr_square arg. passed isnt valid:', curr_square)
+#
+#
+# tt = ChessPiece('black', 'king')
+# print(tt.is_black())
+# print(tt.is_white())
+# print('-')
+# print(tt.is_pawn())
+# print(tt.is_bishop())
+# print(tt.is_king())
+
+
 __all__ = [
     'C_KING', 'C_QUEEN', 'C_ROOK', 'C_BISHOP', 'C_KNIGHT', 'C_PAWN',
     'C_BLACK_PLAYER', 'C_WHITE_PLAYER',
