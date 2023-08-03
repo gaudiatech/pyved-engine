@@ -3,6 +3,8 @@ model for the game of chess (whats a chess Player/a chess Board +what are the ru
 """
 from chess_rules import *
 
+import pyved_engine as pyv
+
 
 # todo future model will use a class for chesspiece + an int matrix
 # i should be able to write high-level ideas such as:
@@ -67,6 +69,8 @@ __all__ = [
     'to_algebraic_notation_row'
 ]
 
+from examples.chess.chdefs import ChessEvents
+
 BOARDS_DEBUG = {
     'e.p.':  # pour tester "en passant"
         '\
@@ -128,7 +132,7 @@ class ChessPlayer:
         return self._type
 
 
-class ChessBoard:
+class ChessBoard(pyv.Emitter):
     """
     Board layout; contains what pieces are present at each square
     """
@@ -176,6 +180,7 @@ class ChessBoard:
             self.squares[i][j] = elt
 
     def __init__(self, setup_type=0, serial=None):
+        super().__init__()
         # keep all informations about the last move, so we can undo it
         self._backup_serial = None
 
@@ -358,6 +363,26 @@ class ChessBoard:
         self._play_sequence += 1
         return message_str
 
+    def promote(self, sq, wanted_piece):
+        """
+        called when the HUMAN player has selected the wanted piece... We simply replace
+        :param sq:
+        :param wanted_piece:
+        :return:
+        """
+        short = {
+            'queen': 'Q',
+            'rook': 'R',
+            'knight': 'N',
+            'bishop': 'B'
+        }[wanted_piece]
+        newdata = colorsym(self.curr_player)+short
+        self.squares[sq[0]][sq[1]] = newdata
+
+    def _popup_promo(self):
+        self.paused = True
+        self.pev(ChessEvents.PromotionPopup, target_square=self._prev_target_square)
+
     def move_piece(self, mv_tuple):
         """
         :param mv_tuple: can be something like ([1,1], [2,6])
@@ -406,19 +431,23 @@ class ChessBoard:
         if self._prev_source_piece == 'w'+C_PAWN:
             if toSquare_r == 0:
                 # auto-promote to queen
-                self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
-                self.squares[toSquare_r][toSquare_c] = colorsym(self.curr_player)+'Q'
-                self._play_sequence += 1
-                return "White pawn moves from " + coords_to_alg(mv_tuple[0]) + \
-                            " to " + coords_to_alg(mv_tuple[1]) + ", gets promoted"
+                # self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
+                # self.squares[toSquare_r][toSquare_c] = colorsym(self.curr_player)+'Q'
+                # self._play_sequence += 1
+                # return "White pawn moves from " + coords_to_alg(mv_tuple[0]) + \
+                #             " to " + coords_to_alg(mv_tuple[1]) + ", gets promoted"
+                self._popup_promo()
+                return
         if self._prev_source_piece == 'b'+C_PAWN:
             if toSquare_r == 7:
                 # auto-promote to queen
-                self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
-                self.squares[toSquare_r][toSquare_c] = colorsym(self.curr_player)+'Q'
-                self._play_sequence += 1
-                return "Black pawn moves from " + coords_to_alg(mv_tuple[0]) + \
-                            " to " + coords_to_alg(mv_tuple[1]) + ", gets promoted"
+                # self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
+                # self.squares[toSquare_r][toSquare_c] = colorsym(self.curr_player)+'Q'
+                # self._play_sequence += 1
+                # return "Black pawn moves from " + coords_to_alg(mv_tuple[0]) + \
+                #             " to " + coords_to_alg(mv_tuple[1]) + ", gets promoted"
+                self._popup_promo()
+                return
 
         if self.pawn_jumped:
             if toSquare_r == self.jumped_over[0] and toSquare_c == self.jumped_over[1]:

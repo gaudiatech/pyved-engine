@@ -1,5 +1,8 @@
 import chdefs
+from chdefs import BOARD_POS
 import pyved_engine as pyv
+from examples.chess import chvars
+# from examples.chess.main_gui_view import PopupPromotion
 from model import *
 from ChessmatchMod import ChessgameMod
 
@@ -11,15 +14,8 @@ PAUSE_SEC = 3
 W_SIZE = (850, 500)
 
 
-def load_img(assetname):
-    return pygame.image.load('images/' + assetname)
-
-
 class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
-    BG_COLOR = (125, 110, 120)  #  '#06170e' # dark green  #
-
-    OFFSET_X = 64
-    OFFSET_Y = 175
+    BG_COLOR = (125, 110, 120)
 
     def __init__(self, boardref):
         super().__init__()
@@ -36,7 +32,7 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
 
         # self.textBox = ScrollingTextBox(self.screen, 525, 825, 50, 450)
         # -* Hacking begins *-
-        self.textBox = pyv.console.CustomConsole(pyv.get_surface(), (self.OFFSET_X, 4, 640, 133))
+        self.textBox = pyv.console.CustomConsole(pyv.get_surface(), (BOARD_POS[0], 4, 640, 133))
         self.textBox.active = True
         self.textBox.bg_color = self.BG_COLOR  # customize console
         self.textBox.font_size = 25
@@ -44,39 +40,54 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
         self.textBox.Add = self.textBox.output
         # -* Hacking done *-
 
-        self._preload_assets()
+        self._link_to_assets()
         self.fontDefault = pygame.font.Font(None, 20)
         self.ready_to_quit = False
 
-    def _preload_assets(self):
-        self.square_size = 100
-        self.white_square = load_img("white_square.png")
-        self.brown_square = load_img("brown_square.png")
-        self.cyan_square = load_img("cyan_square.png")
-        self.black_pawn = load_img("Chess_tile_pd.png")
-        self.black_pawn = pygame.transform.scale(self.black_pawn, (self.square_size, self.square_size))
-        self.black_rook = load_img("Chess_tile_rd.png")
-        self.black_rook = pygame.transform.scale(self.black_rook, (self.square_size, self.square_size))
-        self.black_knight = load_img("Chess_tile_nd.png")
-        self.black_knight = pygame.transform.scale(self.black_knight, (self.square_size, self.square_size))
-        self.black_bishop = load_img("Chess_tile_bd.png")
-        self.black_bishop = pygame.transform.scale(self.black_bishop, (self.square_size, self.square_size))
-        self.black_king = load_img("Chess_tile_kd.png")
-        self.black_king = pygame.transform.scale(self.black_king, (self.square_size, self.square_size))
-        self.black_queen = load_img("Chess_tile_qd.png")
-        self.black_queen = pygame.transform.scale(self.black_queen, (self.square_size, self.square_size))
-        self.white_pawn = load_img("Chess_tile_pl.png")
-        self.white_pawn = pygame.transform.scale(self.white_pawn, (self.square_size, self.square_size))
-        self.white_rook = load_img("Chess_tile_rl.png")
-        self.white_rook = pygame.transform.scale(self.white_rook, (self.square_size, self.square_size))
-        self.white_knight = load_img("Chess_tile_nl.png")
-        self.white_knight = pygame.transform.scale(self.white_knight, (self.square_size, self.square_size))
-        self.white_bishop = load_img("Chess_tile_bl.png")
-        self.white_bishop = pygame.transform.scale(self.white_bishop, (self.square_size, self.square_size))
-        self.white_king = load_img("Chess_tile_kl.png")
-        self.white_king = pygame.transform.scale(self.white_king, (self.square_size, self.square_size))
-        self.white_queen = load_img("Chess_tile_ql.png")
-        self.white_queen = pygame.transform.scale(self.white_queen, (self.square_size, self.square_size))
+    def _link_to_assets(self):
+        # self.square_size = 100
+
+        # self.white_square = load_img("white_square.png")
+        # self.brown_square = load_img("brown_square.png")
+        # self.cyan_square = load_img("cyan_square.png")
+        #
+        # self.black_pawn = load_img("Chess_tile_pd.png")
+        # self.black_pawn = pygame.transform.scale(self.black_pawn, (self.square_size, self.square_size))
+        #
+        # self.black_rook = load_img("Chess_tile_rd.png")
+        # self.black_rook = pygame.transform.scale(self.black_rook, (self.square_size, self.square_size))
+        #
+        # self.black_knight = load_img("Chess_tile_nd.png")
+        # self.black_knight = pygame.transform.scale(self.black_knight, (self.square_size, self.square_size))
+        #
+        # self.black_bishop = load_img("Chess_tile_bd.png")
+        # self.black_bishop = pygame.transform.scale(self.black_bishop, (self.square_size, self.square_size))
+        #
+        # self.black_king = load_img("Chess_tile_kd.png")
+        # self.black_king = pygame.transform.scale(self.black_king, (self.square_size, self.square_size))
+        #
+        # self.black_queen = load_img("Chess_tile_qd.png")
+        # self.black_queen = pygame.transform.scale(self.black_queen, (self.square_size, self.square_size))
+        #
+        # self.white_pawn = load_img("Chess_tile_pl.png")
+        # self.white_pawn = pygame.transform.scale(self.white_pawn, (self.square_size, self.square_size))
+        #
+        # self.white_rook = load_img("Chess_tile_rl.png")
+        # self.white_rook = pygame.transform.scale(self.white_rook, (self.square_size, self.square_size))
+        #
+        # self.white_knight = load_img("Chess_tile_nl.png")
+        # self.white_knight = pygame.transform.scale(self.white_knight, (self.square_size, self.square_size))
+        #
+        # self.white_bishop = load_img("Chess_tile_bl.png")
+        # self.white_bishop = pygame.transform.scale(self.white_bishop, (self.square_size, self.square_size))
+        #
+        # self.white_king = load_img("Chess_tile_kl.png")
+        # self.white_king = pygame.transform.scale(self.white_king, (self.square_size, self.square_size))
+        #
+        # self.white_queen = load_img("Chess_tile_ql.png")
+        # self.white_queen = pygame.transform.scale(self.white_queen, (self.square_size, self.square_size))
+        for assetname, val in chvars.images.items():
+            setattr(self, assetname, val)
         self.square_size = 50
 
     def PrintMessage(self, message):
@@ -88,8 +99,8 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
     def ConvertToScreenCoords(self, chessSquareTuple):
         # converts a (row,col) chessSquare into the pixel location of the upper-left corner of the square
         (row, col) = chessSquareTuple
-        screenX = self.OFFSET_X + col * self.square_size
-        screenY = self.OFFSET_Y + row * self.square_size
+        screenX = BOARD_POS[0] + col * self.square_size
+        screenY = BOARD_POS[1] + row * self.square_size
         return screenX, screenY
 
     def ConvertToChessCoords(self, screenPositionTuple):
@@ -97,8 +108,8 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
         # x is horizontal, y is vertical
         # (x=0,y=0) is upper-left corner of the screen
         (X, Y) = screenPositionTuple
-        row = (Y - self.OFFSET_Y) / self.square_size
-        col = (X - self.OFFSET_X) / self.square_size
+        row = (Y - BOARD_POS[1]) / self.square_size
+        col = (X - BOARD_POS[0]) / self.square_size
         return int(row), int(col)
 
     def drawboard(self, scrsurf, board):
@@ -285,10 +296,10 @@ class ChessTicker(pyv.EvListener):
             self.pev(pyv.EngineEvTypes.Gameover)
         elif ev.key == pyv.pygame.K_SPACE:
             print('    *dump serial*')
-            print(self.model.board.serialize())
+            print(self.model.get_board().serialize())
         elif ev.key == pyv.pygame.K_BACKSPACE:
             print(' --undo move--')
-            self.model.board.undo_move()
+            self.model.get_board().undo_move()
 
         elif self.ready_to_quit:
             self.pev(pyv.EngineEvTypes.StatePop)
@@ -326,7 +337,7 @@ class ChessTicker(pyv.EvListener):
                 self.refview.PrintMessage(
                     players[winnerIndex].name + " (" + players[winnerIndex].color + ") won the game!")
 
-                self.refview.EndGame(self.model.board.state)
+                self.refview.EndGame(self.model.get_board_state())
             return
 
         # -- the problem with THAT type of code is that it BLOCKS the soft!
@@ -384,11 +395,20 @@ class ChessmatchState(pyv.BaseGameState):
 
     def enter(self):
         self.m = ChessgameMod()
+
+        chvars.preload_assets()  # makin it accessible for both the main view, and the (addon)popupView
+
+        # TODO make the view active
         pygamegui = self.v = ChessGameView(self.m.get_board())
-        self.t = ChessTicker(self.m, pygamegui)
+
+        self.t = ChessTicker(self.m, pygamegui)  # ?? kind like a controller
         self.t.turn_on()
 
+        # self.addon = PopupPromotion(self.m)
+        # self.addon.turn_on()
+
     def release(self):
+        # self.addon.turn_off()
         self.t.turn_off()
 
 
