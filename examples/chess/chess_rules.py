@@ -42,7 +42,8 @@ def coords_to_alg(rowcol_idxes):
 class ChessRules:
     valid_moves_cache = dict()
 
-    def is_checkmate(self, board_obj, chesscolor: str):
+    @staticmethod
+    def is_checkmate(board_obj, chesscolor: str):
         """
         returns True if 'color' player is in checkmate, uses GetListOfValidMoves
         for each piece... If there aren't any valid moves, then return true
@@ -60,12 +61,13 @@ class ChessRules:
             for col in range(8):
                 piece = board_obj.state[row][col]
                 if ch_color_sym in piece:
-                    myColorValidMoves.extend(self.get_valid_moves(board_obj, chesscolor, (row, col)))
+                    myColorValidMoves.extend(ChessRules.get_valid_moves(board_obj, chesscolor, (row, col)))
         return not len(myColorValidMoves)
 
-    def get_valid_moves(self, board_obj, color, square_ij):
+    @staticmethod
+    def get_valid_moves(board_obj, color, square_ij):
         board_hash = board_obj.serialize()
-        cache = self.__class__.valid_moves_cache
+        cache = ChessRules.valid_moves_cache
         if board_hash in cache:
             if square_ij in cache[board_hash]:
                 return cache[board_hash][square_ij]  # rule: never compute the same thing twice!
@@ -76,8 +78,8 @@ class ChessRules:
         for row in range(8):
             for column in range(8):
                 candidate_m = (row, column)
-                if self.is_legal_move(board_obj, color, square_ij, candidate_m):
-                    if not self.puts_player_in_check(board_obj, color, square_ij, candidate_m):
+                if ChessRules.is_legal_move(board_obj, color, square_ij, candidate_m):
+                    if not ChessRules.puts_player_in_check(board_obj, color, square_ij, candidate_m):
                         legal_dest_spaces.append(candidate_m)
 
         cache[board_hash][square_ij] = legal_dest_spaces
@@ -242,7 +244,8 @@ class ChessRules:
 
         return False
 
-    def puts_player_in_check(self, board_obj, color, fromTuple, toTuple):
+    @staticmethod
+    def puts_player_in_check(board_obj, color, fromTuple, toTuple):
         """
         makes a hypothetical move,
         returns True if it puts current player into check

@@ -2,7 +2,7 @@ import chdefs
 from chdefs import BOARD_POS
 import pyved_engine as pyv
 from examples.chess import chvars
-# from examples.chess.main_gui_view import PopupPromotion
+from examples.chess.main_gui_view import PopupPromotion
 from model import *
 from ChessmatchMod import ChessgameMod
 
@@ -269,11 +269,10 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
 class ChessTicker(pyv.EvListener):
     def __init__(self, refmod, refview):
         super().__init__()
-        self.model = refmod
 
+        self.model = refmod
         self.refview = refview
         self.refview.board = refmod.get_board()
-
         self.stored_human_input = None  # when smth has been played!
 
         # self._curr_pl_idx = 0
@@ -286,6 +285,18 @@ class ChessTicker(pyv.EvListener):
         # self.board_st = refmod.board.state
         self.ready_to_quit = False
         self.endgame_msg_added = False
+
+    def on_checkmate(self, ev):
+        self.ready_to_quit = True
+
+    def on_check(self, ev):
+        players = self.model.players
+        pl_color = self.model.get_board().curr_player
+        curr_pl_idx = ['white', 'black'].index(pl_color)
+
+        curr_pp = players[curr_pl_idx]
+        suffx = '{} ({}) is in check'.format(curr_pp.name, curr_pp.color)
+        self.refview.PrintMessage("Warning! " + suffx)
 
     def on_move_chosen(self, ev):  # as defined in ChessEvents
         self.stored_human_input = [ev.from_cell, ev.to_cell]
@@ -353,7 +364,7 @@ class ChessTicker(pyv.EvListener):
         if curr_player.type == 'human':
             moveTuple = self.stored_human_input
             if moveTuple:
-                move_report = refboard.move_piece(moveTuple)
+                move_report = self.model.play(moveTuple)
                 # moveReport = string like "White Bishop moves from A1 to C3" (+) "and captures ___!"
                 self.stored_human_input = None
         else:
@@ -373,9 +384,6 @@ class ChessTicker(pyv.EvListener):
             # if AIvsAI and AIpause:
             #     time.sleep(AIpauseSeconds)
 
-            if self.model.rules.is_checkmate(refboard, self.model.get_curr_player()):
-                self.ready_to_quit = True
-
             #currentColor = curr_player.color
             currentColor = self.model.get_curr_player()
 
@@ -385,9 +393,6 @@ class ChessTicker(pyv.EvListener):
             self.refview.PrintMessage("")
             baseMsg = "TURN %s - %s (%s)" % (str(self._turn_count), curr_player.name, currentColor)
             self.refview.PrintMessage("--%s--" % baseMsg)
-            if self.model.rules.is_player_in_check(refboard, currentColor):
-                suffx = '{} ({}) is in check'.format(curr_player.name, curr_player.color)
-                self.refview.PrintMessage("Warning..." + suffx)
 
 
 class ChessmatchState(pyv.BaseGameState):
@@ -404,11 +409,11 @@ class ChessmatchState(pyv.BaseGameState):
         self.t = ChessTicker(self.m, pygamegui)  # ?? kind like a controller
         self.t.turn_on()
 
-        # self.addon = PopupPromotion(self.m)
-        # self.addon.turn_on()
+        self.addon = PopupPromotion(self.m)
+        self.addon.turn_on()
 
     def release(self):
-        # self.addon.turn_off()
+        self.addon.turn_off()
         self.t.turn_off()
 
 

@@ -69,6 +69,8 @@ __all__ = [
     'to_algebraic_notation_row'
 ]
 
+from examples.chess import chdefs
+
 from examples.chess.chdefs import ChessEvents
 
 BOARDS_DEBUG = {
@@ -83,6 +85,17 @@ eeeeeeeeeeeeeeee\
 w_w_w_w_eeeew_w_\
 wRwNwBwQwKwBwNwR\
 5',
+    'promotion':  # tester la promotion de pieces
+        '\
+bRbNbBbQbKeeeebR\
+b_b_b_b_eeeew_b_\
+eeeeeeeeeeeeeeee\
+eeeebBeeeebNeeee\
+eeeeeeeeeeeeeeee\
+eeeeeeeeeeeew_ee\
+w_w_w_eew_w_eew_\
+wRwNwBwQwKwBwNwR\
+10'
 }
 
 
@@ -378,6 +391,7 @@ class ChessBoard(pyv.Emitter):
         }[wanted_piece]
         newdata = colorsym(self.curr_player)+short
         self.squares[sq[0]][sq[1]] = newdata
+        self.finish_promotion(wanted_piece)
 
     def _popup_promo(self):
         self.paused = True
@@ -428,27 +442,6 @@ class ChessBoard(pyv.Emitter):
         en_passant = False
         messageString = 'ERR.'
 
-        if self._prev_source_piece == 'w'+C_PAWN:
-            if toSquare_r == 0:
-                # auto-promote to queen
-                # self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
-                # self.squares[toSquare_r][toSquare_c] = colorsym(self.curr_player)+'Q'
-                # self._play_sequence += 1
-                # return "White pawn moves from " + coords_to_alg(mv_tuple[0]) + \
-                #             " to " + coords_to_alg(mv_tuple[1]) + ", gets promoted"
-                self._popup_promo()
-                return
-        if self._prev_source_piece == 'b'+C_PAWN:
-            if toSquare_r == 7:
-                # auto-promote to queen
-                # self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
-                # self.squares[toSquare_r][toSquare_c] = colorsym(self.curr_player)+'Q'
-                # self._play_sequence += 1
-                # return "Black pawn moves from " + coords_to_alg(mv_tuple[0]) + \
-                #             " to " + coords_to_alg(mv_tuple[1]) + ", gets promoted"
-                self._popup_promo()
-                return
-
         if self.pawn_jumped:
             if toSquare_r == self.jumped_over[0] and toSquare_c == self.jumped_over[1]:
                 en_passant = True
@@ -475,7 +468,6 @@ class ChessBoard(pyv.Emitter):
 
         self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
         self.squares[toSquare_r][toSquare_c] = self._prev_source_piece  # square newly taken
-        self._play_sequence += 1
 
         if C_EMPTY_SQUARE == self._prev_target_piece:
             capture = False
@@ -486,6 +478,28 @@ class ChessBoard(pyv.Emitter):
             messageString = fromPiece_fullString + " from " + coords_to_alg(mv_tuple[0]) + \
                             " captures " + toPiece_fullString + " at " + coords_to_alg(
                 mv_tuple[1]) + "!"
+        messageString.capitalize()
+
+        if self._prev_source_piece == 'w'+C_PAWN:
+            if toSquare_r == 0:
+                # auto-promote to queen
+                # self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
+                # self.squares[toSquare_r][toSquare_c] = colorsym(self.curr_player)+'Q'
+                # self._play_sequence += 1
+                # return "White pawn moves from " + coords_to_alg(mv_tuple[0]) + \
+                #             " to " + coords_to_alg(mv_tuple[1]) + ", gets promoted"
+                self._popup_promo()
+                return messageString
+        if self._prev_source_piece == 'b'+C_PAWN:
+            if toSquare_r == 7:
+                # auto-promote to queen
+                # self.squares[fromSquare_r][fromSquare_c] = C_EMPTY_SQUARE  # square left
+                # self.squares[toSquare_r][toSquare_c] = colorsym(self.curr_player)+'Q'
+                # self._play_sequence += 1
+                # return "Black pawn moves from " + coords_to_alg(mv_tuple[0]) + \
+                #             " to " + coords_to_alg(mv_tuple[1]) + ", gets promoted"
+                self._popup_promo()
+                return messageString
 
         # FLAG: it could be possible to capture "en passant" during the next move
         print(self._prev_source_piece)
@@ -499,8 +513,24 @@ class ChessBoard(pyv.Emitter):
                     self.jumped_over = (self._prev_source_square[0] - 1, self._prev_source_square[1])
                 print('jumped:true, over:', self.jumped_over)
 
-        messageString.capitalize()
+        self._play_sequence += 1
         return messageString
+
+    def finish_promotion(self, selected_piece):
+        msg = self.curr_player+'promoted to '+selected_piece
+        print(msg)  # TODO rather disp. this in the in-game console
+        self._play_sequence += 1
+        self.tests_post_move()
+
+    def tests_post_move(self):
+        current_color = self.curr_player
+        if ChessRules.is_checkmate(self, current_color):
+            self.pev(chdefs.ChessEvents.Checkmate)
+            print('PEV - checkmate')
+
+        elif ChessRules.is_player_in_check(self, current_color):
+            self.pev(chdefs.ChessEvents.Check)
+            print('PEV - check')
 
     def undo_move(self):
         if (self._prev_source_square is None) or (self._prev_target_square is None):

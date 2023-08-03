@@ -1,23 +1,29 @@
 import chdefs
 from ai_players import ChessAI_random, ChessAI_defense, ChessAI_offense
 from model import ChessRules, ChessBoard, ChessPlayer, BOARDS_DEBUG
+import pyved_engine as pyv
 
 
-class ChessgameMod:
+class ChessgameMod(pyv.Emitter):
     def __init__(self):
-
+        super().__init__()
         # 0 for normal board setup; see ChessBoard class for other options (testing purposes)
         # e.g. the debug mode can use arg 2 instead of 0
 
+        # self._board = ChessBoard(0)
+        # -----------debugging stuff-------------------
+        self._board = ChessBoard(serial=BOARDS_DEBUG['promotion'])
         # self.board = ChessBoard(serial=BOARDS_DEBUG['e.p.'])
 
-        self._board = ChessBoard(0)
         self.rules = ChessRules()
         self.players = None
         self._initplayers()
 
     def play(self, move_tuple):
-        self._board.move_piece(move_tuple)
+        report = self._board.move_piece(move_tuple)
+
+        self._board.tests_post_move()
+        return report
 
     def get_turn(self):
         return self._board.turn
