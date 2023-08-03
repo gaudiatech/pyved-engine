@@ -1,7 +1,8 @@
 import chdefs
 from ai_players import ChessAI_random, ChessAI_defense, ChessAI_offense
-from model import ChessRules, ChessBoard, ChessPlayer, BOARDS_DEBUG
+from model import ChessRules, ChessBoard, ChessPlayer
 import pyved_engine as pyv
+from misc import BOARDS_DEBUG
 
 
 class ChessgameMod(pyv.Emitter):
@@ -10,9 +11,9 @@ class ChessgameMod(pyv.Emitter):
         # 0 for normal board setup; see ChessBoard class for other options (testing purposes)
         # e.g. the debug mode can use arg 2 instead of 0
 
-        # self._board = ChessBoard(0)
+        self._board = ChessBoard(0)
         # -----------debugging stuff-------------------
-        self._board = ChessBoard(serial=BOARDS_DEBUG['promotion'])
+        # self._board = ChessBoard(serial=BOARDS_DEBUG['checkmate'])
         # self.board = ChessBoard(serial=BOARDS_DEBUG['e.p.'])
 
         self.rules = ChessRules()

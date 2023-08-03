@@ -1,9 +1,10 @@
 """
 model for the game of chess (whats a chess Player/a chess Board +what are the rules?)
 """
-from chess_rules import *
-
 import pyved_engine as pyv
+from chess_rules import *
+from examples.chess import chdefs
+from examples.chess.chdefs import ChessEvents
 
 
 # todo future model will use a class for chesspiece + an int matrix
@@ -68,35 +69,6 @@ __all__ = [
     'to_algebraic_notation_col',
     'to_algebraic_notation_row'
 ]
-
-from examples.chess import chdefs
-
-from examples.chess.chdefs import ChessEvents
-
-BOARDS_DEBUG = {
-    'e.p.':  # pour tester "en passant"
-        '\
-bReebBbQbKbBbNbR\
-eeb_b_b_b_b_b_b_\
-b_eebNeeeeeeeeee\
-eeeeeeeeeew_eeee\
-eeeeeeeew_eeeeee\
-eeeeeeeeeeeeeeee\
-w_w_w_w_eeeew_w_\
-wRwNwBwQwKwBwNwR\
-5',
-    'promotion':  # tester la promotion de pieces
-        '\
-bRbNbBbQbKeeeebR\
-b_b_b_b_eeeew_b_\
-eeeeeeeeeeeeeeee\
-eeeebBeeeebNeeee\
-eeeeeeeeeeeeeeee\
-eeeeeeeeeeeew_ee\
-w_w_w_eew_w_eew_\
-wRwNwBwQwKwBwNwR\
-10'
-}
 
 
 def colorsym(x):
