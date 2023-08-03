@@ -36,7 +36,13 @@ class Button(pygame.sprite.Sprite):
 
     free_bt_identifier = 77348
 
-    def __init__(self, pos=None, size=None, label='bt_label'):
+    def __init__(self, pos=None, size=None, label='bt_label', anchor_code=0):
+        """
+        :param pos:
+        :param size:
+        :param label:
+        :param anchor_code: 0: topleft, 1: center
+        """
         super().__init__()
         self.callback = None
 
@@ -64,4 +70,30 @@ class Button(pygame.sprite.Sprite):
 
         # adjust position
         self.rect = self.image.get_rect()
-        self.rect.topleft = self.pos
+        if not anchor_code:
+            self.rect.topleft = self.pos
+        else:
+            self.rect.center = self.pos
+        self.anchorcode = anchor_code
+
+    def set_image(self, img):
+        # KEEP THE ORG. POS!
+        if not self.anchorcode:
+            orgx, orgy = self.rect.topleft
+        else:
+            orgx, orgy = self.rect.center
+
+        self.image = img
+        self._w, self._h = img.get_size()
+
+        self.rect = pygame.Rect(0, 0, self._w, self._h)
+
+        # re-generate the position
+        if not self.anchorcode:
+            self.rect.topleft = orgx, orgy
+        else:
+            self.rect.center = orgx, orgy
+
+        # debug:
+        # self.image.fill('orange')
+        pygame.draw.rect(self.image, 'orange', (0, 0, self._w - 1, self._h - 1), 2)
