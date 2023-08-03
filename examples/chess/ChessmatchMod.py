@@ -11,12 +11,25 @@ class ChessgameMod:
 
         # self.board = ChessBoard(serial=BOARDS_DEBUG['e.p.'])
 
-        self.board = ChessBoard(0)
-
+        self._board = ChessBoard(0)
         self.rules = ChessRules()
-
         self.players = None
         self._initplayers()
+
+    def play(self, move_tuple):
+        self._board.move_piece(move_tuple)
+
+    def get_turn(self):
+        return self._board.turn
+
+    def get_curr_player(self):
+        return self._board.curr_player
+
+    def get_board(self):
+        return self._board
+
+    def get_board_state(self):
+        return self._board.state
 
     def _initplayers(self):
         default_config = (

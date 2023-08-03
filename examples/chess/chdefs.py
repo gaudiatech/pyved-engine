@@ -1,5 +1,5 @@
 """
-define game modes & custom events in this file
+Define game modes & custom events
 """
 import pyved_engine as pyv
 
@@ -10,7 +10,11 @@ ChessGstates = pyv.struct.enum(
 )
 
 ChessEvents = pyv.game_events_enum((
-    'MoveChosen',  # contains: from_cell, to_cell
+    'MatchBegins',
+    'MoveChosen',  # contains: player_color, from_square, to_square, rook_type, ep_flag
+    'Checkmate',  # contains: winner_color
+    'CancelMove',  # when playing vs an AI this would cancel 1-2 moves, when PvP this cancels only 1 move
+    'PromotionPopup'  # allows the human player to select the piece he wants the most!
 ))
 
 pltype1 = None

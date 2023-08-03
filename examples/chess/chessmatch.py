@@ -261,14 +261,14 @@ class ChessTicker(pyv.EvListener):
         self.model = refmod
 
         self.refview = refview
-        self.refview.board = refmod.board
+        self.refview.board = refmod.get_board()
 
         self.stored_human_input = None  # when smth has been played!
 
         # self._curr_pl_idx = 0
 
         # +1 when both have played!!
-        self._turn_count = refmod.board.turn//2
+        self._turn_count = refmod.get_turn()//2
 
         self.endgame_msg_added = False
 
@@ -307,12 +307,12 @@ class ChessTicker(pyv.EvListener):
         self.on_gameover(ev)
 
     def on_paint(self, ev):
-        self.refview.drawboard(ev.screen, self.model.board.state)
+        self.refview.drawboard(ev.screen, self.model.get_board().state)
 
     def on_update(self, ev):
         # board_st = self.board_st
         players = self.model.players
-        pl_color = self.model.board.curr_player
+        pl_color = self.model.get_curr_player()
         # print('color thats now playing is: ', pl_color)
         curr_pl_idx = ['white', 'black'].index(pl_color)
         curr_player = players[curr_pl_idx]
@@ -337,12 +337,12 @@ class ChessTicker(pyv.EvListener):
         # TODO repair human vs A.I. play
 
         move_report = None
-        refboard = self.model.board
+        refboard = self.model.get_board()
 
         if curr_player.type == 'human':
             moveTuple = self.stored_human_input
             if moveTuple:
-                move_report = self.model.board.move_piece(moveTuple)
+                move_report = refboard.move_piece(moveTuple)
                 # moveReport = string like "White Bishop moves from A1 to C3" (+) "and captures ___!"
                 self.stored_human_input = None
         else:
@@ -362,11 +362,11 @@ class ChessTicker(pyv.EvListener):
             # if AIvsAI and AIpause:
             #     time.sleep(AIpauseSeconds)
 
-            if self.model.rules.is_checkmate(refboard, self.model.board.curr_player):
+            if self.model.rules.is_checkmate(refboard, self.model.get_curr_player()):
                 self.ready_to_quit = True
 
             #currentColor = curr_player.color
-            currentColor = self.model.board.curr_player
+            currentColor = self.model.get_curr_player()
 
             # hardcoded so that player 1 is always white
             if currentColor == 'white':
@@ -384,7 +384,7 @@ class ChessmatchState(pyv.BaseGameState):
 
     def enter(self):
         self.m = ChessgameMod()
-        pygamegui = self.v = ChessGameView(self.m.board)
+        pygamegui = self.v = ChessGameView(self.m.get_board())
         self.t = ChessTicker(self.m, pygamegui)
         self.t.turn_on()
 
