@@ -68,8 +68,15 @@ class PopupPromotion(pyv.EvListener):
         }
 
     def on_promotion_popup(self, ev):
-        self._popup_on = True
-        self._target_square_promo = ev.target_square
+        if self._mod.fetch_player_type(ev.plcolor) == 'AI':
+            # the AI will always promote to queen
+            self._mod.get_board().promote(ev.target_square, 'queen')
+            print('AI promoted the pawn!')
+
+        else:
+            # the human can choose!
+            self._popup_on = True
+            self._target_square_promo = ev.target_square
 
     def _is_piece_selected(self, mpos):
         for ke, button_obj in self.buttons.items():
