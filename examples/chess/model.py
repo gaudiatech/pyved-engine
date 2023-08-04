@@ -88,7 +88,6 @@ class ChessPlayer:
         utility method so i can input moves such as 'e2e4' instead of ((4,1),(4,3))
         which is very un-natural
         """
-        # print('call to conv_move -->', packedcoords)
         if len(packedcoords) != 4:
             raise ValueError('arg passed to ChessAI.conv_move has not the expected format! Received:', packedcoords)
         li_given_char = list(packedcoords)
@@ -367,7 +366,7 @@ class ChessBoard(pyv.Emitter):
 
     def _popup_promo(self):
         self.paused = True
-        self.pev(ChessEvents.PromotionPopup, target_square=self._prev_target_square)
+        self.pev(ChessEvents.PromotionPopup, target_square=self._prev_target_square, plcolor=self.curr_player)
 
     def move_piece(self, mv_tuple):
         """
@@ -474,7 +473,6 @@ class ChessBoard(pyv.Emitter):
                 return messageString
 
         # FLAG: it could be possible to capture "en passant" during the next move
-        print(self._prev_source_piece)
         if (not capture) and (C_PAWN in self._prev_source_piece):
             if abs(self._prev_source_square[0] - self._prev_target_square[0]) > 1:
                 self.pawn_jumped = True
@@ -483,14 +481,14 @@ class ChessBoard(pyv.Emitter):
                     self.jumped_over = (self._prev_source_square[0] + 1, self._prev_source_square[1])
                 else:
                     self.jumped_over = (self._prev_source_square[0] - 1, self._prev_source_square[1])
-                print('jumped:true, over:', self.jumped_over)
 
         self._play_sequence += 1
         return messageString
 
-    def finish_promotion(self, selected_piece):
-        msg = self.curr_player+'promoted to '+selected_piece
-        print(msg)  # TODO rather disp. this in the in-game console
+    def finish_promotion(self, selected_piece):# TODO rather disp. this in the in-game console
+
+        # msg = self.curr_player+'promoted to '+selected_piece
+        # print(msg)
         self._play_sequence += 1
         self.tests_post_move()
 

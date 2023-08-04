@@ -369,7 +369,7 @@ class ChessTicker(pyv.EvListener):
                 self.stored_human_input = None
         else:
             tmp_ai_move = curr_player.GetMove(refboard, curr_player.color)
-            move_report = refboard.move_piece(tmp_ai_move)
+            move_report = self.model.play(tmp_ai_move)
 
         if move_report:  # smth has been played!
             self.refview.PrintMessage(move_report)

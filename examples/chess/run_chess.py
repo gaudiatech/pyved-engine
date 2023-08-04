@@ -36,8 +36,7 @@ def beginchess():
             # do this to bind state_id to the ad-hoc class!
             chdefs.ChessGstates.Chessintro: ChessintroState,
             chdefs.ChessGstates.Chessmatch: ChessmatchState
-        },
-        None
+        }
     )
     ev_manager.post(pyv.EngineEvTypes.Gamestart)
 

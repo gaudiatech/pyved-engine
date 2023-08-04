@@ -15,7 +15,7 @@ ChessEvents = pyv.game_events_enum((
     'Checkmate',  # contains: winner_color
     'Check',
     'CancelMove',  # when playing vs an AI this would cancel 1-2 moves, when PvP this cancels only 1 move
-    'PromotionPopup'  # contains: target_square [allows the human player to select the piece he wants the most!]
+    'PromotionPopup'  # contains: target_square, plcolor [allows the player to select the piece he wants the most!]
 ))
 
 pltype1 = None

@@ -1,6 +1,6 @@
 import chdefs
 from ai_players import ChessAI_random, ChessAI_defense, ChessAI_offense
-from model import ChessRules, ChessBoard, ChessPlayer
+from model import ChessRules, ChessBoard, ChessPlayer, C_WHITE_PLAYER, C_BLACK_PLAYER
 import pyved_engine as pyv
 from misc import BOARDS_DEBUG
 
@@ -29,8 +29,21 @@ class ChessgameMod(pyv.Emitter):
     def get_turn(self):
         return self._board.turn
 
+    def fetch_player(self):
+        color = self._board.curr_player
+        idx = (C_WHITE_PLAYER, C_BLACK_PLAYER).index(color)
+        return self.players[idx]
+
     def get_curr_player(self):
         return self._board.curr_player
+
+    def fetch_player_type(self, given_c):
+        """
+        :param given_c:
+        :return: either "AI" str or "human"
+        """
+        n = (C_WHITE_PLAYER, C_BLACK_PLAYER).index(given_c)
+        return self.players[n].type
 
     def get_board(self):
         return self._board

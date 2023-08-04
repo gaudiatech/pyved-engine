@@ -13,7 +13,6 @@ BGCOLOR = 'antiquewhite3'
 
 def proc_start():
     pyv.get_ev_manager().post(EngineEvTypes.StatePush, state_ident=chdefs.ChessGstates.Chessmatch)
-    print('apres start ->', chdefs.pltype1, chdefs.pltype2)
 
 
 class IntroCompo(pyv.EvListener):
@@ -91,7 +90,6 @@ class IntroCompo(pyv.EvListener):
 
     def turn_on(self):
         super().turn_on()
-        print('press RETURN to start a match')
         for b in self.buttons:
             b.set_active()
 
@@ -135,5 +133,4 @@ class ChessintroState(pyv.BaseGameState):
         self.icompo.turn_off()
 
     def pause(self):
-        print('intro mise en pause')
         self.icompo.turn_off()
