@@ -1,6 +1,7 @@
 from ._hub import events
 from .struct import Stack, StContainer
 from .core.events import EngineEvTypes
+from . import vars
 
 
 multistate_flag = False
@@ -9,7 +10,7 @@ state_stack = None
 
 
 class StateStackCtrl(events.EvListener):
-    def __init__(self, all_gs, stmapping, refgame):
+    def __init__(self, all_gs, stmapping):
         super().__init__()
         self._gs_omega = all_gs
         self._stack = Stack()
@@ -18,7 +19,6 @@ class StateStackCtrl(events.EvListener):
         self._st_container = StContainer()
         self._st_container.setup(all_gs, stmapping, None)
         self.__state_stack = Stack()
-        self.refgame = refgame
 
     def turn_on(self):
         super().turn_on()
@@ -55,7 +55,7 @@ class StateStackCtrl(events.EvListener):
             state_obj = self._st_container.retrieve(tmp)
             state_obj.resume()
         else:
-            self.refgame.gameover = True  # no need to push event
+            vars.gameover = True
 
     # --------------------
     #  CALLBACKS
@@ -76,7 +76,7 @@ class StateStackCtrl(events.EvListener):
         self._pop_state()
 
 
-def declare_game_states(gs_enum, assoc_gscode_gscls, refgame):
+def declare_game_states(gs_enum, assoc_gscode_gscls):
     """
     :param gs_enum: enum of every single gamestate code
     :param assoc_gscode_gscls: a dict that binds a gamestate code to a gamestate class
@@ -84,6 +84,6 @@ def declare_game_states(gs_enum, assoc_gscode_gscls, refgame):
     """
     global stack_based_ctrl, multistate_flag
     multistate_flag = True
-    stack_based_ctrl = StateStackCtrl(gs_enum, assoc_gscode_gscls, refgame)
+    stack_based_ctrl = StateStackCtrl(gs_enum, assoc_gscode_gscls)
     # activation Autho!
     stack_based_ctrl.turn_on()
