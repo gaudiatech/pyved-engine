@@ -1,10 +1,10 @@
 import chdefs
 from chdefs import BOARD_POS
 import pyved_engine as pyv
-from examples.chess import chvars
 from examples.chess.main_gui_view import PopupPromotion
 from model import *
 from ChessmatchMod import ChessgameMod
+
 
 # --- alias
 pygame = pyv.pygame
@@ -40,55 +40,13 @@ class ChessGameView(pyv.Emitter):  # (pyv.EvListener):
         self.textBox.Add = self.textBox.output
         # -* Hacking done *-
 
-        self._link_to_assets()
-        self.fontDefault = pygame.font.Font(None, 20)
-        self.ready_to_quit = False
-
-    def _link_to_assets(self):
-        # self.square_size = 100
-
-        # self.white_square = load_img("white_square.png")
-        # self.brown_square = load_img("brown_square.png")
-        # self.cyan_square = load_img("cyan_square.png")
-        #
-        # self.black_pawn = load_img("Chess_tile_pd.png")
-        # self.black_pawn = pygame.transform.scale(self.black_pawn, (self.square_size, self.square_size))
-        #
-        # self.black_rook = load_img("Chess_tile_rd.png")
-        # self.black_rook = pygame.transform.scale(self.black_rook, (self.square_size, self.square_size))
-        #
-        # self.black_knight = load_img("Chess_tile_nd.png")
-        # self.black_knight = pygame.transform.scale(self.black_knight, (self.square_size, self.square_size))
-        #
-        # self.black_bishop = load_img("Chess_tile_bd.png")
-        # self.black_bishop = pygame.transform.scale(self.black_bishop, (self.square_size, self.square_size))
-        #
-        # self.black_king = load_img("Chess_tile_kd.png")
-        # self.black_king = pygame.transform.scale(self.black_king, (self.square_size, self.square_size))
-        #
-        # self.black_queen = load_img("Chess_tile_qd.png")
-        # self.black_queen = pygame.transform.scale(self.black_queen, (self.square_size, self.square_size))
-        #
-        # self.white_pawn = load_img("Chess_tile_pl.png")
-        # self.white_pawn = pygame.transform.scale(self.white_pawn, (self.square_size, self.square_size))
-        #
-        # self.white_rook = load_img("Chess_tile_rl.png")
-        # self.white_rook = pygame.transform.scale(self.white_rook, (self.square_size, self.square_size))
-        #
-        # self.white_knight = load_img("Chess_tile_nl.png")
-        # self.white_knight = pygame.transform.scale(self.white_knight, (self.square_size, self.square_size))
-        #
-        # self.white_bishop = load_img("Chess_tile_bl.png")
-        # self.white_bishop = pygame.transform.scale(self.white_bishop, (self.square_size, self.square_size))
-        #
-        # self.white_king = load_img("Chess_tile_kl.png")
-        # self.white_king = pygame.transform.scale(self.white_king, (self.square_size, self.square_size))
-        #
-        # self.white_queen = load_img("Chess_tile_ql.png")
-        # self.white_queen = pygame.transform.scale(self.white_queen, (self.square_size, self.square_size))
-        for assetname, val in chvars.images.items():
+        # <link to assets>
+        for assetname, val in pyv.vars.images.items():
             setattr(self, assetname, val)
         self.square_size = 50
+
+        self.fontDefault = pygame.font.Font(None, 20)
+        self.ready_to_quit = False
 
     def PrintMessage(self, message):
         # prints a string to the area to the right of the board
@@ -400,8 +358,6 @@ class ChessmatchState(pyv.BaseGameState):
 
     def enter(self):
         self.m = ChessgameMod()
-
-        chvars.preload_assets()  # makin it accessible for both the main view, and the (addon)popupView
 
         # TODO make the view active
         pygamegui = self.v = ChessGameView(self.m.get_board())

@@ -1,11 +1,7 @@
-import pygame
-
 import pyved_engine as pyv
 
 
 # alias
-from examples.chess import chvars
-
 GuiButton = pyv.gui.Button
 # constructor, FYI= def __init__(self, pos=None, size=None, label='bt_label')
 
@@ -49,8 +45,9 @@ class PopupPromotion(pyv.EvListener):
         # update the img, to have nice icons...
         curr_color = self._mod.get_curr_player()
         for ke, button_obj in self.buttons.items():
-            img = chvars.images[curr_color+'_'+ke].copy()  # create copy so if img is modified -> np
-            button_obj.set_image(img)
+            ref_img = pyv.vars.images[curr_color+'_'+ke]
+            cloned_img = ref_img.copy()  # create copy so if img is modified -> np
+            button_obj.set_image(cloned_img)
 
         # line2 : will paste labels/the legend, piece by piece
         self.yoffset_line2 = 155
