@@ -8,11 +8,16 @@ Instead use functions like pyv.preload_assets(...) or init(max_fps=..., ...) etc
 """
 
 
-ENGINE_VERSION_STR = '23.8a1'  # a read-only value, can this val. from outside via a func. call on pyv.get_version()
+ENGINE_VERSION_STR = '23.8a2'  # a read-only value, can this val. from outside via a func. call on pyv.get_version()
+
+# deprecated but mandatory for web ctx
+STD_SCR_SIZE = [960, 720]
 
 # - engine related
 disp_size = 960, 720
 backend_name = ''  # type str, and the default value is '' but it could be modified from elsewhere
+weblib_sig = None
+
 game_ticker = None  # at some point, this should store a ref on an Obj. typed pygame.time.Clock
 max_fps = 45  # will be replaced by whatever is passed to pyv.init(...)
 screen = None

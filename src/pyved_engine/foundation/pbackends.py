@@ -1,6 +1,7 @@
 from .defs import EngineEvTypes, to_camelcase
 from .interfaces import BaseKenBackend
 from .. import _hub
+from .. import vars
 
 
 class PygameKenBackend(BaseKenBackend):
@@ -165,13 +166,30 @@ class PygameKenBackend(BaseKenBackend):
         return self._ev_storage
 
 
-def build_primalbackend(pbe_identifier: str):
+def build_primalbackend(pbe_identifier, libbundle_ver=None):
+    """
+    :param pbe_identifier: str
+    values accepted -> to make a valid func. call you would either pass '' or 'web'
+    :param libbundle_ver: str
+    """
     if pbe_identifier == '':  # default
         return PygameKenBackend()
 
-    else:
-        # it's assumed that (injector entry 'web_pbackend')
-        #  => (module==web_pbackend.py & cls==WebPbackend)
+    elif pbe_identifier == 'web':
+        if libbundle_ver is None:
+            if vars.weblib_sig is None or len(vars.weblib_sig)<1:
+                raise ValueError('since you use the web backend you HAVE TO specify libbundle_ver !!')
+            else:
+                adhoc_ver = vars.weblib_sig
+        else:
+            adhoc_ver = libbundle_ver
+
+        # its assumed that (injector entry 'web_pbackend')
+        # => (module==web_pbackend.py & cls==WebPbackend)
         # for example
-        inj_e, cls_name = pbe_identifier+'_pbackend', to_camelcase(pbe_identifier+'_pbackend')
-        return getattr(_hub.kengi_inj[inj_e], cls_name)()
+        modulename = 'web_pbackend'
+        BackendAdhocClass = getattr(_hub.kengi_inj[modulename], to_camelcase(modulename))
+        print('   *inside build_primalbackend*  adhoc class is ', BackendAdhocClass)
+        return BackendAdhocClass(adhoc_ver)  # web backends need to ver. info. in great details!
+    else:
+        raise ValueError(f'value "{pbe_identifier}" isnt supported, when calling (engine)build_primalbackend !')

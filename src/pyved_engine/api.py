@@ -163,12 +163,12 @@ def declare_end(gfunc):  # decorator!
 
 
 def run_game():
-    vars.beginfunc_ref()
+    vars.beginfunc_ref(None)
     while not vars.gameover:
         vars.updatefunc_ref(time.time())
         flip()  # commit gfx mem to screen
         vars.clock.tick(vars.max_fps)
-    vars.endfunc_ref()
+    vars.endfunc_ref(None)
 
 
 # --- rest of functions ---
@@ -190,7 +190,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None):
             vars.sounds[snd_elt.split('.')[0]] = _hub.pygame.mixer.Sound(filepath)
 
 
-def bootstrap_e(opt_arg=None, wcaption=None):
+def bootstrap_e(opt_arg=None, wcaption=None, print_ver_info=False):
     global _engine_rdy
     # in theory the Pyv backend_name can be hacked prior to a pyv.init() call
     # Now, let's  build a primal backend
@@ -236,7 +236,7 @@ def close_game():
 
 
 def create_clock():
-    return _hub.pygame.Clock()
+    return _hub.pygame.time.Clock()
 
 
 def get_ev_manager():

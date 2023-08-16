@@ -11,12 +11,31 @@
 +----------------------------------------------------+
 """
 from . import _hub
+hub = _hub
+
 from .api import *
 from . import vars
+# deprecated
+from .compo import vscreen
+
+
+# useful ALIAS! (webctx)
+defs = vars
 
 
 def get_version():
     return vars.ENGINE_VERSION_STR
+
+
+_stored_kbackend = None
+# deprec.
+vars.weblib_sig = _backend_name = ''
+
+
+def set_webbackend_type(xval):
+    global _backend_name
+    vars.weblib_sig = _backend_name = xval
+    vars.backend_name = 'web'
 
 
 # the basic API is expanded via our special "hub" component

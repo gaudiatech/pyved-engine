@@ -112,6 +112,11 @@ kengi_inj = Injector({
 }, 'pyved_engine')
 
 
+def get_injector():
+    global kengi_inj
+    return kengi_inj
+
+
 def __getattr__(targ_sm_name):
     if targ_sm_name in kengi_inj:
         return kengi_inj[targ_sm_name]
