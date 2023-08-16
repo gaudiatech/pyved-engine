@@ -13,7 +13,7 @@ import importlib.util
 # TODO if this line missing, cant use Add-ons like .gui or .tmx
 from .core import events
 # TODO need to include the API in the hub, not pygame /!\
-import pygame
+# import pygame
 
 
 class _PyModulePromise:
@@ -110,6 +110,7 @@ kengi_inj = Injector({
     'tabletop': '.add_ons.tabletop',
     # 'terrain': '.looparts.terrain',
 }, 'pyved_engine')
+kengi_inj.register('pygame', 'pygame', None)
 
 
 def __getattr__(targ_sm_name):
