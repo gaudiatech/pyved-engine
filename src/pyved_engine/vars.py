@@ -8,7 +8,7 @@ Instead use functions like pyv.preload_assets(...) or init(max_fps=..., ...) etc
 """
 
 
-ENGINE_VERSION_STR = '23.7a2'  # a read-only value, can this val. from outside via a func. call on pyv.get_version()
+ENGINE_VERSION_STR = '23.8a1'  # a read-only value, can this val. from outside via a func. call on pyv.get_version()
 
 # - engine related
 disp_size = 960, 720
