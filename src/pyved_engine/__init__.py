@@ -30,6 +30,7 @@ def get_version():
 _stored_kbackend = None
 # deprec.
 vars.weblib_sig = _backend_name = ''
+quit = close_game
 
 
 def set_webbackend_type(xval):
