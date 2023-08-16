@@ -165,7 +165,7 @@ class Player(pyv.pygame.sprite.Sprite):
 
 
 @pyv.declare_begin
-def init_game():
+def init_game(vmst=None):
     global player_lost, screen, clock, blocks, player, allsprites, font, balls, background, ball
     pyv.init(wcaption='Breakout')  # name the game-> window caption
 
@@ -278,7 +278,7 @@ def upd(time_info=None):
 
 
 @pyv.declare_end
-def done():
+def done(vmst=None):
     pyv.close_game()
 
 

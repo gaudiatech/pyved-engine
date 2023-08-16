@@ -11,6 +11,8 @@ This is a joint work, authors are:
 """
 import chdefs
 import pyved_engine as pyv
+pyv.bootstrap_e()
+
 from chessintro import ChessintroState
 from chessmatch import ChessmatchState
 
@@ -30,7 +32,7 @@ class SharedStorage:
 
 
 @pyv.declare_begin
-def beginchess():
+def beginchess(vmst=None):
     pyv.init()
     glvars = SharedStorage.instance()
 
@@ -84,7 +86,7 @@ def updatechess(info_t):
 
 
 @pyv.declare_end
-def endchess():
+def endchess(vmst=None):
     pyv.close_game()
 
 

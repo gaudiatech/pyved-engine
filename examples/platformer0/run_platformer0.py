@@ -55,7 +55,7 @@ def _session_reset(first_run=False):  # TODO improve design
 
 
 @pyv.declare_begin
-def prep_game():
+def prep_game(vmst=None):
     global game, bg_sprite
 
     HELP_MSG = 'CONTROLS: Left/right arrow key to move | left Ctrl key to shoot | Spacebar to jump'
@@ -133,7 +133,7 @@ def update_g(time_info=None):
 
 
 @pyv.declare_end
-def cleanup():
+def cleanup(vmst=None):
     print('clean exit!')
     pyv.close_game()
 

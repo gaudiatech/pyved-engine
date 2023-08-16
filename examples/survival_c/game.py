@@ -6,7 +6,7 @@ import systems
 
 
 @pyv.declare_begin
-def prep_zombiegame():
+def prep_zombiegame(vmst=None):
     pyv.init()
 
     pyv.define_archetype("Zombie", ["Position2d", "Health", "Color"])
@@ -55,7 +55,7 @@ def maj_zombiegame(into_t):
 
 
 @pyv.declare_end
-def zombie_gameover():
+def zombie_gameover(vmst=None):
     pyv.close_game()
 
 
