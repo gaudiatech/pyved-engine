@@ -1,5 +1,4 @@
 import pyved_engine as pyv
-from pyved_engine import *
 
 
 Spr = pyv.pygame.sprite.Sprite
@@ -66,16 +65,16 @@ class Player(Spr):
         last = self.rect.copy()
 
         key = pyv.get_pressed_keys()  # joueur controle sa position lui mm. Si implem joystick -> ds le cul lulu
-        if key[K_LEFT]:
+        if key[pyv.pygame.K_LEFT]:
             self.rect.x -= 300 * dt
             self.image = self.left_image
             self.direction = -1
-        if key[K_RIGHT]:
+        if key[pyv.pygame.K_RIGHT]:
             self.rect.x += 300 * dt
             self.image = self.right_image
             self.direction = 1
 
-        if key[K_LCTRL] and not self.gun_cooldown:
+        if key[pyv.pygame.K_LCTRL] and not self.gun_cooldown:
             if self.direction > 0:
                 Missile(self.rect.midright, 1, game.sprites)
             else:
@@ -84,7 +83,7 @@ class Player(Spr):
 
         self.gun_cooldown = max(0, self.gun_cooldown - dt)
 
-        if self.resting and key[K_SPACE]:
+        if self.resting and key[pyv.pygame.K_SPACE]:
             self.dy = -500
         self.dy = min(400, self.dy + 40)
 

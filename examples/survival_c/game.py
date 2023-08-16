@@ -49,7 +49,7 @@ def prep_zombiegame():
 @pyv.declare_update
 def maj_zombiegame(into_t):
     for event in pyv.fetch_events():
-        if event.type == pyv.QUIT:
+        if event.type == pyv.pygame.QUIT:
             pyv.vars.gameover = True
     pyv.systems_proc()  # run everything described in systems
 

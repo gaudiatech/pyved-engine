@@ -1,6 +1,8 @@
 import math
 
 import pyved_engine as pyv
+pyv.bootstrap_e()  # so we can use pyv.pygame even before the GamEngin init call!
+
 
 # CONSTS:
 # (Define some colors)
@@ -42,7 +44,7 @@ class Block(pyv.pygame.sprite.Sprite):
 
         # Create the image of the block of appropriate size
         # The width and height are sent as a list for the first parameter.
-        self.image = pyv.pygame.Surface([BLOCK_W, BLOCK_H])
+        self.image = pyv.surface_create([BLOCK_W, BLOCK_H])
 
         # Fill the image with the appropriate color
         self.image.fill(color)
@@ -77,7 +79,7 @@ class Ball(pyv.pygame.sprite.Sprite):
         super().__init__()
 
         # Create the image of the ball
-        self.image = pyv.pygame.Surface([self.width, self.height])
+        self.image = pyv.surface_create([self.width, self.height])
 
         # Color the ball
         self.image.fill(WHITE)
@@ -140,7 +142,7 @@ class Player(pyv.pygame.sprite.Sprite):
 
         self.width = 75
         self.height = 15
-        self.image = pyv.pygame.Surface([self.width, self.height])
+        self.image = pyv.surface_create([self.width, self.height])
         self.image.fill(WHITE)
 
         # Make our top-left corner the passed-in location.
@@ -165,13 +167,9 @@ class Player(pyv.pygame.sprite.Sprite):
 @pyv.declare_begin
 def init_game():
     global player_lost, screen, clock, blocks, player, allsprites, font, balls, background, ball
-    # Call this function so the Pygame library can initialize itself
-
     pyv.init(wcaption='Breakout')  # name the game-> window caption
 
-    # Create an 800x600 sized screen
-    screen = pyv.get_surface()  # pygame.display.set_mode([800, 600])
-
+    screen = pyv.get_surface()
     # Enable this to make the mouse disappear when over our window
     # pygame.mouse.set_visible(0)
 
@@ -179,7 +177,7 @@ def init_game():
     font = pyv.pygame.font.Font(None, 36)
 
     # Create a surface we can draw on
-    background = pyv.pygame.Surface(screen.get_size())
+    background = pyv.surface_create(screen.get_size())
 
     # Create sprite lists
     blocks = pyv.pygame.sprite.Group()

@@ -13,7 +13,9 @@ github.com/gaudiatech/kengi so every game dev can learn more,
 discover cool stuff that saves time if youre already a pygame user.
 """
 import pyved_engine as pyv
-from pyved_engine import *
+pyv.bootstrap_e()
+
+
 from sprites import Player, Enemy
 
 
@@ -100,17 +102,17 @@ def prep_game():
 
 
 @pyv.declare_update
-def update_g():
+def update_g(time_info=None):
     global game
 
     while True:  # TODO can i do better than this dirty 2nd-order gameloop?
         dt = pyv.vars.clock.tick(30)
 
         for event in pyv.fetch_events():
-            if event.type == QUIT:
+            if event.type == pyv.pygame.QUIT:
                 pyv.vars.gameover = True
                 return
-            if event.type == KEYDOWN and event.key == K_ESCAPE:
+            if event.type == pyv.pygame.KEYDOWN and event.key == pyv.pygame.K_ESCAPE:
                 pyv.vars.gameover = True
                 return
 

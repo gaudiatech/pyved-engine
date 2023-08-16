@@ -9,7 +9,10 @@ Pyv API := Ecs func/procedures
 # ----------------------
 from ._ecs import *
 from ._utility import *
-from pygame.constants import *
+
+# ok, this is handy but wont work in web ctx, and cause other problems too (pypi packing)
+# from pygame.constants import *
+
 # ------------------
 # does all of this need to be visible from outside? PB: OOP. understanding required
 # TODO reflect if this can be rephrased to let go of OOP. without compromising on feature diversity & quantity
@@ -29,6 +32,8 @@ HIGHRES_MODE = 1
 RETRO_MODE = 2
 LOWRES_MODE = 3
 
+# vars
+_engine_rdy = False
 
 # -----------------------
 # all imports HERE hav been written only to help us, with the implem of API
@@ -36,9 +41,8 @@ LOWRES_MODE = 3
 from abc import ABCMeta, abstractmethod
 from . import vars
 from math import degrees as _degrees
-import pygame as _pygame
 from .classes import Spritesheet as _Spritesheet
-# from . import _hub
+from . import _hub
 import time
 from .core.events import EvManager
 from .core_classes import Objectifier
@@ -96,7 +100,7 @@ class GameTpl(metaclass=ABCMeta):
             declare_game_states(gs_enum, mapping, self)
 
     def update(self, infot):
-        pyg = _pygame
+        pyg = _hub.pygame
         pk = pyg.key.get_pressed()
         if pk[pyg.K_ESCAPE]:
             self.gameover = True
@@ -131,9 +135,13 @@ class GameTpl(metaclass=ABCMeta):
         print(self.INFO_STOP_MSG)
 
 
-# --- enrich with functions
-draw_line = _pygame.draw.line
-draw_polygon = _pygame.draw.polygon
+# --- exposing draw functions
+def draw_line(*args, **kwargs):
+    _hub.pygame.draw.line(*args, **kwargs)
+
+
+def draw_polygon(*args, **kwargs):
+    _hub.pygame.draw.polygon(*args, **kwargs)
 
 
 # --------------
@@ -174,28 +182,40 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None):
     """
     for gfx_elt in adhoc_dict['images']:
         filepath = gfx_elt if (prefix_asset_folder is None) else prefix_asset_folder + gfx_elt
-        vars.images[gfx_elt.split('.')[0]] = _pygame.image.load(filepath)
+        vars.images[gfx_elt.split('.')[0]] = _hub.pygame.image.load(filepath)
 
     if 'sounds' in adhoc_dict:
         for snd_elt in adhoc_dict['sounds']:
             filepath = snd_elt if (prefix_asset_folder is None) else prefix_asset_folder + snd_elt
-            vars.sounds[snd_elt.split('.')[0]] = _pygame.mixer.Sound(filepath)
+            vars.sounds[snd_elt.split('.')[0]] = _hub.pygame.mixer.Sound(filepath)
 
 
-def init(opt_arg=None, wcaption=None):
+def bootstrap_e(opt_arg=None, wcaption=None):
+    global _engine_rdy
     # in theory the Pyv backend_name can be hacked prior to a pyv.init() call
     # Now, let's  build a primal backend
     v = vars.ENGINE_VERSION_STR
-    print(f'pyved-engine {v}')
-
+    print(f'Booting up pyved-engine {v}...')
     from .foundation.pbackends import build_primalbackend
+
+    # SIDE-EFFECT: Building the backend also sets kengi_inj.pygame !
     _pyv_backend = build_primalbackend(vars.backend_name)
 
     # if you dont call this line below, the modern event system wont work (program hanging)
     events.EvManager.instance().a_event_source = _pyv_backend
-    _pygame.init()
+
+    _hub.pygame.init()
     if wcaption:
-        _pygame.display.set_caption(wcaption)
+        _hub.pygame.display.set_caption(wcaption)
+    _engine_rdy = True
+
+
+def init(opt_arg=None, wcaption=None):
+    global _engine_rdy
+    if not _engine_rdy:
+        bootstrap_e(opt_arg, wcaption)
+    elif wcaption:
+        _hub.pygame.display.set_caption(wcaption)
 
     vars.screen = create_screen(vars.disp_size)
     vars.clock = create_clock()
@@ -207,7 +227,7 @@ def proj_to_vscreen(xy_pair):
 
 
 def close_game():
-    _pygame.quit()
+    _hub.pygame.quit()
 
     vars.images.clear()
     vars.sounds.clear()
@@ -216,7 +236,7 @@ def close_game():
 
 
 def create_clock():
-    return _pygame.Clock()
+    return _hub.pygame.Clock()
 
 
 def get_ev_manager():
@@ -228,7 +248,7 @@ def create_screen(scr_size=None):
         scr_size_arg = (960, 720)
     else:
         scr_size_arg = scr_size
-    vars.screen = _pygame.display.set_mode(scr_size_arg)
+    vars.screen = _hub.pygame.display.set_mode(scr_size_arg)
     return vars.screen
 
 
@@ -239,23 +259,23 @@ def get_surface():
 
 
 def surface_create(size):
-    return _pygame.surface.Surface(size)
+    return _hub.pygame.surface.Surface(size)
 
 
 def surface_rotate(img, angle):
-    return _pygame.transform.rotate(img, _degrees(-1 * angle))
+    return _hub.pygame.transform.rotate(img, _degrees(-1 * angle))
 
 
 def flip():
-    return _pygame.display.flip()
+    return _hub.pygame.display.flip()
 
 
 def fetch_events():
-    return _pygame.event.get()
+    return _hub.pygame.event.get()
 
 
 def get_pressed_keys():
-    return _pygame.key.get_pressed()
+    return _hub.pygame.key.get_pressed()
 
 
 def load_spritesheet(filepath, tilesize, ck=None):
