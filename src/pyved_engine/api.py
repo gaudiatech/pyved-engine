@@ -182,7 +182,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None):
             vars.sounds[snd_elt.split('.')[0]] = _pygame.mixer.Sound(filepath)
 
 
-def init(opt_arg=None):
+def init(opt_arg=None, wcaption=None):
     # in theory the Pyv backend_name can be hacked prior to a pyv.init() call
     # Now, let's  build a primal backend
     v = vars.ENGINE_VERSION_STR
@@ -194,6 +194,8 @@ def init(opt_arg=None):
     # if you dont call this line below, the modern event system wont work (program hanging)
     events.EvManager.instance().a_event_source = _pyv_backend
     _pygame.init()
+    if wcaption:
+        _pygame.display.set_caption(wcaption)
 
     vars.screen = create_screen(vars.disp_size)
     vars.clock = create_clock()
