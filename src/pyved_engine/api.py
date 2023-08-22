@@ -18,7 +18,7 @@ from ._utility import *
 # TODO reflect if this can be rephrased to let go of OOP. without compromising on feature diversity & quantity
 from .compo import gfx
 from . import pal  # pal also added so it is includes in the api
-from . import custom_struct
+from . import custom_struct as e_struct
 import time
 from .core import events
 from .core.events import Emitter, EvListener, EngineEvTypes, game_events_enum
@@ -67,11 +67,12 @@ class GameTpl(metaclass=ABCMeta):
     def get_video_mode(self):
         raise NotImplementedError
 
+    @abstractmethod
     def list_game_events(self):
         """
-        :return: all specific/custom game events
+        :return: all specific/custom game events. If nothing applies you can return None or []
         """
-        return None
+        raise NotImplementedError
 
     def list_game_states(self):
         """
@@ -180,7 +181,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None):
     :param adhoc_dict:
     :return:
     """
-    for gfx_elt in adhoc_dict['images']:
+    for gfx_elt in adhoc_dict['assets']:
         filepath = gfx_elt if (prefix_asset_folder is None) else prefix_asset_folder + gfx_elt
         vars.images[gfx_elt.split('.')[0]] = _hub.pygame.image.load(filepath)
 
