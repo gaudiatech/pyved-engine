@@ -10,10 +10,16 @@
 import argparse
 import importlib
 import json
-import os
 import shutil
 import sys
 import time
+import os
+import requests
+import zipfile
+import os
+import tempfile
+import zipfile
+
 
 from pyved_engine import vars
 
@@ -22,6 +28,12 @@ from pyved_engine import vars
 
 
 __version__ = vars.ENGINE_VERSION_STR
+
+VALID_SUBCOMMANDS = (
+    'init',
+    'play',
+    'share'
+)
 
 
 # -----------------------------------
@@ -286,8 +298,65 @@ def init_command(x) -> None:
     print(f' Now you can type `pyv-cli play {x}` go ahead and have fun ;)')
 
 
+def create_zip_from_folder(bundle_name, source_folder, output_zip_filename):
+    # origin_no_sep = source_folder.rstrip('/\\')
+
+    temp_dir = tempfile.gettempdir()
+    # print('temp_dir=', temp_dir)
+    output_zip_path = os.path.join(temp_dir, output_zip_filename)
+    # print('writing zip file in:', output_zip_filename)
+    with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, _, files in os.walk(source_folder):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, source_folder)
+                zipf.write(file_path, arcname)
+
+    # move from temp dir to cwd
+    source_file = output_zip_path
+    destination_file = os.path.join(os.getcwd(), f"{bundle_name}.zip")
+    shutil.copy(source_file, destination_file)
+    print('Newly created file:', destination_file)
+
+
+def upload_my_zip_file(zip_file_path, server_url):
+    # Extract data from the ZIP file
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        extracted_data = zip_ref.read(zip_ref.namelist()[0])
+
+    # Prepare the HTTP POST request
+    files = {'zip_data': ('data.zip', extracted_data)}
+    response = requests.post(server_url, files=files)
+
+    # Example usage
+    # zip_file_path = "path/to/your/file.zip"
+    # server_url = "http://example.com/upload.php"
+    # response = upload_zip_file(zip_file_path, server_url)
+    # print("Response status code:", response.status_code)
+    # print("Response content:", response.text)
+
+
+def subcmd_share(bundle_name):
+    # Check if the folder exists, otherwise we'll throw an error
+    wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
+    if not os.path.exists(wrapper_bundle):
+        raise FileNotFoundError('ERR! Cannot find the specified bundle, named:', bundle_name)
+
+    zip_precise_target = fpath_join(wrapper_bundle, 'cartridge')
+    if not os.path.exists(zip_precise_target):
+        raise ValueError('ERR! Seems like you have passed smth that is not a game bundle...')
+
+    # pre-made func usage
+    source_folder = zip_precise_target
+    output_zip_filename = "output.zip"
+    create_zip_from_folder(bundle_name, source_folder, output_zip_filename)
+    # print("ZIP file created:", output_zip_filename)
+    # create_zip_from_folder(, os.getcwd())
+    # print('tmpfile created ok')
+
+
 def main_inner(parser, argns):
-    if (not argns.version) and argns.subcommand not in ('init', 'play'):
+    if (not argns.version) and argns.subcommand not in VALID_SUBCOMMANDS:
         parser.print_help()
         return 1
 
@@ -301,13 +370,14 @@ def main_inner(parser, argns):
         return 0
 
     # handle ``init GameBundleName``
+    bundname = argns.bundle_name
     if argns.subcommand == "init":
-        init_command(argns.bundle_name)
-        return 0
-
-    if argns.subcommand == "play":
-        play_command(argns.bundle_name)
-        return 0
+        init_command(bundname)
+    elif argns.subcommand == "play":
+        play_command(bundname)
+    elif argns.subcommand == "share":
+        subcmd_share(bundname)
+    return 0
 
     # handle ``pygmentize -L``
     # if argns.L is not None:
@@ -674,15 +744,28 @@ def do_parse_args():
     # ----------------
     subparsers = parser.add_subparsers(title="Subcommands", dest="subcommand", required=False)
 
-    # INIT subcommand
+    # +++ INIT subcommand
     init_parser = subparsers.add_parser("init", help="Initialize something")
     init_parser.add_argument("bundle_name", type=str, help="Name of the bundle")
+    # ——————————————————————————————————
 
-    # PLAY subcommand
-    play_parser = subparsers.add_parser("play", help="Play something")
+    # +++ PLAY subcommand
+    play_parser = subparsers.add_parser(
+        "play", help="Play a given game bundle now!"
+    )
     play_parser.add_argument(
         "bundle_name", type=str, nargs="?", default=".", help="Specified bundle (default: current folder)"
     )
+    # ——————————————————————————————————
+
+    # +++ SHARE subcommand {
+    share_parser = subparsers.add_parser(
+        "share", help="Share a given game bundle with the world"
+    )
+    share_parser.add_argument(
+        "bundle_name", type=str, nargs="?", default=".", help="Specified bundle (default: current folder)"
+    )
+    # ——————————————————————————————————
 
     ret_args = parser.parse_args()
     main_inner(parser, ret_args)
