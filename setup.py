@@ -60,7 +60,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'pyv-cli = cmdline.__main__:main'
+            'pyv-cli = cmdline.__main__:do_parse_args'
         ]
     }
 )

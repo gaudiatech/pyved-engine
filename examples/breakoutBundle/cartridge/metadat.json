@@ -1,0 +1,23 @@
+{
+    "vmlib_ver":"23_4a4",
+    "dependencies":{
+        "pyved_engine": "23.4a4"
+    },
+    "description":"Its a regular clone of Asteroids! Thats it",
+    "author":"moonbak",
+    "assets":[
+        "(astero)enter_start.png",
+        "(astero)rock.png"
+    ],
+    "sounds": [
+	"FIRE.WAV",
+	"EXPLODE1.WAV",
+	"EXPLODE2.WAV",
+	"EXPLODE3.WAV",
+	"LSAUCER.WAV",
+	"SSAUCER.WAV",
+	"THRUST.WAV",
+	"SFIRE.WAV",
+	"LIFE.WAV"
+    ]
+}
