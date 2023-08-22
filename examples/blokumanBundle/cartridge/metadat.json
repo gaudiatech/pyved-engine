@@ -1,0 +1,19 @@
+{
+    "vmlib_ver": "23_8a2",
+    "dependencies": {
+        "pyved_engine": "23.4a4"
+    },
+    "description": "Its a puzzle game and its pretty basic!",
+    "author": "Thomas",
+    "assets": [
+        "blokuman-bt_rouge.png"
+    ],
+    "sounds": [
+        "crumble.wav",
+        "coinhigh.wav",
+        "coinlow.wav"
+    ],
+    "game_name": "blokuman",
+	"cartridge": "blokuman",
+    "build_date": "Tue Aug 22 20:46:22 2023"
+}
