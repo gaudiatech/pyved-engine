@@ -1,8 +1,11 @@
 from . import pimodules
 
+print('pimodules content::::')
+print(pimodules.pyved_engine)
 
 pyv = pimodules.pyved_engine
-math = pimodules.math
+
+import math
 # katasdk = sharedvars.katasdk  # forward the ref to katasdk into the .vars, so other files below access it
 # import katagames_sdk as  pyved_engine as pyv
 pyv.bootstrap_e()  # so we can use pyv.pygame even before the GamEngin init call!

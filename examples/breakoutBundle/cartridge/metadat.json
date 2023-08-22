@@ -1,5 +1,5 @@
 {
-    "vmlib_ver":"23_4a4",
+    "vmlib_ver":"23_8a1",
     "dependencies":{
         "pyved_engine": "23.4a4"
     },
