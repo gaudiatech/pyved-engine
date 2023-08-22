@@ -1,5 +1,5 @@
 from ._hub import events
-from .struct import Stack, StContainer
+from .custom_struct import Stack, StContainer
 from .core.events import EngineEvTypes
 from . import vars
 
