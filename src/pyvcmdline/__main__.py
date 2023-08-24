@@ -10,24 +10,22 @@
 import argparse
 import importlib
 import json
+import os
+import re
 import shutil
 import sys
-import time
-import os
-import requests
-import zipfile
-import os
 import tempfile
+import time
 import zipfile
 
+# will be used later on, where `pyv-cli share` becomes a thing
+# import requests
 
 from pyved_engine import vars
 
-# deprecated
-# import os # import shutil # from textwrap import dedent
-
 
 __version__ = vars.ENGINE_VERSION_STR
+
 
 VALID_SUBCOMMANDS = (
     'init',
@@ -267,15 +265,23 @@ def create_folder_and_serialize_dict(folder0_name, data_dict):
         json.dump(data_dict, json_file, indent=4)
 
 
-def init_command(x) -> None:
+def init_command(str1) -> None:
     """
     this is the pyv-cli INIT command, it should create a new game bundle, fully operational
-    :param x: name for your new bundle...
+    :param str1: name for your new bundle...
     """
-    print(f"INIT (game bundle name is {x}) ...")
+    print(f"INIT (given game bundle name is {str1}) ...")
     metadata = json.loads(JSON_PRECURSOR)
     # TODO perform this important check:
     #  assets need to be already available in cartridge/
+
+    pattern = '^[a-zA-Z0-9]+$'
+    is_validname = bool(re.match(pattern, str1))
+    while not is_validname:
+        print('*** WARNING: bundle name needs to contains only alphanumeric that is A-Z and a-z and 0-9 characters')
+        str1 = input('please select another valid name for your game bundle: ')
+        is_validname = bool(re.match(pattern, str1))
+    x = str1
 
     metadata['cartridge'] = x
     tmp = input('whats the name of your game? [Default: Same as the bundle]')
@@ -293,10 +299,11 @@ def init_command(x) -> None:
 
     recursive_copy(fpath_join(script_directory, 'template'), y)
     create_folder_and_serialize_dict(y, data_dict=metadata)
-    print()
-    print('***')
-    print('Bundle:', x, 'succesfully created!')
-    print(f' Now you can type `pyv-cli play {x}` go ahead and have fun ;)')
+    for _ in range(3):
+        print()
+    print('GAME BUNDLE=', x)
+    print(f'--->Succesfully created! Now you can type `pyv-cli play {x}`')
+    print('Go ahead and have fun ;)')
 
 
 def create_zip_from_folder(bundle_name, source_folder, output_zip_filename):
