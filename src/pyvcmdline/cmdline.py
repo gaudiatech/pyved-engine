@@ -277,6 +277,7 @@ def init_command(x) -> None:
     # TODO perform this important check:
     #  assets need to be already available in cartridge/
 
+    metadata['cartridge'] = x
     tmp = input('whats the name of your game? [Default: Same as the bundle]')
     metadata['game_name'] = tmp if len(tmp) > 0 else x
 
