@@ -35,9 +35,10 @@ pck_list = [
     #"pyved_engine.looparts.isometric",
     #"pyved_engine.looparts.polarbear",
     #"pyved_engine.looparts.tmx",
-    "cmdline",
-    "cmdline.template",
-    "cmdline.emb_demos"
+    "pyvcmdline",
+    "pyvcmdline.template",
+    "pyvcmdline.emb_demos",
+    "pyvcmdline.emb_demos.cartridge",
 ]
 
 this_directory = Path(__file__).parent
@@ -63,7 +64,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'pyv-cli = cmdline.__main__:do_parse_args'
+            'pyv-cli = pyvcmdline.__main__:do_parse_args'
         ]
     }
 )
