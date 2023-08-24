@@ -173,7 +173,7 @@ def run_game():
 
 
 # --- rest of functions ---
-def preload_assets(adhoc_dict: dict, prefix_asset_folder=None):
+def preload_assets(adhoc_dict: dict, prefix_asset_folder=None, webhack=None):
     """
     expected to find the (mandatory) key 'images',
     also we may find the (optionnal) key 'sounds'
@@ -183,12 +183,20 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None):
     """
     for gfx_elt in adhoc_dict['assets']:
         filepath = gfx_elt if (prefix_asset_folder is None) else prefix_asset_folder + gfx_elt
-        vars.images[gfx_elt.split('.')[0]] = _hub.pygame.image.load(filepath)
+        k = gfx_elt.split('.')[0]
+        print('fetching image:', k, filepath)
+        vars.images[k] = _hub.pygame.image.load(filepath)
 
-    if 'sounds' in adhoc_dict:
-        for snd_elt in adhoc_dict['sounds']:
-            filepath = snd_elt if (prefix_asset_folder is None) else prefix_asset_folder + snd_elt
-            vars.sounds[snd_elt.split('.')[0]] = _hub.pygame.mixer.Sound(filepath)
+    if 'sounds' not in adhoc_dict:
+        return
+
+    for snd_elt in adhoc_dict['sounds']:
+        k = snd_elt.split('.')[0]
+        filepath = snd_elt if (prefix_asset_folder is None) else prefix_asset_folder + snd_elt
+        if webhack is not None:
+            filepath = webhack+filepath
+        print('fetching sound:', k, filepath)
+        vars.sounds[k] = _hub.pygame.mixer.Sound(filepath)
 
 
 def bootstrap_e(opt_arg=None, wcaption=None, print_ver_info=False):
