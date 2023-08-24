@@ -37,8 +37,8 @@ pck_list = [
     #"pyved_engine.looparts.tmx",
     "pyvcmdline",
     "pyvcmdline.template",
+    "pyvcmdline.template.cartridge",
     "pyvcmdline.emb_demos",
-    "pyvcmdline.emb_demos.cartridge",
 ]
 
 this_directory = Path(__file__).parent
