@@ -1,0 +1,16 @@
+{
+    "vmlib_ver": "23_8a5",
+    "dependencies": {
+        "pyved_engine": "23.4a4"
+    },
+    "description": "this is a placeholder for the name of your game",
+    "author": "moonbak",
+    "assets": [
+		"warrior-spritesheet.png",
+		"sorc-spritesheet.png"
+	],
+    "sounds": [],
+    "cartridge": "immortalBundle",
+    "game_name": "Immortal",
+    "build_date": "Fri Aug 25 17:22:49 2023"
+}
