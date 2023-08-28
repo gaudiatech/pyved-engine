@@ -1,5 +1,5 @@
 {
-    "vmlib_ver": "23_8a2",
+    "vmlib_ver": "23_8a5",
     "dependencies": {
         "pyved_engine": "23.4a4"
     },
@@ -14,6 +14,6 @@
         "coinlow.wav"
     ],
     "game_name": "blokuman",
-	"cartridge": "blokuman",
+	"cartridge": "blokumanBundle",
     "build_date": "Tue Aug 22 20:46:22 2023"
 }

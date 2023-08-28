@@ -1,5 +1,5 @@
 {
-    "vmlib_ver":"23_8a1",
+    "vmlib_ver": "23_8a5",
     "dependencies":{
         "pyved_engine": "23.4a4"
     },
@@ -10,14 +10,8 @@
         "(astero)rock.png"
     ],
     "sounds": [
-	"FIRE.WAV",
-	"EXPLODE1.WAV",
-	"EXPLODE2.WAV",
-	"EXPLODE3.WAV",
-	"LSAUCER.WAV",
-	"SSAUCER.WAV",
-	"THRUST.WAV",
-	"SFIRE.WAV",
-	"LIFE.WAV"
-    ]
+    ],
+  "game_name": "Breakout classic",
+	"cartridge": "breakoutBundle",
+    "build_date": "???"
 }
