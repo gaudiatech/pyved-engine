@@ -181,11 +181,38 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None, webhack=None):
     :param adhoc_dict:
     :return:
     """
-    for gfx_elt in adhoc_dict['assets']:
-        filepath = gfx_elt if (prefix_asset_folder is None) else prefix_asset_folder + gfx_elt
-        k = gfx_elt.split('.')[0]
-        print('fetching image:', k, filepath)
-        vars.images[k] = _hub.pygame.image.load(filepath)
+    print('*'*50)
+    print(' CALL to preload assets')
+    print('*'*50)
+    print()
+    for asset_desc in adhoc_dict['assets']:
+
+        if isinstance(asset_desc, str):  # either sprsheet or image
+            kk = asset_desc.split('.')
+            if kk[1] == 'json':
+                print('fetching spritesheet:', kk[0])
+                if webhack:
+                    y = webhack
+                else:
+                    y = prefix_asset_folder
+                vars.spritesheets[kk[0]] = gfx.JsonBasedSprSheet(kk[0], pathinfo=y)
+            else:
+                filepath = prefix_asset_folder + asset_desc if prefix_asset_folder else asset_desc
+                print('fetching image:', kk[0], filepath)
+                vars.images[kk[0]] = _hub.pygame.image.load(filepath)
+
+        else:  # necessarily a TTF font
+            key, ft_filename, ft_size = asset_desc
+
+            if webhack:
+                y = webhack + ft_filename
+            else:
+                y = prefix_asset_folder + ft_filename if prefix_asset_folder else ft_filename
+            print('fetching font:', key, ft_filename, f'[{y}]')
+            vars.fonts[key] = _hub.pygame.font.Font(
+                y,
+                ft_size
+            )
 
     if 'sounds' not in adhoc_dict:
         return

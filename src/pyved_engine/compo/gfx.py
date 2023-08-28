@@ -9,15 +9,11 @@ from .. import _hub
 
 
 class JsonBasedSprSheet:
-    def __init__(self, required_infos, ck=None):
+    def __init__(self, filename_noext_nopath, pathinfo=None, ck=None):
 
-        if isinstance(required_infos, str):
-            filename_no_ext = required_infos
-            self.sheet_surf = _hub.pygame.image.load(filename_no_ext + '.png')
-            json_def_file = open(required_infos + '.json', 'r')
-        else:
-            fptr, json_def_file = required_infos
-            self.sheet_surf = _hub.pygame.image.load(fptr)  # namehint="capello-ft.png"
+        p = pathinfo if pathinfo else ''
+        self.sheet_surf = _hub.pygame.image.load(f'{p}{filename_noext_nopath}.png')
+        json_def_file = open(f'{p}{filename_noext_nopath}.json', 'r')
 
         if ck:
             self.sheet_surf.set_colorkey(ck)
