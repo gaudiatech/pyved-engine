@@ -3,6 +3,7 @@ import time
 
 from . import pimodules
 
+
 # -ALIASES-
 pyv = pimodules.pyved_engine
 pyv.bootstrap_e()  # hence we can use pyv.pygame before a pyv.init() call
@@ -29,7 +30,11 @@ WARRIOR_ANIMATION_STEPS = [10, 8, 1, 7, 7, 3, 7]  # def. number of steps in each
 WIZARD_ANIMATION_STEPS = [8, 8, 1, 8, 8, 3, 7]
 
 ROUND_OVER_COOLDOWN = 2  # sec
-NB_SEC_INTRO_COMBAT = 1
+NB_SEC_INTRO_COMBAT = 3
+
+# TODO gameplay fixes:
+#  chrono devrait se ré-afficher a chaque round
+#  "best of 3" rule
 
 
 # ---------------------------------------
@@ -39,11 +44,6 @@ class Fighter:
     # class const
     XSPEED = 25
     YSPEED = 66
-
-    # SPEED_X = 25/100  # prev: 10
-    # SPEED_Y = 30/1000  # prev: 30
-    # GRAVITY = 2 / 100
-
     ANIM_FREQ = 0.04140  # the lowest, the faster the char. animation is
 
     def __init__(self, player, x, y, flip, data, sprite_sheet_info, animation_steps, sound, scr_size):
@@ -79,25 +79,28 @@ class Fighter:
         self.health = 100
         self.alive = True
 
-    def load_images(self, sprsheet_path, animsteps):
-        spr_sheet = pyv.gfx.JsonBasedSprSheet(sprsheet_path)
+    def load_images(self, sprsheet_infos, animsteps):
+        print(sprsheet_infos)
+        spr_sheet_name = sprsheet_infos[1]  # pyv.gfx.JsonBasedSprSheet(sprsheet_path)
+        sprsheet_obj = pyv.vars.spritesheets[spr_sheet_name]
+
         arg_scale = (self.size * self.image_scale, self.size * self.image_scale)
         res = list()
         for k, nbframes in enumerate(animsteps):
             tmp = list()
             for anim_rank in range(nbframes):
                 img_name = 'a' + str(k) + str(anim_rank) + '.png'
-                surf_obj = pygame.transform.scale(spr_sheet[img_name], arg_scale)
+                surf_obj = pygame.transform.scale(sprsheet_obj[img_name], arg_scale)
                 tmp.append(surf_obj)
             res.append(tmp)
         return res
 
-    def move(self, screen_width, screen_height, surface, target, round_over):
-        if round_over or (not self.alive):
+    def move(self, screen_width, screen_height, surface, target, activematch):
+        if not activematch or (not self.alive):
             return
 
+        # TODO remove dependency control keys->logic
         pkeys = pygame.key.get_pressed()
-
         # modify speeds:
         if pkeys[pygame.K_UP]:
             if not self.jump:
@@ -192,6 +195,7 @@ class Fighter:
         self.rect.left += dx
         if dy:
             self.rect.top += dy
+
         # TODO debug!
         # if not self.ai_control:
         #    self._ensure_screen_boundaries(dx, dy, target)
@@ -273,9 +277,12 @@ class Fighter:
                 if abs(self.vy) < 0.24*self.YSPEED:
                     self.vy *= -1  # at some point, start to fall down
 
-        # update pos
+        # update pos and fighter state
         self.rect.x += self.vx
         self.rect.top += self.vy
+        if self.health <= 0:
+            self.health = 0
+            self.alive = False
 
         # handle: landing /stop jumping
         if self.jump and self.rect.top > Y_COORD_GROUND:
@@ -304,6 +311,8 @@ class Fighter:
             self.update_action(4)  # code4 => attack secondary
         elif self.running:
             self.update_action(1)  # code1 => just run
+        elif not self.alive:
+            self.update_action(6)  # death
         else:
             self.update_action(0)  # code0 => idle char.
 
@@ -365,16 +374,8 @@ class Fighter:
 
 # -GLOBAL VARIABLES-
 clock = None
-fighter_1 = Fighter(
-    # TODO how to handle sprite sheets with bundle format ??
-    1, 200, Y_COORD_GROUND, False, WARRIOR_DATA, 'cartridge/warrior-spritesheet', WARRIOR_ANIMATION_STEPS, None,
-    None
-)
-fighter_2 = Fighter(
-    2, 700, Y_COORD_GROUND, True, WIZARD_DATA, 'cartridge/sorc-spritesheet', WIZARD_ANIMATION_STEPS, None,
-    None
-)
-fighter_2.ai_control = True
+fighter_1 = fighter_2 = None
+
 last_count_update = None
 magic_fx = sword_fx = None
 round_over = False
@@ -382,8 +383,10 @@ round_over_time = None
 drawing_counter = True
 intro_count = 0
 score = [0, 0]  # player scores. [P1, P2]
-score_font = None
+score_font = count_fount = None
+victory_img = defeat_img = None
 lastupdate = None
+screen = None
 
 
 # ---------------------------------------
@@ -401,21 +404,15 @@ def draw_text(text, font, text_col, x, y):  # function for drawing text
     screen.blit(img, (x, y))
 
 
-def draw_bg():  # function for drawing background
-    # scaled_bg = pygame.transform.scale(bg_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
-    screen.blit(bg_image, (0, 0))
-
-
 def reset_fighters():
     global fighter_1, fighter_2
     fighter_1 = Fighter(
-        # TODO how to handle sprite sheets with bundle format ??
-        1, 200, Y_COORD_GROUND, False, WARRIOR_DATA, 'cartridge/warrior-spritesheet', WARRIOR_ANIMATION_STEPS, sword_fx,
+        1, 200, Y_COORD_GROUND, False, WARRIOR_DATA, (None, 'warrior-spritesheet'), WARRIOR_ANIMATION_STEPS, sword_fx,
         pyv.get_surface().get_size()
     )
     fighter_1.attack_sound = sword_fx
     fighter_2 = Fighter(
-        2, 700, Y_COORD_GROUND, True, WIZARD_DATA, 'cartridge/sorc-spritesheet', WIZARD_ANIMATION_STEPS, magic_fx,
+        2, 700, Y_COORD_GROUND, True, WIZARD_DATA, (None, 'sorc-spritesheet'), WIZARD_ANIMATION_STEPS, magic_fx,
         pyv.get_surface().get_size()
     )
     fighter_2.attack_sound = magic_fx
@@ -424,17 +421,18 @@ def reset_fighters():
 
 @pyv.declare_begin
 def initgame(vms=None):
-    global screen, bg_image, warrior_sheet, wizard_sheet, score_font, fighter_1, fighter_2, intro_count, count_font
-    global victory_img, magic_fx, sword_fx, defeat_img
-    global last_count_update, clock
+    global fighter_1, fighter_2, intro_count, magic_fx, sword_fx
+    global last_count_update, clock, screen
+    global victory_img, defeat_img, count_font, score_font
 
     pyv.init()
     screen = pyv.get_surface()
+    # screen = pyv.get_surface()
 
-    pyv.preload_assets({
-        "assets": ["bg.png", "victory.png", "defeat.png"],
-        "sounds": ["immortal-sword.wav", "immortal-magic.wav"]
-    }, prefix_asset_folder='cartridge/')
+    # pyv.preload_assets({
+    #     "assets": ["bg.png", "victory.png", "defeat.png"],
+    #     "sounds": ["immortal-sword.wav", "immortal-magic.wav"]
+    # }, prefix_asset_folder='cartridge/')
 
     # +++ load music and sounds +++
     # pygame.mixer.music.load(assetprefix("music.mp3"))
@@ -444,6 +442,9 @@ def initgame(vms=None):
 
     # completion fighter objects
     wh_pair = pyv.get_surface().get_size()
+
+    # verif fighters sont bien construits
+    reset_fighters()
     fighter_1.attack_sound = sword_fx
     fighter_1.scr_size = fighter_2.scr_size = wh_pair
     fighter_2.attack_sound = magic_fx
@@ -465,8 +466,8 @@ def initgame(vms=None):
 
     # define font
     # TODO pb a resourdre avant de passer vers le Web ctx: comment les fonts sont importées?
-    count_font = pygame.font.Font("cartridge/immortal-turok.ttf", 80)
-    score_font = pygame.font.Font("cartridge/immortal-turok.ttf", 30)
+    count_font = pyv.vars.fonts['bigFont']
+    score_font = pyv.vars.fonts['smaFont']
 
     # init. logic
     intro_count = NB_SEC_INTRO_COMBAT
@@ -485,11 +486,13 @@ def updategame(infot):
     lastupdate = infot
 
     # event handler
-    for event in pyv.fetch_events():
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                return [2, NXT_GAME]
-            elif event.key == pygame.K_BACKSPACE:
+    for ev in pyv.fetch_events():
+        if ev.type == pygame.QUIT:
+            pyv.vars.gameover = True
+        elif ev.type == pygame.KEYDOWN:
+            if ev.key == pygame.K_ESCAPE:
+                pyv.vars.gameover = True
+            elif ev.key == pygame.K_BACKSPACE:
                 fighter_2.ai_control = False
 
     # ---------------
@@ -505,12 +508,12 @@ def updategame(infot):
         drawing_counter = False
 
     if not drawing_counter:
-        fighter_1.move(scr_w, scr_h, screen, fighter_2, round_over)
+        fighter_1.move(scr_w, scr_h, screen, fighter_2, not round_over)
 
     if fighter_2.ai_control:
         fighter_2.play_ai()
     else:
-        fighter_2.move(scr_w, scr_h, screen, fighter_1, round_over)
+        fighter_2.move(scr_w, scr_h, screen, fighter_1, not round_over)
 
     # update fighters
     fighter_1.update()
@@ -536,7 +539,7 @@ def updategame(infot):
             # fighter_2 = Fighter(2, 700, SPAWN_Y, True, WIZARD_DATA, wizard_sheet, WIZARD_ANIMATION_STEPS, magic_fx)
 
     # draw background
-    draw_bg()
+    screen.blit(pyv.vars.images['bg'], (0, 0))
 
     if round_over:
         if fighter_1.alive:

@@ -6,10 +6,17 @@
     "description": "this is a placeholder for the name of your game",
     "author": "moonbak",
     "assets": [
-		"warrior-spritesheet.png",
-		"sorc-spritesheet.png"
+      "warrior-spritesheet.json",
+      "sorc-spritesheet.json",
+      "bg.png",
+      "victory.png",
+      "defeat.png",
+      ["bigFont", "immortal-turok.ttf", 80],
+      ["smaFont", "immortal-turok.ttf", 33]
 	],
-    "sounds": [],
+    "sounds": [
+      "immortal-sword.wav", "immortal-magic.wav"
+    ],
     "cartridge": "immortalBundle",
     "game_name": "Immortal",
     "build_date": "Fri Aug 25 17:22:49 2023"
