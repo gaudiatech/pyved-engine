@@ -1,5 +1,5 @@
 import random
-import time
+# import time
 
 from . import pimodules
 
@@ -269,7 +269,7 @@ class Fighter:
             self.attack_type = random.choice((1, 2))
 
     # handle animation updates
-    def update(self):
+    def update(self, t):
         # update y speed
         if self.jump:
             self.vy += 0.085 * self.YSPEED
@@ -306,19 +306,19 @@ class Fighter:
         #  animating char.
         # -----------
         if self.attack_type == 0:
-            self.update_action(3)  # code 3 => attack primary
+            self.update_action(3, t)  # code 3 => attack primary
         elif self.attack_type == 1:
-            self.update_action(4)  # code4 => attack secondary
+            self.update_action(4, t)  # code4 => attack secondary
         elif self.running:
-            self.update_action(1)  # code1 => just run
+            self.update_action(1, t)  # code1 => just run
         elif not self.alive:
-            self.update_action(6)  # death
+            self.update_action(6, t)  # death
         else:
-            self.update_action(0)  # code0 => idle char.
+            self.update_action(0, t)  # code0 => idle char.
 
         # update the image
         self.image = self.animation_list[self.action][self.frame_index]
-        curr_t = time.time()
+        curr_t = t  # time.time()
         # check if enough time has passed since the last update
         if (self.update_time is None) or (curr_t - self.update_time) > self.ANIM_FREQ:
             self.frame_index += 1
@@ -356,13 +356,13 @@ class Fighter:
                 target.health -= 10
                 target.hit = True
 
-    def update_action(self, new_action):
+    def update_action(self, new_action, infot):
         # check if the new action is different to the previous one
         if new_action != self.action:
             self.action = new_action
             # update the animation settings
             self.frame_index = 0
-            self.update_time = time.time()
+            self.update_time = infot  # time.time()
 
     def draw(self, surface):
         img = pygame.transform.flip(self.image, self.flip, False)
@@ -422,7 +422,7 @@ def reset_fighters():
 @pyv.declare_begin
 def initgame(vms=None):
     global fighter_1, fighter_2, intro_count, magic_fx, sword_fx
-    global last_count_update, clock, screen
+    global clock, screen
     global victory_img, defeat_img, count_font, score_font
 
     pyv.init()
@@ -450,7 +450,8 @@ def initgame(vms=None):
     fighter_2.attack_sound = magic_fx
     fighter_2.ai_control = True
 
-    last_count_update = time.time()
+    # last_count_update = None
+
     clock = pyv.vars.clock
 
     # load background image
@@ -484,6 +485,8 @@ def updategame(infot):
     else:
         dt = lastupdate - infot
     lastupdate = infot
+    if last_count_update is None:
+        last_count_update = infot
 
     # event handler
     for ev in pyv.fetch_events():
@@ -516,8 +519,8 @@ def updategame(infot):
         fighter_2.move(scr_w, scr_h, screen, fighter_1, not round_over)
 
     # update fighters
-    fighter_1.update()
-    fighter_2.update()
+    fighter_1.update(infot)
+    fighter_2.update(infot)
 
     # check for player defeat
     if not round_over:
