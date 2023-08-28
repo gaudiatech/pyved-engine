@@ -9,18 +9,21 @@ This is a joint work, authors are:
     -Thomas Iwaszko (port to python3+pyv, various improvements)
     [contact: thomas.iw@kata.games]
 """
-import chdefs
-import pyved_engine as pyv
+
+from . import pimodules
+
+print('pimodules content::::')
+print(pimodules.pyved_engine)
+
+pyv = pimodules.pyved_engine
 pyv.bootstrap_e()
 
-from chessintro import ChessintroState
-from chessmatch import ChessmatchState
-
-
-# aliases
 pyg = pyv.pygame
-epaint = pyv.EngineEvTypes.Paint
-eupdate = pyv.EngineEvTypes.Update
+
+
+from .chessintro import ChessintroState
+from .chessmatch import ChessmatchState
+from . import chdefs
 
 
 @pyv.Singleton
@@ -36,35 +39,12 @@ def beginchess(vmst=None):
     pyv.init()
     glvars = SharedStorage.instance()
 
-    # let's preload game assets...
-    pyv.preload_assets({
-        'images': [
-            'black_pawn.png',
-            'black_rook.png',
-            'black_knight.png',
-            'black_bishop.png',
-            'black_king.png',
-            'black_queen.png',
-
-            'white_pawn.png',
-            'white_rook.png',
-            'white_knight.png',
-            'white_bishop.png',
-            'white_king.png',
-            'white_queen.png',
-            
-            'white_square.png',
-            'brown_square.png',
-            'cyan_square.png'
-        ],
-    }, prefix_asset_folder='images/')
     # override surfvalues to fix most of images, bc we need a different size...
     sq_size_pixels = (100, 100)
     for iname, sv in pyv.vars.images.items():
         if iname[-6:] == 'square':
             pass
         else:
-            # print('resized', iname)
             pyv.vars.images[iname] = pyg.transform.scale(sv, sq_size_pixels)
 
     pyv.declare_game_states(
@@ -80,15 +60,14 @@ def beginchess(vmst=None):
 @pyv.declare_update
 def updatechess(info_t):
     glvars = SharedStorage.instance()
-    glvars.ev_manager.post(eupdate, curr_t=info_t)
-    glvars.ev_manager.post(epaint, screen=glvars.screen)
+
+    glvars.ev_manager.post(pyv.EngineEvTypes.Update, curr_t=info_t)
+    glvars.ev_manager.post(pyv.EngineEvTypes.Paint, screen=glvars.screen)
+
     glvars.ev_manager.update()
+    pyv.flip()
 
 
 @pyv.declare_end
 def endchess(vmst=None):
     pyv.close_game()
-
-
-if __name__ == '__main__':
-    pyv.run_game()

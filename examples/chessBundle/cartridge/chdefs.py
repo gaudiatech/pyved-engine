@@ -1,10 +1,11 @@
 """
 Define game modes & custom events
 """
-import pyved_engine as pyv
+from . import pimodules
+pyv = pimodules.pyved_engine
 
 
-ChessGstates = pyv.struct.enum(
+ChessGstates = pyv.e_struct.enum(
     'Chessintro',
     'Chessmatch',
 )

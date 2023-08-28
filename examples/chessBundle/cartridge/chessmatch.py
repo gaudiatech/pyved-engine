@@ -1,12 +1,14 @@
-import chdefs
-from chdefs import BOARD_POS
-import pyved_engine as pyv
-from examples.chess.main_gui_view import PopupPromotion
-from model import *
-from ChessmatchMod import ChessgameMod
+from . import chdefs
+from .chdefs import BOARD_POS
 
+from .main_gui_view import PopupPromotion
+from .model import *
+from .ChessmatchMod import ChessgameMod
+
+from . import pimodules
 
 # --- alias
+pyv = pimodules.pyved_engine
 pygame = pyv.pygame
 
 # --- constants

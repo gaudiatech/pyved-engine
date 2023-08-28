@@ -1,6 +1,7 @@
 import random
 
-from model import ChessPlayer, ChessRules, ChessBoard, C_WHITE_PLAYER, C_BLACK_PLAYER, C_EMPTY_SQUARE
+
+from .model import ChessPlayer, ChessRules, ChessBoard, C_WHITE_PLAYER, C_BLACK_PLAYER, C_EMPTY_SQUARE
 
 
 class ChessAI(ChessPlayer):

@@ -1,6 +1,8 @@
-import chdefs
-import pyved_engine as pyv
+from . import chdefs
+from . import pimodules
 
+
+pyv = pimodules.pyved_engine
 
 # - alias
 pygame = pyv.pygame

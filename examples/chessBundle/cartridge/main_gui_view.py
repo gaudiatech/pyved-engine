@@ -1,4 +1,5 @@
-import pyved_engine as pyv
+from . import pimodules
+pyv = pimodules.pyved_engine
 
 
 # alias

@@ -1,12 +1,13 @@
 """
 model for the game of chess (whats a chess Player/a chess Board +what are the rules?)
 """
-import pyved_engine as pyv
-from chess_rules import *
-from examples.chess import chdefs
-from examples.chess.chdefs import ChessEvents
+from .chess_rules import *
+from . import chdefs
+from .chdefs import ChessEvents
+from . import pimodules
 
 
+pyv = pimodules.pyved_engine
 # todo future model will use a class for chesspiece + an int matrix
 # i should be able to write high-level ideas such as:
 # if board['d4'].is_pawn():

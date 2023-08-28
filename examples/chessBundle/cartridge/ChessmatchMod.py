@@ -1,8 +1,10 @@
-import chdefs
-from ai_players import ChessAI_random, ChessAI_defense, ChessAI_offense
-from model import ChessRules, ChessBoard, ChessPlayer, C_WHITE_PLAYER, C_BLACK_PLAYER
-import pyved_engine as pyv
-from misc import BOARDS_DEBUG
+from . import chdefs
+from .ai_players import ChessAI_random, ChessAI_defense, ChessAI_offense
+from .model import ChessRules, ChessBoard, ChessPlayer, C_WHITE_PLAYER, C_BLACK_PLAYER
+from . import pimodules
+
+
+pyv = pimodules.pyved_engine
 
 
 class ChessgameMod(pyv.Emitter):
