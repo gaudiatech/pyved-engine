@@ -23,8 +23,12 @@ max_fps = 45  # will be replaced by whatever is passed to pyv.init(...)
 screen = None
 
 # - game related (universal behavior)
-# 3 vars in order to handle the game loop conveniently, even without using OOP
+# 4 vars in order to handle all game assets
 images = dict()
+fonts = dict()
+spritesheets = dict()
 sounds = dict()
+
+# 4 vars to handle the game loop conveniently
 gameover = False
 beginfunc_ref = updatefunc_ref = endfunc_ref = None

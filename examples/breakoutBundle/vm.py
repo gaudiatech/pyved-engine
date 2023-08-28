@@ -1,5 +1,7 @@
 import importlib.util
 from pprint import pprint
+import os
+
 
 class _PyModulePromise:
     verbose = 1
@@ -63,12 +65,41 @@ def upward_link(link_to_pimodules):
     globals()['pimodules'] = link_to_pimodules
 
 
-def game_execution(metadata, game_definition_module):
-    pprint(metadata)
-    # TODO handle special case
-    # --- detect a special case here: if @pyv.declare_begin
-    # and similar tags havent been used manually,
-    # I shall detect the proper game object and link stuff here,
-    # before calling run_game...
+def find_spc_folder(givenfolder, start_path):
+    for root, dirs, files in os.walk(start_path):
+        if givenfolder in dirs:
+            return True
+    return False
 
-    globals()['pimodules']['pyved_engine'].run_game()
+
+def game_execution(metadata, game_definition_module):
+    print(f'~~Vm Pyv~~ LAUNCHING {metadata["game_name"]}...')
+    print('-'*8 + 'metadata' + '-'*8)
+    pprint(metadata)
+    print()
+
+    pyv = globals()['pimodules']['pyved_engine']
+    # <> Here we have to handle a special case
+    # ->to detect: if @pyv.declare_begin etc were not set.
+    # If so, and if gamedef has an object named "game" therefore we link all by ourselves
+    if pyv.vars.beginfunc_ref is None:
+        if hasattr(game_definition_module, 'game'):
+            game = getattr(game_definition_module, 'game')
+            # this manually connects existing codebase with the pyved 23.8a1+ philosophy (tags)
+            pyv.vars.beginfunc_ref, \
+                pyv.vars.updatefunc_ref, \
+                pyv.vars.endfunc_ref = game.enter, game.update, game.exit
+
+    # Strat= we preload all assets ->best solution considering the wanted code portability
+    # ... And no need to filter out the metadata here, pyv can handle the whole thing
+    current_folder = os.getcwd()
+    if find_spc_folder(metadata['cartridge'], current_folder):
+        adhoc_folder = os.path.join('.', metadata['cartridge'], 'cartridge')
+    elif find_spc_folder('cartridge', current_folder):
+        adhoc_folder = os.path.join('.', 'cartridge')
+    else:
+        raise FileNotFoundError("ERR: Asset dir for pre-loading assets cannot be found!")
+    pyv.preload_assets(metadata, prefix_asset_folder=adhoc_folder+os.sep)
+
+    # lets rock!
+    pyv.run_game()
