@@ -306,12 +306,12 @@ def init_command(str1) -> None:
     print('Go ahead and have fun ;)')
 
 
-def create_zip_from_folder(bundle_name, source_folder, output_zip_filename):
+def create_zip_from_folder(bundle_name, source_folder):
     # origin_no_sep = source_folder.rstrip('/\\')
-
+    tmp_output_zip_filename = 'output.zip'
     temp_dir = tempfile.gettempdir()
     # print('temp_dir=', temp_dir)
-    output_zip_path = os.path.join(temp_dir, output_zip_filename)
+    output_zip_path = os.path.join(temp_dir, tmp_output_zip_filename)
     # print('writing zip file in:', output_zip_filename)
     with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, _, files in os.walk(source_folder):
@@ -325,16 +325,62 @@ def create_zip_from_folder(bundle_name, source_folder, output_zip_filename):
     destination_file = os.path.join(os.getcwd(), f"{bundle_name}.zip")
     shutil.copy(source_file, destination_file)
     print('Newly created file:', destination_file)
+    return destination_file
+
+# import os
+# import urllib2
+#
+#
+# class EnhancedFile(file):
+#     def __init__(self, *args, **keyws):
+#         file.__init__(self, *args, **keyws)
+#
+#     def __len__(self):
+#         return int(os.fstat(self.fileno())[6])
 
 
-def upload_my_zip_file(zip_file_path, server_url):
+
+def upload_my_zip_file(zip_file_path, server_host):
+    # new and shiny (ver2 . september23)
+    import requests
+    import pyperclip
+    file_to_send = zip_file_path  # dont forget the extension!
+    files = {'uploadedFile': (file_to_send,
+                      open(file_to_send, 'rb'),
+                      'application/zip',
+                      {'Expires': '0'})}
+    reply = requests.post(
+        url=server_host+'webapp_backend/do_upload.php',
+        files=files,
+        data={'pyv-cli-flag':True, 'uploadBtn':'Upload'}
+    )
+    print('upload_my_zip_file called! Resp. is:')
+    print(reply.text)
+    rep_obj = json.loads(reply.text)
+    fruit_url = server_host+'play/'+rep_obj[1]
+
+    pyperclip.copy(fruit_url)
+    print(f'URL:{fruit_url} has been copied to the paperclip!')
+
+    # new and shiny (ver1 . august23):
+    # theFile = EnhancedFile('a.xml', 'r')
+    # theUrl = "http://example.com/abcde"
+    # theHeaders = {'Content-Type': 'text/xml'}
+    # theRequest = urllib2.Request(theUrl, theFile, theHeaders)
+    # response = urllib2.urlopen(theRequest)
+    # theFile.close()
+    # for line in response:
+    #     print
+    #     line
+
+    # ----- old shit: ------
     # Extract data from the ZIP file
-    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-        extracted_data = zip_ref.read(zip_ref.namelist()[0])
+    # with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+    #    extracted_data = zip_ref.read(zip_ref.namelist()[0])
 
     # Prepare the HTTP POST request
-    files = {'zip_data': ('data.zip', extracted_data)}
-    response = requests.post(server_url, files=files)
+    # files = {'zip_data': ('data.zip', extracted_data)}
+    # response = requests.post(server_url, files=files)
 
     # Example usage
     # zip_file_path = "path/to/your/file.zip"
@@ -356,11 +402,15 @@ def subcmd_share(bundle_name):
 
     # pre-made func usage
     source_folder = zip_precise_target
-    output_zip_filename = "output.zip"
-    create_zip_from_folder(bundle_name, source_folder, output_zip_filename)
+
+    fn = create_zip_from_folder(bundle_name, source_folder)
     # print("ZIP file created:", output_zip_filename)
     # create_zip_from_folder(, os.getcwd())
     # print('tmpfile created ok')
+    upload_my_zip_file(
+        fn,
+        'http://127.0.0.1:8001/'
+    )
 
 
 def main_inner(parser, argns):
