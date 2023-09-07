@@ -30,7 +30,8 @@ __version__ = vars.ENGINE_VERSION_STR
 VALID_SUBCOMMANDS = (
     'init',
     'play',
-    'share'
+    'share',
+    'pub'
 )
 
 
@@ -339,16 +340,63 @@ def create_zip_from_folder(bundle_name, source_folder):
 #         return int(os.fstat(self.fileno())[6])
 
 
+import requests
+
+
+def trigger_publish(chosenslug, remote_cart_id) -> bool:
+    """
+    once the game is available server-side as a stored cartridge (therefore it has a cartridge_id ...)
+    we trigger the "PUBLISH" op server-side.
+    This means the game will spawn/pop within the gaming CMS (cloudarcade)
+
+    :param chosenslug:
+    :param remote_cart_id: str that was provided by the server to uniquely identify a game cartridge
+    stored server-side
+    :return: True/False
+    """
+    dummy_json_str ="""
+{
+"title": "This is the game title",
+"slug": "essaiFlappy",
+"description": "This is a test game",
+"instructions": "Click any object to move",
+"width": 960,
+"height": 720,
+"thumb_1": "https://img.gamemonetize.com/ulol31p2l8xogmlxh1yqfa64dxzkyrix/512x384.jpg",
+"thumb_2": "https://img.gamemonetize.com/ulol31p2l8xogmlxh1yqfa64dxzkyrix/512x384.jpg",
+"category": "Puzzle,Arcade,Action",
+"source": "API",
+"cartridge":"flappy"
+}
+"""
+    TARG_TRIGGER_PUBLISH = 'https://kata.games/api/uploads.php'
+
+    # check that can be deserialized...
+    jsondata = json.loads(dummy_json_str)
+    jsondata['slug'] = x = chosenslug
+    jsondata['cartridge'] = y = remote_cart_id
+    #print(jsondata)
+    #print(type(jsondata))
+
+    reply = requests.post(
+        url=TARG_TRIGGER_PUBLISH,
+        data=json.dumps(jsondata)
+    )
+    print(f'trigger_publish CALLED (arg:x,y=={x},{y})--- result is...')
+    print(reply.text)
+
 
 def upload_my_zip_file(zip_file_path, server_host):
     # new and shiny (ver2 . september23)
-    import requests
+    # TODO: this works only on the local VM, how to port it to work in production mode?
     import pyperclip
     file_to_send = zip_file_path  # dont forget the extension!
-    files = {'uploadedFile': (file_to_send,
-                      open(file_to_send, 'rb'),
-                      'application/zip',
-                      {'Expires': '0'})}
+    files = {
+        'uploadedFile': (file_to_send,
+        open(file_to_send, 'rb'),
+        'application/zip',
+        {'Expires': '0'})
+    }
     reply = requests.post(
         url=server_host+'webapp_backend/do_upload.php',
         files=files,
@@ -428,6 +476,10 @@ def main_inner(parser, argns):
         return 0
 
     # handle ``init GameBundleName``
+    if argns.subcommand == "pub":
+        y = trigger_publish(argns.slug, argns.cart_id)
+        return 1 if y else 0
+
     bundname = argns.bundle_name
     if argns.subcommand == "init":
         init_command(bundname)
@@ -824,6 +876,16 @@ def do_parse_args():
         "bundle_name", type=str, nargs="?", default=".", help="Specified bundle (default: current folder)"
     )
     # ——————————————————————————————————
+    pubpp = subparsers.add_parser(
+        "pub", help="Publish a game based on its cartridge id"
+    )
+    pubpp.add_argument(
+        "slug", type=str, help="Chosen slug (slug means: identifier in the CM system.)"
+    )
+    pubpp.add_argument(
+        "cart_id", type=str, help="Cartridge id required, as provided by the server"
+    )
+    # +++ PUB subcommand {
 
     ret_args = parser.parse_args()
     main_inner(parser, ret_args)
