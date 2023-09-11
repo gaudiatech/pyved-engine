@@ -145,6 +145,10 @@ def draw_polygon(*args, **kwargs):
     _hub.pygame.draw.polygon(*args, **kwargs)
 
 
+def draw_circle(surface, color_arg, position2d, radius, width=0):
+    _hub.pygame.draw.circle(surface, color_arg, position2d, radius, width)
+
+
 # --------------
 #  3 decorators + the game_exec func to make gameloops standardized
 # --------------

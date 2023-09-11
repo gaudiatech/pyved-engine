@@ -124,7 +124,7 @@ class ShipModel(pyv.Emitter):
         self._commit_new_pos()
 
 
-class RockSprite(pyv.Sprite):
+class RockSprite(pyv.pygame.sprite.Sprite):
     snd = None
 
     def __init__(self):
@@ -376,7 +376,7 @@ class Astero(pyv.GameTpl):
                 '(astero)explosion_002.wav',
                 '(astero)ndimensions-zik.ogg',
             ],
-            'images': [
+            'assets': [
                 '(astero)rock.png',
                 '(astero)enter_start.png',
             ]
