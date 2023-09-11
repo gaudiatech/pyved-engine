@@ -121,4 +121,4 @@ def __getattr__(targ_sm_name):
     if targ_sm_name in kengi_inj:
         return kengi_inj[targ_sm_name]
     else:
-        raise AttributeError(f"kengi has no attribute named {targ_sm_name}")
+        raise AttributeError(f"PYV cannot find any attr./ submodule named {targ_sm_name}")
