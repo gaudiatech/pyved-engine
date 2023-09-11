@@ -70,7 +70,7 @@ def prep_game(vmst=None):
         map_bg_name, map_bg_file = pyv.util.path_to_img_infos(tilemap_obj.background['img_path'])
         li_assets.append(map_bg_file)
     pyv.preload_assets({  # chargement ressources
-        'images': li_assets,
+        'assets': li_assets,
         # 'sounds': []
     }, prefix_asset_folder='assets/')
     viewport = pyv.tmx.misc.Viewport(tilemap_obj, (0, 0), pyv.vars.disp_size)
