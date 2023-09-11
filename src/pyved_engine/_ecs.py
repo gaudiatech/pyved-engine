@@ -98,6 +98,25 @@ def define_archetype(archetype_name, component_names):
     _archetypes[archetype_name] = component_names
 
 
+def find_by_components(*compokeys):
+    """
+    this func will return all entities that satisfy each on of compokeys (=has that list of components in it)
+    :param compokeys:
+    :return: a list
+    """
+    res = list()
+
+    for entity in _entities:
+        compat = True
+        for c in compokeys:
+            if c not in entity:
+                compat = False
+                break
+        if compat:
+            res.append(entity)
+    return res
+
+
 def find_by_archetype(archetype_name):
     for entity in _entities:
         if 'Archetype' in entity:
