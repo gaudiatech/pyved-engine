@@ -1,35 +1,24 @@
 import pygame
+
 from core_component import Component
-# from ..core.colours import *
 
 
 class CameraComponent(Component):
 
-    def __init__(self,
-    
-        # required parameters
-        x, y,
-        w, h,
-        
-        # optional parameters
-        bgColour=None,
-        sceneX = 0, sceneY = 0,
-        entityToTrack = None,
-        zoomLevel = 1,
-        clampToMap = True
-    
-    ):
-        
+    def __init__(self, x, y, w, h,
+                 bg_colour=None,
+                 scene_x=0, scene_y=0,
+                 entity_to_track=None,
+                 zoom_level=1,
+                 clamp_to_map=True):
+        super().__init__()
         self.key = 'camera'
-        
         self.rect = pygame.Rect(x, y, w, h)
-        self.bgColour = bgColour
-        
-        self.sceneX = sceneX
-        self.sceneY = sceneY
-        self.entityToTrack = entityToTrack
-        self.zoomLevel = zoomLevel
-
+        self.bgColour = bg_colour
+        self.sceneX = scene_x
+        self.sceneY = scene_y
+        self.entityToTrack = entity_to_track
+        self.zoomLevel = zoom_level
         self.zoomPerFrame = 0
         self.targetZoom = self.zoomLevel
 
@@ -37,13 +26,12 @@ class CameraComponent(Component):
         self.targetY = 0
         self.movementPerFrameX = 0
         self.movementPerFrameY = 0
-
-        self.clampToWorld = clampToMap
+        self.clampToWorld = clamp_to_map
 
         self._x = 0
         self._y = 0
         self._z = 0
-    
+
     def setZoom(self, level, duration=1):
         if duration < 1:
             return
@@ -83,27 +71,27 @@ class CameraComponent(Component):
             # calculate x value
 
             # if scene narrower than camera:
-            if (self.rect.w) > (scene.map.w_real*self.zoomLevel):
+            if (self.rect.w) > (scene.map.w_real * self.zoomLevel):
                 newX = int(scene.map.w_real / 2)
             else:
-                newX = max(newX, (self.rect.w/self.zoomLevel)/2)
-                newX = min(newX, ( ((scene.map.w_real) - (self.rect.w/2/self.zoomLevel)) ) )
+                newX = max(newX, (self.rect.w / self.zoomLevel) / 2)
+                newX = min(newX, (((scene.map.w_real) - (self.rect.w / 2 / self.zoomLevel))))
 
             # calculate y value
 
             # if scene narrower than camera:
-            if self.rect.h > (scene.map.h_real*self.zoomLevel):
+            if self.rect.h > (scene.map.h_real * self.zoomLevel):
                 newY = int(scene.map.h_real / 2)
             else:
-                newY = max(newY, (self.rect.h/self.zoomLevel/2))
-                newY = min(newY, ( ((scene.map.h_real) - (self.rect.h/2/self.zoomLevel)) ) )
+                newY = max(newY, (self.rect.h / self.zoomLevel / 2))
+                newY = min(newY, (((scene.map.h_real) - (self.rect.h / 2 / self.zoomLevel))))
 
         self.sceneX = newX
         self.sceneY = newY
 
     def trackEntity(self, entity):
         self.entityToTrack = entity
-    
+
     def goToEntity(self, entity):
         self.entityToTrack = None
         pos = entity.getComponent('position')

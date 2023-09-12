@@ -49,7 +49,7 @@ class Cutscene:
         if self.status == 'out':
             self.fadePercentage = max(0, self.fadePercentage-(100/self.inOutDuration))
             if self.fadePercentage == 0:
-                scene.cutscene = None
+                scene.cutScene = None
 
         # performing cutscene
         if self.status == 'do':

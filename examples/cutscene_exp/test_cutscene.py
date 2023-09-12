@@ -1,59 +1,20 @@
 import pygame
-import os
+
 import pyved_engine as pyv
-from scene import Scene
-
-pyv.bootstrap_e()
-
-from component_text import TextComponent
+import shared
+import systems
 from component_camera import CameraComponent
+from component_text import TextComponent
 from cutscene import Cutscene
 from manager_scene import SceneManager
+from scene import Scene
 
 
-mainScene = cutscene = None
-already_pressed = False
-
-
-def input_system(entities, componets):  # why components?
-    global cutscene, mainScene, already_pressed
-    pkeys = pygame.key.get_pressed()
-    if pkeys[pygame.K_RETURN]:
-        if not already_pressed:
-            print('cutscene launched!')
-            cutscene.reset()
-            mainScene.cutscene = cutscene
-            already_pressed = True
-    else:
-        if already_pressed:
-            already_pressed = False
-    # print('entities are', entities)
-
-
-def update_scenes_system(entities, components):
-    global mainScene
-    mainScene._update()
-
-
-def render_graphics(entities, components):
-    global mainScene
-    # Clear screen before rendering
-    pyv.vars.screen.fill((0, 77, 0))
-    mainScene._draw()
-    # print('flip ok')
-    pyv.flip()
-
-    # for entity_o in entities:
-        # if pyv.archetype_of(entity_o) == "player":
-            # cam = entity_o['cam']
-            # x, y = entity_o['position']
-            # pyv.draw_polygon(pyv.vars.screen, 'pink', [(x, y), (x + 20, y), (x + 10, y + 20)])
-    # print(dir(mainScene.renderer))
+pyv.bootstrap_e()
 
 
 @pyv.declare_begin
 def test_initialize(vmst=None):
-    global mainScene, cutscene
     pyv.init()
 
     #pyv.define_archetype("Zombie", ["Position2d", "Health", "Color"])
@@ -63,7 +24,7 @@ def test_initialize(vmst=None):
     # create a main scene
     #
 
-    mainScene = Scene()
+    shared.mainScene = Scene()
 
     #
     # add some resources
@@ -110,8 +71,8 @@ def test_initialize(vmst=None):
         {"position": [300, 100],
          "camera": CameraComponent(
              0, 0, 600, 400,
-             bgColour="blue",  # gamma.BLUE,
-             entityToTrack=player_entity
+             bg_colour="blue",  # gamma.BLUE,
+             entity_to_track=player_entity
          )}
     )
 
@@ -123,17 +84,17 @@ def test_initialize(vmst=None):
     #     entityToTrack = playerEntity
     # ))
 
-    cutscene = Cutscene()
-    cutscene.actionList = [
+    shared.cutScene = Cutscene()
+    shared.cutScene.actionList = [
         lambda: player_entity['camera'].setZoom(3, duration=60),
-        lambda: mainScene.cutscene.setDelay(120),
+        lambda: shared.mainScene.cutscene.setDelay(120),
 
         # add component below:
         lambda: player_entity.update({'text':TextComponent('Hello! How are you?', lifetime='timed', type='tick', final_display_time=120)}),
 
-        lambda: mainScene.cutscene.setDelay(300),
+        lambda: shared.mainScene.cutscene.setDelay(300),
         lambda: player_entity['camera'].setZoom(1, duration=60),
-        lambda: mainScene.cutscene.setDelay(60)
+        lambda: shared.mainScene.cutscene.setDelay(60)
     ]
 
     # player controls = enter to start cutscene
@@ -151,14 +112,17 @@ def test_initialize(vmst=None):
     #
     # add entities to scene
     #
-    mainScene.entities.append(player_entity)
+    shared.mainScene.entities.append(player_entity)
     #
     # add scene to the gamma and start
     #
 
-    sceneManager.push(mainScene)
-    for syst in (input_system, update_scenes_system, render_graphics):
-        pyv.add_system(syst)
+    sceneManager.push(shared.mainScene)
+    # --old: adding 1 by 1
+    #for syst in (input_system, update_scenes_system, render_graphics):
+    #    pyv.add_system(syst)
+    # --new:
+    pyv.bulk_add_systems(systems)
 
 
 @pyv.declare_update

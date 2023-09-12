@@ -15,25 +15,27 @@ import pygame
 class Text:
 
     def __init__(self,
-
                  # required parameters
                  text, x, y,
-
                  # optional parameters
                  hAlign='left', vAlign='top',
                  colour="white",
                  alpha=255,
-                 font=pygame.font.Font(None, 15),  #resourceManager.getFont('munro24'),
+                 font=None,  #resourceManager.getFont('munro24'),
                  underline=False,
                  z=1,
                  xParallax=False, yParallax=False
 
                  ):
         super().__init__(x, y, z, hAlign, vAlign, colour, alpha, xParallax, yParallax)
+        if font is None:
+            self.font = pygame.font.Font(None, 15)
+        else:
+            self.font = font
 
         # set additional text object parameters
         self._text = str(text)
-        self.font = font
+
         self.underline = underline
         self._createSurface()
 
