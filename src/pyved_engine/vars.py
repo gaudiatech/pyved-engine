@@ -18,7 +18,7 @@ disp_size = 960, 720
 backend_name = ''  # type str, and the default value is '' but it could be modified from elsewhere
 weblib_sig = None
 
-game_ticker = None  # at some point, this should store a ref on an Obj. typed pygame.time.Clock
+clock = None  # at some point, this should store a ref on an Obj. typed pygame.time.Clock
 max_fps = 45  # will be replaced by whatever is passed to pyv.init(...)
 screen = None
 

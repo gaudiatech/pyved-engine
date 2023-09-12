@@ -141,6 +141,10 @@ def draw_line(*args, **kwargs):
     _hub.pygame.draw.line(*args, **kwargs)
 
 
+def draw_rect(*args, **kwargs):
+    _hub.pygame.draw.rect(*args, **kwargs)
+
+
 def draw_polygon(*args, **kwargs):
     _hub.pygame.draw.polygon(*args, **kwargs)
 
@@ -171,8 +175,7 @@ def run_game():
     vars.beginfunc_ref(None)
     while not vars.gameover:
         vars.updatefunc_ref(time.time())
-        flip()  # commit gfx mem to screen
-        vars.clock.tick(vars.max_fps)
+        flip()  # commit gfx mem to screen, already contains the .tick
     vars.endfunc_ref(None)
 
 
@@ -230,8 +233,13 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None, webhack=None):
         vars.sounds[k] = _hub.pygame.mixer.Sound(filepath)
 
 
-def bootstrap_e(opt_arg=None, wcaption=None, print_ver_info=False):
+def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=False):
     global _engine_rdy
+    if maxfps is None:
+        y = 60
+    else:
+        y = maxfps
+    vars.max_fps = y
     # in theory the Pyv backend_name can be hacked prior to a pyv.init() call
     # Now, let's  build a primal backend
     v = vars.ENGINE_VERSION_STR
@@ -250,10 +258,10 @@ def bootstrap_e(opt_arg=None, wcaption=None, print_ver_info=False):
     _engine_rdy = True
 
 
-def init(opt_arg=None, wcaption=None):
+def init(maxfps=None, wcaption=None):
     global _engine_rdy
     if not _engine_rdy:
-        bootstrap_e(opt_arg, wcaption)
+        bootstrap_e(maxfps, wcaption)
     elif wcaption:
         _hub.pygame.display.set_caption(wcaption)
 
@@ -307,7 +315,8 @@ def surface_rotate(img, angle):
 
 
 def flip():
-    return _hub.pygame.display.flip()
+    _hub.pygame.display.flip()
+    vars.clock.tick(vars.max_fps)
 
 
 def fetch_events():
