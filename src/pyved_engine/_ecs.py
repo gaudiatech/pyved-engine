@@ -8,10 +8,11 @@ and scalable approach to handle complex game systems and interactions.
 # 15 functions/procudures here
 
 
-_entities = []
 _components = {}
-_systems = []
 _archetypes = {}
+# TODO structure scene by scene
+_entities = []
+_systems = []
 
 
 # Entity functions -----
@@ -117,12 +118,28 @@ def find_by_components(*compokeys):
     return res
 
 
+def all_entities(scene=None):
+    # TODO fetch from a given scene ...
+    return iter(_entities)
+
+
+def has_archetype(entity, archetype_name):
+    if 'Archetype' not in entity:
+        return False
+    return entity['Archetype'] == archetype_name
+
+
 def find_by_archetype(archetype_name):
-    for entity in _entities:
-        if 'Archetype' in entity:
-            if entity['Archetype'] == archetype_name:
-                return entity
-    raise KeyError(f'ERR: Cannot find archetype {archetype_name}!')
+    return tuple(filter(lambda e: has_archetype(e, archetype_name), _entities))
+
+    # res = list()
+    # for entity in _entities:
+    #     if 'Archetype' in entity:
+    #         if entity['Archetype'] == archetype_name:
+    #             res.append(entity)
+    # if not len(res):
+    #     raise KeyError(f'ERR: Cannot find archetype {archetype_name}!')
+    # return res
 
 
 def list_all_archetypes():
