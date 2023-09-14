@@ -1,43 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
          <loc>https://kata.games/kengi-docs/</loc>
          <lastmod>2023-09-14</lastmod>
          <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://kata.games/kengi-docs/bidule.fr/</loc>
-         <lastmod>2023-09-14</lastmod>
-         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/"/>
+         
     </url>
     <url>
          <loc>https://kata.games/kengi-docs/bidule/</loc>
          <lastmod>2023-09-14</lastmod>
          <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/bidule/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/bidule/"/>
+         
     </url>
     <url>
-         <loc>https://kata.games/kengi-docs/index.fr/</loc>
+         <loc>https://kata.games/kengi-docs/topic1/named_file/</loc>
          <lastmod>2023-09-14</lastmod>
          <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://kata.games/kengi-docs/topic1/named_file.en/</loc>
-         <lastmod>2023-09-14</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://kata.games/kengi-docs/topic1/named_file.fr/</loc>
-         <lastmod>2023-09-14</lastmod>
-         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/topic1/named_file/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/topic1/named_file/"/>
+         
     </url>
     <url>
          <loc>https://kata.games/kengi-docs/topic2/</loc>
          <lastmod>2023-09-14</lastmod>
          <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://kata.games/kengi-docs/topic2/README.fr/</loc>
-         <lastmod>2023-09-14</lastmod>
-         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/topic2/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/topic2/"/>
+         
     </url>
 </urlset>
