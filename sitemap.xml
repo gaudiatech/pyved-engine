@@ -25,6 +25,14 @@
          
     </url>
     <url>
+         <loc>https://kata.games/kengi-docs/GameTutorials/Platformer/</loc>
+         <lastmod>2023-09-14</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/GameTutorials/Platformer/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/GameTutorials/Platformer/"/>
+         
+    </url>
+    <url>
          <loc>https://kata.games/kengi-docs/topic1/named_file/</loc>
          <lastmod>2023-09-14</lastmod>
          <changefreq>daily</changefreq>
