@@ -1,6 +1,6 @@
 # Tutorial platformer
 
-This tutorial is here to help you build above the foundation of the platformer template available in the **Pyved-CLI**.
+This tutorial is here to help you build upon the foundation of the platformer template available in the **Pyved-CLI**.
 
 If you need further help customizing your game, go read the [**pyved-engine full documentation**](https://gaudiatech.github.io/pyved-engine/).
 
@@ -19,7 +19,7 @@ The **Entity Component System (ECS)** is a software architectural pattern common
 
 ## Codebase
 
-Let's go for a quick tour around the code in order for you to understand best how to customize this template to your liking.
+Let's go for a quick tour around the code in order for you to best understand how to customize this template to your liking.
 
 The files to customize are located inside of the `cartridge` folder : 
 
@@ -30,7 +30,7 @@ You will also keep your entities setup here.
 
 - `systems.py` : This file will keep the logic of your game through the ECS systems, if you want to implement some kind of logic events, you will have them stored here.
 
-- `World.py` : This file will have your entities creation in the game world.
+- `World.py` : This file will have your entity creation in the game world.
 
 So let's jump right into it, and make our first feature, a **jetpack** for our player !
 
@@ -41,9 +41,9 @@ Let's make your first feature :
 
 We will start simple, and define what we will need for a Jetpack to work :
 
-- Add a Jetpack attribute to the player, your character will need a jetpack to use a jetpack 😊
+- Add a Jetpack attribute to the player, your character will need it to use a jetpack 😊
 
-- A jetpack speed ratio, we could technically use the same speed as the player one, but it feels better to have a difference of speed when switching mode 🚀
+- A jetpack speed ratio; we could technically use the same speed as the player one, but it feels better to have a difference of speed when switching mode 🚀
 
 - And finally, the logic !
 
@@ -124,9 +124,7 @@ Let's first add this code just after the control definition
 
 Now, we can go inside the game and check if the console we start it from displays the jetpack on/off message whenever we press the arrow up key.
 
-It displays fine, but we still jump, and no jetpack physics in sight...
-
-Let's fix this !
+It displays fine, but we still jump, and no jetpack physics in sight...Let's fix this !
 
 ```py
         if ent['lower_block']:
@@ -163,7 +161,7 @@ We will add textures to our walls, our player and a background !
 
 Let's setup pydev to distribute the images across the code.
 
-Go to the `gamedef.py` and after everyting is initiated add the following code :
+Go to the `gamedef.py` and after everything is initiated add the following code :
 
 ```py
     pyv.preload_assets({
