@@ -26,6 +26,10 @@ def delete_entity(entity):
     _entities.remove(entity)
 
 
+def wipe_entities():
+    del _entities[:]
+
+
 def init_entity(entity, values):
     entity.update(values)
 
