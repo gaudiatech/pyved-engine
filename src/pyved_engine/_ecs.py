@@ -130,7 +130,7 @@ def has_archetype(entity, archetype_name):
 
 
 def find_by_archetype(archetype_name):
-    return tuple(filter(lambda e: has_archetype(e, archetype_name), _entities))
+    return list(filter(lambda e: has_archetype(e, archetype_name), _entities))
 
     # res = list()
     # for entity in _entities:
