@@ -12,10 +12,12 @@ import importlib
 import json
 import os
 import re
+import requests
 import shutil
 import sys
 import tempfile
 import time
+from .json_prec import TEMPL_ID_TO_JSON_STR
 import zipfile
 
 # will be used later on, where `pyv-cli share` becomes a thing
@@ -222,39 +224,6 @@ def play_command(x):
     vmsl.bootgame(metadata)
 
 
-JSON_PRECURSOR_NOASSETS = """\
-{
-"vmlib_ver":"void",
-"dependencies":{
-    "pyved_engine": "???"
-},
-"description":"this is a placeholder so you can describe your game",
-"author":"placeholder_author",
-"assets":[
-],
-"sounds": [
-]
-}
-"""
-
-JSON_PRECURSOR_PLATFORMER = """\
-{
-"vmlib_ver": "23_9a1",
-"dependencies": {
-"pyved_engine": "23.4a4"
-},
-"description": "this is an example of platformer",
-"author": "KataGames_Team",
-"assets": [
-"my_map.ncsv"
-],
-"sounds": [],
-"cartridge": "pyvTutoZero",
-"game_title": "Skeleton for a platformer game",
-"build_date": "Thu Sep 14 11:31:49 2023"
-}
-"""
-
 # alias!
 fpath_join = os.path.join
 
@@ -293,21 +262,23 @@ def init_command(cartridge_name) -> None:
     possib_templates = {
         0: 'Empty',
         1: 'Breakout',
-        2: 'Platformer'
+        2: 'Platformer',
+        3: 'Chess',
     }
+    bsup_template_id = 3
+
     print(f" Using sub-command INIT: your new cartridge name is [{cartridge_name}]")
     print('-'*60)
     print('  Game templates:')
     for code, name in possib_templates.items():
         print(f'    {code}:  {name}')
-    template_id = int(input('select a template: '))
+    template_id = input('select a template: ')
+    while not(template_id.isnumeric() and 0<=int(template_id)<=bsup_template_id):
+        print('invalid input!')
+        template_id = input('select a template: ')
+    template_id = int(template_id)
     print('-'*60)
-    adhoc_json_prec = {
-        0: JSON_PRECURSOR_NOASSETS,
-        1: JSON_PRECURSOR_NOASSETS,
-        2: JSON_PRECURSOR_PLATFORMER
-    }[template_id]
-
+    adhoc_json_prec = TEMPL_ID_TO_JSON_STR[template_id]
     metadata = json.loads(adhoc_json_prec)
     # TODO perform this important check:
     #  assets need to be already available in cartridge/
@@ -374,9 +345,6 @@ def create_zip_from_folder(bundle_name, source_folder):
 #
 #     def __len__(self):
 #         return int(os.fstat(self.fileno())[6])
-
-
-import requests
 
 
 def trigger_publish(chosenslug, remote_cart_id) -> bool:

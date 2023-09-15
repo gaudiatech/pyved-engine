@@ -44,6 +44,8 @@ pck_list = [
     "pyvcmdline.template_1.cartridge",
     "pyvcmdline.template_2",
     "pyvcmdline.template_2.cartridge",
+    "pyvcmdline.template_3",
+    "pyvcmdline.template_3.cartridge",
 ]
 
 this_directory = Path(__file__).parent
