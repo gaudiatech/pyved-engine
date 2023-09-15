@@ -8,7 +8,7 @@ Instead use functions like pyv.preload_assets(...) or init(max_fps=..., ...) etc
 """
 
 
-ENGINE_VERSION_STR = '23.8a5'  # a read-only value, can this val. from outside via a func. call on pyv.get_version()
+ENGINE_VERSION_STR = '23.9a1'  # a read-only value, can this val. from outside via a func. call on pyv.get_version()
 
 # deprecated but mandatory for web ctx
 STD_SCR_SIZE = [960, 720]
@@ -28,6 +28,7 @@ images = dict()
 fonts = dict()
 spritesheets = dict()
 sounds = dict()
+csvdata = dict()
 
 # 4 vars to handle the game loop conveniently
 gameover = False

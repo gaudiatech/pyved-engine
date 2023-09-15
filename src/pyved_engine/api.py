@@ -9,6 +9,8 @@ Pyv API := Ecs func/procedures
 # ----------------------
 from ._ecs import *
 from ._utility import *
+import csv
+from io import StringIO
 
 # ok, this is handy but wont work in web ctx, and cause other problems too (pypi packing)
 # from pygame.constants import *
@@ -196,13 +198,34 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None, webhack=None):
 
         if isinstance(asset_desc, str):  # either sprsheet or image
             kk = asset_desc.split('.')
+            # print('>>>>>charge file:', kk[0], kk[1])
+            # print('prefix_asset_folder?', prefix_asset_folder)
+
             if kk[1] == 'json':
-                print('fetching spritesheet:', kk[0])
                 if webhack:
                     y = webhack
                 else:
                     y = prefix_asset_folder
                 vars.spritesheets[kk[0]] = gfx.JsonBasedSprSheet(kk[0], pathinfo=y)
+
+            elif kk[1] == 'ncsv':
+                # filepath = prefix_asset_folder + asset_desc if prefix_asset_folder else asset_desc
+                csv_filename = kk[0]+'.'+'ncsv'
+                if webhack:
+                    y = webhack + csv_filename
+                else:
+                    y = prefix_asset_folder + csv_filename if prefix_asset_folder else csv_filename
+                with open(y, 'r') as file:
+                    # csvreader = csv.reader(file)
+                    str_csv = file.read()
+                    f = StringIO(str_csv)
+                    map_data = list()
+                    reader = csv.reader(f, delimiter=',')
+                    for row in reader:
+                        if len(row) > 0:
+                            map_data.append(list(map(int, row)))
+                    vars.csvdata[kk[0]] = map_data
+
             else:
                 filepath = prefix_asset_folder + asset_desc if prefix_asset_folder else asset_desc
                 print('fetching image:', kk[0], filepath)
