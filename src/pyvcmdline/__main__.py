@@ -222,13 +222,13 @@ def play_command(x):
     vmsl.bootgame(metadata)
 
 
-JSON_PRECURSOR = """\
+JSON_PRECURSOR_NOASSETS = """\
 {
-"vmlib_ver":"23_8a1",
+"vmlib_ver":"void",
 "dependencies":{
-    "pyved_engine": "23.4a4"
+    "pyved_engine": "???"
 },
-"description":"this is a placeholder for the name of your game",
+"description":"this is a placeholder so you can describe your game",
 "author":"placeholder_author",
 "assets":[
 ],
@@ -236,6 +236,25 @@ JSON_PRECURSOR = """\
 ]
 }
 """
+
+JSON_PRECURSOR_PLATFORMER = """\
+{
+"vmlib_ver": "23_9a1",
+"dependencies": {
+"pyved_engine": "23.4a4"
+},
+"description": "this is an example of platformer",
+"author": "KataGames_Team",
+"assets": [
+"my_map.ncsv"
+],
+"sounds": [],
+"cartridge": "pyvTutoZero",
+"game_title": "Skeleton for a platformer game",
+"build_date": "Thu Sep 14 11:31:49 2023"
+}
+"""
+
 # alias!
 fpath_join = os.path.join
 
@@ -266,27 +285,44 @@ def create_folder_and_serialize_dict(folder0_name, data_dict):
         json.dump(data_dict, json_file, indent=4)
 
 
-def init_command(str1) -> None:
+def init_command(cartridge_name) -> None:
     """
     this is the pyv-cli INIT command, it should create a new game bundle, fully operational
-    :param str1: name for your new bundle...
+    :param cartridge_name: name for your new bundle...
     """
-    print(f"INIT (given game bundle name is {str1}) ...")
-    metadata = json.loads(JSON_PRECURSOR)
+    possib_templates = {
+        0: 'Empty',
+        1: 'Breakout',
+        2: 'Platformer'
+    }
+    print(f" Using sub-command INIT: your new cartridge name is [{cartridge_name}]")
+    print('-'*60)
+    print('  Game templates:')
+    for code, name in possib_templates.items():
+        print(f'    {code}:  {name}')
+    template_id = int(input('select a template: '))
+    print('-'*60)
+    adhoc_json_prec = {
+        0: JSON_PRECURSOR_NOASSETS,
+        1: JSON_PRECURSOR_NOASSETS,
+        2: JSON_PRECURSOR_PLATFORMER
+    }[template_id]
+
+    metadata = json.loads(adhoc_json_prec)
     # TODO perform this important check:
     #  assets need to be already available in cartridge/
 
     pattern = '^[a-zA-Z0-9]+$'
-    is_validname = bool(re.match(pattern, str1))
+    is_validname = bool(re.match(pattern, cartridge_name))
     while not is_validname:
         print('*** WARNING: bundle name needs to contains only alphanumeric that is A-Z and a-z and 0-9 characters')
-        str1 = input('please select another valid name for your game bundle: ')
-        is_validname = bool(re.match(pattern, str1))
-    x = str1
+        cartridge_name = input('please select another valid name for your game bundle: ')
+        is_validname = bool(re.match(pattern, cartridge_name))
+    x = cartridge_name
 
     metadata['cartridge'] = x
     tmp = input('whats the name of your game? [Default: Same as the bundle]')
-    metadata['game_name'] = tmp if len(tmp) > 0 else x
+    metadata['game_title'] = tmp if len(tmp) > 0 else x
 
     tmp = input('whos the author? [Default: Unknown]')
     metadata['author'] = tmp if len(tmp) > 0 else 'Unknown'
@@ -298,7 +334,7 @@ def init_command(str1) -> None:
     script_directory = os.path.dirname(os.path.abspath(__file__))
     y = fpath_join(os.getcwd(), x)
 
-    recursive_copy(fpath_join(script_directory, 'template'), y)
+    recursive_copy(fpath_join(script_directory, f'template_{template_id}'), y)
     create_folder_and_serialize_dict(y, data_dict=metadata)
     for _ in range(3):
         print()
