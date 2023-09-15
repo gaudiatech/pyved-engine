@@ -317,3 +317,25 @@ Go to `systems.py` and draw our new block on the map, go back to the same place 
         tp_block = temp[0]
         disp(scr, tp_block, 'purple', 3)
 ```
+
+Now that the block is present on the map, let's add some logic for it, in order to make it truly a new feature.
+
+```py
+    temp = pyv.find_by_archetype('tp_block')
+    if len(temp):
+        tp_block = temp[0]
+        if player['body'].colliderect(tp_block['body']):
+            player['next_map'] = 'map2.csv'
+            _proc_unload_load()
+```
+
+Here we will create a var `temp` that will reference our `ŧp_block`, and thanks to `colliderect` we will detect if the 2 blocks are colliding.
+
+Once they collide, we just move our player to the next map, by unloading the current map and loading the next one.
+
+And ... you're done !
+
+Now hopefully, your game is supposed to look something like this :
+
+![The patformer end result](./screenshot.png "Our game")
+
