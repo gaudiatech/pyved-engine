@@ -1,1 +1,3 @@
-include src/katagames_engine/_sm_shelf/*.py
+include src/pyvcmdline/template_2/cartridge/*.ncsv
+include src/pyvcmdline/template_2/cartridge/*.png
+include src/pyvcmdline/template_3/cartridge/*.png
