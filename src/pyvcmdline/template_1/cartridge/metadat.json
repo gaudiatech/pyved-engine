@@ -1,0 +1,15 @@
+{
+    "vmlib_ver": "23_9a1",
+    "dependencies": {
+        "pyved_engine": "23.4a4"
+    },
+    "description": "this is an example of platformer",
+    "author": "KataGames_Team",
+    "assets": [
+        "my_map.ncsv"
+    ],
+    "sounds": [],
+    "cartridge": "pyvTutoZero",
+    "game_title": "test",
+    "build_date": "Thu Sep 14 11:31:49 2023"
+}
