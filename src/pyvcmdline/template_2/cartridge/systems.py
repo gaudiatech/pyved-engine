@@ -23,7 +23,7 @@ worldChange = True
 def gamectrl_sys(entities, components):
     pg = pyv.pygame
     for ev in pg.event.get():
-        if ev.type == pg.K_ESCAPE:
+        if ev.type == pg.KEYDOWN and ev.key == pg.K_ESCAPE:
             pyv.vars.gameover = True
 
 

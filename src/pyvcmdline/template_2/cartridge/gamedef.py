@@ -38,11 +38,6 @@ def troid_init(vms=None):
 
 @pyv.declare_update
 def troid_update(timeinfo):
-    global ts_prev_frame
-    for ev in pygame.event.get():
-        if ev.type == pygame.QUIT:
-            shared.terrain.game_over = True
-
     pyv.systems_proc()
     pyv.flip()
 
