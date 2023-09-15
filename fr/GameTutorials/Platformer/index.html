@@ -941,6 +941,19 @@ There's many other way to decline the code used, so be creative.</p>
         tp_block = temp[0]
         disp(scr, tp_block, 'purple', 3)
 </code></pre>
+<p>Now that the block is present on the map, let's add some logic for it, in order to make it truly a new feature.</p>
+<pre><code class="language-py">    temp = pyv.find_by_archetype('tp_block')
+    if len(temp):
+        tp_block = temp[0]
+        if player['body'].colliderect(tp_block['body']):
+            player['next_map'] = 'map2.csv'
+            _proc_unload_load()
+</code></pre>
+<p>Here we will create a var <code>temp</code> that will reference our <code>ŧp_block</code>, and thanks to <code>colliderect</code> we will detect if the 2 blocks are colliding.</p>
+<p>Once they collide, we just move our player to the next map, by unloading the current map and loading the next one.</p>
+<p>And ... you're done !</p>
+<p>Now hopefully, your game is supposed to look something like this :</p>
+<p><img alt="The patformer end result" src="../screenshot.png" title="Our game" /></p>
 
 
 
