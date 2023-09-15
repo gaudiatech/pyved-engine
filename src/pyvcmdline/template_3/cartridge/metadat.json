@@ -1,0 +1,29 @@
+{
+    "vmlib_ver": "23_9a1",
+    "dependencies": {
+        "pyved_engine": "???"
+    },
+    "description": "this is a placeholder so you can describe your game",
+    "author": "moonbak et al.",
+    "assets": [
+		"black_bishop.png",
+		"black_king.png",
+		"black_knight.png",
+		"black_pawn.png",
+		"black_queen.png",
+		"black_rook.png",
+		"white_bishop.png",
+		"white_king.png",
+		"white_knight.png",
+		"white_pawn.png",
+		"white_queen.png",
+		"white_rook.png",
+		"white_square.png",
+		"brown_square.png",
+		"cyan_square.png"
+	],
+    "sounds": [],
+    "cartridge": "testChess",
+    "game_title": "chessBundle",
+    "build_date": "Fri Sep 15 15:10:47 2023"
+}

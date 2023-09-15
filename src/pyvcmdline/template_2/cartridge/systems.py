@@ -22,9 +22,9 @@ worldChange = True
 
 def gamectrl_sys(entities, components):
     pg = pyv.pygame
-    activekeys = pg.key.get_pressed()
-    if activekeys[pg.K_ESCAPE]:
-        pyv.vars.gameover = True
+    for ev in pg.event.get():
+        if ev.type == pg.K_ESCAPE:
+            pyv.vars.gameover = True
 
 
 def steering_sys(entities, components):
