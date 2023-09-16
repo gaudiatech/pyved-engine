@@ -83,12 +83,19 @@ in any modern browser (Chrome, Brave, *etc*): a world premiere!
 
 ### Other details
 
-Why "kata"?
-[Kata.Games](https://kata.games) denotes a new gaming platform that helps indie game developers to create and share
-digital experiences easily, all around the globe!
-Via this innovative platform, we're proud to publish all kinds of games powered by `pyved-engine`.
+ `pyv` is not a stand-alone project. The game engine we design is linked
+ to a whole ecosystem of components, that act in concert in order to make
+ your life as a Game Dev much more pleasant and rewarding.
 
-About the list of planned features... The game engine already comes
+For instance,
+[Kata.Games](https://kata.games) is a Gaming platform that will help 
+ indie game developers from all around the globe (and especially `pyv` users)
+to create and share digital experiences swiftly, super efficiently!
+
+Via that platform, we'll be proud to publish
+all kinds of games created via `pyv`.
+
+Planned features... The game engine already comes
 packed with a ton of features:
 
 1. global event queue (simplifies the use of both the Mediator and the MVC design patterns)
@@ -101,7 +108,7 @@ packed with a ton of features:
 8. helper classes for coding card games (Poker, Blackjack, *etc.*)
 9. helper classes for adding artificial opponents/intelligent entities (NPCs) to your game
 
-...More will be added in the future.
+...But it's only the beginning. More features will be added soon.
 
 ## 2. Get started
 
