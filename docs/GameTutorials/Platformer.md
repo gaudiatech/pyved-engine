@@ -1,25 +1,38 @@
+
 # Tutorial platformer
 
-This tutorial is here to help you build upon the foundation of the platformer template available in the **Pyved-CLI**.
+This tutorial is here to help you create a platformer game,
+by building upon an existing foundation.
 
-If you need further help customizing your game, go read the [**pyved-engine full documentation**](https://gaudiatech.github.io/pyved-engine/).
+We use the platformer template available within the `pyved-engine` package.
 
-## Entity Component System (ECS) for Game Development
+More precisely we will use the built-in `pyv-cli` command.
 
-The **Entity Component System (ECS)** is a software architectural pattern commonly used in game development to manage and organize game objects, their behavior, and their data. It is designed to improve code performance, scalability, and flexibility by separating the game's logic into distinct components and entities.
-
-### Key Components of ECS
-
-1. **Entities**: In ECS, an entity represents a game object or an abstract entity in your game world. An entity is essentially a unique identifier, often just an integer or a handle, that is used to group and manage related components. Entities themselves don't contain any behavior or data; they serve as a way to assemble components.
-
-2. **Components**: Components are the building blocks of an ECS system. Each component represents a single, self-contained piece of data and behavior. For example, in a 2D game, you might have components for position, sprite rendering, physics, and more. Components do not have any logic themselves; they are just containers for data.
-
-3. **Systems**: Systems are responsible for defining the behavior and operations performed on entities that have specific combinations of components. Systems process entities based on the components they contain, and they can perform various tasks such as updating the physics simulation, rendering objects, handling input, and more. Systems are typically where the game's logic resides.
+If you need further help for using PYV,
+you can always refer to the
+[**pyved-engine full docs homepage**](https://gaudiatech.github.io/pyved-engine/).
 
 
-## Codebase
 
-Let's go for a quick tour around the code in order for you to best understand how to customize this template to your liking.
+## Step 0. Getting started
+
+#### Download and init. the game template (Platformer)
+
+If you havent done it yet, to install PYV, type:
+```shell
+pip install pyved-engine
+```
+Next, you can type (still in the shell):
+```shell
+pyv-cli init myGame
+pyv-cli play myGame
+```
+When prompted about the game template, select __2__ to follow this tutorial.
+
+#### File structure
+
+Let's go for a quick tour around the code in order for you to best understand
+how to customize this template to your liking.
 
 The files to customize are located inside of the `cartridge` folder : 
 
@@ -34,8 +47,26 @@ You will also keep your entities setup here.
 
 When testing that demo, at any time you can press ESCAPE to quit the demo.
 
-So let's jump right into it, and add our first extra- feature!
+#### A bit of theory
+Before we begin:
+> Have you heard about:
+Entity Component System (ECS) for Game Development?
+
+The **Entity Component System (ECS)** is a software architectural pattern commonly used in game development to manage and organize game objects, their behavior, and their data. It is designed to improve code performance, scalability, and flexibility by separating the game's logic into distinct components and entities.
+
+Key Components of ECS are:
+
+1. **Entities**: In ECS, an entity represents a game object or an abstract entity in your game world. An entity is essentially a unique identifier, often just an integer or a handle, that is used to group and manage related components. Entities themselves don't contain any behavior or data; they serve as a way to assemble components.
+
+2. **Components**: Components are the building blocks of an ECS system. Each component represents a single, self-contained piece of data and behavior. For example, in a 2D game, you might have components for position, sprite rendering, physics, and more. Components do not have any logic themselves; they are just containers for data.
+
+3. **Systems**: Systems are responsible for defining the behavior and operations performed on entities that have specific combinations of components. Systems process entities based on the components they contain, and they can perform various tasks such as updating the physics simulation, rendering objects, handling input, and more. Systems are typically where the game's logic resides.
+
+Enough chit-chat, let's jump right into coding.
+
+It's time to add our first bonus- feature!
 What if we give a **jetpack** to our player?!
+
 
 
 ## Step 1. All I want is a Jetpack!
@@ -101,7 +132,6 @@ And we also add the jetpack here :
 ```
 
 #### Tuning the jetpack power!
-
 
 This step is pretty straightforward, go inside the `shared.py` file
 
@@ -170,6 +200,7 @@ If you've modified everything as we explained,
 you should be able to trigger the
 jetpack (using the DOWN ARROW), and now you (using the UP ARROW)
 you will have a new exciting way to *move around our little virtual world!*
+
 
 
 ## Step 2. adding textures to our game
@@ -333,6 +364,7 @@ One could add more textures for the moving blocks for example,
 but we wanted to keep it as surface level as possible.
 
 
+
 ## Step 3. Adding a new type of Entity
 
 Now, let's get our hands dirty with some hard stuff!
@@ -467,7 +499,6 @@ Hopefully, your game now looks like this!
 You are now able to travel between two different worlds...
 Two independant maps!
 
-
 ![The patformer end result](./screenshot.png "Our game")
 
 Et voila... You're done!
@@ -483,4 +514,5 @@ Now go ahead, imagine a fourth or even a fifth feature to add by yourself!
 One interesting feature for example could be: a special code in the map model,
 to specify where the player should respawn...
 
-But hey, be creative! Have fun coding with PYV.
+But hey, it's your role to be creative! You are a game dev now.
+Have fun, coding with PYV.
