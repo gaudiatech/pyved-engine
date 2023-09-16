@@ -11,11 +11,8 @@ from ._ecs import *
 from ._utility import *
 import csv
 from io import StringIO
-
-# ok, this is handy but wont work in web ctx, and cause other problems too (pypi packing)
-# from pygame.constants import *
-
 # ------------------
+
 # does all of this need to be visible from outside? PB: OOP. understanding required
 # TODO reflect if this can be rephrased to let go of OOP. without compromising on feature diversity & quantity
 from .compo import gfx
@@ -29,13 +26,14 @@ from .state_management import declare_game_states
 from .Singleton import Singleton
 
 
-# non callables:
-HIGHRES_MODE = 1
-RETRO_MODE = 2
-LOWRES_MODE = 3
+# const. for init
+HIGH_RES_MODE, LOW_RES_MODE, RETRO_MODE = 1, 2, 3
 
 # vars
 _engine_rdy = False
+_upscaling_var = None
+_scr_init_flag = False
+
 
 # -----------------------
 # all imports HERE hav been written only to help us, with the implem of API
@@ -46,6 +44,7 @@ from math import degrees as _degrees
 from .classes import Spritesheet as _Spritesheet
 from . import _hub
 import time
+from .compo import vscreen
 from .core.events import EvManager
 from .core_classes import Objectifier
 
@@ -281,28 +280,81 @@ def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=False):
     _engine_rdy = True
 
 
-def init(maxfps=None, wcaption=None):
-    global _engine_rdy
+# -------------------------------
+#  private function
+# ------------------------------
+def _screen_param(gfx_mode_code, paintev=None, screen_dim=None):
+    global _scr_init_flag
+    if isinstance(gfx_mode_code, int) and -1 < gfx_mode_code <= 3:
+        if gfx_mode_code == 0 and screen_dim is None:
+            ValueError(f'graphic mode 0 required an extra valid screen_dim argument(provided by user: {screen_dim})')
+        # from here, we know that the gfx_mode_code is 100% valid
+        conventionw, conventionh = vars.disp_size
+        if gfx_mode_code != 0:
+            adhoc_upscaling = gfx_mode_code
+            taille_surf_dessin = int(conventionw / gfx_mode_code), int(conventionh / gfx_mode_code)
+        else:
+            adhoc_upscaling = 1
+            taille_surf_dessin = screen_dim
+            print(adhoc_upscaling, taille_surf_dessin)
+        # ---------------------------------
+        #  legacy code, not modified in july22. It's complex but
+        # it works so dont modify unless you really know what you're doing ;)
+        # ---------------------------------
+        if vscreen.stored_upscaling is None:  # stored_upscaling isnt relevant <= webctx
+            _active_state = True
+            pygame_surf_dessin = _hub.pygame.display.set_mode(taille_surf_dessin)
+            vscreen.set_virtual_screen(pygame_surf_dessin)
+        else:
+
+            pygame_surf_dessin = _hub.pygame.surface.Surface(taille_surf_dessin)
+            vscreen.set_virtual_screen(pygame_surf_dessin)
+            vscreen.set_upscaling(adhoc_upscaling)
+            if paintev:
+                paintev.screen = pygame_surf_dessin
+            if _scr_init_flag:
+                return
+            _scr_init_flag = True
+            if gfx_mode_code:
+                pgscreen = _hub.pygame.display.set_mode(vars.disp_size)
+            else:
+                pgscreen = _hub.pygame.display.set_mode(taille_surf_dessin)
+            vscreen.set_realpygame_screen(pgscreen)
+    else:
+        e_msg = f'graphic mode requested({gfx_mode_code}: {type(gfx_mode_code)}) isnt a valid one! Expected type: int'
+        raise ValueError(e_msg)
+
+
+def init(maxfps=None, wcaption=None, mode=None):
+    global _engine_rdy, _upscaling_var
+    if mode is None:
+        mode = HIGH_RES_MODE
+
     if not _engine_rdy:
         bootstrap_e(maxfps, wcaption)
     elif wcaption:
         _hub.pygame.display.set_caption(wcaption)
 
-    vars.screen = create_screen(vars.disp_size)
+    vscreen.cached_pygame_mod = _hub.pygame
+    _screen_param(mode, screen_dim=None)
     vars.clock = create_clock()
 
 
-# TODO repair that feature
-def proj_to_vscreen(xy_pair):
-    return xy_pair
+# def proj_to_vscreen(xy_pair):
+#     global _upscaling_var
+#     if _upscaling_var == 1:
+#         return xy_pair
+#     else:
+#         x, y = xy_pair
+#         return x//_upscaling_var, y//_upscaling_var
 
 
 def close_game():
     _hub.pygame.quit()
-
     vars.images.clear()
+    vars.csvdata.clear()
     vars.sounds.clear()
-
+    vars.spritesheets.clear()
     vars.gameover = False
 
 
@@ -312,15 +364,6 @@ def create_clock():
 
 def get_ev_manager():
     return EvManager.instance()
-
-
-def create_screen(scr_size=None):
-    if scr_size is None:
-        scr_size_arg = (960, 720)
-    else:
-        scr_size_arg = scr_size
-    vars.screen = _hub.pygame.display.set_mode(scr_size_arg)
-    return vars.screen
 
 
 def get_surface():
@@ -336,9 +379,25 @@ def surface_create(size):
 def surface_rotate(img, angle):
     return _hub.pygame.transform.rotate(img, _degrees(-1 * angle))
 
+# -------
+#  september 23 version. It did break upscalin in web ctx
+# def flip():
+#     global _upscaling_var
+#     if _upscaling_var == 2:
+#         _hub.pygame.transform.scale(vars.screen, vars.STD_SCR_SIZE, vars.realscreen)
+#     elif _upscaling_var == 3:
+#         _hub.pygame.transform.scale(vars.screen, vars.STD_SCR_SIZE, vars.realscreen)
+#     else:
+#         vars.realscreen.blit(vars.screen, (0, 0))
+#     _hub.pygame.display.flip()
+#     vars.clock.tick(vars.max_fps)
 
+# --------
+#  restoring an older version of .flip() + proj_to_vscreen
+from .compo.vscreen import flip as _oflip
+from .compo.vscreen import proj_to_vscreen
 def flip():
-    _hub.pygame.display.flip()
+    _oflip()
     vars.clock.tick(vars.max_fps)
 
 

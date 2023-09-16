@@ -14,7 +14,8 @@ ENGINE_VERSION_STR = '23.9a2'  # a read-only value, can this val. from outside v
 STD_SCR_SIZE = [960, 720]
 
 # - engine related
-disp_size = 960, 720
+disp_size = [960, 720]
+
 backend_name = ''  # type str, and the default value is '' but it could be modified from elsewhere
 weblib_sig = None
 
