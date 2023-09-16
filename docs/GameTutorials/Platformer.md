@@ -201,11 +201,15 @@ These assets will get loaded automatically (pre-loading assets is a feature our 
 PYV handles the loading of images from your drive to your program.
 So we have added our background, our wall texture and our player image.
 
-You will see 2 ways for using textures:
+However, since we are unsure whether the size of our assets matches
+the needs of our game, it looks safer to **prepare assets** manually,
+by rescaling images.
+
+You will see 2 ways for preparing/rescaling your assets:
  you can chose which one you prefer for your game, however,
 one is suboptimized, and can be harmful to the game performance in some cases.
 
-#### Suboptimized version
+#### Prepare assets: method 1
 
 Let's start with modifying the player entity.
 
@@ -257,7 +261,7 @@ the component `icon`:
 Here we load our image from the pyved image loader, and then resize it.
 This is suboptimized because it is resized everytime the player is loaded, in this case, it is not that problematic since the player is only loaded whenever the level is created.
 
-#### Optimized version 
+#### Prepare assets: method 2 
 
 Let's now add our background and wall texture, to do so,
 we will use another approach from the one before
@@ -286,6 +290,8 @@ def troid_init(vms=None):
     shared.screen = screen
     shared.prepare_game_assets()
 ```
+
+#### Use assets. For real, just do it
 
 Since all assets are now ready (loaded into the memory at runtime),
 the rest of the task is to adapt what's rendered by replacing the colored
@@ -321,9 +327,9 @@ The new version is:
 ```
 
 Watch out, do not modify `mob_blocks` (displayed in orange)
-
 We're all done for that step!
-You could add more textures for the moving blocks for example,
+
+One could add more textures for the moving blocks for example,
 but we wanted to keep it as surface level as possible.
 
 
@@ -336,7 +342,7 @@ There's many other way to decline the code used, so be creative.
 
 We will first modify our **map data** and add a new block somewhere,
 put it wherever you want.
-The **map data** is stored in the file: `my_map.csv`
+The **map data** is stored in the file: `my_map.ncsv`
 You can see the map is encoded as a matrix of numbers:
 0, 1, 2 and 3 are used codes.
 0 denotes the empty space for example. 1 denotes regular walls etc.
@@ -346,7 +352,12 @@ It's better to replace a 0 value somewhere on the 15th line (it is approximative
 the floor on which the player is walking)
 *by the new value 4*.
 
-Once it's done, go into `gamedef.py`, where we will add a new **archetype**
+#### Modding the game
+
+Data has changed, but not the game itself.
+
+Once your `my_map.ncsv` is saved,
+go into `gamedef.py`, where we will add a new **archetype**
 As defined before, the archetypes allows us to creates new entities
 with special rules.
 
@@ -390,6 +401,9 @@ Also make sure that you list the: `map2.ncsv` file in your
 list of assets to load, as specified in your `metadat.json` file
 (just append the name `map2.ncsv` at the end af the existing asset list)
 
+
+#### Loading another world
+
 *We're almost done!*
 
 *Hang in there! You're doing great.*
@@ -425,6 +439,8 @@ our `ŧp_block`, and thanks to `colliderect` we will detect if the 2 blocks
 are colliding.
 Once they collide, we just move our player to the next map, by unloading
 the current map and loading the next one.
+
+#### Removing a nasty bug
 
 Last step:
 
