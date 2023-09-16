@@ -1,6 +1,6 @@
-site_name: "KENGI game engine: documentation"
-site_url: https://kata.games/kengi-docs
-repo_url: https://github.com/gaudiatech/kengi
+site_name: "PYV game engine: the official docs"
+site_url: https://gaudiatech.github.io/pyved-engine/
+repo_url: https://github.com/gaudiatech/pyved-engine
 
 
 theme:
@@ -13,8 +13,8 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/gaudiatech/kengi
-      name: kengi on Github
+      link: https://github.com/gaudiatech/pyved-engine
+      name: Pyved-engine on Github
 
 
 markdown_extensions:
@@ -34,7 +34,7 @@ plugins:
         fr:
           name: Français
           build: true
-          site_name: "Documentation pour KENGI: moteur de jeu"
+          site_name: "Documentation pour PYV: moteur de jeu"
 
       nav_translations:
         fr:

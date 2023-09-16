@@ -1,10 +1,10 @@
-# Getting started with kengi
+# Getting started with PYV
 
-`kengi` is the name of a game engine fully written in python.
+**PYV** is the name of a game engine fully written in python.
 
 It's a wrapper around the popular `pygame` librabry, therefore if you have some
 prior experience with developing games with `pygame`,
-transitioning to `kengi` should be extremely easy!
+transitioning to **PYV** should be extremely easy!
 
 This page source file and media content have been localized after applying
 the [localized build logic](#localized-build-logic) described below.
