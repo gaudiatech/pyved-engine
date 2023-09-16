@@ -25,9 +25,7 @@ import zipfile
 
 from pyved_engine import vars
 
-
 __version__ = vars.ENGINE_VERSION_STR
-
 
 VALID_SUBCOMMANDS = (
     'init',
@@ -264,20 +262,22 @@ def init_command(cartridge_name) -> None:
         1: 'Breakout',
         2: 'Platformer',
         3: 'Chess',
+        4: 'Roguelike'
     }
-    bsup_template_id = 3
+    bsup_template_id = 4
 
     print(f" Using sub-command INIT: your new cartridge name is [{cartridge_name}]")
-    print('-'*60)
+    print('-' * 60)
     print('  Game templates:')
     for code, name in possib_templates.items():
         print(f'    {code}:  {name}')
     template_id = input('select a template: ')
-    while not(template_id.isnumeric() and 0<=int(template_id)<=bsup_template_id):
+    while not (template_id.isnumeric() and 0 <= int(template_id) <= bsup_template_id):
         print('invalid input!')
         template_id = input('select a template: ')
     template_id = int(template_id)
-    print('-'*60)
+    print('-' * 60)
+
     adhoc_json_prec = TEMPL_ID_TO_JSON_STR[template_id]
     metadata = json.loads(adhoc_json_prec)
     # TODO perform this important check:
@@ -335,6 +335,7 @@ def create_zip_from_folder(bundle_name, source_folder):
     print('Newly created file:', destination_file)
     return destination_file
 
+
 # import os
 # import urllib2
 #
@@ -358,7 +359,7 @@ def trigger_publish(chosenslug, remote_cart_id) -> bool:
     stored server-side
     :return: True/False
     """
-    dummy_json_str ="""
+    dummy_json_str = """
 {
 "title": "This is the game title",
 "slug": "essaiFlappy",
@@ -379,8 +380,8 @@ def trigger_publish(chosenslug, remote_cart_id) -> bool:
     jsondata = json.loads(dummy_json_str)
     jsondata['slug'] = x = chosenslug
     jsondata['cartridge'] = y = remote_cart_id
-    #print(jsondata)
-    #print(type(jsondata))
+    # print(jsondata)
+    # print(type(jsondata))
 
     reply = requests.post(
         url=TARG_TRIGGER_PUBLISH,
@@ -397,19 +398,19 @@ def upload_my_zip_file(zip_file_path, server_host):
     file_to_send = zip_file_path  # dont forget the extension!
     files = {
         'uploadedFile': (file_to_send,
-        open(file_to_send, 'rb'),
-        'application/zip',
-        {'Expires': '0'})
+                         open(file_to_send, 'rb'),
+                         'application/zip',
+                         {'Expires': '0'})
     }
     reply = requests.post(
-        url=server_host+'webapp_backend/do_upload.php',
+        url=server_host + 'webapp_backend/do_upload.php',
         files=files,
-        data={'pyv-cli-flag':True, 'uploadBtn':'Upload'}
+        data={'pyv-cli-flag': True, 'uploadBtn': 'Upload'}
     )
     print('upload_my_zip_file called! Resp. is:')
     print(reply.text)
     rep_obj = json.loads(reply.text)
-    fruit_url = server_host+'play/'+rep_obj[1]
+    fruit_url = server_host + 'play/' + rep_obj[1]
 
     pyperclip.copy(fruit_url)
     print(f'URL:{fruit_url} has been copied to the paperclip!')

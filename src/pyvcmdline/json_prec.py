@@ -69,9 +69,26 @@ JSON_PREC_CHESS ="""
 }
 """
 
+JSON_PREC_ROGUE = """
+{
+"vmlib_ver": "23_9a2",
+"dependencies": {
+"pyved_engine": "???"
+},
+"description": "this is a placeholder so you can describe your game",
+"author": "moonbak",
+"assets": ["tileset.png", "monster.png", "avatar1.png"],
+"sounds": [],
+"cartridge": "template4",
+"game_title": "Roguelike Template",
+"build_date": "Sat Sep 16 22:21:30 2023"
+}
+"""
+
 TEMPL_ID_TO_JSON_STR = {
     0: JSON_PREC_NOASSETS,
     1: JSON_PREC_NOASSETS,
     2: JSON_PREC_PLATFORMER,
-    3: JSON_PREC_CHESS
+    3: JSON_PREC_CHESS,
+    4: JSON_PREC_ROGUE
 }
