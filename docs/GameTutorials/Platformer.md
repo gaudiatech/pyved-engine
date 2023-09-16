@@ -32,10 +32,13 @@ You will also keep your entities setup here.
 
 - `World.py` : This file will have your entity creation in the game world.
 
-So let's jump right into it, and make our first feature, a **jetpack** for our player !
+When testing that demo, at any time you can press ESCAPE to quit the demo.
+
+So let's jump right into it, and add our first extra- feature!
+What if we give a **jetpack** to our player?!
 
 
-## First step : Jetpack creation !
+## Step 1. All I want is a Jetpack!
 
 Let's make your first feature : 
 
@@ -49,7 +52,7 @@ We will start simple, and define what we will need for a Jetpack to work :
 
 So, let's start by adding the jetpack attributes to our player.
 
-### Giving our character a jetpack attribute
+#### Adding a jetpack component
 
 Go into `World.py` and `gamedef.py` 
 
@@ -97,7 +100,7 @@ And we also add the jetpack here :
     ))
 ```
 
-### Jetpack speed !
+#### Tuning the jetpack power!
 
 
 This step is pretty straightforward, go inside the `shared.py` file
@@ -107,24 +110,34 @@ We will simply add the attribute constant here :
 JETPACK_RATIO = 0.05
 ```
 
-### The jetpack logic
+#### Jetpack steering?
 
 This is now the hard part, lets add logic to our code in order to be able to interract with the jetpack.
 
-Let's go inside  `systems.py`, now go inside the steering system, this is the system that handles the player movement.
+Let's go inside  `systems.py`, now find the block `def steering_sys(...):`
 
-The way we will handle our jetpack is to check if our player is using it, in order to disable the jump if the player is using the jetpack since it will replace it.
-
-Let's first add this code just after the control definition
+That chunk of code represents the system that handles the player movement. The way
+we will handle our jetpack is to check if our player is using it,
+in order to disable the jump if the player is using the jetpack since it will
+replace it.
+What we need to do is: find the following line..
+```py
+ctrl['down'] = activekeys[pg.K_DOWN]
+```
+Right beneath that line, we will add this code:
 ```py
         if not prevdown_key_value and ctrl['down']:
             ent['jetpack'] = not ent['jetpack']
             print('JETPACK:', ('on' if ent['jetpack'] else 'off'))
 ```
+this will act like a switch on the jetpack flag, tied to the Player entity.
 
-Now, we can go inside the game and check if the console we start it from displays the jetpack on/off message whenever we press the arrow up key.
+Next, we can go inside the game and check if the console we start it from displays
+the jetpack on/off message whenever we press the arrow up key.
 
-It displays fine, but we still jump, and no jetpack physics in sight...Let's fix this !
+It displays fine, but we still jump, no jetpack power is available...
+Let's fix this !
+Still in steering system, you need to find a chunk of code that looks like this:
 
 ```py
         if ent['lower_block']:
@@ -133,7 +146,11 @@ It displays fine, but we still jump, and no jetpack physics in sight...Let's fix
                 ent['lower_block'] = None
 ```
 
-This is how we handle our jump mechanic, let's add a condition over it, in order to create a case where we will use the jetpack, and in the other the jump.
+And this is how we handle our jump mechanic,
+we will extend this logic (add a condition over it, make it more complex)
+in order to create a scenario where:
+
+In one case: player uses the jetpack, and in the other case player simply jumps.
 
 ```py
         if not ent['jetpack']:
@@ -146,41 +163,82 @@ This is how we handle our jump mechanic, let's add a condition over it, in order
                 ent['accel_y'] = -shared.JUMP_POWER * shared.JETPACK_RATIO
 ```
 
-As you can see above, we basically use the same formula to calculate our jumping acceleration, we just multiply it with the `JETPACK_RATIO` we've set earlier.
+As you can see above, we basically use the same formula to calculate our jumping
+acceleration, we just multiply it with the `JETPACK_RATIO` we've set earlier.
 
-And now, if you did everything correctly, you should be able to trigger the jetpack, and you will have a new exciting way to move around the gameworld !
+If you've modified everything as we explained,
+you should be able to trigger the
+jetpack (using the DOWN ARROW), and now you (using the UP ARROW)
+you will have a new exciting way to *move around our little virtual world!*
 
 
-## Second step : Adding textures to our game
+## Step 2. adding textures to our game
 
-Our game as of now, works well as a technical demo, but it is a bit sad to play only with blocks, isn't it ?
+Our game as of now, works well as a technical demo, but it is a bit sad to
+play only with blocks, isn't it ?
 
 So let's fix this !
 
 We will add textures to our walls, our player and a background ! 
 
 Let's setup pydev to distribute the images across the code.
+You will need three files:
+`background.png`, `wall_small.png`, and `barry.png`.
+If you don't want to draw your own pixel art,
+we provide you with sample files in the:
+[following folder](https://github.com/wkta/pyvTutoZero/tree/83ace51b8d0f576972c75d51b6c0e260cd895910/cartridge)
+You can download the 3 and put it in the `cartridge/` folder of your game.
 
-Go to the `gamedef.py` and after everything is initiated add the following code :
+Now open the `metadat.json` file to edit it.
+We need list new game assets, in the `assets` field:
+
+```json
+"assets": [
+    "my_map.ncsv", "background.png", "wall_small.png", "barry.png"
+],
+```
+These assets will get loaded automatically (pre-loading assets is a feature our game engine relies on)
+PYV handles the loading of images from your drive to your program.
+So we have added our background, our wall texture and our player image.
+
+You will see 2 ways for using textures:
+ you can chose which one you prefer for your game, however,
+one is suboptimized, and can be harmful to the game performance in some cases.
+
+#### Suboptimized version
+
+Let's start with modifying the player entity.
+
+Once again,
+go to `gamedef.py`, inside the function `troid_init(...)`
+add a component named `icon` add the player archetype:
 
 ```py
-    pyv.preload_assets({
-        'sounds': [],
-        'assets': ['background.png', 'wall_small.png', 'barry.png']
-    }, prefix_asset_folder='cartridge/')
-    shared.prepare_game_assets()
-
+    pyv.define_archetype('player', (
+        'speed',
+        'accel_y',
+        'gravity',
+        'lower_block',
+        'body',
+        'camera',
+        'controls',
+        'icon'
+    ))
 ```
 
-This is a Pyved features that handles the loading of images from your drive to your program, here we added our background, our wall texture and our player image.
+Next, go to `World.py`, 
+search for the `create_avatar` method.
+ Here, at the very beginning of the method,
+we will create an `icon` variable,
+add the following lines above the `pyv.new_from_archetype(...)` call
 
-You will see 2 ways to add textures, so you can chose which one you prefer for your game, however, one is suboptimized, and can be harmful to your game if implemented in some cases.
+```py
+        player_image = pyv.vars.images['barry']
+        icon = pygame.transform.scale(player_image, (shared.AVATAR_SIZE, shared.AVATAR_SIZE))
+```
 
-### Suboptimized version
-
-Let's start with our player
-
-Go to `World.py`, and search for our player entity again, we will add a new property, named `icon`
+Then, at the player entity initialization, we can set a value for
+the component `icon`:
 
 ```py
         pyv.init_entity(player, {
@@ -196,24 +254,15 @@ Go to `World.py`, and search for our player entity again, we will add a new prop
         })
 ```
 
-Now the player can have an image, but let's create this icon variable.
-Add the following lines just above your player entity.
-
-```py
-        player_image = pyv.vars.images['barry']
-        icon = pygame.transform.scale(player_image, (shared.AVATAR_SIZE, shared.AVATAR_SIZE))
-```
-
 Here we load our image from the pyved image loader, and then resize it.
 This is suboptimized because it is resized everytime the player is loaded, in this case, it is not that problematic since the player is only loaded whenever the level is created.
 
-### Optimized version 
+#### Optimized version 
 
-Let's now add our background and wall texture, to do so, we will use another approach from the one before
-
+Let's now add our background and wall texture, to do so,
+we will use another approach from the one before
 We will create a dictionnary where all of our images will be kept.
-
-So go into `shared.py`
+So go into `shared.py` and add at the end of the file, the block:
 
 ```py
 gam_assets = dict()
@@ -224,11 +273,23 @@ def prepare_game_assets():
     gam_assets['bg'] = pygame.transform.scale(pyv.vars.images['background'], (WIDTH, HEIGHT))
     gam_assets['wall'] = pygame.transform.scale(pyv.vars.images['wall_small'], (BLOCKSIZE, BLOCKSIZE))
 ```
-Here you can see we created new constants for images, and transformed them to match the size we're using in the project.
+Here you can see we created new constants for images,
+and transformed them to match the size we're using in the project.
 
-We will now just need to adapt what's rendered by replacing the colored squares with our images.
+This function needs to be called at the beginning of our program,
+so add it in the `init_troid(...)` function, in the `gamedef.py` file.
 
-To do so, go into `systems.py` into the `rendering_sys`.
+```python
+def troid_init(vms=None):
+    pyv.init()
+    screen = pyv.get_surface()
+    shared.screen = screen
+    shared.prepare_game_assets()
+```
+
+Since all assets are now ready (loaded into the memory at runtime),
+the rest of the task is to adapt what's rendered by replacing the colored
+squares with real images. To do so, navigate to `systems.py`, in the `rendering_sys`.
 
 Let's first add the background, just after the background fill :
 
@@ -237,7 +298,7 @@ Let's first add the background, just after the background fill :
     scr.blit(shared.gam_assets['bg'], [0, 0])
 ```
 
-And now replace the colors with our images :
+And look for thi chunk of code, we will replace it:
 
 ```py
     # draw player!
@@ -248,6 +309,8 @@ And now replace the colors with our images :
         disp(scr, b, 'blue')
 ```
 
+The new version is:
+
 ```py
  # draw player!
     disp(scr, pl_ent, img=pl_ent['icon'])
@@ -257,39 +320,53 @@ And now replace the colors with our images :
         disp(scr, b, img=shared.gam_assets['wall'])
 ```
 
-And now we're all done here ! 
+Watch out, do not modify `mob_blocks` (displayed in orange)
 
-You can still add more texture for the moving blocks for example, but we wanted to keep it as surface level as possible.
+We're all done for that step!
+You could add more textures for the moving blocks for example,
+but we wanted to keep it as surface level as possible.
 
 
-## Step 3 : Add a new type of Entity
+## Step 3. Adding a new type of Entity
 
-Now, let's get our hands dirty with the hard stuff !
+Now, let's get our hands dirty with some hard stuff!
 
 We will create a block that allows us to change levels.
 There's many other way to decline the code used, so be creative.
 
-We will first modify our map and add a new block somewhere, put it wherever you want.
+We will first modify our **map data** and add a new block somewhere,
+put it wherever you want.
+The **map data** is stored in the file: `my_map.csv`
+You can see the map is encoded as a matrix of numbers:
+0, 1, 2 and 3 are used codes.
+0 denotes the empty space for example. 1 denotes regular walls etc.
 
-You can see the map uses 0, 1, 2 and 3 as blocks, so let's keep going and create our new block by adding a 4 in the map.
+Let's keep going and declare a new type of block by adding a 4 value somewhere.
+It's better to replace a 0 value somewhere on the 15th line (it is approximatively
+the floor on which the player is walking)
+*by the new value 4*.
 
-Let's now go into `gamedef.py` and we will add a new **archetype**
+Once it's done, go into `gamedef.py`, where we will add a new **archetype**
+As defined before, the archetypes allows us to creates new entities
+with special rules.
 
-As defined before, the archetypes allows us to creates new entities with special rules.
-
-Go after the other archetypes and let's add our new block, the `tp_block`
+Go after the existing list of archetypes and let's add our new block, the `tp_block`
 
 ```py
     pyv.define_archetype('tp_block', ['body', ])
 ```
 
-Here we just added the property `body` to our block, because we just need it to have an actual hitbox, the logic of what happens whenever we reach the blocks is elsewhere.
+Here we just added the property `body` to our block,
+because we just need it to have an actual hitbox, the logic of what happens whenever we reach the blocks is elsewhere.
 
 Now that our archetype exists, we need our world to know who's this new kid in the block.
 
 Go inside the `World.py` file and under the `add_terrain_blocks` function.
 
-Since this function handles the initialisation and properties of blocks, let's add our `tp_block`
+Since this function handles the initialisation and properties of blocks,
+let's add the logic:
+how to process our value "4", link it to a `tp_block` entity:
+Be careful, this needs to be added **inside the for loop**, not outside.
 
 ```py
             elif btype == 4:
@@ -301,15 +378,26 @@ Since this function handles the initialisation and properties of blocks, let's a
                 self._platforms.append(rrect)
 ```
 
-We give the property ``rect`` to the `body`, this will allow us to give the block a proper hitbox.
+We give the property ``rect`` to the `body`, 
+this will allow us to give the block a proper hitbox.
 
-Now we will take a small break from all of this hard stuff, and create our new map, we will need it to load somewhere.
+Now we will take a small break from all of this hard stuff,
+and create our new map, we will need it to load somewhere.
+Just create a `map2.ncsv` file by copying the first one and change
+a few blocks here and there!
 
-Just create a `map2.csv` file, or copy the first one and change a few things here and there.
+Also make sure that you list the: `map2.ncsv` file in your
+list of assets to load, as specified in your `metadat.json` file
+(just append the name `map2.ncsv` at the end af the existing asset list)
 
-And let's finish this !
+*We're almost done!*
 
-Go to `systems.py` and draw our new block on the map, go back to the same place where we changed the colors into images and add the following line :
+*Hang in there! You're doing great.*
+
+Go to `systems.py` and draw our new block on the map,
+go back to the same place where we previously (Step 2. of the tutorial)
+changed how way blocks are displayed. It's around line 200 of that file.
+Add the following line after the display of orange blocks:
 
 ```py
     temp = pyv.find_by_archetype('tp_block')
@@ -318,24 +406,65 @@ Go to `systems.py` and draw our new block on the map, go back to the same place 
         disp(scr, tp_block, 'purple', 3)
 ```
 
-Now that the block is present on the map, let's add some logic for it, in order to make it truly a new feature.
+Now that the block is present on the map, let's add some logic for it,
+in order to make it truly a new feature.
+Go inside the `teleport_sys` (a system that handles player teleportation),
+at the end of that function please add:
 
 ```py
     temp = pyv.find_by_archetype('tp_block')
     if len(temp):
         tp_block = temp[0]
         if player['body'].colliderect(tp_block['body']):
-            player['next_map'] = 'map2.csv'
+            player['next_map'] = 'map2'
             _proc_unload_load()
 ```
 
-Here we will create a var `temp` that will reference our `ŧp_block`, and thanks to `colliderect` we will detect if the 2 blocks are colliding.
+Here what we're doing is creating a var `temp` that will reference
+our `ŧp_block`, and thanks to `colliderect` we will detect if the 2 blocks
+are colliding.
+Once they collide, we just move our player to the next map, by unloading
+the current map and loading the next one.
 
-Once they collide, we just move our player to the next map, by unloading the current map and loading the next one.
+Last step:
 
-And ... you're done !
+Unfortunately, a small bug exists in the skeleton.
+You will need to fix it to complete the tutorial.
+It's like your level 99 BOSS.
 
-Now hopefully, your game is supposed to look something like this :
+The bug is located in `systems.py`
+your need to replace the very last lines of the `_proc_unload_load()`
+function, that is these 4 lines:
+```py
+    shared.world.load_map(
+        os.path.join(shared.ASSETS_FOLDER, 'map2.csv')
+    )  # replace all blocks, etc.
+    shared.world.create_avatar(camref)
+```
+By something simpler, more flexible (we use the component `next_map` to tell
+the game where the player should be teleported to):
+```py
+    shared.world.load_map(player['next_map'])
+    shared.world.create_avatar(camref)
+```
+Hopefully, your game now looks like this!
+You are now able to travel between two different worlds...
+Two independant maps!
+
 
 ![The patformer end result](./screenshot.png "Our game")
 
+Et voila... You're done!
+Amazing isn't it?
+**Congrats for completing this tutorial.**
+
+If something is wrong/ if the program crashes, make sure to read again all
+previous steps, one by one and check if you haven't forgot anything.
+In case this is not enough to find the solution, you can always join our
+[Discord community](https://discord.gg/SHdJhcWvQD) and ask for help. *More advanced PYV users will be glad to help you!*
+
+Now go ahead, imagine a fourth or even a fifth feature to add by yourself!
+One interesting feature for example could be: a special code in the map model,
+to specify where the player should respawn...
+
+But hey, be creative! Have fun coding with PYV.
