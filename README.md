@@ -20,10 +20,11 @@ Do yourself a favor: unlock the full potential of your game development thanks t
 
 ## 1. Introduction
 
-### Why not opt for Pygame?
+### What's the deal about Pygame?
 
-Confusion appears to exist within the community regarding
-the differentiation between a mere Python package and a game engine.
+Pygame is an amazing library, that being said, confusion appears to exist
+within the community regarding the differentiation between a Python package,
+and a game engine.
 
 It's crucial to understand that although Pygame functions as a decent
 Python package, it doesn't provide the extensive array of features present
@@ -80,6 +81,27 @@ flexibility.
 In this way, your Python game can be played directly 
 in any modern browser (Chrome, Brave, *etc*): a world premiere!
 
+### Other details
+
+Why "kata"?
+[Kata.Games](https://kata.games) denotes a new gaming platform that helps indie game developers to create and share
+digital experiences easily, all around the globe!
+Via this innovative platform, we're proud to publish all kinds of games powered by `pyved-engine`.
+
+About the list of planned features... The game engine already comes
+packed with a ton of features:
+
+1. global event queue (simplifies the use of both the Mediator and the MVC design patterns)
+2. gamestate stack, state management via events 
+3. simple GUI creation: buttons, checkboxes, *etc.* 
+4. tileset loading, sprite animation
+5. tilemap parser (based on `.tmx` or `.tsj` file formats)
+6. mathematical tools: matrices ; vectors ; gradient noise functions (->procedural generation)
+7. helper classes for coding roguelike or RPG games
+8. helper classes for coding card games (Poker, Blackjack, *etc.*)
+9. helper classes for adding artificial opponents/intelligent entities (NPCs) to your game
+
+...More will be added in the future.
 
 ## 2. Get started
 
@@ -127,48 +149,11 @@ game bundle with any name you like.
 
 ... TODO ...
 
-### Other examples
+### Links to learn more about the project
 
-```python
-# TODO fix this example, to match recent versions of pyv
+[The official documentation](https://gaudiatech.github.io/pyved-engine/) (W-i-p)
 
-HELP_MSG = 'press ESC to exit, any key to change bg_color...'
-CAPTION = 'my first video game, hi mom!'
-
-pve.init(1, caption=CAPTION)
-pygame = pve.pygame
-screen = pve.get_surface()
-color_idx = 0
-allcolors = ('pink', 'yellow', 'purple')
-bg_color = allcolors[0]
-print(HELP_MSG)
-gameover = False
-
-while not gameover:  # game loop
-    for ev in pygame.event.get():
-        if ev.type == pygame.KEYDOWN:
-            if ev.key == pygame.K_ESCAPE:
-                gameover = True
-            else:
-                color_idx = (color_idx + 1) % len(allcolors)
-    # update "game logic"
-    bg_color = allcolors[color_idx]
-    # update the display
-    screen.fill(bg_color)
-    pve.flip()
-
-print('done!')
-```
-This is only one possibilty, very similar to how you 
-define games using `pygame-ce`. In *the docs* you will see better,
-more efficient ways to define your games.
-
-### To sum up design principles
-
-* Code readability matters. Clean, expressive code is not a luxury!
-* `pyved-engine` encourages the use of patterns such as the Mediator or MVC,
-but people should remain free to use their favorite coding style.
-* `pyved-engine` will be embedded in a versatile toolbox simply named `pyved`
+[A linktree, to explore our medias](https://linktr.ee/katagames)
 
 
 ## 3. Misc
@@ -177,14 +162,13 @@ but people should remain free to use their favorite coding style.
 
 Feel free to join the developer team. It's a super easy two-step process:
 (a) start by forking `pyved-engine`,
- (b) join our Discord to discuss, or create a Pull Request directly!
+ (b) join our Discord to talk with us and create your 1st Pull Request!
 
 If you spot a bug, create an issue and tell us how to reproduce the bug.
-The documentation is built via the `mkdocs` tool. Feel free to make it more user-friendly! It's as simple as modifying a few text files in the `docs/` folder.
-Pull Requests are much appreciated!
+The documentation is built via the `mkdocs` tool. Feel free to use it.
 
-Newcomers are always welcome,
-below are listed the 10 first contributors –our Hall of fame– ;-)
+Newcomers are always welcome. Below are listed a few important
+contributors –this is our Hall of fame.
 * [wkta-tom](https://github.com/wkta) architecture, event system, design patterns
 * [tank-king](https://github.com/tank-king) fancy game templates (flappy bird, match3)
 * [jwvhewitt](https://github.com/jwvhewitt) isometric engine
@@ -193,67 +177,3 @@ below are listed the 10 first contributors –our Hall of fame– ;-)
 ### License
 Currently, materials in this repo are all licensed under the LGPL3 license.
 See the `LICENSE` file for more info.
-
-### Read/improve the technical documentation
-
-The documentation isn't finished. Your help would be very appreciated to improve
-that part. Files used to build the documentation can be found within the `docs\`
-folder, there is also the `mkdocs.yml` file that is located at the root folder of
-the project.
-
-To preview the bleeding edge version of docs, you can type:
-```shell
-mkdocs build
-mkdocs serve
-```
-If it doesn't work, remember that you needed the `mkdocs` python lib first.
-To fix this rapidly you can type: `pip install -r requirements.txt`
-
-For now, the documentation is available in only two languages: English and French.
-
-of video games)
-* a wrapper around the popular [pygame lib](https://github.com/pygame/pygame)
-* the abbreviation for [__k__]ata [__engi__]ne
-
-Why "kata"?
-[Kata.Games](https://kata.games) denotes a new gaming platform that helps indie game developers to create and share
-digital experiences easily, all around the globe!
-Via this innovative platform, we're proud to publish all kinds of games powered by `pyved-engine`.
-
-
-### Feature Overview
-The game engine comes packed with useful features:
-1. global event queue (simplifies the use of both the Mediator and the MVC design patterns)
-2. gamestate stack, state management via events 
-3. simple GUI creation: buttons, checkboxes, *etc.* 
-4. tileset loading, sprite animation
-5. tilemap parser (based on `.tmx` or `.tsj` file formats)
-6. mathematical tools: matrices ; vectors ; gradient noise functions (->procedural generation)
-7. helper classes for coding roguelike or RPG games
-8. helper classes for coding card games (Poker, Blackjack, *etc.*)
-9. helper classes for adding artificial opponents/intelligent entities (NPCs) to your game
-10. ...
-
-### Mini tutorial
-If you're familiar with `pygame`, getting used to `pyved-engine` is really easy.
-Navigate to the `src/` folder. There, you see a very basic example that uses only pygame:
-* [demo-a-pygame.py](https://github.com/gaudiatech/pyved-engine/blob/master/src/demo-a-pygame.py)
-
-Now try to notice what is different when one uses `pyved-engine` (only minor details change):
-* [demo-a-kengi-straightf.py](https://github.com/gaudiatech/pyved-engine/blob/master/src/demo-a-kengi-straightf.py)
-
-This is only one way to use `pyved-engine` but it's most likely that you will start with this one,
-if you already have some background in creating games using `pygame`.
-Actually, one can see `pyved-engine` as a mere wrapper around pygame. Everything that you can do
-with `pygame` can be done the same way when using `pyved-engine`, but `pyved-engine` also unlocks
-many new features that are very worthy of interest!
-
-To explore more possibilities you can take a glimpse of the next demo
-that implements the same thing but using the M-V-C pattern:
-* [demo-a-kengi-mvc.py](https://github.com/gaudiatech/pyved-engine/blob/master/src/demo-a-kengi-mvc.py)
-
-Note that this program starts with the declaration
-of a list of user-defined events. User-defined events can have attributes.
-These events, just like regular pygame events, are processed via a standard method
-`proc_event` that you need to re-define when you sub-class
-`pyved-engine.event.EventReceiver`...
