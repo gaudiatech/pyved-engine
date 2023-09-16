@@ -1,6 +1,6 @@
 import random
 import math
-from .. import struct
+from .. import e_struct as struct
 
 
 # ----------------------------
