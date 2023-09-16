@@ -1,51 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
-         <loc>https://kata.games/kengi-docs/</loc>
+         <loc>https://gaudiatech.github.io/pyved-engine/</loc>
          <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/"/>
          
     </url>
     <url>
-         <loc>https://kata.games/kengi-docs/bidule/</loc>
+         <loc>https://gaudiatech.github.io/pyved-engine/bidule/</loc>
          <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/bidule/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/bidule/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/bidule/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/bidule/"/>
          
     </url>
     <url>
-         <loc>https://kata.games/kengi-docs/ECS/named_file/</loc>
+         <loc>https://gaudiatech.github.io/pyved-engine/ECS/named_file/</loc>
          <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/ECS/named_file/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/ECS/named_file/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/ECS/named_file/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/ECS/named_file/"/>
          
     </url>
     <url>
-         <loc>https://kata.games/kengi-docs/GameTutorials/Platformer/</loc>
+         <loc>https://gaudiatech.github.io/pyved-engine/GameTutorials/Platformer/</loc>
          <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/GameTutorials/Platformer/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/GameTutorials/Platformer/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/GameTutorials/Platformer/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/GameTutorials/Platformer/"/>
          
     </url>
     <url>
-         <loc>https://kata.games/kengi-docs/topic1/named_file/</loc>
+         <loc>https://gaudiatech.github.io/pyved-engine/topic1/named_file/</loc>
          <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/topic1/named_file/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/topic1/named_file/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/topic1/named_file/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/topic1/named_file/"/>
          
     </url>
     <url>
-         <loc>https://kata.games/kengi-docs/topic2/</loc>
+         <loc>https://gaudiatech.github.io/pyved-engine/topic2/</loc>
          <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/topic2/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/topic2/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/topic2/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/topic2/"/>
          
     </url>
 </urlset>
