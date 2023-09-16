@@ -370,29 +370,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#entity-component-system-ecs-for-game-development" class="md-nav__link">
-    Entity Component System (ECS) for Game Development
+  <a href="#step-0-getting-started" class="md-nav__link">
+    Step 0. Getting started
   </a>
   
-    <nav class="md-nav" aria-label="Entity Component System (ECS) for Game Development">
+    <nav class="md-nav" aria-label="Step 0. Getting started">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#key-components-of-ecs" class="md-nav__link">
-    Key Components of ECS
+  <a href="#download-and-init-the-game-template-platformer" class="md-nav__link">
+    Download and init. the game template (Platformer)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-structure" class="md-nav__link">
+    File structure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-bit-of-theory" class="md-nav__link">
+    A bit of theory
   </a>
   
 </li>
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#codebase" class="md-nav__link">
-    Codebase
-  </a>
   
 </li>
       
@@ -638,29 +645,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#entity-component-system-ecs-for-game-development" class="md-nav__link">
-    Entity Component System (ECS) for Game Development
+  <a href="#step-0-getting-started" class="md-nav__link">
+    Step 0. Getting started
   </a>
   
-    <nav class="md-nav" aria-label="Entity Component System (ECS) for Game Development">
+    <nav class="md-nav" aria-label="Step 0. Getting started">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#key-components-of-ecs" class="md-nav__link">
-    Key Components of ECS
+  <a href="#download-and-init-the-game-template-platformer" class="md-nav__link">
+    Download and init. the game template (Platformer)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-structure" class="md-nav__link">
+    File structure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-bit-of-theory" class="md-nav__link">
+    A bit of theory
   </a>
   
 </li>
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#codebase" class="md-nav__link">
-    Codebase
-  </a>
   
 </li>
       
@@ -785,24 +799,26 @@
 
 
 <h1 id="tutorial-platformer">Tutorial platformer</h1>
-<p>This tutorial is here to help you build upon the foundation of the platformer template available in the <strong>Pyved-CLI</strong>.</p>
-<p>If you need further help customizing your game, go read the <a href="https://gaudiatech.github.io/pyved-engine/"><strong>pyved-engine full documentation</strong></a>.</p>
-<h2 id="entity-component-system-ecs-for-game-development">Entity Component System (ECS) for Game Development</h2>
-<p>The <strong>Entity Component System (ECS)</strong> is a software architectural pattern commonly used in game development to manage and organize game objects, their behavior, and their data. It is designed to improve code performance, scalability, and flexibility by separating the game's logic into distinct components and entities.</p>
-<h3 id="key-components-of-ecs">Key Components of ECS</h3>
-<ol>
-<li>
-<p><strong>Entities</strong>: In ECS, an entity represents a game object or an abstract entity in your game world. An entity is essentially a unique identifier, often just an integer or a handle, that is used to group and manage related components. Entities themselves don't contain any behavior or data; they serve as a way to assemble components.</p>
-</li>
-<li>
-<p><strong>Components</strong>: Components are the building blocks of an ECS system. Each component represents a single, self-contained piece of data and behavior. For example, in a 2D game, you might have components for position, sprite rendering, physics, and more. Components do not have any logic themselves; they are just containers for data.</p>
-</li>
-<li>
-<p><strong>Systems</strong>: Systems are responsible for defining the behavior and operations performed on entities that have specific combinations of components. Systems process entities based on the components they contain, and they can perform various tasks such as updating the physics simulation, rendering objects, handling input, and more. Systems are typically where the game's logic resides.</p>
-</li>
-</ol>
-<h2 id="codebase">Codebase</h2>
-<p>Let's go for a quick tour around the code in order for you to best understand how to customize this template to your liking.</p>
+<p>This tutorial is here to help you create a platformer game,
+by building upon an existing foundation.</p>
+<p>We use the platformer template available within the <code>pyved-engine</code> package.</p>
+<p>More precisely we will use the built-in <code>pyv-cli</code> command.</p>
+<p>If you need further help for using PYV,
+you can always refer to the
+<a href="https://gaudiatech.github.io/pyved-engine/"><strong>pyved-engine full docs homepage</strong></a>.</p>
+<h2 id="step-0-getting-started">Step 0. Getting started</h2>
+<h4 id="download-and-init-the-game-template-platformer">Download and init. the game template (Platformer)</h4>
+<p>If you havent done it yet, to install PYV, type:</p>
+<pre><code class="language-shell">pip install pyved-engine
+</code></pre>
+<p>Next, you can type (still in the shell):</p>
+<pre><code class="language-shell">pyv-cli init myGame
+pyv-cli play myGame
+</code></pre>
+<p>When prompted about the game template, select <strong>2</strong> to follow this tutorial.</p>
+<h4 id="file-structure">File structure</h4>
+<p>Let's go for a quick tour around the code in order for you to best understand
+how to customize this template to your liking.</p>
 <p>The files to customize are located inside of the <code>cartridge</code> folder : </p>
 <ul>
 <li>
@@ -820,7 +836,27 @@ You will also keep your entities setup here.</p>
 </li>
 </ul>
 <p>When testing that demo, at any time you can press ESCAPE to quit the demo.</p>
-<p>So let's jump right into it, and add our first extra- feature!
+<h4 id="a-bit-of-theory">A bit of theory</h4>
+<p>Before we begin:</p>
+<blockquote>
+<p>Have you heard about:
+Entity Component System (ECS) for Game Development?</p>
+</blockquote>
+<p>The <strong>Entity Component System (ECS)</strong> is a software architectural pattern commonly used in game development to manage and organize game objects, their behavior, and their data. It is designed to improve code performance, scalability, and flexibility by separating the game's logic into distinct components and entities.</p>
+<p>Key Components of ECS are:</p>
+<ol>
+<li>
+<p><strong>Entities</strong>: In ECS, an entity represents a game object or an abstract entity in your game world. An entity is essentially a unique identifier, often just an integer or a handle, that is used to group and manage related components. Entities themselves don't contain any behavior or data; they serve as a way to assemble components.</p>
+</li>
+<li>
+<p><strong>Components</strong>: Components are the building blocks of an ECS system. Each component represents a single, self-contained piece of data and behavior. For example, in a 2D game, you might have components for position, sprite rendering, physics, and more. Components do not have any logic themselves; they are just containers for data.</p>
+</li>
+<li>
+<p><strong>Systems</strong>: Systems are responsible for defining the behavior and operations performed on entities that have specific combinations of components. Systems process entities based on the components they contain, and they can perform various tasks such as updating the physics simulation, rendering objects, handling input, and more. Systems are typically where the game's logic resides.</p>
+</li>
+</ol>
+<p>Enough chit-chat, let's jump right into coding.</p>
+<p>It's time to add our first bonus- feature!
 What if we give a <strong>jetpack</strong> to our player?!</p>
 <h2 id="step-1-all-i-want-is-a-jetpack">Step 1. All I want is a Jetpack!</h2>
 <p>Let's make your first feature : </p>
@@ -1148,7 +1184,8 @@ In case this is not enough to find the solution, you can always join our
 <p>Now go ahead, imagine a fourth or even a fifth feature to add by yourself!
 One interesting feature for example could be: a special code in the map model,
 to specify where the player should respawn...</p>
-<p>But hey, be creative! Have fun coding with PYV.</p>
+<p>But hey, it's your role to be creative! You are a game dev now.
+Have fun, coding with PYV.</p>
 
 
 
