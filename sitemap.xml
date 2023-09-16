@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
          <loc>https://kata.games/kengi-docs/</loc>
-         <lastmod>2023-09-15</lastmod>
+         <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
          <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/"/>
          <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/"/>
@@ -10,7 +10,7 @@
     </url>
     <url>
          <loc>https://kata.games/kengi-docs/bidule/</loc>
-         <lastmod>2023-09-15</lastmod>
+         <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
          <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/bidule/"/>
          <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/bidule/"/>
@@ -18,7 +18,7 @@
     </url>
     <url>
          <loc>https://kata.games/kengi-docs/ECS/named_file/</loc>
-         <lastmod>2023-09-15</lastmod>
+         <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
          <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/ECS/named_file/"/>
          <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/ECS/named_file/"/>
@@ -26,7 +26,7 @@
     </url>
     <url>
          <loc>https://kata.games/kengi-docs/GameTutorials/Platformer/</loc>
-         <lastmod>2023-09-15</lastmod>
+         <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
          <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/GameTutorials/Platformer/"/>
          <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/GameTutorials/Platformer/"/>
@@ -34,7 +34,7 @@
     </url>
     <url>
          <loc>https://kata.games/kengi-docs/topic1/named_file/</loc>
-         <lastmod>2023-09-15</lastmod>
+         <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
          <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/topic1/named_file/"/>
          <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/topic1/named_file/"/>
@@ -42,7 +42,7 @@
     </url>
     <url>
          <loc>https://kata.games/kengi-docs/topic2/</loc>
-         <lastmod>2023-09-15</lastmod>
+         <lastmod>2023-09-16</lastmod>
          <changefreq>daily</changefreq>
          <xhtml:link rel="alternate" hreflang="en" href="https://kata.games/kengi-docs/en/topic2/"/>
          <xhtml:link rel="alternate" hreflang="fr" href="https://kata.games/kengi-docs/fr/topic2/"/>
