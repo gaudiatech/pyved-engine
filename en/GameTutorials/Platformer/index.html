@@ -439,15 +439,22 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#suboptimized-version" class="md-nav__link">
-    Suboptimized version
+  <a href="#prepare-assets-method-1" class="md-nav__link">
+    Prepare assets: method 1
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#optimized-version" class="md-nav__link">
-    Optimized version
+  <a href="#prepare-assets-method-2" class="md-nav__link">
+    Prepare assets: method 2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-assets-for-real-just-do-it" class="md-nav__link">
+    Use assets. For real, just do it
   </a>
   
 </li>
@@ -461,6 +468,33 @@
   <a href="#step-3-adding-a-new-type-of-entity" class="md-nav__link">
     Step 3. Adding a new type of Entity
   </a>
+  
+    <nav class="md-nav" aria-label="Step 3. Adding a new type of Entity">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modding-the-game" class="md-nav__link">
+    Modding the game
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-another-world" class="md-nav__link">
+    Loading another world
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removing-a-nasty-bug" class="md-nav__link">
+    Removing a nasty bug
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -673,15 +707,22 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#suboptimized-version" class="md-nav__link">
-    Suboptimized version
+  <a href="#prepare-assets-method-1" class="md-nav__link">
+    Prepare assets: method 1
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#optimized-version" class="md-nav__link">
-    Optimized version
+  <a href="#prepare-assets-method-2" class="md-nav__link">
+    Prepare assets: method 2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-assets-for-real-just-do-it" class="md-nav__link">
+    Use assets. For real, just do it
   </a>
   
 </li>
@@ -695,6 +736,33 @@
   <a href="#step-3-adding-a-new-type-of-entity" class="md-nav__link">
     Step 3. Adding a new type of Entity
   </a>
+  
+    <nav class="md-nav" aria-label="Step 3. Adding a new type of Entity">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modding-the-game" class="md-nav__link">
+    Modding the game
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-another-world" class="md-nav__link">
+    Loading another world
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removing-a-nasty-bug" class="md-nav__link">
+    Removing a nasty bug
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -875,10 +943,13 @@ We need list new game assets, in the <code>assets</code> field:</p>
 <p>These assets will get loaded automatically (pre-loading assets is a feature our game engine relies on)
 PYV handles the loading of images from your drive to your program.
 So we have added our background, our wall texture and our player image.</p>
-<p>You will see 2 ways for using textures:
+<p>However, since we are unsure whether the size of our assets matches
+the needs of our game, it looks safer to <strong>prepare assets</strong> manually,
+by rescaling images.</p>
+<p>You will see 2 ways for preparing/rescaling your assets:
  you can chose which one you prefer for your game, however,
 one is suboptimized, and can be harmful to the game performance in some cases.</p>
-<h4 id="suboptimized-version">Suboptimized version</h4>
+<h4 id="prepare-assets-method-1">Prepare assets: method 1</h4>
 <p>Let's start with modifying the player entity.</p>
 <p>Once again,
 go to <code>gamedef.py</code>, inside the function <code>troid_init(...)</code>
@@ -918,7 +989,7 @@ the component <code>icon</code>:</p>
 </code></pre>
 <p>Here we load our image from the pyved image loader, and then resize it.
 This is suboptimized because it is resized everytime the player is loaded, in this case, it is not that problematic since the player is only loaded whenever the level is created.</p>
-<h4 id="optimized-version">Optimized version</h4>
+<h4 id="prepare-assets-method-2">Prepare assets: method 2</h4>
 <p>Let's now add our background and wall texture, to do so,
 we will use another approach from the one before
 We will create a dictionnary where all of our images will be kept.
@@ -941,6 +1012,7 @@ so add it in the <code>init_troid(...)</code> function, in the <code>gamedef.py<
     shared.screen = screen
     shared.prepare_game_assets()
 </code></pre>
+<h4 id="use-assets-for-real-just-do-it">Use assets. For real, just do it</h4>
 <p>Since all assets are now ready (loaded into the memory at runtime),
 the rest of the task is to adapt what's rendered by replacing the colored
 squares with real images. To do so, navigate to <code>systems.py</code>, in the <code>rendering_sys</code>.</p>
@@ -964,9 +1036,9 @@ squares with real images. To do so, navigate to <code>systems.py</code>, in the 
     for b in li_blocks:
         disp(scr, b, img=shared.gam_assets['wall'])
 </code></pre>
-<p>Watch out, do not modify <code>mob_blocks</code> (displayed in orange)</p>
-<p>We're all done for that step!
-You could add more textures for the moving blocks for example,
+<p>Watch out, do not modify <code>mob_blocks</code> (displayed in orange)
+We're all done for that step!</p>
+<p>One could add more textures for the moving blocks for example,
 but we wanted to keep it as surface level as possible.</p>
 <h2 id="step-3-adding-a-new-type-of-entity">Step 3. Adding a new type of Entity</h2>
 <p>Now, let's get our hands dirty with some hard stuff!</p>
@@ -974,7 +1046,7 @@ but we wanted to keep it as surface level as possible.</p>
 There's many other way to decline the code used, so be creative.</p>
 <p>We will first modify our <strong>map data</strong> and add a new block somewhere,
 put it wherever you want.
-The <strong>map data</strong> is stored in the file: <code>my_map.csv</code>
+The <strong>map data</strong> is stored in the file: <code>my_map.ncsv</code>
 You can see the map is encoded as a matrix of numbers:
 0, 1, 2 and 3 are used codes.
 0 denotes the empty space for example. 1 denotes regular walls etc.</p>
@@ -982,7 +1054,10 @@ You can see the map is encoded as a matrix of numbers:
 It's better to replace a 0 value somewhere on the 15th line (it is approximatively
 the floor on which the player is walking)
 <em>by the new value 4</em>.</p>
-<p>Once it's done, go into <code>gamedef.py</code>, where we will add a new <strong>archetype</strong>
+<h4 id="modding-the-game">Modding the game</h4>
+<p>Data has changed, but not the game itself.</p>
+<p>Once your <code>my_map.ncsv</code> is saved,
+go into <code>gamedef.py</code>, where we will add a new <strong>archetype</strong>
 As defined before, the archetypes allows us to creates new entities
 with special rules.</p>
 <p>Go after the existing list of archetypes and let's add our new block, the <code>tp_block</code></p>
@@ -1013,6 +1088,7 @@ a few blocks here and there!</p>
 <p>Also make sure that you list the: <code>map2.ncsv</code> file in your
 list of assets to load, as specified in your <code>metadat.json</code> file
 (just append the name <code>map2.ncsv</code> at the end af the existing asset list)</p>
+<h4 id="loading-another-world">Loading another world</h4>
 <p><em>We're almost done!</em></p>
 <p><em>Hang in there! You're doing great.</em></p>
 <p>Go to <code>systems.py</code> and draw our new block on the map,
@@ -1040,6 +1116,7 @@ our <code>ŧp_block</code>, and thanks to <code>colliderect</code> we will detec
 are colliding.
 Once they collide, we just move our player to the next map, by unloading
 the current map and loading the next one.</p>
+<h4 id="removing-a-nasty-bug">Removing a nasty bug</h4>
 <p>Last step:</p>
 <p>Unfortunately, a small bug exists in the skeleton.
 You will need to fix it to complete the tutorial.
