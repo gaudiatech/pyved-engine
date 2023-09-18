@@ -27,10 +27,12 @@ of useful and reusable code snippets within its framework.
 Instead of reinventing the wheel and wasting your precious time by re-writing
 generic code for video games, you can leverage the power of the engine.
 
-By referring to the comprehensive documentation, you can quickly learn how to
-implement various functionalities such as pathfinding or loading spritesheets.
-With simple function or method calls, you can seamlessly integrate these
-features into your game, saving precious development time and effort!
+By referring to the
+[work-in-progress documentation](https://gaudiatech.github.io/pyved-engine/), you
+could quickly learn how to implement various functionalities such as pathfinding
+or loading spritesheets. With simple function or method calls, you can seamlessly
+integrate these features into your game, saving precious development time
+and effort!
 
 Create captivating and bug-free applications effortlessly. __pyv__ offers an
 array of built-in modules for seamless management of game assets, AI integration,
