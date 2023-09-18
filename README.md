@@ -3,48 +3,24 @@
 </p>
 
 Introducing `pyved-engine`, a Python package that provides you with
-our powerful and efficient 2D game engine named __pyv__.
-Designed to streamline game development, __pyv__ offers a comprehensive set of
-tools for rapid prototyping and game production. Don't wait any longer,
+the versatile, efficient 2D game engine named PYV!
+Designed to streamline game development, PYV offers a set of
+tools for smooth and rapid game prototyping.
+
+Unlock the full potential of your game development thanks to __pyv__!
 
 <p align="center">
 <a href="https://discord.gg/SHdJhcWvQD">
-Click here to join our vibrant Discord community<br>
+To join our Discord community:<br>
 <img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
 </a>
 </p>
-
-Do yourself a favor: unlock the full potential of your game development thanks to __pyv__!
 
 
 
 ## 1. Introduction
 
-### What's the deal about Pygame?
-
-Pygame is an amazing library, that being said, confusion appears to exist
-within the community regarding the differentiation between a Python package,
-and a game engine.
-
-It's crucial to understand that although Pygame functions as a decent
-Python package, it doesn't provide the extensive array of features present
-in a specialized 2D game engine! Consequently, it might not satisfy all the
-prerequisites essential for the development of a fully-realized game.
-
-Furthermore, it's worth noting that distributing games created using Pygame
-can present challenges. For instance, generating an executable from a Pygame
-project often requires reliance on third-party tools, adding an extra layer
-of complexity to the process. Sharing such an executable via platforms like
-Steam can also prove to be remarkably time-consuming, involving various steps
-that can be quite daunting, especially for newcomers.
-
-This underscores the importance of considering not just the development
-capabilities, but also the subsequent distribution and accessibility of the
-final product. While Pygame has its merits, these distribution-related hurdles
-can significantly impact the overall experience of bringing your game to 
-the world.
-
-### Unveiling the capabilities of a game engine
+### Cpabilities of a game engine
 
 A game engine provides invaluable time-saving benefits by storing a collection
 of useful and reusable code snippets within its framework.
@@ -61,44 +37,58 @@ array of built-in modules for seamless management of game assets, AI integration
 procedural generation, and other advanced features.
 
 
-### Specific goals
-As a wise man said:
-> "It’s Harder to Read Code than to Write it"\
-> — Joel Spolsky
+### Vision and goals
 
-Our general goal is to empower you to:
+The vision behind the work done on PYV is as follows:
+
 
 * __Write standardized therefore very easy-to-read code__:
 readability is not to overlook! If you take care of your code readability you'll
 encounter 30% fewer bugs, you will fix any bug faster, etc. It works like magic!
-* __Write a type of code that can evolve easily__: by using our *built-in event
-system* along with the *M-V-C pattern*, you can reach a high level of code
-flexibility.
+ 
+As a wise man said:
+> "It’s Harder to Read Code than to Write it"\
+> — Joel Spolsky
+
+* __Write a type of code that can evolve easily__: by using the *built-in event
+system* along with one pattern amongst: Mediator, MVC, ECS you should reach
+a high level of code flexibility
 * __Be more productive__
-* __Distribute your newly created games__ via the new awesome
-[https://kata.games](https://kata.games) platform!
+* __One new optionnal feature brought by PYV: to allow one (if one wishes)
+to distribute one's games__ via a new gaming platform named
+[https://kata.games](https://Kata.Games) |
+In that way, your Python game can be played directly 
+in any modern browser (Chrome, Brave, *etc*).
 
-In this way, your Python game can be played directly 
-in any modern browser (Chrome, Brave, *etc*): a world premiere!
+### How do Pyv and Pygame differ?
 
-### Other details
+Confusion appears to exist within the community regarding the differentiation
+between a Python package, and a game engine.
 
- `pyv` is not a stand-alone project. The game engine we design is linked
- to a whole ecosystem of components, that act in concert in order to make
- your life as a Game Dev much more pleasant and rewarding.
+It's crucial to understand that *although Pygame functions as a regular
+Python package/library*.
+It doesn't provide the extensive array of features present
+in a specialized 2D game engine! Consequently, it might not satisfy all the
+prerequisites essential for the development of a fully-realized game.
 
-For instance,
-[Kata.Games](https://kata.games) is a Gaming platform that will help 
- indie game developers from all around the globe (and especially `pyv` users)
-to create and share digital experiences swiftly, super efficiently!
+Furthermore, it's worth noting that distributing games created using Pygame
+can present challenges. For instance, generating an executable from a Pygame
+project often requires reliance on third-party tools, adding an extra layer
+of complexity to the process. Sharing such an executable via platforms like
+Steam can also prove to be remarkably time-consuming, involving various steps
+that can be quite daunting, especially for newcomers.
 
-Via that platform, we'll be proud to publish
-all kinds of games created via `pyv`.
+This underscores the importance of considering not just the development
+capabilities, but also the subsequent distribution and accessibility of the
+final product. While Pygame has its merits, these distribution-related hurdles
+can significantly impact the overall experience of bringing your game to 
+the world.
 
-Planned features... The game engine already comes
-packed with a ton of features:
+### Details about game engine features
 
-1. global event queue (simplifies the use of both the Mediator and the MVC design patterns)
+The game engine comes packed with a ton of features:
+
+1. event queue (simplifies the use of patterns such as: Mediator, the MVC pattern)
 2. gamestate stack, state management via events 
 3. simple GUI creation: buttons, checkboxes, *etc.* 
 4. tileset loading, sprite animation
@@ -108,25 +98,40 @@ packed with a ton of features:
 8. helper classes for coding card games (Poker, Blackjack, *etc.*)
 9. helper classes for adding artificial opponents/intelligent entities (NPCs) to your game
 
-...But it's only the beginning. More features will be added soon.
+... It's only the beginning. More features will be added soon.
+
+Also, it can be interesting to notice that the game engine PYV
+is linked to an ecosystem of components,
+that act in concert in order to make your life as a Game Dev more pleasant.
+
+For instance, Kata.Games is a Gaming platform that will help indie game
+developers from all around the globe (and especially PYV users) to create
+and share digital experiences swiftly, super efficiently!
+
+This platform should the first one that will share games created using PYV.
+
+
 
 ## 2. Get started
 
 ### Use pyv and create your first game
 
-To install our Python package, simply type:
+To install the Python package tied to PYV, simply type:
 ```shell
 pip install pyved-engine
 ```
 
-At this point, it's crucial to grasp an important concept:
-__pyv__ is not constructed like a typical Python library.
-Indeed, your source code won't directly import `pyved_engine`...
+At this point, it's time to grasp an important concept:
+__pyv__ is not constructed like the typical Python library.
+Indeed, your source code shouldn't contain `import pyved_engine`
+to link files directly.
 
 Instead, __pyv__ ships with a dedicated command-line tool designed
-for creating what we refer to as "game bundles".
-A game bundle encompasses your game's source code, assets, and relevant
-metadata. Consequently, your interaction with __pyv__ differs from how
+for creating what one can name "game bundles".
+A game bundle encompasses your game's source code, assets, relevant
+metadata and also special code to execute game locally.
+
+Consequently, your interaction with __pyv__ differs from how
 you'd interact with a standard Python library, such as `pygame`.
 
 When using __pyv__, you utilize commands to create a game bundle,
@@ -160,26 +165,46 @@ game bundle with any name you like.
 
 [The official documentation](https://gaudiatech.github.io/pyved-engine/) (W-i-p)
 
-[A linktree, to explore our medias](https://linktr.ee/katagames)
+[A linktree, to explore related sites](https://linktr.ee/katagames)
+
 
 
 ## 3. Misc
 
 ### Contribute
 
-Feel free to join the developer team. It's a super easy two-step process:
+Everyone is welcome ; discussing ideas with the Python community more broadly
+allows to enhance the design of PYV and to support Game Devs in the best
+possible way!
+
+
+Feel free to contribute to the projet if you wish to!
+
+The documentation is built via the `mkdocs` tool. Feel free to improve it!
+
+If you spot a bug, create an issue and tell everyone how to reproduce the bug!
+
+
+You are welcome to contribute in this open-source project.
+Newcomers are always treated with equity in our community.
+
+The process is simple:
 (a) start by forking `pyved-engine`,
- (b) join our Discord to talk with us and create your 1st Pull Request!
+ (b) Vreate your 1st Pull Request! Although not mandatory,
+it's recommended but not mandatory to join our Discord server and discuss with
+the community changes you would like to see/to add in the future.
 
-If you spot a bug, create an issue and tell us how to reproduce the bug.
-The documentation is built via the `mkdocs` tool. Feel free to use it.
-
-Newcomers are always welcome. Below are listed a few important
+Below are listed a few important
 contributors –this is our Hall of fame.
-* [wkta-tom](https://github.com/wkta) architecture, event system, design patterns
-* [tank-king](https://github.com/tank-king) fancy game templates (flappy bird, match3)
+* [moonbak](https://github.com/wkta) general architecture, event system, patterns: Mediator, MVC, ECS
+* [tank-king](https://github.com/tank-king) game templates/various game demos (flappy bird, match3, clicker)
 * [jwvhewitt](https://github.com/jwvhewitt) isometric engine
 * ...
+
+Acknowledgements:
+
+* many thanks to Rik Cross for being an inspiration (ECS pattern)
+* thank you Thorbjørn for providing indie game devs with an amazing tool (Tiled)
 
 ### License
 Currently, materials in this repo are all licensed under the LGPL3 license.
