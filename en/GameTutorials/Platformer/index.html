@@ -493,13 +493,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#removing-a-nasty-bug" class="md-nav__link">
-    Removing a nasty bug
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -764,13 +757,6 @@
           <li class="md-nav__item">
   <a href="#loading-another-world" class="md-nav__link">
     Loading another world
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#removing-a-nasty-bug" class="md-nav__link">
-    Removing a nasty bug
   </a>
   
 </li>
@@ -1136,9 +1122,25 @@ Add the following line after the display of orange blocks:</p>
         tp_block = temp[0]
         disp(scr, tp_block, 'purple', 3)
 </code></pre>
-<p>Now that the block is present on the map, let's add some logic for it,
-in order to make it truly a new feature.
-Go inside the <code>teleport_sys</code> (a system that handles player teleportation),
+<p>Now that the block is present on the map,
+let's add some logic for it,
+in order to make it truly a new feature.</p>
+<p>We will
+call a function named <code>_proc_unload_load</code>, that is already defined.
+You don't need to worry about writing that part, but it can
+be useful for you to understand how we proceed.</p>
+<p>In that pre-defined function, all we do is using the
+component <code>next_map</code> to tell
+the game where the player should be teleported to,
+and we re-create the avatar entity. Here's the code we refer to:</p>
+<pre><code class="language-py">def _proc_unload_load():
+    player = pyv.find_by_archetype('player')[0]
+    camref = player['camera']
+    pyv.wipe_entities()
+    shared.world.load_map(player['next_map'])
+    shared.world.create_avatar(camref)
+</code></pre>
+<p>Now, go inside the <code>teleport_sys</code> (a system that handles player teleportation),
 at the end of that function please add:</p>
 <pre><code class="language-py">    temp = pyv.find_by_archetype('tp_block')
     if len(temp):
@@ -1148,28 +1150,10 @@ at the end of that function please add:</p>
             _proc_unload_load()
 </code></pre>
 <p>Here what we're doing is creating a var <code>temp</code> that will reference
-our <code>ŧp_block</code>, and thanks to <code>colliderect</code> we will detect if the 2 blocks
+our <code>tp_block</code>, and thanks to <code>colliderect</code> we will detect if the 2 blocks
 are colliding.
 Once they collide, we just move our player to the next map, by unloading
 the current map and loading the next one.</p>
-<h4 id="removing-a-nasty-bug">Removing a nasty bug</h4>
-<p>Last step:</p>
-<p>Unfortunately, a small bug exists in the skeleton.
-You will need to fix it to complete the tutorial.
-It's like your level 99 BOSS.</p>
-<p>The bug is located in <code>systems.py</code>
-your need to replace the very last lines of the <code>_proc_unload_load()</code>
-function, that is these 4 lines:</p>
-<pre><code class="language-py">    shared.world.load_map(
-        os.path.join(shared.ASSETS_FOLDER, 'map2.csv')
-    )  # replace all blocks, etc.
-    shared.world.create_avatar(camref)
-</code></pre>
-<p>By something simpler, more flexible (we use the component <code>next_map</code> to tell
-the game where the player should be teleported to):</p>
-<pre><code class="language-py">    shared.world.load_map(player['next_map'])
-    shared.world.create_avatar(camref)
-</code></pre>
 <p>Hopefully, your game now looks like this!
 You are now able to travel between two different worlds...
 Two independant maps!</p>
