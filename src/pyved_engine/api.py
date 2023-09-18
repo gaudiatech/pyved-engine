@@ -285,22 +285,27 @@ def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=False):
 # ------------------------------
 def _screen_param(gfx_mode_code, paintev=None, screen_dim=None):
     global _scr_init_flag
-    if isinstance(gfx_mode_code, int) and -1 < gfx_mode_code <= 3:
-        if gfx_mode_code == 0 and screen_dim is None:
-            ValueError(f'graphic mode 0 required an extra valid screen_dim argument(provided by user: {screen_dim})')
-        # from here, we know that the gfx_mode_code is 100% valid
-        conventionw, conventionh = vars.disp_size
-        if gfx_mode_code != 0:
-            adhoc_upscaling = gfx_mode_code
-            taille_surf_dessin = int(conventionw / gfx_mode_code), int(conventionh / gfx_mode_code)
-        else:
-            adhoc_upscaling = 1
-            taille_surf_dessin = screen_dim
-            print(adhoc_upscaling, taille_surf_dessin)
-        # ---------------------------------
-        #  legacy code, not modified in july22. It's complex but
-        # it works so dont modify unless you really know what you're doing ;)
-        # ---------------------------------
+    if not (isinstance(gfx_mode_code, int) and -1 < gfx_mode_code <= 3):
+        # error management
+        e_msg = f'graphic mode requested({gfx_mode_code}: {type(gfx_mode_code)}) isnt a valid one! Expected type: int'
+        raise ValueError(e_msg)
+
+    if gfx_mode_code == 0 and screen_dim is None:
+        ValueError(f'graphic mode 0 required an extra valid screen_dim argument(provided by user: {screen_dim})')
+    # from here, we know that the gfx_mode_code is 100% valid
+    conventionw, conventionh = vars.disp_size
+    if gfx_mode_code != 0:
+        adhoc_upscaling = gfx_mode_code
+        taille_surf_dessin = int(conventionw / gfx_mode_code), int(conventionh / gfx_mode_code)
+    else:
+        adhoc_upscaling = 1
+        taille_surf_dessin = screen_dim
+        print(adhoc_upscaling, taille_surf_dessin)
+    # ---------------------------------
+    #  legacy code, not modified in july22. It's complex but
+    # it works so dont modify unless you really know what you're doing ;)
+    # ---------------------------------
+    if not _scr_init_flag:
         if vscreen.stored_upscaling is None:  # stored_upscaling isnt relevant <= webctx
             _active_state = True
             pygame_surf_dessin = _hub.pygame.display.set_mode(taille_surf_dessin)
@@ -312,17 +317,13 @@ def _screen_param(gfx_mode_code, paintev=None, screen_dim=None):
             vscreen.set_upscaling(adhoc_upscaling)
             if paintev:
                 paintev.screen = pygame_surf_dessin
-            if _scr_init_flag:
-                return
-            _scr_init_flag = True
             if gfx_mode_code:
                 pgscreen = _hub.pygame.display.set_mode(vars.disp_size)
             else:
                 pgscreen = _hub.pygame.display.set_mode(taille_surf_dessin)
             vscreen.set_realpygame_screen(pgscreen)
-    else:
-        e_msg = f'graphic mode requested({gfx_mode_code}: {type(gfx_mode_code)}) isnt a valid one! Expected type: int'
-        raise ValueError(e_msg)
+        vars.screen = pygame_surf_dessin
+        _scr_init_flag = True
 
 
 def init(maxfps=None, wcaption=None, mode=None):
