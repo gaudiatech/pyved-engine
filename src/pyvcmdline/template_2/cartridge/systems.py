@@ -1,7 +1,5 @@
-import time
 from . import shared
 from . import pimodules
-import os
 
 
 pyv = pimodules.pyved_engine
@@ -95,12 +93,11 @@ def cameratracking_sys(entities, components):
 
 
 def physics_sys(entities, components):
-    tnow = time.time()
     if shared.t_last_update is None:
         dt = 0.0
     else:
-        dt = tnow - shared.t_last_update
-    shared.t_last_update = tnow
+        dt = shared.t_now - shared.t_last_update
+    shared.t_last_update = shared.t_now
 
     player = pyv.find_by_archetype('player')[0]
 

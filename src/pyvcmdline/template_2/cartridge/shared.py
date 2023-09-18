@@ -7,6 +7,7 @@ pyv.bootstrap_e()
 pygame = pyv.pygame
 
 screen = None
+t_now = None
 t_last_update = None
 world = None
 terrain = None
