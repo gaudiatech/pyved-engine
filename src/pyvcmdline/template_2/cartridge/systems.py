@@ -219,12 +219,8 @@ def rendering_sys(entities, components):
 def _proc_unload_load():
     player = pyv.find_by_archetype('player')[0]
     camref = player['camera']
-
     pyv.wipe_entities()
-
-    shared.world.load_map(
-        os.path.join(shared.ASSETS_FOLDER, 'map2.csv')
-    )  # replace all blocks, etc.
+    shared.world.load_map(player['next_map'])
     shared.world.create_avatar(camref)
 
 
@@ -233,7 +229,6 @@ def teleport_sys(entities, components):
     bsup_x, bsup_y = shared.world.limits
     binf_x = -1.0*bsup_x
     binf_y = -1.0*bsup_y
-
     x, y = player['body'].topleft
     if y <= binf_y or y > bsup_y or x < binf_x or x > bsup_x:
         player['body'].topleft = shared.SPAWN[0], shared.SPAWN[1]

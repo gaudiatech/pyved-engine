@@ -452,9 +452,29 @@ Add the following line after the display of orange blocks:
         disp(scr, tp_block, 'purple', 3)
 ```
 
-Now that the block is present on the map, let's add some logic for it,
+Now that the block is present on the map,
+let's add some logic for it,
 in order to make it truly a new feature.
-Go inside the `teleport_sys` (a system that handles player teleportation),
+
+We will
+call a function named `_proc_unload_load`, that is already defined.
+You don't need to worry about writing that part, but it can
+be useful for you to understand how we proceed.
+
+In that pre-defined function, all we do is using the
+component `next_map` to tell
+the game where the player should be teleported to,
+and we re-create the avatar entity. Here's the code we refer to:
+```py
+def _proc_unload_load():
+    player = pyv.find_by_archetype('player')[0]
+    camref = player['camera']
+    pyv.wipe_entities()
+    shared.world.load_map(player['next_map'])
+    shared.world.create_avatar(camref)
+```
+
+Now, go inside the `teleport_sys` (a system that handles player teleportation),
 at the end of that function please add:
 
 ```py
@@ -467,34 +487,11 @@ at the end of that function please add:
 ```
 
 Here what we're doing is creating a var `temp` that will reference
-our `ŧp_block`, and thanks to `colliderect` we will detect if the 2 blocks
+our `tp_block`, and thanks to `colliderect` we will detect if the 2 blocks
 are colliding.
 Once they collide, we just move our player to the next map, by unloading
 the current map and loading the next one.
 
-#### Removing a nasty bug
-
-Last step:
-
-Unfortunately, a small bug exists in the skeleton.
-You will need to fix it to complete the tutorial.
-It's like your level 99 BOSS.
-
-The bug is located in `systems.py`
-your need to replace the very last lines of the `_proc_unload_load()`
-function, that is these 4 lines:
-```py
-    shared.world.load_map(
-        os.path.join(shared.ASSETS_FOLDER, 'map2.csv')
-    )  # replace all blocks, etc.
-    shared.world.create_avatar(camref)
-```
-By something simpler, more flexible (we use the component `next_map` to tell
-the game where the player should be teleported to):
-```py
-    shared.world.load_map(player['next_map'])
-    shared.world.create_avatar(camref)
-```
 Hopefully, your game now looks like this!
 You are now able to travel between two different worlds...
 Two independant maps!
