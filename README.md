@@ -159,11 +159,25 @@ pyv assumes the current folder is a game bundle.
 Of course, the name "DemoGameBundle" is just an example, you can name your
 game bundle with any name you like.
 
-### Customize your game
+### Customizing your game
 
 ... TODO ...
 
-### Links to learn more about the project
+### Nota Bene for developers/contributors
+
+If you are interested in testing the most recent features/
+contribute to the development of the engine, rather than
+installing the tool through the regular method, you should:
+- clone the current repository
+`git clone https://github.com/gaudiatech/pyved-engine.git`
+- using the command line, navigate to the newly created folder on your hard drive, then install the package using the `pip` special mode "editable":
+`pip install -e .`
+In this way you'll be able to use the unstable (so-called
+"bleeding edge") version instead of the Pypi stable version.
+
+### Links to go further
+
+[Platformer tutorial](https://gaudiatech.github.io/pyved-engine/GameTutorials/Platformer/)
 
 [The official documentation](https://gaudiatech.github.io/pyved-engine/) (W-i-p)
 
