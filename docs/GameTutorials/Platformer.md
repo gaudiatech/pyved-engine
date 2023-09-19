@@ -47,21 +47,6 @@ You will also keep your entities setup here.
 
 When testing that demo, at any time you can press ESCAPE to quit the demo.
 
-#### A bit of theory
-Before we begin:
-> Have you heard about:
-Entity Component System (ECS) for Game Development?
-
-The **Entity Component System (ECS)** is a software architectural pattern commonly used in game development to manage and organize game objects, their behavior, and their data. It is designed to improve code performance, scalability, and flexibility by separating the game's logic into distinct components and entities.
-
-Key Components of ECS are:
-
-1. **Entities**: In ECS, an entity represents a game object or an abstract entity in your game world. An entity is essentially a unique identifier, often just an integer or a handle, that is used to group and manage related components. Entities themselves don't contain any behavior or data; they serve as a way to assemble components.
-
-2. **Components**: Components are the building blocks of an ECS system. Each component represents a single, self-contained piece of data and behavior. For example, in a 2D game, you might have components for position, sprite rendering, physics, and more. Components do not have any logic themselves; they are just containers for data.
-
-3. **Systems**: Systems are responsible for defining the behavior and operations performed on entities that have specific combinations of components. Systems process entities based on the components they contain, and they can perform various tasks such as updating the physics simulation, rendering objects, handling input, and more. Systems are typically where the game's logic resides.
-
 Enough chit-chat, let's jump right into coding.
 
 It's time to add our first bonus- feature!
