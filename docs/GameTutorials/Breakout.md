@@ -4,7 +4,7 @@ This tutorial is here to help you create a block breaker type game from scratch.
 
 This tutorial can also be used as a nice base to understand and experiment with the ECS pattern.
 
-Note that the game in it's final state is already available in the `pyved-engine` in the `pyv-cli`.
+Note that the game in its final state is already available in the `pyved-engine` in the `pyv-cli`.
 
 
 If you need further help for using PYV,
@@ -81,7 +81,6 @@ PLAYER_SPEED = 10
 # ball-related
 BALL_INIT_POS = 480, 277
 BALL_SIZE = 22
-RANDOM_DIR = random.uniform(-5.0, 5.0)
 ```
 We will use all of those constants laters, but they are important.
 
@@ -107,7 +106,7 @@ Let's create our archetypes, this is how we will create the different entities :
         'speed', 'controls', 'body'
     ))
     pyv.define_archetype('block', ('body', ))
-    pyv.define_archetype('ball', ('body', 'speed'))
+    pyv.define_archetype('ball', ('body', 'speed_Y', 'speed_X'))
 ```
 
 We can now go into `world.py`, to create our entities :
@@ -142,7 +141,8 @@ And finally a body, so that our player have a hitbox.
     def create_ball():
         ball = pyv.new_from_archetype('ball')
         pyv.init_entity(ball, {
-            'speed': 0.0, 
+            'speed_X' :random.uniform(-3.0, 3.0), 
+            'speed_Y': 5.0, 
             'body': pygame.rect.Rect(shared.BALL_INIT_POS[0],shared.BALL_INIT_POS[1], shared.BALL_SIZE, shared.BALL_SIZE)
         })
 ```
@@ -154,10 +154,10 @@ We will create our ball too, we will keep the same logic, and create, it needs a
 def create_blocks():
         bcy = 0 
         LIMIT = 960/(shared.BLOCK_W + shared.BLOCK_SPACING)
-        for column in range(5):
+        for row in range(5):
             bcy = bcy+shared.BLOCK_H + shared.BLOCK_SPACING
             bcx = -shared.BLOCK_W
-            for row in range(round(LIMIT)):
+            for column in range(round(LIMIT)):
                 bcx = bcx +shared.BLOCK_W + shared.BLOCK_SPACING
                 rrect = pygame.rect.Rect(0 + bcx, 0 + bcy, shared.BLOCK_W, shared.BLOCK_H)
 
@@ -181,7 +181,7 @@ def init_game(vmst=None):
         'speed', 'controls', 'body'
     ))
     pyv.define_archetype('block', ('body', ))
-    pyv.define_archetype('ball', ('body', 'speed'))
+    pyv.define_archetype('ball', ('body', 'speed_Y', 'speed_X'))
     world.create_player()
     world.create_ball()
     world.create_blocks()
@@ -289,7 +289,7 @@ def init_game(vmst=None):
         'speed', 'controls', 'body'
     ))
     pyv.define_archetype('block', ('body', ))
-    pyv.define_archetype('ball', ('body', 'speed'))
+    pyv.define_archetype('ball', ('body', 'speed_Y', 'speed_X'))
     world.create_player()
     world.create_ball()
     world.create_blocks()
@@ -317,3 +317,153 @@ We will change this in the 3rd step, we will start adding movement and interacti
 
 ## Step 3 : Making our game
 
+So, let's get all of this moving !
+
+Go back to your `systems.py` file and now we will populate the different empty systems.
+
+```py
+def controls_sys(entities, components):
+    #Empty for now
+            
+def physics_sys(entities, components):
+    #Empty for now
+```
+We will start with the easiest one first, the controls.
+
+```py
+def controls_sys(entities, components):
+    pg = pyv.pygame
+
+    player = pyv.find_by_archetype('player')[0]
+    activekeys = pg.key.get_pressed()
+    player['left'] = activekeys[pg.K_LEFT]
+    player['right'] = activekeys[pg.K_RIGHT]
+    if player['right']:
+        player['speed'] = shared.PLAYER_SPEED
+
+    if player['left']:
+        player['speed'] = -shared.PLAYER_SPEED
+            
+    if not (player['left'] or player['right']):
+        player['speed'] = 0.0
+```
+
+Everything is pretty straightforward here; we search for our player, and then go inside the controls we defined earlier. Once we have our player, we just set the left and right key to the left and right controls we created. 
+
+And after this, we make it move to the player speed on a certain direction, and if we don't press anything, he doesn't move. Even though we assigned movement to our keys, as of now, whenever we press the keys the speed is just reassigned, but it never applies to the player, so you can't move for now. 
+
+Let's make it happen and go inside the game physics.
+
+```py
+def physics_sys(entities, components):
+    
+    ####################PLAYER MOVEMENT
+    player = pyv.find_by_archetype('player')[0]
+    pv = player['speed']
+    pp = player['body'].topleft
+    player['body'].left = pp[0]+pv
+    if(player['body'][0]>900 or player['body'][0]<0):
+         player['body'].left = pp[0]
+```
+Again, let's find our player entity.
+
+We take the speed property and the position as `pv` and `pp` and now we change it in the next line.
+`pp` is equal to the player position on X and Y, `pv` is the player "speed", it would be more accurate to describe it as how much the player move for a single movement.
+
+`player['body'].left = pp[0]+pv`
+Here we reassign the player vertical position, this new position will be pp[0], the position in X + the "speed", and we have our new position.
+
+Lastly, we just make our player not able to leave the screen by stopping the addition of the speed.
+
+If everything went according to plan, you should be able to start the game and move your player block !
+
+
+Easy, right ?
+
+Now, we will make the ball move.
+
+```py
+    ball = pyv.find_by_archetype('ball')[0]
+    speed_X = ball['speed_X']
+    speed_Y = ball['speed_Y']
+    bp = ball['body'].topleft
+    ball['body'].left = bp[0] + speed_X
+    ball['body'].top = bp[1]+speed_Y
+```
+
+We take the same base as before, we just now have a 2 axis movement, so we have an X and Y speed.
+And, same as before we apply the speed to both directions, `bp[0]` is the movement on X axis, we also add the X speed, and same for `bp[1]` and Y speed.
+
+Now if you test, your ball should be moving on your screen, but will go disapear once it's out.
+
+Let's make it stay on screen.
+
+```py
+    if(ball['body'][0]>910 or ball['body'][0]<1):
+        ball['speed_X'] *= -1.05
+    if(ball['body'][1]>720):
+        pyv.vars.gameover = True
+        print('lose')
+    elif(ball['body'][1]<0):
+        ball['speed_Y'] *= -1.05
+
+```
+We're starting by making it bounce whenever it touches the right and left corner of the screen, still same as before, on [0] is the X axis, so if we cross out of screen we will send the back the ball by inversing it's direction, and making it a tiny bit faster.
+
+And i've decided that if it goes out under the screen, it's a lose, if it's above, it just bounces back down.
+
+
+```py
+    #######################Collision
+    
+    if player['body'].colliderect(ball['body']):
+        ball['body'].top = bp[1] + speed_Y
+        ball['speed_Y'] *= -1.05
+        pv *= 1.05
+
+```
+This is how we will handle the collision, we use `colliderect` to do so. It's a simple check inbetween the different hitboxes, whenever the hitboxes touch, `colliderect` will equal to `True`.
+
+So what we do is lookout to whenever they'll touch, if it do so, we change the direction and make the ball go faster.
+I also made the player go faster, so that it can keep up with the ball speed.
+
+And now for the last interaction, we will make the ball kill and bounce out of blocks :
+
+
+```py
+    blocks = pyv.find_by_archetype('block')
+    for block in blocks:
+        if(ball['body'].colliderect(block['body'])):
+            pyv.delete_entity(block)
+            ball['body'].top = bp[1]+speed_Y
+            ball['speed_Y'] *= -1.05
+```
+
+We find all of our blocks, then apply basically the same treatment than the player one, except here, we use a delete_entity to remove the block once we collided with it.
+
+Now your game should be working ! 
+
+And this also should be the end of the tutorial ...
+
+But let's add a little something to make everything cuter !
+
+```py
+def interpolate_color(x, y) -> tuple:
+    return 150, (x * 0.27) % 256, (y * 1.22) % 256
+``` 
+
+Add this small function in your systems.
+
+And let's use it to color our blocks !
+
+In your `rendering_sys` :
+
+```py
+    pyv.draw_rect(scr, interpolate_color(b['body'][0], b['body'][1]), b['body'])
+```
+
+
+
+![Breakout final](./img/breakoutend.png "Our breakout final result")
+
+And now your game is truly finished !
