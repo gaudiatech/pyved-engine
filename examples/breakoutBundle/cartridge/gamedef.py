@@ -16,7 +16,7 @@ def init_game(vmst=None):
         'speed', 'controls', 'body'
     ))
     pyv.define_archetype('block', ('body', ))
-    pyv.define_archetype('ball', ('body', 'speed'))
+    pyv.define_archetype('ball', ('body', 'speed_Y', 'speed_X'))
     world.create_player()
     world.create_ball()
     world.create_blocks()

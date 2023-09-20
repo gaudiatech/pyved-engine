@@ -18,21 +18,19 @@ def interpolate_color(x, y) -> tuple:
 def controls_sys(entities, components):
     pg = pyv.pygame
 
-    controllable_ent = pyv.find_by_components('controls')
+    player = pyv.find_by_archetype('player')[0]
     activekeys = pg.key.get_pressed()
 
-    for ent in controllable_ent:
-        ctrl = ent['controls']
-        ctrl['left'] = activekeys[pg.K_LEFT]
-        ctrl['right'] = activekeys[pg.K_RIGHT]
-        if ctrl['right']:
-            ent['speed'] = shared.PLAYER_SPEED
+    player['left'] = activekeys[pg.K_LEFT]
+    player['right'] = activekeys[pg.K_RIGHT]
+    if player['right']:
+        player['speed'] = shared.PLAYER_SPEED
 
-        if ctrl['left']:
-            ent['speed'] = -shared.PLAYER_SPEED
+    if player['left']:
+        player['speed'] = -shared.PLAYER_SPEED
             
-        if not (ctrl['left'] or ctrl['right']):
-            ent['speed'] = 0.0
+    if not (player['left'] or player['right']):
+        player['speed'] = 0.0
             
 def physics_sys(entities, components):
     
@@ -46,32 +44,36 @@ def physics_sys(entities, components):
          
     ###################BALL MOVEMENT
     ball = pyv.find_by_archetype('ball')[0]
-    bv = ball['speed']
+    speed_X = ball['speed_X']
+    speed_Y = ball['speed_Y']
     bp = ball['body'].topleft
-    ball['body'].left = bp[0] + shared.RANDOM_DIR
-    ball['body'].top = bp[1]+bv
+    ball['body'].left = bp[0] + speed_X
+    ball['body'].top = bp[1]+speed_Y
 
-    if(ball['body'][0]>900 or ball['body'][0]<-0):
-        shared.RANDOM_DIR *= -1.05
-    if(ball['body'][1]<0 or ball['body'][1]>720):
+    if(ball['body'][0]>910 or ball['body'][0]<1):
+        ball['speed_X'] *= -1.05
+    if(ball['body'][1]>720):
         pyv.vars.gameover = True
         print('lose')
+    elif(ball['body'][1]<0):
+        ball['speed_Y'] *= -1.05
+
     #######################Collision
-    
+        
     if player['body'].colliderect(ball['body']):
-        ball['body'].top = bp[1] + bv
-        ball['speed'] *= -1.05
-        shared.PLAYER_SPEED *= 1.05
+        ball['body'].top = bp[1] + speed_Y
+        ball['speed_Y'] *= -1.05
+        pv *= 1.05
 
     #######################Collision block
     blocks = pyv.find_by_archetype('block')
     for block in blocks:
         if(ball['body'].colliderect(block['body'])):
             pyv.delete_entity(block)
-            ball['speed'] *= -1.05
-            ball['body'].top = bp[1]+bv
-            
+            ball['body'].top = bp[1]+speed_Y
+            ball['speed_Y'] *= -1.05
 
+            
 
 def rendering_sys(entities, components):
     """
