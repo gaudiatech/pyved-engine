@@ -91,7 +91,7 @@ class GameTpl(metaclass=ABCMeta):
          - set the _manager attribute (bind the ev manager to self._manager)
          - call self._manager.setup(...) with args
         """
-        init(self.get_video_mode())
+        init(mode=self.get_video_mode())
         self._manager = EvManager.instance()
         self._manager.setup(self.list_game_events())
         self._manager.post(EngineEvTypes.Gamestart)  # pushed to notify that we have really started playing
