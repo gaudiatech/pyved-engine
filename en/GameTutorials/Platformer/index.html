@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://gaudiatech.github.io/pyved-engine/en/GameTutorials/Platformer/">
       
       
-        <link rel="prev" href="../../ECS/named_file/">
+        <link rel="prev" href="../Breakout/">
       
       
         <link rel="next" href="../../topic1/named_file/">
@@ -286,7 +286,7 @@
   
     <li class="md-nav__item">
       <a href="../../ECS/named_file/" class="md-nav__link">
-        ECS (Entities, composants, systems)
+        Named file
       </a>
     </li>
   
@@ -329,6 +329,20 @@
           GameTutorials
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Breakout/" class="md-nav__link">
+        Tutorial Breaker
+      </a>
+    </li>
+  
+
+            
           
             
               
@@ -387,13 +401,6 @@
           <li class="md-nav__item">
   <a href="#file-structure" class="md-nav__link">
     File structure
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#a-bit-of-theory" class="md-nav__link">
-    A bit of theory
   </a>
   
 </li>
@@ -659,13 +666,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#a-bit-of-theory" class="md-nav__link">
-    A bit of theory
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -822,25 +822,6 @@ You will also keep your entities setup here.</p>
 </li>
 </ul>
 <p>When testing that demo, at any time you can press ESCAPE to quit the demo.</p>
-<h4 id="a-bit-of-theory">A bit of theory</h4>
-<p>Before we begin:</p>
-<blockquote>
-<p>Have you heard about:
-Entity Component System (ECS) for Game Development?</p>
-</blockquote>
-<p>The <strong>Entity Component System (ECS)</strong> is a software architectural pattern commonly used in game development to manage and organize game objects, their behavior, and their data. It is designed to improve code performance, scalability, and flexibility by separating the game's logic into distinct components and entities.</p>
-<p>Key Components of ECS are:</p>
-<ol>
-<li>
-<p><strong>Entities</strong>: In ECS, an entity represents a game object or an abstract entity in your game world. An entity is essentially a unique identifier, often just an integer or a handle, that is used to group and manage related components. Entities themselves don't contain any behavior or data; they serve as a way to assemble components.</p>
-</li>
-<li>
-<p><strong>Components</strong>: Components are the building blocks of an ECS system. Each component represents a single, self-contained piece of data and behavior. For example, in a 2D game, you might have components for position, sprite rendering, physics, and more. Components do not have any logic themselves; they are just containers for data.</p>
-</li>
-<li>
-<p><strong>Systems</strong>: Systems are responsible for defining the behavior and operations performed on entities that have specific combinations of components. Systems process entities based on the components they contain, and they can perform various tasks such as updating the physics simulation, rendering objects, handling input, and more. Systems are typically where the game's logic resides.</p>
-</li>
-</ol>
 <p>Enough chit-chat, let's jump right into coding.</p>
 <p>It's time to add our first bonus- feature!
 What if we give a <strong>jetpack</strong> to our player?!</p>
@@ -1157,7 +1138,7 @@ the current map and loading the next one.</p>
 <p>Hopefully, your game now looks like this!
 You are now able to travel between two different worlds...
 Two independant maps!</p>
-<p><img alt="The patformer end result" src="../screenshot.png" title="Our game" /></p>
+<p><img alt="The patformer end result" src="./screenshot.png" title="Our game" /></p>
 <p>Et voila... You're done!
 Amazing isn't it?
 <strong>Congrats for completing this tutorial.</strong></p>

@@ -14,14 +14,14 @@
         <link rel="prev" href="../../bidule/">
       
       
-        <link rel="next" href="../../GameTutorials/Platformer/">
+        <link rel="next" href="../../GameTutorials/Breakout/">
       
       <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.1.14">
     
     
       
-        <title>ECS (Entities, composants, systems) - PYV game engine: the official docs</title>
+        <title>Named file - PYV game engine: the official docs</title>
       
     
     
@@ -57,7 +57,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#ecs-entities-composants-systems" class="md-skip">
+        <a href="#ecs-entity-component-system" class="md-skip">
           Skip to content
         </a>
       
@@ -92,7 +92,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ECS (Entities, composants, systems)
+              Named file
             
           </span>
         </div>
@@ -293,12 +293,73 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
-        
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Named file
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        ECS (Entities, composants, systems)
+        Named file
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ecs-entity-component-system" class="md-nav__link">
+    ECS : Entity Component System
+  </a>
+  
+    <nav class="md-nav" aria-label="ECS : Entity Component System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-bit-of-theory" class="md-nav__link">
+    A bit of theory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#components" class="md-nav__link">
+    Components :
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entities" class="md-nav__link">
+    Entities:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#systems" class="md-nav__link">
+    Systems:
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -339,6 +400,20 @@
           GameTutorials
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../GameTutorials/Breakout/" class="md-nav__link">
+        Tutorial Breaker
+      </a>
+    </li>
+  
+
+            
           
             
               
@@ -475,8 +550,55 @@
   
   
   
-    
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ecs-entity-component-system" class="md-nav__link">
+    ECS : Entity Component System
+  </a>
+  
+    <nav class="md-nav" aria-label="ECS : Entity Component System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-bit-of-theory" class="md-nav__link">
+    A bit of theory
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#components" class="md-nav__link">
+    Components :
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#entities" class="md-nav__link">
+    Entities:
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#systems" class="md-nav__link">
+    Systems:
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -494,7 +616,48 @@
   
 
 
-<h1 id="ecs-entities-composants-systems">ECS (Entities, composants, systems)</h1>
+  <h1>Named file</h1>
+
+<h2 id="ecs-entity-component-system">ECS : Entity Component System</h2>
+<h4 id="a-bit-of-theory">A bit of theory</h4>
+<blockquote>
+<p>Have you heard about:
+Entity Component System (ECS) for Game Development?</p>
+</blockquote>
+<p>The <strong>Entity Component System (ECS)</strong> is a software architectural pattern commonly used in game development to manage and organize game objects, their behavior, and their data. 
+It is designed to improve code performance, scalability, and flexibility by separating the game's logic into distinct components and entities.</p>
+<p>Key Components of ECS are:</p>
+<ol>
+<li>
+<p><strong>Entities</strong>: In ECS, an entity represents a game object or an abstract entity in your game world. An entity is essentially a unique identifier, often just an integer or a handle, that is used to group and manage related components. Entities themselves don't contain any behavior or data; they serve as a way to assemble components.</p>
+</li>
+<li>
+<p><strong>Components</strong>: Components are the building blocks of an ECS system. Each component represents a single, self-contained piece of data and behavior. For example, in a 2D game, you might have components for position, sprite rendering, physics, and more. Components do not have any logic themselves; they are just containers for data.</p>
+</li>
+<li>
+<p><strong>Systems</strong>: Systems are responsible for defining the behavior and operations performed on entities that have specific combinations of components. Systems process entities based on the components they contain, and they can perform various tasks such as updating the physics simulation, rendering objects, handling input, and more. Systems are typically where the game's logic resides.</p>
+</li>
+</ol>
+<p>In summary a <strong>component</strong> is a collection of field values.</p>
+<p>An <strong>entity</strong> is a <strong>container of components</strong></p>
+<p>A <strong>system</strong> is a part of the game logic, and have access to <strong>both entities and components</strong> </p>
+<p>Let's explore ECS through an example: a role-playing game (RPG) where characters roam a virtual world. 
+We'll consider two types of entities: "Player" and "NPC."</p>
+<h3 id="components">Components :</h3>
+<p>Stats Component: Health points (HP), attack power, defense, and other attributes that define a character's abilities.</p>
+<p>Position Component: The character's coordinates in the game world.</p>
+<p>Control Component: The possible controls in the game world</p>
+<h3 id="entities">Entities:</h3>
+<p>Player Entity: An entity representing the player character. 
+It contains Stats, Position and Control components.</p>
+<p>NPC Entity: Represents non-playable characters in the game. 
+It also contains Stats and Position components.</p>
+<h3 id="systems">Systems:</h3>
+<p>Rendering System: Responsible for drawing characters on the screen based on their Graphics components.</p>
+<p>Collision Detection System: Detects collisions between entities in the game world. 
+For example, it can determine if the player character collides with an NPC or an obstacle.</p>
+<p>Combat System: Handles combat-related logic, including attacks, damage calculation, and health point updates based on the Stats components.</p>
+<p>Movement System: Manages character movement based on their Position components and velocity. For example, it moves characters in response to player input or AI.</p>
 
 
 
