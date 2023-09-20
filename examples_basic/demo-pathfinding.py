@@ -1,6 +1,6 @@
 import pyved_engine as pyv
-pyv.bootstrap_e()
 
+pyv.bootstrap_e()
 
 # All constants
 BG_COLOR = 'antiquewhite2'
@@ -29,7 +29,7 @@ class PfDemoModel:
         self.end_pos = list(MAP_DIM)
         self.end_pos[0] -= 1
         self.end_pos[1] -= 1
-        self.the_map = pyv.struct.BoolMatrix(MAP_DIM)
+        self.the_map = pyv.e_struct.BoolMatrix(MAP_DIM)
         self.the_map.set_all(False)  # False means non-blocking
         self.curr_color_code = 0
         self.last_res = None
@@ -116,23 +116,26 @@ class PfDemoCtrl(pyv.EvListener):
             self.move_cursor('right')
 
 
+class DemoPathfinding(pyv.GameTpl):
+
+    def enter(self, vms=None):
+        super().enter(vms)
+        model = PfDemoModel()
+
+        # prints out a mini-tutoriel: How to use this demo?
+        INSTR_DEMO[-1] = INSTR_DEMO[-1].format(model.start_pos, model.end_pos)
+        for line in INSTR_DEMO:
+            print(line)
+        for recv_obj in (PfDemoView(model), PfDemoCtrl(model)):
+            recv_obj.turn_on()
+
+    def get_video_mode(self):
+        return 2
+
+    def list_game_events(self):
+        return None
+
+
 if __name__ == '__main__':
-    # -------------------
-    #  demo STyle 2
-    # -------------------
-    model = PfDemoModel()
-
-    # prints out a mini-tutoriel: How to use this demo?
-    INSTR_DEMO[-1] = INSTR_DEMO[-1].format(model.start_pos, model.end_pos)
-    for line in INSTR_DEMO:
-        print(line)
-
-    # init. game
-    pyv.init(2, caption='demo-pathfinding uses kengi')
-    manager = pyv.get_ev_manager()
-    manager.setup()
-    for recv_obj in (PfDemoView(model), PfDemoCtrl(model), pyv.get_game_ctrl()):
-        recv_obj.turn_on()
-    # game loop, then close
-    pyv.get_game_ctrl().loop()
-    pyv.close_game()
+    gobj = DemoPathfinding()
+    gobj.loop()
