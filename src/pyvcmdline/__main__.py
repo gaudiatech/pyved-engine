@@ -27,6 +27,8 @@ from pyved_engine import vars
 
 __version__ = vars.ENGINE_VERSION_STR
 
+
+PLAY_SCRIPT_NAME = 'launch_game'
 VALID_SUBCOMMANDS = (
     'init',
     'play',
@@ -205,21 +207,26 @@ VALID_SUBCOMMANDS = (
 
 
 def play_command(x):
-    print(f"PLAY (game bundle name is {x}) ...")
+    metadata = None
+    try:
+        fptr = open(fpath_join(x, 'cartridge', 'metadat.json'), 'r')
+        metadata = json.load(fptr)
+        fptr.close()
+        print(f"game bundle {x} found. Loading...")
+        print('Metadata:\n', metadata)
+    except FileNotFoundError:
+        print(f'Error: cannot find the game bundle you specified: {x}')
+        print('  Are you sure it exists in the current folder? Alternatively you can try to')
+        print('  change directory (cd) and simply type `pyv-cli play`')
+        print('  once you are inside the bundle')
 
-    fptr = open(fpath_join(x, 'cartridge', 'metadat.json'), 'r')
-    metadata = json.load(fptr)
-    fptr.close()
-    print('bundle info:\n', metadata)
-
-    sys.path.append(os.getcwd())
-    if x == '.':
-        print('cas1')
-        # import vmslateL as vmsl
-        vmsl = importlib.import_module('vmslateL', None)
-    else:
-        vmsl = importlib.import_module('.vmslateL', x)
-    vmsl.bootgame(metadata)
+    if metadata is not None:
+        sys.path.append(os.getcwd())
+        if x == '.':
+            vmsl = importlib.import_module(PLAY_SCRIPT_NAME, None)
+        else:
+            vmsl = importlib.import_module('.'+PLAY_SCRIPT_NAME, x)
+        vmsl.bootgame(metadata)
 
 
 # alias!

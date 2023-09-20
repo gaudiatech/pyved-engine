@@ -18,14 +18,14 @@ __all__ = [
 worldChange = True
 
 
-def gamectrl_sys(entities, components):
+def gamectrl_sys():
     pg = pyv.pygame
     for ev in pg.event.get():
         if ev.type == pg.KEYDOWN and ev.key == pg.K_ESCAPE:
             pyv.vars.gameover = True
 
 
-def steering_sys(entities, components):
+def steering_sys():
     pg = pyv.pygame
 
     controllable_ent = pyv.find_by_components('controls')
@@ -57,10 +57,9 @@ def steering_sys(entities, components):
                 ent['lower_block'] = None
 
 
-def automob_sys(entities, components):
+def automob_sys():
     player = pyv.find_by_archetype('player')[0]
-
-    all_mob_blocks = filter(lambda e: pyv.archetype_of(e) == 'mob_block', entities)
+    all_mob_blocks = pyv.find_by_archetype('mob_block')
     for mblo in all_mob_blocks:
         k = 0 if mblo['horz_flag'] else 1
         rrect = mblo['body']
@@ -87,14 +86,14 @@ def automob_sys(entities, components):
                 player['speed'][1] = player['lower_block']['speed'][1]
 
 
-def cameratracking_sys(entities, components):
+def cameratracking_sys():
     pl_ent = pyv.find_by_archetype('player')[0]
     cam_obj = pl_ent['camera']
     if cam_obj.viewport.center != pl_ent['body'].topleft:
         cam_obj.viewport.center = pl_ent['body'].topleft
 
 
-def physics_sys(entities, components):
+def physics_sys():
     if shared.t_last_update is None:
         dt = 0.0
     else:
@@ -176,7 +175,7 @@ def physics_sys(entities, components):
             player['lower_block'] = None
 
 
-def rendering_sys(entities, components):
+def rendering_sys():
     """
     displays everything that can be rendered
     """
@@ -234,7 +233,7 @@ def _proc_unload_load():
     shared.world.create_avatar(camref)
 
 
-def teleport_sys(entities, components):
+def teleport_sys():
     player = pyv.find_by_archetype('player')[0]
     bsup_x, bsup_y = shared.world.limits
     binf_x = -1.0*bsup_x
