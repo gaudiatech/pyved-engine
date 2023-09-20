@@ -1,9 +1,11 @@
 from . import pimodules
 from . import shared
 from . import systems
-from .world import world
+from .world import blocks_create, player_create, ball_create
+
 
 pyv = pimodules.pyved_engine
+pygame = pyv.pygame
 
 
 @pyv.declare_begin
@@ -12,22 +14,27 @@ def init_game(vmst=None):
     screen = pyv.get_surface() 
     shared.screen = screen
     pyv.init(wcaption='Pyv Breaker')
-    pyv.define_archetype('player', (
-        'speed', 'controls', 'body'
-    ))
+
+    pyv.define_archetype('player', ('body', 'speed'))
     pyv.define_archetype('block', ('body', ))
     pyv.define_archetype('ball', ('body', 'speed_Y', 'speed_X'))
-    world.create_player()
-    world.create_ball()
-    world.create_blocks()
+
+    blocks_create()
+    player_create()
+    ball_create()
     pyv.bulk_add_systems(systems)
 
 
 @pyv.declare_update
 def upd(time_info=None):
-    pyv.systems_proc()
-    pyv.flip()
+    if shared.prev_time_info:
+        dt = (time_info - shared.prev_time_info)
+    else:
+        dt = 0
+    shared.prev_time_info = time_info
 
+    pyv.systems_proc(dt)
+    pyv.flip()
 
 
 @pyv.declare_end
