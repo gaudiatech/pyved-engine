@@ -73,7 +73,7 @@ def find_spc_folder(givenfolder, start_path):
 
 
 def game_execution(metadata, game_definition_module):
-    print(f'~~Vm Pyv~~ LAUNCHING {metadata["game_name"]}...')
+    print(f'~~Vm Pyv~~ LAUNCHING {metadata["game_title"]}...')
     print('-'*8 + 'metadata' + '-'*8)
     pprint(metadata)
     print()

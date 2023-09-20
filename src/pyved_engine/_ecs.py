@@ -78,12 +78,11 @@ def remove_system(system_func):
     _systems.remove(system_func)
 
 
-def systems_proc():
-    if len(_systems):
-        for system_func in _systems:
-            system_func(_entities, _components)
-    else:
-        raise ValueError('[PYV/ecs] systems_proc func called, but no systems has been added')
+def systems_proc(*args):
+    if not len(_systems):
+        raise ValueError('[PYV/ecs] systems_proc called, but no systems has been added!')
+    for system_func in _systems:
+        system_func(*args)
 
 
 # Archetype functions -----

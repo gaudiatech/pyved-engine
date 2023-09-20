@@ -108,7 +108,7 @@ kengi_inj = Injector({
     # 'rpg': '.looparts.rpg',
     # 'sysconsole': '.looparts.sysconsole',
     'tabletop': '.add_ons.tabletop',
-    # 'terrain': '.looparts.terrain',
+    'terrain': '.looparts.terrain',
 }, 'pyved_engine')
 
 
