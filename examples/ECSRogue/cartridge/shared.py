@@ -18,3 +18,6 @@ game_state = {
 CELL_SIDE = 32  # px
 WALL_COLOR = (8, 8, 24)
 HIDDEN_CELL_COLOR = (24, 24, 24)
+
+# extra const
+GRID_REZ = (CELL_SIDE, CELL_SIDE)

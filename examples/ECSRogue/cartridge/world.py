@@ -1,37 +1,45 @@
 from . import shared
 from . import pimodules
+
+
 pyv = pimodules.pyved_engine
 pyv.bootstrap_e()
 pygame = pyv.pygame
 Sprsheet = pyv.gfx.Spritesheet
 
+
 def create_player():
-        player = pyv.new_from_archetype('player')
-        pyv.init_entity(player, {
-            'controls':{'left': False, 'right': False, 'up':False, 'down':False},
-            'damages' : 10, 
-            'health_point' : 100,
-            'enter_new_map':True
-        })
+    player = pyv.new_from_archetype('player')
+    pyv.init_entity(player, {
+        'controls': {'left': False, 'right': False, 'up': False, 'down': False},
+        'damages': 10,
+        'health_point': 100,
+        'enter_new_map': True
+    })
+
 
 def create_wall():
-        wall =pyv.new_from_archetype('wall')
-        pyv.init_entity(wall, {})
-        
-def create_monster() :
-        monster = pyv.new_from_archetype('monster')
-        pyv.init_entity(monster, {
-            'damages' : 10, 
-            'health_point' : 20
-        })
-        
+    wall = pyv.new_from_archetype('wall')
+    pyv.init_entity(wall, {})
+
+
+def create_monster():
+    monster = pyv.new_from_archetype('monster')
+    pyv.init_entity(monster, {
+        'damages': 10,
+        'health_point': 20
+    })
+
+
 def create_exit():
     exit = pyv.new_from_archetype('exit')
     pyv.init_entity(exit, {})
-    
+
+
 def get_terrain():
     return shared.game_state['rm'].getMatrix()
-    
+
+
 def _update_vision(i, j):
     if shared.fov_computer is None:
         shared.fov_computer = pyv.rogue.FOVCalc()
@@ -39,19 +47,19 @@ def _update_vision(i, j):
     shared.game_state['visibility_m'].set_val(i, j, True)
 
     def func_visibility(a, b):
-        if  shared.game_state['visibility_m'].is_out(a, b):
+        if shared.game_state['visibility_m'].is_out(a, b):
             return False
-        if  shared.game_state['rm'].getMatrix().get_val(a, b) is None:  # cannot see through walls
+        if shared.game_state['rm'].getMatrix().get_val(a, b) is None:  # cannot see through walls
             return False
         return True
 
     li_visible = shared.fov_computer.calc_visible_cells_from(i, j, shared.VISION_RANGE, func_visibility)
 
     for c in li_visible:
-         shared.game_state['visibility_m'].set_val(c[0], c[1], True)
-         
+        shared.game_state['visibility_m'].set_val(c[0], c[1], True)
+
+
 def init_images():
-    
     grid_rez = (32, 32)
 
     img = pyv.vars.images['tileset']
@@ -66,4 +74,3 @@ def init_images():
     monster_img = pyv.vars.images['monster']
     monster_img = pygame.transform.scale(monster_img, (32, 32))
     monster_img.set_colorkey((255, 0, 255))
-
