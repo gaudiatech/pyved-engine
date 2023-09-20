@@ -23,7 +23,7 @@ JSON_PREC_PLATFORMER = """\
 {
 "vmlib_ver": "23_9a1",
 "dependencies": {
-"pyved_engine": "23.4a4"
+"pyved_engine": "???"
 },
 "description": "this is an example of platformer",
 "author": "KataGames_Team",

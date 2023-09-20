@@ -310,10 +310,13 @@ def init_command(cartridge_name) -> None:
 
     # Get the absolute path of the current script
     script_directory = os.path.dirname(os.path.abspath(__file__))
-    y = fpath_join(os.getcwd(), x)
+    lg_script_blueprint_filename = fpath_join(script_directory, PLAY_SCRIPT_NAME+'.py')
+    template_blueprint_folder = fpath_join(script_directory, f'template_{template_id}')
+    target_bundle_folder = fpath_join(os.getcwd(), x)
 
-    recursive_copy(fpath_join(script_directory, f'template_{template_id}'), y)
-    create_folder_and_serialize_dict(y, data_dict=metadata)
+    recursive_copy(template_blueprint_folder, target_bundle_folder)
+    shutil.copy2(lg_script_blueprint_filename, target_bundle_folder)
+    create_folder_and_serialize_dict(target_bundle_folder, data_dict=metadata)
     for _ in range(3):
         print()
     print('GAME BUNDLE=', x)
