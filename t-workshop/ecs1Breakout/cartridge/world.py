@@ -7,7 +7,7 @@ pygame = pyv.pygame
 
 
 def player_create():
-    pyv.add_entity(
+    pyv.new_entity(
         archetype='player',
         speed=0.0,
         controls={'left': False, 'right': False},
@@ -22,7 +22,7 @@ def ball_create():
     else:
         initial_vx = random.uniform(-shared.MAX_XSPEED_BALL, -0.33 * shared.MAX_XSPEED_BALL)
 
-    pyv.add_entity(
+    pyv.new_entity(
         archetype='ball',
         speed_X=initial_vx,
         speed_Y=shared.YSPEED_BALL,
@@ -37,7 +37,7 @@ def blocks_create():
         bcx = -shared.BLOCK_W
         for row in range(round(shared.LIMIT)):
             bcx = bcx + shared.BLOCK_W + shared.BLOCK_SPACING
-            pyv.add_entity(
+            pyv.new_entity(
                 archetype='block',
                 body=pygame.rect.Rect(0 + bcx, 0 + bcy, shared.BLOCK_W, shared.BLOCK_H)
             )
