@@ -63,7 +63,7 @@ Read more in the [ECS](<Entity Component System\A bit of theory.md>) section.
 
 ![ECS](./images/ECSBlockDiagram.png "ECS Diagram")
 
-credit : https://docs.unity3d.com/Packages/com.unity.entities@0.1/manual/ecs_core.html 
+credit : <https://docs.unity3d.com/Packages/com.unity.entities@0.1/manual/ecs_core.html>
 
 ### Mediator 
 
@@ -71,7 +71,7 @@ In the realm of game development, the Mediator Pattern serves as a crucial archi
 
 ![Mediator](./images/mediator.webp "Mediator diagram")
 
-credit : https://medium.com/@andrewMacmurray/exploring-the-mediator-pattern-eadaebc871b4
+credit : <https://medium.com/@andrewMacmurray/exploring-the-mediator-pattern-eadaebc871b4>
 
 ### MVC
 
@@ -80,13 +80,13 @@ MVC, or Model-View-Controller, is a foundational architectural pattern that has 
 
 ![MVC](./images/mvc1.ppm "MVC diagram")
 
-credit : https://www.researchgate.net/publication/342748612_Zetcil_Game_Mechanic_Framework_for_Unity_Game_Engine
+credit : <https://www.researchgate.net/publication/342748612_Zetcil_Game_Mechanic_Framework_for_Unity_Game_Engine>
 
 
 ![MVC](./images/mvc.jpg "MVC diagram")
 
 
-credit : https://www.technoarchsoftwares.com/blog/mvc-framework/
+credit : <https://www.technoarchsoftwares.com/blog/mvc-framework/>
 
 
 
