@@ -3,6 +3,22 @@ site_url: https://gaudiatech.github.io/pyved-engine/
 repo_url: https://github.com/gaudiatech/pyved-engine
 
 
+nav:
+  - 'index.md'
+  - 'Showcase.md'
+  - 'Entity Component System':
+    - 'Entity Component System/A bit of theory.md'
+    - 'Entity Component System/ECS examples.md'
+  - 'Other Patterns':
+    - 'Other patterns/Event based programming.md'
+    - 'Other patterns/MVC examples.md'
+  - 'Game Tutorials':
+    - 'GameTutorials/Breakout.md'
+    - 'GameTutorials/Platformer.md'
+    - 'GameTutorials/Roguelike.md'
+  - 'ShareYourGames.md'
+
+
 theme:
   name: material
   font: false
@@ -15,6 +31,9 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/gaudiatech/pyved-engine
       name: Pyved-engine on Github
+
+
+
 
 
 markdown_extensions:
