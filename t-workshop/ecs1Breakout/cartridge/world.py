@@ -32,10 +32,10 @@ def ball_create():
 
 def blocks_create():
     bcy = 0
-    for column in range(5):
+    for row in range(5):
         bcy = bcy + shared.BLOCK_H + shared.BLOCK_SPACING
         bcx = -shared.BLOCK_W
-        for row in range(round(shared.LIMIT)):
+        for column in range(round(shared.LIMIT)):
             bcx = bcx + shared.BLOCK_W + shared.BLOCK_SPACING
             pyv.new_entity(
                 archetype='block',

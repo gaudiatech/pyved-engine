@@ -81,7 +81,6 @@ def physics_sys(dt):
     if player.body.colliderect(ball.body):
         ball.body.bottom = player.body.top-4  # stick to the pad
         ball.speed_Y = -1*ball.speed_Y
-        print(ball.speed_Y)
 
     # ######################Collision block
     blocks = pyv.find_by_archetype('block')

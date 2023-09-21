@@ -10,10 +10,9 @@ pygame = pyv.pygame
 
 @pyv.declare_begin
 def init_game(vmst=None):
-    pyv.init()
+    pyv.init(wcaption='Pyv Breaker')
     screen = pyv.get_surface() 
     shared.screen = screen
-    pyv.init(wcaption='Pyv Breaker')
 
     pyv.define_archetype('player', ('body', 'speed', 'controls'))
     pyv.define_archetype('block', ('body', ))
