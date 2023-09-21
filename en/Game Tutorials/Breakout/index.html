@@ -21,7 +21,7 @@
     
     
       
-        <title>Tutorial Breaker - PYV game engine: the official docs</title>
+        <title>Tutorial breakout - PYV game engine: the official docs</title>
       
     
     
@@ -57,7 +57,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#tutorial-breaker" class="md-skip">
+        <a href="#tutorial-breakout" class="md-skip">
           Skip to content
         </a>
       
@@ -92,7 +92,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Tutorial Breaker
+              Tutorial breakout
             
           </span>
         </div>
@@ -331,12 +331,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Tutorial Breaker
+          Tutorial breakout
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        Tutorial Breaker
+        Tutorial breakout
       </a>
       
         
@@ -549,8 +549,8 @@
   
 
 
-<h1 id="tutorial-breaker">Tutorial Breaker</h1>
-<p>This tutorial is here to help you create a block breaker type game from scratch.</p>
+<h1 id="tutorial-breakout">Tutorial breakout</h1>
+<p>This tutorial is here to help you create a breakout type game from scratch.</p>
 <p>This tutorial can also be used as a nice base to understand and experiment with the ECS pattern.</p>
 <p>Note that the game in its final state is already available in the <code>pyved-engine</code> in the <code>pyv-cli</code>.</p>
 <p>If you need further help for using PYV,
@@ -558,7 +558,7 @@ you can always refer to the
 <a href="https://gaudiatech.github.io/pyved-engine/"><strong>pyved-engine full docs homepage</strong></a>.</p>
 <h2 id="step-0-getting-started">Step 0. Getting Started</h2>
 <h3 id="either-download-the-init-or-just-the-template">Either Download the init, or just the template</h3>
-<p>If you want to build upon the foundation of the breaker template, you can download it by doing the following</p>
+<p>If you want to build upon the foundation of the breakout template, you can download it by doing the following</p>
 <pre><code class="language-shell">pyv-cli init myGame
 pyv-cli play myGame
 </code></pre>
@@ -569,15 +569,11 @@ pyv-cli play myGame
 <pre><code>.
 └── YourBundleName/
     ├── cartridge/
-    │   ├── __pycache__/
     │   ├── gamedef.py
     │   ├── __init__.py
     │   ├── metadat.json
     │   └── pimodules.py
-    ├── __pycache__/
-    ├── __init__.py
-    ├── vm.py
-    └── vmslateL.py
+    └── launch_game.py
 </code></pre>
 <h2 id="step-1-create-the-necessary-files-for-the-ecs">Step 1 : Create the necessary files for the ECS</h2>
 <p>As of now, all of the files used in an ECS configuration aren't auto generated, this might change in the future, but since you're here to learn everything on how to create a game using Pyved and ECS, let's get into it.</p>
@@ -592,22 +588,30 @@ pyv-cli play myGame
 <p>In this part, you will learn how to create your first entities and draw them on your screen.</p>
 <h3 id="creation-of-archetypes-and-entities">Creation of Archetypes and Entities</h3>
 <p>First, let's create all of our constants in our <code>shared.py</code> :</p>
-<pre><code class="language-py">import random
-
-
-screen = None
+<pre><code class="language-PY">screen = None
 blocks_pop = None
+prev_time_info = None
+end_game_label = None  # != None means player cannot move bc he/she lost
 
 # (Size of break-out blocks)
 BLOCK_W = 54
 BLOCK_H = 30
 BLOCK_SPACING = 2
+SCR_WIDTH = 960
+SCR_HEIGHT = 720
+LIMIT = SCR_WIDTH / (BLOCK_W + BLOCK_SPACING)
 WALL_X, WALL_Y = 4, 80
-PLAYER_SPEED = 10
+
+# physics
+PL_WIDTH, PL_HEIGHT = 110, 25
+PLAYER_SPEED = 280
+MAX_XSPEED_BALL = 225.0
+YSPEED_BALL = 288.0
 
 # ball-related
 BALL_INIT_POS = 480, 277
 BALL_SIZE = 22
+
 </code></pre>
 <p>We will use all of those constants laters, but they are important.</p>
 <p>Secondly we will create all of our entities, let's head inside <code>gamedef.py</code></p>
@@ -622,71 +626,75 @@ def init_game(vmst=None):
     pyv.init(wcaption='Néant')
 </code></pre>
 <p>Let's create our archetypes, this is how we will create the different entities : </p>
-<pre><code class="language-py">    pyv.define_archetype('player', (
-        'speed', 'controls', 'body'
-    ))
+<pre><code class="language-py">    pyv.define_archetype('player', ('body', 'speed', 'controls'))
     pyv.define_archetype('block', ('body', ))
     pyv.define_archetype('ball', ('body', 'speed_Y', 'speed_X'))
+
 </code></pre>
 <p>We can now go into <code>world.py</code>, to create our entities :</p>
-<pre><code class="language-py">from . import shared
+<pre><code class="language-py">import random
 from . import pimodules
-pyv = pimodules.pyved_engine
+from . import shared
 
+pyv = pimodules.pyved_engine
 pygame = pyv.pygame
 
 
-class world:
-
-    def create_player():
-        player = pyv.new_from_archetype('player')
-        pyv.init_entity(player, {
-            'speed': 0.0, 
-            'controls':{'left': False, 'right': False},
-            'body': pygame.rect.Rect(900,600, shared.BLOCK_W, shared.BLOCK_H)
-        })
+def player_create():
+    pyv.new_entity(
+        archetype='player',
+        speed=0.0,
+        controls={'left': False, 'right': False},
+        body=pygame.rect.Rect(shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT)
+    )
 
 </code></pre>
 <p>We are creating a create_player function, this will create the entities with our default settings, we will do the same for every entity present in our game.</p>
 <p>We give it, a speed, some controls, here we only give it left and right, as we don't need other directions.</p>
 <p>And finally a body, so that our player have a hitbox.</p>
-<pre><code class="language-py">    def create_ball():
-        ball = pyv.new_from_archetype('ball')
-        pyv.init_entity(ball, {
-            'speed_X' :random.uniform(-3.0, 3.0), 
-            'speed_Y': 5.0, 
-            'body': pygame.rect.Rect(shared.BALL_INIT_POS[0],shared.BALL_INIT_POS[1], shared.BALL_SIZE, shared.BALL_SIZE)
-        })
-</code></pre>
-<p>We will create our ball too, we will keep the same logic, and create, it needs a speed to move, and a hitbox to detect collisions.</p>
-<pre><code class="language-py">def create_blocks():
-        bcy = 0 
-        LIMIT = 960/(shared.BLOCK_W + shared.BLOCK_SPACING)
-        for row in range(5):
-            bcy = bcy+shared.BLOCK_H + shared.BLOCK_SPACING
-            bcx = -shared.BLOCK_W
-            for column in range(round(LIMIT)):
-                bcx = bcx +shared.BLOCK_W + shared.BLOCK_SPACING
-                rrect = pygame.rect.Rect(0 + bcx, 0 + bcy, shared.BLOCK_W, shared.BLOCK_H)
+<pre><code class="language-py">def ball_create():
+    if random.choice((True, False)):
+        # we select the right dir.
+        initial_vx = random.uniform(0.33 * shared.MAX_XSPEED_BALL, shared.MAX_XSPEED_BALL)
+    else:
+        initial_vx = random.uniform(-shared.MAX_XSPEED_BALL, -0.33 * shared.MAX_XSPEED_BALL)
 
-                pyv.init_entity(pyv.new_from_archetype('block'),{
-                    'body': rrect
-                })
+    pyv.new_entity(
+        archetype='ball',
+        speed_X=initial_vx,
+        speed_Y=shared.YSPEED_BALL,
+        body=pygame.rect.Rect(shared.BALL_INIT_POS[0], shared.BALL_INIT_POS[1], shared.BALL_SIZE, shared.BALL_SIZE)
+    )
+</code></pre>
+<p>We will create our ball too, we will keep the same logic, and create it's attributes, speed_X and Y in order to move in both directions, and a hitbox to detect collisions.</p>
+<pre><code class="language-py">
+def blocks_create():
+    bcy = 0
+    for row in range(5):
+        bcy = bcy + shared.BLOCK_H + shared.BLOCK_SPACING
+        bcx = -shared.BLOCK_W
+        for column in range(round(shared.LIMIT)):
+            bcx = bcx + shared.BLOCK_W + shared.BLOCK_SPACING
+            pyv.new_entity(
+                archetype='block',
+                body=pygame.rect.Rect(0 + bcx, 0 + bcy, shared.BLOCK_W, shared.BLOCK_H)
+            )
+
 </code></pre>
 <p>Here the code is a bit different, since there's more than one block, we will loop over it to generate as many entity as needed.</p>
 <p>Here we fill the screen from left to right, and on 5 row with blocks.</p>
 <p>We can now head back into <code>gamedef.py</code> and finalise the creation of our entities.</p>
 <pre><code class="language-py">@pyv.declare_begin
 def init_game(vmst=None):
-    pyv.init()
-    pyv.define_archetype('player', (
-        'speed', 'controls', 'body'
-    ))
+    pyv.init(wcaption='Pyv Breaker')
+    screen = pyv.get_surface() 
+    shared.screen = screen
+    pyv.define_archetype('player', ('body', 'speed', 'controls'))
     pyv.define_archetype('block', ('body', ))
     pyv.define_archetype('ball', ('body', 'speed_Y', 'speed_X'))
-    world.create_player()
-    world.create_ball()
-    world.create_blocks()
+    blocks_create()
+    player_create()
+    ball_create()
     pyv.bulk_add_systems(systems)
 </code></pre>
 <p>Here we added the call to the different functions we made in the <code>world.py</code>, so that now, when we launch our game, we create actual entities instead of just their archetypes.</p>
@@ -722,23 +730,27 @@ __all__ = [
     'controls_sys',
     'physics_sys',
     'rendering_sys',
-    'gamectrl_sys'
+    'gamectrl_sys',
+    'endgame_sys'
 ]
 
-def controls_sys(entities, components):
+def controls_sys(dt):
     #Empty for now
 
-def physics_sys(entities, components):
+def physics_sys(dt):
     #Empty for now
 
-def rendering_sys(entities, components):
+def rendering_sys(dt):
     #Empty for now
 
-def gamectrl_sys(entities, components):
+def gamectrl_sys(dt):
     pg = pyv.pygame
     for ev in pg.event.get():
         if ev.type == pg.KEYDOWN and ev.key == pg.K_ESCAPE:
             pyv.vars.gameover = True 
+
+def endgame_sys(dt):
+    #Empty for now
 
 </code></pre>
 <p>Now, we will create our rendering system, to at least have some graphics and wrap this step up.</p>
@@ -747,16 +759,21 @@ def gamectrl_sys(entities, components):
     displays everything that can be rendered
     &quot;&quot;&quot;
     scr = shared.screen
-
     scr.fill((0, 0, 0))
-    pl_ent = pyv.find_by_archetype('player')[0]
     li_blocks = pyv.find_by_archetype('block')
-    ball = pyv.find_by_archetype('ball')[0]
-
-    pyv.draw_rect(scr, 'white', pl_ent['body'])
-    pyv.draw_rect(scr, 'blue', ball['body'])
     for b in li_blocks:
-        pyv.draw_rect(scr, 'purple', b['body'])
+        pyv.draw_rect(scr, 'purple', b.body)
+
+    pl_ent = pyv.find_by_archetype('player')[0]
+    pyv.draw_rect(scr, 'white', pl_ent.body)
+    if shared.end_game_label:
+        lw, lh = shared.end_game_label.get_size()
+        scr.blit(
+            shared.end_game_label, ((shared.SCR_WIDTH-lw)//2, (shared.SCR_HEIGHT-lh)//2)
+        )
+    else:
+        ball = pyv.find_by_archetype('ball')[0]
+        pyv.draw_rect(scr, 'blue', ball.body)
 </code></pre>
 <p>What we do here, is first fill the screen in black, then find the different lists of entities for each archetypes.</p>
 <p>We then simply give their hitbox a graphical representation with different colors.</p>
@@ -765,27 +782,33 @@ def gamectrl_sys(entities, components):
 <pre><code class="language-py">
 @pyv.declare_begin
 def init_game(vmst=None):
-    pyv.init()
+    pyv.init(wcaption='Pyv Breaker')
     screen = pyv.get_surface() 
     shared.screen = screen
-    pyv.define_archetype('player', (
-        'speed', 'controls', 'body'
-    ))
+
+    pyv.define_archetype('player', ('body', 'speed', 'controls'))
     pyv.define_archetype('block', ('body', ))
     pyv.define_archetype('ball', ('body', 'speed_Y', 'speed_X'))
-    world.create_player()
-    world.create_ball()
-    world.create_blocks()
+
+    blocks_create()
+    player_create()
+    ball_create()
     pyv.bulk_add_systems(systems)
 </code></pre>
 <p>Here we added the screen creation to our initialisation sequence, this is also where the bulk system is used, since we created a rendering system, we need to load it in our game.</p>
 <p>Now, in order to have something displays and refresh, we will also modify our update like so:</p>
-<pre><code class="language-py">@pyv.declare_update
-def upd(time_info=None):
-    pyv.systems_proc()
+<pre><code class="language-py">def upd(time_info=None):
+    if shared.prev_time_info:
+        dt = (time_info - shared.prev_time_info)
+    else:
+        dt = 0
+    shared.prev_time_info = time_info
+
+    pyv.systems_proc(dt)
     pyv.flip()
 </code></pre>
 <p>Here we use our systems, then use flip in order to display everything.</p>
+<p>We also setup dt, this is the time info, it's used to make things run evenly, because otherwise the game would speed up or down depending of the max fps the games run at.</p>
 <p>And now, your game should look something like this </p>
 <p><img alt="Breakout mid" src="../img/breakoutmid.png" title="Our breakout base" /></p>
 <p>So, as of now, we can display things on our screen, but nothing more happens.</p>
@@ -793,93 +816,109 @@ def upd(time_info=None):
 <h2 id="step-3-making-our-game">Step 3 : Making our game</h2>
 <p>So, let's get all of this moving !</p>
 <p>Go back to your <code>systems.py</code> file and now we will populate the different empty systems.</p>
-<pre><code class="language-py">def controls_sys(entities, components):
+<pre><code class="language-py">def controls_sys(dt):
     #Empty for now
 
-def physics_sys(entities, components):
+def physics_sys(dt):
+    #Empty for now
+
+def endgame_sys(dt):
     #Empty for now
 </code></pre>
 <p>We will start with the easiest one first, the controls.</p>
 <pre><code class="language-py">def controls_sys(entities, components):
     pg = pyv.pygame
-
     player = pyv.find_by_archetype('player')[0]
-    activekeys = pg.key.get_pressed()
-    player['left'] = activekeys[pg.K_LEFT]
-    player['right'] = activekeys[pg.K_RIGHT]
-    if player['right']:
-        player['speed'] = shared.PLAYER_SPEED
+    active_keys = pg.key.get_pressed()
+    if active_keys[pg.K_LEFT]:
+        player.speed=-shared.PLAYER_SPEED
 
-    if player['left']:
-        player['speed'] = -shared.PLAYER_SPEED
+    elif active_keys[pg.K_RIGHT]:
 
-    if not (player['left'] or player['right']):
-        player['speed'] = 0.0
+        player.speed=shared.PLAYER_SPEED
+    else:
+        player.speed=0.0
 </code></pre>
 <p>Everything is pretty straightforward here; we search for our player, and then go inside the controls we defined earlier. Once we have our player, we just set the left and right key to the left and right controls we created. </p>
 <p>And after this, we make it move to the player speed on a certain direction, and if we don't press anything, he doesn't move. Even though we assigned movement to our keys, as of now, whenever we press the keys the speed is just reassigned, but it never applies to the player, so you can't move for now. </p>
 <p>Let's make it happen and go inside the game physics.</p>
 <pre><code class="language-py">def physics_sys(entities, components):
 
-    ####################PLAYER MOVEMENT
+    if shared.end_game_label is not None:  # block all movements when game over
+        return
+    # PLAYER MOVEMENT
     player = pyv.find_by_archetype('player')[0]
-    pv = player['speed']
-    pp = player['body'].topleft
-    player['body'].left = pp[0]+pv
-    if(player['body'][0]&gt;900 or player['body'][0]&lt;0):
-         player['body'].left = pp[0]
+    px, py = player.body.topleft
+    vx = player.speed
+    plwidth = player.body.w
+    targetx = px + vx * dt
+    if not(targetx &lt; 0 or targetx &gt; shared.SCR_WIDTH-plwidth):
+        player.body.x = targetx
 </code></pre>
 <p>Again, let's find our player entity.</p>
-<p>We take the speed property and the position as <code>pv</code> and <code>pp</code> and now we change it in the next line.
-<code>pp</code> is equal to the player position on X and Y, <code>pv</code> is the player "speed", it would be more accurate to describe it as how much the player move for a single movement.</p>
-<p><code>player['body'].left = pp[0]+pv</code>
-Here we reassign the player vertical position, this new position will be pp[0], the position in X + the "speed", and we have our new position.</p>
+<p>We take the speed property and the position as <code>vx</code> and <code>px</code>/<code>py</code> and now we change it in the next line.
+<code>px</code>/<code>py</code> are equal to the player position on X and Y, <code>vx</code> is the player "speed", it would be more accurate to describe it as how much the player move for a single movement.</p>
+<p><code>targetx = px + vx * dt</code>
+Here we create the new horizontal position, this new position will be targetx, the position in X + the "speed" * the time, and we have our new position.</p>
 <p>Lastly, we just make our player not able to leave the screen by stopping the addition of the speed.</p>
 <p>If everything went according to plan, you should be able to start the game and move your player block !</p>
 <p>Easy, right ?</p>
 <p>Now, we will make the ball move.</p>
-<pre><code class="language-py">    ball = pyv.find_by_archetype('ball')[0]
-    speed_X = ball['speed_X']
-    speed_Y = ball['speed_Y']
-    bp = ball['body'].topleft
-    ball['body'].left = bp[0] + speed_X
-    ball['body'].top = bp[1]+speed_Y
+<pre><code class="language-py">    # ##################BALL MOVEMENT
+    ball = pyv.find_by_archetype('ball')[0]
+    speed_x = ball.speed_X
+    speed_y = ball.speed_Y
+    bpx, bpy = ball.body.topleft
+    ball.body.x = bpx + dt*speed_x
+    ball.body.y = bpy + dt*speed_y
+
+    if bpx &lt; 0:
+        ball.speed_X *= -1
+        ball.body.x = 0
+    elif ball.body.right &gt; shared.SCR_WIDTH:
+        ball.speed_X *= -1
+        ball.body.right = shared.SCR_WIDTH
+    if bpy &lt; 0:
+        ball.speed_Y *= -1
+        ball.body.top = 0
 </code></pre>
 <p>We take the same base as before, we just now have a 2 axis movement, so we have an X and Y speed.
-And, same as before we apply the speed to both directions, <code>bp[0]</code> is the movement on X axis, we also add the X speed, and same for <code>bp[1]</code> and Y speed.</p>
-<p>Now if you test, your ball should be moving on your screen, but will go disapear once it's out.</p>
-<p>Let's make it stay on screen.</p>
-<pre><code class="language-py">    if(ball['body'][0]&gt;910 or ball['body'][0]&lt;1):
-        ball['speed_X'] *= -1.05
-    if(ball['body'][1]&gt;720):
-        pyv.vars.gameover = True
-        print('lose')
-    elif(ball['body'][1]&lt;0):
-        ball['speed_Y'] *= -1.05
-
-</code></pre>
-<p>We're starting by making it bounce whenever it touches the right and left corner of the screen, still same as before, on [0] is the X axis, so if we cross out of screen we will send the back the ball by inversing it's direction, and making it a tiny bit faster.</p>
-<p>And i've decided that if it goes out under the screen, it's a lose, if it's above, it just bounces back down.</p>
-<pre><code class="language-py">    #######################Collision
-
-    if player['body'].colliderect(ball['body']):
-        ball['body'].top = bp[1] + speed_Y
-        ball['speed_Y'] *= -1.05
-        pv *= 1.05
-
+And, same as before we apply the speed to both directions, <code>bpx, bpy</code> is the movement on X and Y axis.</p>
+<p>We keep the same speed formula on both axes and add conditions in order to not go out of screen.</p>
+<p>Now if you test, your ball should be moving on your screen, but will go through your player/blocks.</p>
+<pre><code class="language-py">    # ######################Collision
+    if player.body.colliderect(ball.body):
+        ball.body.bottom = player.body.top-4  # stick to the pad
+        ball.speed_Y = -1*ball.speed_Y
 </code></pre>
 <p>This is how we will handle the collision, we use <code>colliderect</code> to do so. It's a simple check inbetween the different hitboxes, whenever the hitboxes touch, <code>colliderect</code> will equal to <code>True</code>.</p>
-<p>So what we do is lookout to whenever they'll touch, if it do so, we change the direction and make the ball go faster.
-I also made the player go faster, so that it can keep up with the ball speed.</p>
+<p>So what we do is lookout to whenever they'll touch, if it do so, we change the direction.</p>
 <p>And now for the last interaction, we will make the ball kill and bounce out of blocks :</p>
 <pre><code class="language-py">    blocks = pyv.find_by_archetype('block')
     for block in blocks:
-        if(ball['body'].colliderect(block['body'])):
+        if ball.body.colliderect(block.body):
+            ball.speed_Y *= -1
             pyv.delete_entity(block)
-            ball['body'].top = bp[1]+speed_Y
-            ball['speed_Y'] *= -1.05
+            break
 </code></pre>
 <p>We find all of our blocks, then apply basically the same treatment than the player one, except here, we use a delete_entity to remove the block once we collided with it.</p>
+<p>We will now end by adding our game over system :</p>
+<pre><code class="language-py">def endgame_sys(dt):
+    classic_ftsize = 38
+    ball = pyv.find_by_archetype('ball')[0]
+    bpy = ball.body.top
+    if bpy &gt; shared.SCR_HEIGHT:
+        ft = pyv.pygame.font.Font(None, classic_ftsize)
+        shared.end_game_label = ft.render('Game Over', True, (255, 255, 255))
+
+    # has destroyed all blocks
+    blocks = pyv.find_by_archetype('block')
+    if not len(blocks):  # no more blocks!
+        ft = pyv.pygame.font.Font(None, classic_ftsize)
+        shared.end_game_label = ft.render('Great job!', True, (255, 255, 255))
+</code></pre>
+<p>Here we check if the ball goes under the screen, since it won't bounce back up, we consider this as a lose and display a Game Over message.
+If there's no blocks left, we display a great job message to congratulate the player.</p>
 <p>Now your game should be working ! </p>
 <p>And this also should be the end of the tutorial ...</p>
 <p>But let's add a little something to make everything cuter !</p>
@@ -889,7 +928,7 @@ I also made the player go faster, so that it can keep up with the ball speed.</p
 <p>Add this small function in your systems.</p>
 <p>And let's use it to color our blocks !</p>
 <p>In your <code>rendering_sys</code> :</p>
-<pre><code class="language-py">    pyv.draw_rect(scr, interpolate_color(b['body'][0], b['body'][1]), b['body'])
+<pre><code class="language-py">    pyv.draw_rect(scr, interpolate_color(b.body.x, b.body.y), b.body)
 </code></pre>
 <p><img alt="Breakout final" src="../img/breakoutend.png" title="Our breakout final result" /></p>
 <p>And now your game is truly finished !</p>
