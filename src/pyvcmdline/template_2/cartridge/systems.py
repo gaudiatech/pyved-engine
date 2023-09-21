@@ -18,14 +18,14 @@ __all__ = [
 worldChange = True
 
 
-def gamectrl_sys():
+def gamectrl_sys(entities, components):
     pg = pyv.pygame
     for ev in pg.event.get():
         if ev.type == pg.KEYDOWN and ev.key == pg.K_ESCAPE:
             pyv.vars.gameover = True
 
 
-def steering_sys():
+def steering_sys(entities, components):
     pg = pyv.pygame
 
     controllable_ent = pyv.find_by_components('controls')
@@ -57,9 +57,10 @@ def steering_sys():
                 ent['lower_block'] = None
 
 
-def automob_sys():
+def automob_sys(entities, components):
     player = pyv.find_by_archetype('player')[0]
     all_mob_blocks = pyv.find_by_archetype('mob_block')
+
     for mblo in all_mob_blocks:
         k = 0 if mblo['horz_flag'] else 1
         rrect = mblo['body']
@@ -80,20 +81,18 @@ def automob_sys():
         #  if the BLOCK_SPEED val is too low, the block is static. Howto fix?
         # print('update pos mblock [oldpos]', px, py,'[speed]', vx, vy, '[res]', mblock['body'].topleft)
         if mblo == player['lower_block']:
-            if player['lower_block']['horz_flag']:
-                player['speed'][0] += mblo['speed'][0]
-            else:
-                player['speed'][1] = player['lower_block']['speed'][1]
+            player['speed'][0] += mblo['speed'][0]
+            player['speed'][1] += mblo['speed'][1]
 
 
-def cameratracking_sys():
+def cameratracking_sys(entities, components):
     pl_ent = pyv.find_by_archetype('player')[0]
     cam_obj = pl_ent['camera']
     if cam_obj.viewport.center != pl_ent['body'].topleft:
         cam_obj.viewport.center = pl_ent['body'].topleft
 
 
-def physics_sys():
+def physics_sys(entities, components):
     if shared.t_last_update is None:
         dt = 0.0
     else:
@@ -101,6 +100,15 @@ def physics_sys():
     shared.t_last_update = shared.t_now
 
     player = pyv.find_by_archetype('player')[0]
+
+    # move all mobile blocks
+    mob_blocks = pyv.find_by_archetype('mob_block')
+    for mblock in mob_blocks:
+        vx, vy = mblock['speed']
+        px, py = mblock['body'].topleft
+
+        mblock['body'].left = px + vx * dt
+        mblock['body'].top = py + vy * dt
 
     # player-related
     player['speed'][1] += player['accel_y']
@@ -112,22 +120,24 @@ def physics_sys():
     vx, vy = player['speed']
     destx = org_x + vx * dt
     desty = org_y + vy * dt
-
     # ---------------
     #  collision detection
     # ---------------
     tested_ent = pyv.find_by_archetype('block')
     tested_ent.extend(pyv.find_by_archetype('mob_block'))
-
     # horizontal
     rtest0 = player['body'].copy()
     rtest0.left = destx
-    accepted_x = destx
+    collision = False
     for ent_e in tested_ent:
-        if rtest0.colliderect(ent_e['body']):
-            accepted_x = org_x
-            player['speed'][0] = 0.0
+        if (pyv.archetype_of(ent_e) != 'player') and rtest0.colliderect(ent_e['body']):
+            collision = True
             break
+    if collision:
+        accepted_x = org_x
+        player['speed'][0] = 0.0
+    else:
+        accepted_x = destx
 
     # vertical
     rtest1 = player['body'].copy()
@@ -137,45 +147,23 @@ def physics_sys():
         if (pyv.archetype_of(ent_e) != 'player') and rtest1.colliderect(ent_e['body']):
             collidor = ent_e
             break
-
-    # move all mobile blocks
-    mob_blocks = pyv.find_by_archetype('mob_block')
-    for mblock in mob_blocks:
-        vx, vy = mblock['speed']
-        px, py = mblock['body'].topleft
-        mblock['body'].left = px + vx * dt
-        mblock['body'].top = py + vy * dt
-
     if collidor:
-        player['lower_block'] = collidor  # landing somewhere indeed
-        vy = player['speed'][1]
-        if vy > 0:  # avoid clipping at all costs:
-            accepted_y = collidor['body'].top - player['body'].h
-        elif vy < 0:
-            accepted_y = collidor['body'].bottom+1
         player['speed'][1] = 0.0
         player['accel_y'] = 0.0
+        # avoid clipping at all costs:
+        if player['body'].top < collidor['body'].top:
+            accepted_y = collidor['body'].top - player['body'].h
+            player['lower_block'] = collidor  # landing somewhere
+        else:
+            accepted_y = collidor['body'].bottom
     else:
         accepted_y = desty
 
     player['accel_y'] = player['gravity']
-    pb = player['body']
-    pb.topleft = (accepted_x, accepted_y)
-
-    # post move: can fall off a cliff
-    if player['lower_block']:
-        lbb = player['lower_block']['body']
-        speedx = player['speed'][0]
-        if speedx == 0:
-            pass
-        elif (speedx > 0 and pb.left > lbb.right) or (speedx < 0 and pb.right < lbb.left):
-            if pyv.archetype_of(player['lower_block']) == 'mob_block':
-                if player['lower_block']['horz_flag']:
-                    player['speed'][0] += -1*player['lower_block']['speed'][0]
-            player['lower_block'] = None
+    player['body'].topleft = (accepted_x, accepted_y)
 
 
-def rendering_sys():
+def rendering_sys(entities, components):
     """
     displays everything that can be rendered
     """
@@ -233,7 +221,7 @@ def _proc_unload_load():
     shared.world.create_avatar(camref)
 
 
-def teleport_sys():
+def teleport_sys(entities, components):
     player = pyv.find_by_archetype('player')[0]
     bsup_x, bsup_y = shared.world.limits
     binf_x = -1.0*bsup_x

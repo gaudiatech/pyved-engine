@@ -39,7 +39,7 @@ def troid_init(vms=None):
 @pyv.declare_update
 def troid_update(timeinfo):
     shared.t_now=timeinfo
-    pyv.systems_proc()
+    pyv.systems_proc(pyv.all_entities(), None)
     pyv.flip()
 
 
