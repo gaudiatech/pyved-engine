@@ -11,4 +11,4 @@ pyv-cli share myGame
 …Will upload your game to a server automatically and provide you with a link that you can share with friends.
 
 And the result will look like this:
-https://app.kata.games/vm.php?id=breakoutBundle
+<https://app.kata.games/vm.php?id=breakoutBundle>

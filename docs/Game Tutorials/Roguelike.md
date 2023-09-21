@@ -1,1 +1,1 @@
-# Tutorial grid-based 2d Roguelike
+# Grid-based 2d Roguelike
