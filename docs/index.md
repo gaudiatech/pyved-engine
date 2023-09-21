@@ -1,6 +1,6 @@
-# PYVED ENGINE
+# Introduction
 
-## Introduction
+## Introduction to Pyved Engine
 
 **PYV** is the name of a game engine fully written in python.
 
@@ -40,14 +40,9 @@ The game engine comes packed with a ton of features:
 
 ... It's only the beginning. More features will be added soon.
 
-### Gallery
-![Game examples](./images/gallery1.png "Games")
 ![Game examples](./images/gallery2.png "Games")
 
-
-![The breakout end result](<./Game Tutorials/img/breakoutend.png> "breakout")
-![The patformer end result](<./Game Tutorials/img/screenshot.png> "Our platformer")
-
+**You can checkout other examples of the games we did in the [Showcase page](<Showcase.md>)**  
 
 ## Game architecture 
 
@@ -57,7 +52,9 @@ We mentioned designs pattern before, let's make a brief summary here, but you ca
 
 The ECS pattern is a recent industry standard for game development, it's concept is to decompose game entities into "bricks" kind of like legos, so you can assemble things in a easier way and avoid confusion.
 
-Read more in the [ECS](<Entity Component System\A bit of theory.md>) section.
+Read more in the [ECS Theory](<Entity Component System\A bit of theory.md>) section to learn more about the theory behind ECS.
+
+If you want to checkout some code examples directly, go to [ECS Examples](<Entity Component System\ECS examples.md>)
 
 
 

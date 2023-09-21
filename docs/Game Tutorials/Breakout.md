@@ -1,4 +1,4 @@
-# Tutorial breakout
+# Tutorial breakout clone
 
 This tutorial is here to help you create a breakout type game from scratch.
 
