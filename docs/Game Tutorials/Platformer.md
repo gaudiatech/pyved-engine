@@ -31,11 +31,13 @@ When prompted about the game template, select __2__ to follow this tutorial.
 
 You will also need some assets by the end of this tutorial, you can retrieve them here
 <center>
-<table >
-  <td><img src="./img/platformerSource/barry.png"alt="player asset"></td>
-  <td><img src="./img/platformerSource/wall_small.png" alt="wall asset" ></td>
-  <td><img src="./img/platformerSource/background.png" alt="background asset" ></td>
-</table>
+
+![Player Asset](./img/platformerSource/barry.png)
+
+![Wall Asset](./img/platformerSource/wall_small.png)
+
+![Background Asset](./img/platformerSource/background.png)
+
 </center>
 
 #### File structure
