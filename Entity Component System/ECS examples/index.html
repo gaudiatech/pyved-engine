@@ -21,7 +21,7 @@
     
     
       
-        <title>ECS examples - PYV game engine: the official docs</title>
+        <title>ECS in code - PYV game engine: the official docs</title>
       
     
     
@@ -56,6 +56,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#ecs-in-code" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -87,7 +92,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ECS examples
+              ECS in code
             
           </span>
         </div>
@@ -317,10 +322,105 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          ECS in code
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        ECS examples
+        ECS in code
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    Syntax
+  </a>
+  
+    <nav class="md-nav" aria-label="Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entities" class="md-nav__link">
+    Entities
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#components" class="md-nav__link">
+    Components
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#systems" class="md-nav__link">
+    Systems
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#archetypes" class="md-nav__link">
+    Archetypes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#split-our-code" class="md-nav__link">
+    Split our code
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#systemspy" class="md-nav__link">
+    Systems.py
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sharedpy" class="md-nav__link">
+    shared.py
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worldpymiscpy" class="md-nav__link">
+    world.py/misc.py
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -369,7 +469,7 @@
   
     <li class="md-nav__item">
       <a href="../../Game%20Tutorials/Breakout/" class="md-nav__link">
-        Tutorial breakout clone
+        Breakout clone
       </a>
     </li>
   
@@ -383,7 +483,7 @@
   
     <li class="md-nav__item">
       <a href="../../Game%20Tutorials/Platformer/" class="md-nav__link">
-        Tutorial platformer
+        Platformer
       </a>
     </li>
   
@@ -397,7 +497,7 @@
   
     <li class="md-nav__item">
       <a href="../../Game%20Tutorials/Roguelike/" class="md-nav__link">
-        Tutorial grid-based 2d Roguelike
+        Grid-based 2d Roguelike
       </a>
     </li>
   
@@ -490,6 +590,85 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#syntax" class="md-nav__link">
+    Syntax
+  </a>
+  
+    <nav class="md-nav" aria-label="Syntax">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entities" class="md-nav__link">
+    Entities
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#components" class="md-nav__link">
+    Components
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#systems" class="md-nav__link">
+    Systems
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#archetypes" class="md-nav__link">
+    Archetypes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#split-our-code" class="md-nav__link">
+    Split our code
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#systemspy" class="md-nav__link">
+    Systems.py
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sharedpy" class="md-nav__link">
+    shared.py
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worldpymiscpy" class="md-nav__link">
+    world.py/misc.py
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -507,9 +686,131 @@
   
 
 
-  <h1>ECS examples</h1>
+<h1 id="ecs-in-code">ECS in code</h1>
+<p>Here we will explain to you in further details how we implement ECS with the pyved engine.</p>
+<h2 id="syntax">Syntax</h2>
+<p>Let's explain the syntax to code some of the basic code needed for ECS implementation.</p>
+<h3 id="entities">Entities</h3>
+<pre><code class="language-py">    pyv.new_entity(composant1=X, composant2=Y)
+</code></pre>
+<p>This is the basic implementation of a new entity in pyved.</p>
+<p>Let's see a real implementation examples in order to show some more possibilities :</p>
+<pre><code class="language-py">    pyv.new_entity(
+        archetype='player',
+        speed=0.0,
+        controls={'left': False, 'right': False},
+        body=pygame.rect.Rect(shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT)
+    )
+</code></pre>
+<p>Here for example we specify an archetype for the player (This is explained a bit further, but it is not mandatory), and then some components, such as the player speed, the controls, and the hitbox.</p>
+<p>You call these functions at the initialisation of your game.</p>
+<h3 id="components">Components</h3>
+<p>As shown before, the components are part of an entity, the components can be pretty much everything.
+It's a characteristic of an entity, could be speed, hit points, position and so much more...</p>
+<p>You can call your entities by their components with </p>
+<pre><code>pyv.find_by_components('yourComponent')
+</code></pre>
+<h3 id="systems">Systems</h3>
+<p>The systems hosts the logic of everything happening at all times in the game.
+They will be repeated at each frame, so be careful to either condition it to not run everytime, or just not put a thing called once here. </p>
+<p>If you want to read some more indepth code explanation you can read the <a href="#systems">system</a></p>
+<h3 id="archetypes">Archetypes</h3>
+<p>Archetypes are optionals but recomended when there's a lot of entity to handle because you can find them directly with the function </p>
+<pre><code>pyv.find_by_archetype('yourArchetype')
+</code></pre>
+<p>This will allow you to focus directly a certain type of entities, instead of searching them by components.</p>
+<h2 id="split-our-code">Split our code</h2>
+<p>Usually what we do to have a great ECS implementation is split our game inbetween at least 2 files.</p>
+<ul>
+<li>systems.py</li>
+<li>gamedef.py</li>
+</ul>
+<p>Technically, this is the barebone setup for ECS, but we advise adding 2 other files :</p>
+<ul>
+<li>shared.py</li>
+<li>world.py / misc.py</li>
+</ul>
+<p>Let's explain them except for gamedef, as this one is really different inbetween games.</p>
+<p>If you want to see more indepth code, go in our <a href="../../Game%20Tutorials/Breakout/">Breakout clone tutorial</a></p>
+<h2 id="systemspy">Systems.py</h2>
+<p>System will host all of your ECS systems.
+Let's take our breakout clone as an example of what a system file might look like.</p>
+<pre><code class="language-py">from . import shared
+from . import pimodules
 
+pyv = pimodules.pyved_engine
+pyv.bootstrap_e()
 
+__all__ = [
+    'controls_sys',
+    'physics_sys',
+    'rendering_sys',
+    'gamectrl_sys',
+    'endgame_sys'
+]
+
+def controls_sys(dt):
+    #Empty for now
+
+def physics_sys(dt):
+    #Empty for now
+
+def rendering_sys(dt):
+    #Empty for now
+
+def gamectrl_sys(dt):
+    pg = pyv.pygame
+    for ev in pg.event.get():
+        if ev.type == pg.KEYDOWN and ev.key == pg.K_ESCAPE:
+            pyv.vars.gameover = True 
+
+def endgame_sys(dt):
+    #Empty for now
+</code></pre>
+<p>Of course you'd want to fill up the different systems, but here's a small explanation on how to fill it up.</p>
+<p><strong>Controls</strong> would host your player controls, for example what the different keys would do.</p>
+<p><strong>Physics</strong> will have the different interactions with the game and the entities.</p>
+<p><strong>Rendering</strong> will handle displaying your entities.</p>
+<p><strong>Endgame</strong> is used here to handle the conditions of win/lose for the breakout.</p>
+<h2 id="sharedpy">shared.py</h2>
+<p>This is a file where you specify your constants or global variables, so that they are all in the same place.</p>
+<p>It's pretty straightforward, here's the example of our breakout clone.</p>
+<pre><code class="language-py">
+screen = None
+blocks_pop = None
+prev_time_info = None
+end_game_label = None  # != None means player cannot move bc he/she lost
+
+# (Size of break-out blocks)
+BLOCK_W = 54
+BLOCK_H = 30
+BLOCK_SPACING = 2
+SCR_WIDTH = 960
+SCR_HEIGHT = 720
+LIMIT = SCR_WIDTH / (BLOCK_W + BLOCK_SPACING)
+WALL_X, WALL_Y = 4, 80
+
+# physics
+PL_WIDTH, PL_HEIGHT = 110, 25
+PLAYER_SPEED = 280
+MAX_XSPEED_BALL = 225.0
+YSPEED_BALL = 288.0
+
+# ball-related
+BALL_INIT_POS = 480, 277
+BALL_SIZE = 22
+</code></pre>
+<h2 id="worldpymiscpy">world.py/misc.py</h2>
+<p>This file will keep most of the functions that are only called a few times or once by your game.</p>
+<pre><code class="language-py">def player_create():
+    pyv.new_entity(
+        archetype='player',
+        speed=0.0,
+        controls={'left': False, 'right': False},
+        body=pygame.rect.Rect(shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT)
+    )
+</code></pre>
+<p>This is still from our breakout game, we only want to create our player entity once, so we put it there, and call it inside the initialisation of the game.</p>
 
 
 
