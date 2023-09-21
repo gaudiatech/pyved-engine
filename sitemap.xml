@@ -9,51 +9,27 @@
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/bidule/</loc>
+         <loc>https://gaudiatech.github.io/pyved-engine/Entity%20Component%20System/A%20bit%20of%20theory/</loc>
          <lastmod>2023-09-21</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/bidule/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/bidule/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Entity%20Component%20System/A%20bit%20of%20theory/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Entity%20Component%20System/A%20bit%20of%20theory/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/ECS/named_file/</loc>
+         <loc>https://gaudiatech.github.io/pyved-engine/Game%20Tutorials/Breakout/</loc>
          <lastmod>2023-09-21</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/ECS/named_file/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/ECS/named_file/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Game%20Tutorials/Breakout/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Game%20Tutorials/Breakout/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/GameTutorials/Breakout/</loc>
+         <loc>https://gaudiatech.github.io/pyved-engine/Game%20Tutorials/Platformer/</loc>
          <lastmod>2023-09-21</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/GameTutorials/Breakout/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/GameTutorials/Breakout/"/>
-         
-    </url>
-    <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/GameTutorials/Platformer/</loc>
-         <lastmod>2023-09-21</lastmod>
-         <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/GameTutorials/Platformer/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/GameTutorials/Platformer/"/>
-         
-    </url>
-    <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/topic1/named_file/</loc>
-         <lastmod>2023-09-21</lastmod>
-         <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/topic1/named_file/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/topic1/named_file/"/>
-         
-    </url>
-    <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/topic2/</loc>
-         <lastmod>2023-09-21</lastmod>
-         <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/topic2/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/topic2/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Game%20Tutorials/Platformer/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Game%20Tutorials/Platformer/"/>
          
     </url>
 </urlset>

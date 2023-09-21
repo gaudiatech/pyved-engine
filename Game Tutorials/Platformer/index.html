@@ -1,0 +1,1095 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://gaudiatech.github.io/pyved-engine/Game%20Tutorials/Platformer/">
+      
+      
+        <link rel="prev" href="../Breakout/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.1.14">
+    
+    
+      
+        <title>Tutorial platformer - PYV game engine: the official docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.85bb2934.min.css">
+      
+      
+
+    
+    
+    
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tutorial-platformer" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="PYV game engine: the official docs" class="md-header__button md-logo" aria-label="PYV game engine: the official docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 6H5V4h2v2m10 0h2V4h-2v2m6 6v6h-2v-4h-2v4h-2v-2H7v2H5v-4H3v4H1v-6h2v-2h2V8h2V6h2v2h6V6h2v2h2v2h2v2h2m-8-2v2h2v-2h-2m-8 2h2v-2H7v2m4 6H7v2h4v-2m6 0h-4v2h4v-2Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PYV game engine: the official docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Tutorial platformer
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Select language">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="./" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../../fr/Game%20Tutorials/Platformer/" hreflang="fr" class="md-select__link">
+                    Français
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/gaudiatech/pyved-engine" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="PYV game engine: the official docs" class="md-nav__button md-logo" aria-label="PYV game engine: the official docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 6H5V4h2v2m10 0h2V4h-2v2m6 6v6h-2v-4h-2v4h-2v-2H7v2H5v-4H3v4H1v-6h2v-2h2V8h2V6h2v2h6V6h2v2h2v2h2v2h2m-8-2v2h2v-2h-2m-8 2h2v-2H7v2m4 6H7v2h4v-2m6 0h-4v2h4v-2Z"/></svg>
+
+    </a>
+    PYV game engine: the official docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/gaudiatech/pyved-engine" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        PYVED ENGINE
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Entity Component System
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Entity Component System
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Entity%20Component%20System/A%20bit%20of%20theory/" class="md-nav__link">
+        A bit of theory
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Game Tutorials
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Game Tutorials
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Breakout/" class="md-nav__link">
+        Tutorial Breaker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Tutorial platformer
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Tutorial platformer
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#step-0-getting-started" class="md-nav__link">
+    Step 0. Getting started
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 0. Getting started">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#download-and-init-the-game-template-platformer" class="md-nav__link">
+    Download and init. the game template (Platformer)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-structure" class="md-nav__link">
+    File structure
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-all-i-want-is-a-jetpack" class="md-nav__link">
+    Step 1. All I want is a Jetpack!
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 1. All I want is a Jetpack!">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-jetpack-component" class="md-nav__link">
+    Adding a jetpack component
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuning-the-jetpack-power" class="md-nav__link">
+    Tuning the jetpack power!
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jetpack-steering" class="md-nav__link">
+    Jetpack steering?
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-adding-textures-to-our-game" class="md-nav__link">
+    Step 2. adding textures to our game
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2. adding textures to our game">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prepare-assets-method-1" class="md-nav__link">
+    Prepare assets: method 1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepare-assets-method-2" class="md-nav__link">
+    Prepare assets: method 2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-assets-for-real-just-do-it" class="md-nav__link">
+    Use assets. For real, just do it
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-adding-a-new-type-of-entity" class="md-nav__link">
+    Step 3. Adding a new type of Entity
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3. Adding a new type of Entity">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modding-the-game" class="md-nav__link">
+    Modding the game
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-another-world" class="md-nav__link">
+    Loading another world
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#step-0-getting-started" class="md-nav__link">
+    Step 0. Getting started
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 0. Getting started">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#download-and-init-the-game-template-platformer" class="md-nav__link">
+    Download and init. the game template (Platformer)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-structure" class="md-nav__link">
+    File structure
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-all-i-want-is-a-jetpack" class="md-nav__link">
+    Step 1. All I want is a Jetpack!
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 1. All I want is a Jetpack!">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-a-jetpack-component" class="md-nav__link">
+    Adding a jetpack component
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tuning-the-jetpack-power" class="md-nav__link">
+    Tuning the jetpack power!
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jetpack-steering" class="md-nav__link">
+    Jetpack steering?
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-adding-textures-to-our-game" class="md-nav__link">
+    Step 2. adding textures to our game
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2. adding textures to our game">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prepare-assets-method-1" class="md-nav__link">
+    Prepare assets: method 1
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepare-assets-method-2" class="md-nav__link">
+    Prepare assets: method 2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-assets-for-real-just-do-it" class="md-nav__link">
+    Use assets. For real, just do it
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-adding-a-new-type-of-entity" class="md-nav__link">
+    Step 3. Adding a new type of Entity
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3. Adding a new type of Entity">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#modding-the-game" class="md-nav__link">
+    Modding the game
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loading-another-world" class="md-nav__link">
+    Loading another world
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="tutorial-platformer">Tutorial platformer</h1>
+<p>This tutorial is here to help you create a platformer game,
+by building upon an existing foundation.</p>
+<p>We use the platformer template available within the <code>pyved-engine</code> package.</p>
+<p>More precisely we will use the built-in <code>pyv-cli</code> command.</p>
+<p>If you need further help for using PYV,
+you can always refer to the
+<a href="https://gaudiatech.github.io/pyved-engine/"><strong>pyved-engine full docs homepage</strong></a>.</p>
+<h2 id="step-0-getting-started">Step 0. Getting started</h2>
+<h4 id="download-and-init-the-game-template-platformer">Download and init. the game template (Platformer)</h4>
+<p>If you havent done it yet, to install PYV, type:</p>
+<pre><code class="language-shell">pip install pyved-engine
+</code></pre>
+<p>Next, you can type (still in the shell):</p>
+<pre><code class="language-shell">pyv-cli init myGame
+pyv-cli play myGame
+</code></pre>
+<p>When prompted about the game template, select <strong>2</strong> to follow this tutorial.</p>
+<h4 id="file-structure">File structure</h4>
+<p>Let's go for a quick tour around the code in order for you to best understand
+how to customize this template to your liking.</p>
+<p>The files to customize are located inside of the <code>cartridge</code> folder : </p>
+<ul>
+<li>
+<p><code>shared.py</code> : This file will store all of your constants.</p>
+</li>
+<li>
+<p><code>gamedef.py</code> : This file will store your game loop thanks to 3 declaration available with pyved, declare_begin that will init your game, declare_update that will keep your update loop, and then declare_end to end the game.
+You will also keep your entities setup here.</p>
+</li>
+<li>
+<p><code>systems.py</code> : This file will keep the logic of your game through the ECS systems, if you want to implement some kind of logic events, you will have them stored here.</p>
+</li>
+<li>
+<p><code>World.py</code> : This file will have your entity creation in the game world.</p>
+</li>
+</ul>
+<p>When testing that demo, at any time you can press ESCAPE to quit the demo.</p>
+<p>Enough chit-chat, let's jump right into coding.</p>
+<p>It's time to add our first bonus- feature!
+What if we give a <strong>jetpack</strong> to our player?!</p>
+<h2 id="step-1-all-i-want-is-a-jetpack">Step 1. All I want is a Jetpack!</h2>
+<p>Let's make your first feature : </p>
+<p>We will start simple, and define what we will need for a Jetpack to work :</p>
+<ul>
+<li>
+<p>Add a Jetpack attribute to the player, your character will need it to use a jetpack 😊</p>
+</li>
+<li>
+<p>A jetpack speed ratio; we could technically use the same speed as the player one, but it feels better to have a difference of speed when switching mode 🚀</p>
+</li>
+<li>
+<p>And finally, the logic !</p>
+</li>
+</ul>
+<p>So, let's start by adding the jetpack attributes to our player.</p>
+<h4 id="adding-a-jetpack-component">Adding a jetpack component</h4>
+<p>Go into <code>World.py</code> and <code>gamedef.py</code> </p>
+<p><code>World.py</code>  We first have this code : </p>
+<pre><code class="language-py">        pyv.init_entity(player, {
+            'speed': [0.0, 0.0],
+            'accel_y': 0.0,
+            'gravity': 14.5,
+            'lower_block': None,
+            'body': pygame.rect.Rect(shared.SPAWN[0], shared.SPAWN[1], shared.AVATAR_SIZE, shared.AVATAR_SIZE),
+            'camera': cam_ref,
+            'controls': {'up': False, 'down': False, 'left': False, 'right': False}
+            })
+</code></pre>
+<p>We will add a jetpack attribute inside of the player entity </p>
+<pre><code class="language-py">        pyv.init_entity(player, {
+            'speed': [0.0, 0.0],
+            'accel_y': 0.0,
+            'gravity': 14.5,
+            'lower_block': None,
+            'jetpack': False,
+            'body': pygame.rect.Rect(shared.SPAWN[0], shared.SPAWN[1], shared.AVATAR_SIZE, shared.AVATAR_SIZE),
+            'camera': cam_ref,
+            'controls': {'up': False, 'down': False, 'left': False, 'right': False}
+            })
+</code></pre>
+<p>Now, let's dive into the <code>gamedef.py</code> file : </p>
+<pre><code class="language-py">    pyv.define_archetype('player', (
+        'speed', 'accel_y', 'gravity', 'lower_block', 'body', 'camera', 'controls'
+    ))
+</code></pre>
+<p>And we also add the jetpack here :</p>
+<pre><code class="language-py">    pyv.define_archetype('player', (
+        'speed', 'accel_y', 'gravity', 'lower_block', 'jetpack', 'body', 'camera', 'controls'
+    ))
+</code></pre>
+<h4 id="tuning-the-jetpack-power">Tuning the jetpack power!</h4>
+<p>This step is pretty straightforward, go inside the <code>shared.py</code> file</p>
+<p>We will simply add the attribute constant here :</p>
+<pre><code class="language-py">JETPACK_RATIO = 0.05
+</code></pre>
+<h4 id="jetpack-steering">Jetpack steering?</h4>
+<p>This is now the hard part, lets add logic to our code in order to be able to interract with the jetpack.</p>
+<p>Let's go inside  <code>systems.py</code>, now find the block <code>def steering_sys(...):</code></p>
+<p>That chunk of code represents the system that handles the player movement. The way
+we will handle our jetpack is to check if our player is using it,
+in order to disable the jump if the player is using the jetpack since it will
+replace it.
+What we need to do is: find the following line..</p>
+<pre><code class="language-py">ctrl['down'] = activekeys[pg.K_DOWN]
+</code></pre>
+<p>Right beneath that line, we will add this code:</p>
+<pre><code class="language-py">        if not prevdown_key_value and ctrl['down']:
+            ent['jetpack'] = not ent['jetpack']
+            print('JETPACK:', ('on' if ent['jetpack'] else 'off'))
+</code></pre>
+<p>this will act like a switch on the jetpack flag, tied to the Player entity.</p>
+<p>Next, we can go inside the game and check if the console we start it from displays
+the jetpack on/off message whenever we press the arrow up key.</p>
+<p>It displays fine, but we still jump, no jetpack power is available...
+Let's fix this !
+Still in steering system, you need to find a chunk of code that looks like this:</p>
+<pre><code class="language-py">        if ent['lower_block']:
+            if not prevup_key_value and ctrl['up']:
+                ent['accel_y'] -= shared.JUMP_POWER
+                ent['lower_block'] = None
+</code></pre>
+<p>And this is how we handle our jump mechanic,
+we will extend this logic (add a condition over it, make it more complex)
+in order to create a scenario where:</p>
+<p>In one case: player uses the jetpack, and in the other case player simply jumps.</p>
+<pre><code class="language-py">        if not ent['jetpack']:
+            if ent['lower_block']:
+                if not prevup_key_value and ctrl['up']:
+                    ent['accel_y'] -= shared.JUMP_POWER
+                    ent['lower_block'] = None
+        else:  # other rules apply!
+            if ctrl['up']:
+                ent['accel_y'] = -shared.JUMP_POWER * shared.JETPACK_RATIO
+</code></pre>
+<p>As you can see above, we basically use the same formula to calculate our jumping
+acceleration, we just multiply it with the <code>JETPACK_RATIO</code> we've set earlier.</p>
+<p>If you've modified everything as we explained,
+you should be able to trigger the
+jetpack (using the DOWN ARROW), and now you (using the UP ARROW)
+you will have a new exciting way to <em>move around our little virtual world!</em></p>
+<h2 id="step-2-adding-textures-to-our-game">Step 2. adding textures to our game</h2>
+<p>Our game as of now, works well as a technical demo, but it is a bit sad to
+play only with blocks, isn't it ?</p>
+<p>So let's fix this !</p>
+<p>We will add textures to our walls, our player and a background ! </p>
+<p>Let's setup pydev to distribute the images across the code.
+You will need three files:
+<code>background.png</code>, <code>wall_small.png</code>, and <code>barry.png</code>.
+If you don't want to draw your own pixel art,
+we provide you with sample files in the:
+<a href="https://github.com/wkta/pyvTutoZero/tree/83ace51b8d0f576972c75d51b6c0e260cd895910/cartridge">following folder</a>
+You can download the 3 and put it in the <code>cartridge/</code> folder of your game.</p>
+<p>Now open the <code>metadat.json</code> file to edit it.
+We need list new game assets, in the <code>assets</code> field:</p>
+<pre><code class="language-json">&quot;assets&quot;: [
+    &quot;my_map.ncsv&quot;, &quot;background.png&quot;, &quot;wall_small.png&quot;, &quot;barry.png&quot;
+],
+</code></pre>
+<p>These assets will get loaded automatically (pre-loading assets is a feature our game engine relies on)
+PYV handles the loading of images from your drive to your program.
+So we have added our background, our wall texture and our player image.</p>
+<p>However, since we are unsure whether the size of our assets matches
+the needs of our game, it looks safer to <strong>prepare assets</strong> manually,
+by rescaling images.</p>
+<p>You will see 2 ways for preparing/rescaling your assets:
+ you can chose which one you prefer for your game, however,
+one is suboptimized, and can be harmful to the game performance in some cases.</p>
+<h4 id="prepare-assets-method-1">Prepare assets: method 1</h4>
+<p>Let's start with modifying the player entity.</p>
+<p>Once again,
+go to <code>gamedef.py</code>, inside the function <code>troid_init(...)</code>
+add a component named <code>icon</code> add the player archetype:</p>
+<pre><code class="language-py">    pyv.define_archetype('player', (
+        'speed',
+        'accel_y',
+        'gravity',
+        'lower_block',
+        'body',
+        'camera',
+        'controls',
+        'icon'
+    ))
+</code></pre>
+<p>Next, go to <code>World.py</code>, 
+search for the <code>create_avatar</code> method.
+ Here, at the very beginning of the method,
+we will create an <code>icon</code> variable,
+add the following lines above the <code>pyv.new_from_archetype(...)</code> call</p>
+<pre><code class="language-py">        player_image = pyv.vars.images['barry']
+        icon = pygame.transform.scale(player_image, (shared.AVATAR_SIZE, shared.AVATAR_SIZE))
+</code></pre>
+<p>Then, at the player entity initialization, we can set a value for
+the component <code>icon</code>:</p>
+<pre><code class="language-py">        pyv.init_entity(player, {
+            'speed': [0.0, 0.0],
+            'accel_y': 0.0,
+            'gravity': 14.5,
+            'lower_block': None,
+            'jetpack': False,
+            'body': pygame.rect.Rect(shared.SPAWN[0], shared.SPAWN[1], shared.AVATAR_SIZE, shared.AVATAR_SIZE),
+            'camera': cam_ref,
+            'controls': {'up': False, 'down': False, 'left': False, 'right': False},
+            'icon': icon
+        })
+</code></pre>
+<p>Here we load our image from the pyved image loader, and then resize it.
+This is suboptimized because it is resized everytime the player is loaded, in this case, it is not that problematic since the player is only loaded whenever the level is created.</p>
+<h4 id="prepare-assets-method-2">Prepare assets: method 2</h4>
+<p>Let's now add our background and wall texture, to do so,
+we will use another approach from the one before
+We will create a dictionnary where all of our images will be kept.
+So go into <code>shared.py</code> and add at the end of the file, the block:</p>
+<pre><code class="language-py">gam_assets = dict()
+
+
+def prepare_game_assets():
+    global gam_assets
+    gam_assets['bg'] = pygame.transform.scale(pyv.vars.images['background'], (WIDTH, HEIGHT))
+    gam_assets['wall'] = pygame.transform.scale(pyv.vars.images['wall_small'], (BLOCKSIZE, BLOCKSIZE))
+</code></pre>
+<p>Here you can see we created new constants for images,
+and transformed them to match the size we're using in the project.</p>
+<p>This function needs to be called at the beginning of our program,
+so add it in the <code>init_troid(...)</code> function, in the <code>gamedef.py</code> file.</p>
+<pre><code class="language-python">def troid_init(vms=None):
+    pyv.init()
+    screen = pyv.get_surface()
+    shared.screen = screen
+    shared.prepare_game_assets()
+</code></pre>
+<h4 id="use-assets-for-real-just-do-it">Use assets. For real, just do it</h4>
+<p>Since all assets are now ready (loaded into the memory at runtime),
+the rest of the task is to adapt what's rendered by replacing the colored
+squares with real images. To do so, navigate to <code>systems.py</code>, in the <code>rendering_sys</code>.</p>
+<p>Let's first add the background, just after the background fill :</p>
+<pre><code class="language-py">    scr.fill((0, 27, 0))
+    scr.blit(shared.gam_assets['bg'], [0, 0])
+</code></pre>
+<p>And look for thi chunk of code, we will replace it:</p>
+<pre><code class="language-py">    # draw player!
+    disp(scr, pl_ent, 'red')
+    # draw blocks
+    li_blocks = pyv.find_by_archetype('block')
+    for b in li_blocks:
+        disp(scr, b, 'blue')
+</code></pre>
+<p>The new version is:</p>
+<pre><code class="language-py"> # draw player!
+    disp(scr, pl_ent, img=pl_ent['icon'])
+    # draw blocks
+    li_blocks = pyv.find_by_archetype('block')
+    for b in li_blocks:
+        disp(scr, b, img=shared.gam_assets['wall'])
+</code></pre>
+<p>Watch out, do not modify <code>mob_blocks</code> (displayed in orange)
+We're all done for that step!</p>
+<p>One could add more textures for the moving blocks for example,
+but we wanted to keep it as surface level as possible.</p>
+<h2 id="step-3-adding-a-new-type-of-entity">Step 3. Adding a new type of Entity</h2>
+<p>Now, let's get our hands dirty with some hard stuff!</p>
+<p>We will create a block that allows us to change levels.
+There's many other way to decline the code used, so be creative.</p>
+<p>We will first modify our <strong>map data</strong> and add a new block somewhere,
+put it wherever you want.
+The <strong>map data</strong> is stored in the file: <code>my_map.ncsv</code>
+You can see the map is encoded as a matrix of numbers:
+0, 1, 2 and 3 are used codes.
+0 denotes the empty space for example. 1 denotes regular walls etc.</p>
+<p>Let's keep going and declare a new type of block by adding a 4 value somewhere.
+It's better to replace a 0 value somewhere on the 15th line (it is approximatively
+the floor on which the player is walking)
+<em>by the new value 4</em>.</p>
+<h4 id="modding-the-game">Modding the game</h4>
+<p>Data has changed, but not the game itself.</p>
+<p>Once your <code>my_map.ncsv</code> is saved,
+go into <code>gamedef.py</code>, where we will add a new <strong>archetype</strong>
+As defined before, the archetypes allows us to creates new entities
+with special rules.</p>
+<p>Go after the existing list of archetypes and let's add our new block, the <code>tp_block</code></p>
+<pre><code class="language-py">    pyv.define_archetype('tp_block', ['body', ])
+</code></pre>
+<p>Here we just added the property <code>body</code> to our block,
+because we just need it to have an actual hitbox, the logic of what happens whenever we reach the blocks is elsewhere.</p>
+<p>Now that our archetype exists, we need our world to know who's this new kid in the block.</p>
+<p>Go inside the <code>World.py</code> file and under the <code>add_terrain_blocks</code> function.</p>
+<p>Since this function handles the initialisation and properties of blocks,
+let's add the logic:
+how to process our value "4", link it to a <code>tp_block</code> entity:
+Be careful, this needs to be added <strong>inside the for loop</strong>, not outside.</p>
+<pre><code class="language-py">            elif btype == 4:
+                pyv.init_entity(
+                    pyv.new_from_archetype('tp_block'), {
+                        'body': rrect
+                    }
+                )
+                self._platforms.append(rrect)
+</code></pre>
+<p>We give the property <code>rect</code> to the <code>body</code>, 
+this will allow us to give the block a proper hitbox.</p>
+<p>Now we will take a small break from all of this hard stuff,
+and create our new map, we will need it to load somewhere.
+Just create a <code>map2.ncsv</code> file by copying the first one and change
+a few blocks here and there!</p>
+<p>Also make sure that you list the: <code>map2.ncsv</code> file in your
+list of assets to load, as specified in your <code>metadat.json</code> file
+(just append the name <code>map2.ncsv</code> at the end af the existing asset list)</p>
+<h4 id="loading-another-world">Loading another world</h4>
+<p><em>We're almost done!</em></p>
+<p><em>Hang in there! You're doing great.</em></p>
+<p>Go to <code>systems.py</code> and draw our new block on the map,
+go back to the same place where we previously (Step 2. of the tutorial)
+changed how way blocks are displayed. It's around line 200 of that file.
+Add the following line after the display of orange blocks:</p>
+<pre><code class="language-py">    temp = pyv.find_by_archetype('tp_block')
+    if len(temp):
+        tp_block = temp[0]
+        disp(scr, tp_block, 'purple', 3)
+</code></pre>
+<p>Now that the block is present on the map,
+let's add some logic for it,
+in order to make it truly a new feature.</p>
+<p>We will
+call a function named <code>_proc_unload_load</code>, that is already defined.
+You don't need to worry about writing that part, but it can
+be useful for you to understand how we proceed.</p>
+<p>In that pre-defined function, all we do is using the
+component <code>next_map</code> to tell
+the game where the player should be teleported to,
+and we re-create the avatar entity. Here's the code we refer to:</p>
+<pre><code class="language-py">def _proc_unload_load():
+    player = pyv.find_by_archetype('player')[0]
+    camref = player['camera']
+    pyv.wipe_entities()
+    shared.world.load_map(player['next_map'])
+    shared.world.create_avatar(camref)
+</code></pre>
+<p>Now, go inside the <code>teleport_sys</code> (a system that handles player teleportation),
+at the end of that function please add:</p>
+<pre><code class="language-py">    temp = pyv.find_by_archetype('tp_block')
+    if len(temp):
+        tp_block = temp[0]
+        if player['body'].colliderect(tp_block['body']):
+            player['next_map'] = 'map2'
+            _proc_unload_load()
+</code></pre>
+<p>Here what we're doing is creating a var <code>temp</code> that will reference
+our <code>tp_block</code>, and thanks to <code>colliderect</code> we will detect if the 2 blocks
+are colliding.
+Once they collide, we just move our player to the next map, by unloading
+the current map and loading the next one.</p>
+<p>Hopefully, your game now looks like this!
+You are now able to travel between two different worlds...
+Two independant maps!</p>
+<p><img alt="The patformer end result" src="../img/screenshot.png" title="Our game" /></p>
+<p>Et voila... You're done!
+Amazing isn't it?
+<strong>Congrats for completing this tutorial.</strong></p>
+<p>If something is wrong/ if the program crashes, make sure to read again all
+previous steps, one by one and check if you haven't forgot anything.
+In case this is not enough to find the solution, you can always join our
+<a href="https://discord.gg/SHdJhcWvQD">Discord community</a> and ask for help. <em>More advanced PYV users will be glad to help you!</em></p>
+<p>Now go ahead, imagine a fourth or even a fifth feature to add by yourself!
+One interesting feature for example could be: a special code in the map model,
+to specify where the player should respawn...</p>
+<p>But hey, it's your role to be creative! You are a game dev now.
+Have fun, coding with PYV.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/gaudiatech/pyved-engine" target="_blank" rel="noopener" title="Pyved-engine on Github" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.b4d07000.min.js"></script>
+      
+    
+  </body>
+</html>
