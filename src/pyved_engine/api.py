@@ -112,7 +112,6 @@ class GameTpl(metaclass=ABCMeta):
         self._manager.post(EngineEvTypes.Paint, screen=vars.screen)
         self._manager.update()
         flip()
-        vars.clock.tick(vars.max_fps)
 
     def exit(self, vms=None):
         close_game()
@@ -399,7 +398,8 @@ from .compo.vscreen import flip as _oflip
 from .compo.vscreen import proj_to_vscreen
 def flip():
     _oflip()
-    vars.clock.tick(vars.max_fps)
+    if vars.max_fps:
+        vars.clock.tick(vars.max_fps)
 
 
 def fetch_events():
