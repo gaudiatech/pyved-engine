@@ -14,7 +14,7 @@
         <link rel="prev" href="../A%20bit%20of%20theory/">
       
       
-        <link rel="next" href="../../Game%20Tutorials/Breakout/">
+        <link rel="next" href="../../Other%20patterns/Event%20based%20programming/">
       
       <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.1.14">
@@ -243,21 +243,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ShareYourGames/" class="md-nav__link">
-        Share your games
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../Showcase/" class="md-nav__link">
         Showcase
       </a>
@@ -280,17 +265,17 @@
       
       
       
-      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
       
       
       
-        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
           Entity Component System
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
-        <label class="md-nav__title" for="__nav_4">
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_3">
           <span class="md-nav__icon md-icon"></span>
           Entity Component System
         </label>
@@ -391,30 +376,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#split-our-code" class="md-nav__link">
-    Split our code
+  <a href="#structure-of-a-game" class="md-nav__link">
+    Structure of a game
+  </a>
+  
+    <nav class="md-nav" aria-label="Structure of a game">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-systemspy" class="md-nav__link">
+     File: systems.py
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#systemspy" class="md-nav__link">
-    Systems.py
+        
+          <li class="md-nav__item">
+  <a href="#file-sharedpy" class="md-nav__link">
+    File: shared.py
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#sharedpy" class="md-nav__link">
-    shared.py
+        
+          <li class="md-nav__item">
+  <a href="#files-worldpy-and-miscpy" class="md-nav__link">
+    Files: world.py and misc.py
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#worldpymiscpy" class="md-nav__link">
-    world.py/misc.py
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -422,6 +413,69 @@
   
 </nav>
       
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Other Patterns
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Other Patterns
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Other%20patterns/Event%20based%20programming/" class="md-nav__link">
+        Event based programming
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Other%20patterns/MVC%20examples/" class="md-nav__link">
+        MVC examples
+      </a>
     </li>
   
 
@@ -468,7 +522,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../Game%20Tutorials/Breakout/" class="md-nav__link">
+      <a href="../../GameTutorials/Breakout/" class="md-nav__link">
         Breakout clone
       </a>
     </li>
@@ -482,7 +536,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../Game%20Tutorials/Platformer/" class="md-nav__link">
+      <a href="../../GameTutorials/Platformer/" class="md-nav__link">
         Platformer
       </a>
     </li>
@@ -496,7 +550,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../Game%20Tutorials/Roguelike/" class="md-nav__link">
+      <a href="../../GameTutorials/Roguelike/" class="md-nav__link">
         Grid-based 2d Roguelike
       </a>
     </li>
@@ -517,58 +571,10 @@
   
   
   
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-      
-      
-      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
-      
-      
-      
-        <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-          Other patterns
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-        <label class="md-nav__title" for="__nav_6">
-          <span class="md-nav__icon md-icon"></span>
-          Other patterns
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../Other%20patterns/Event%20based%20programming/" class="md-nav__link">
-        Event based programming
+      <a href="../../ShareYourGames/" class="md-nav__link">
+        Share your games
       </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../Other%20patterns/MVC%20examples/" class="md-nav__link">
-        MVC examples
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
     </li>
   
 
@@ -641,30 +647,36 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#split-our-code" class="md-nav__link">
-    Split our code
+  <a href="#structure-of-a-game" class="md-nav__link">
+    Structure of a game
+  </a>
+  
+    <nav class="md-nav" aria-label="Structure of a game">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#file-systemspy" class="md-nav__link">
+     File: systems.py
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#systemspy" class="md-nav__link">
-    Systems.py
+        
+          <li class="md-nav__item">
+  <a href="#file-sharedpy" class="md-nav__link">
+    File: shared.py
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#sharedpy" class="md-nav__link">
-    shared.py
+        
+          <li class="md-nav__item">
+  <a href="#files-worldpy-and-miscpy" class="md-nav__link">
+    Files: world.py and misc.py
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#worldpymiscpy" class="md-nav__link">
-    world.py/misc.py
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -687,23 +699,30 @@
 
 
 <h1 id="ecs-in-code">ECS in code</h1>
-<p>Here we will explain to you in further details how we implement ECS with the pyved engine.</p>
+<p>Here we'll explain to you in further detail how we implement ECS with PYV.</p>
 <h2 id="syntax">Syntax</h2>
 <p>Let's explain the syntax to code some of the basic code needed for ECS implementation.</p>
 <h3 id="entities">Entities</h3>
-<pre><code class="language-py">    pyv.new_entity(composant1=X, composant2=Y)
+<p>To create an entity one can use the following syntax:</p>
+<pre><code class="language-python">    pyv.new_entity(component1=value_x, component2=value_y)
 </code></pre>
-<p>This is the basic implementation of a new entity in pyved.</p>
-<p>Let's see a real implementation examples in order to show some more possibilities :</p>
-<pre><code class="language-py">    pyv.new_entity(
-        archetype='player',
+<p>Where <code>value_x</code> and <code>value_y</code> can contain any type of Pyhon vue or expression.
+That is the syntax of creating a new entity using PYV.</p>
+<p>Now let's see a more precise implementation examples in order to show some more possibilities.
+Here for example we wish to build an entity to model the player...</p>
+<pre><code class="language-py">    player = pyv.new_entity(
         speed=0.0,
         controls={'left': False, 'right': False},
-        body=pygame.rect.Rect(shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT)
+        body=pygame.rect.Rect(
+            shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT
+        )
     )
 </code></pre>
-<p>Here for example we specify an archetype for the player (This is explained a bit further, but it is not mandatory), and then some components, such as the player speed, the controls, and the hitbox.</p>
-<p>You call these functions at the initialisation of your game.</p>
+<p>To do so we specify all useful components, such as the player speed,
+the controls, and the hitbox. (We could use an archetype for more clarity, but this
+will explained a bit further. Also, using archetypes is not mandatory).
+In practice, you'd create most entities of your game and call these functions
+at the initialization of the game.</p>
 <h3 id="components">Components</h3>
 <p>As shown before, the components are part of an entity, the components can be pretty much everything.
 It's a characteristic of an entity, could be speed, hit points, position and so much more...</p>
@@ -711,28 +730,38 @@ It's a characteristic of an entity, could be speed, hit points, position and so 
 <pre><code>pyv.find_by_components('yourComponent')
 </code></pre>
 <h3 id="systems">Systems</h3>
-<p>The systems hosts the logic of everything happening at all times in the game.
-They will be repeated at each frame, so be careful to either condition it to not run everytime, or just not put a thing called once here. </p>
-<p>If you want to read some more indepth code explanation you can read the <a href="#systems">system</a></p>
+<p>The purpose of systems is to describe the logic of everything that happens
+between two frames of the game.
+Systems are active (repeated) before each frame display. Be careful to add
+conditions to your computations (when appropriate) so you don't run heavy computations
+everytime. You can use boolean flags or various tests to know wether a system really needs
+to update entities in your games, or not!</p>
+<p>If you want to learn more about this topic, you could check out the example
+that is given in the <a href="#ConcreteSystemsPy">Systems.py example</a> showed below.</p>
 <h3 id="archetypes">Archetypes</h3>
-<p>Archetypes are optionals but recomended when there's a lot of entity to handle because you can find them directly with the function </p>
-<pre><code>pyv.find_by_archetype('yourArchetype')
+<p>Archetypes are optionals but recomended when there's a lot of entity to handle because
+you can find them directly with the function</p>
+<pre><code>pyv.find_by_archetype('yourArcheName')
 </code></pre>
-<p>This will allow you to focus directly a certain type of entities, instead of searching them by components.</p>
-<h2 id="split-our-code">Split our code</h2>
-<p>Usually what we do to have a great ECS implementation is split our game inbetween at least 2 files.</p>
+<p>This will allow you to focus directly a certain type of entities, instead of searching
+them by components.</p>
+<h2 id="structure-of-a-game">Structure of a game</h2>
+<p>When using ECS to its full potential, what we do is typically splitting our game
+inbetween three files:</p>
 <ul>
-<li>systems.py</li>
-<li>gamedef.py</li>
+<li><code>systems.py</code></li>
+<li><code>shared.py</code></li>
+<li><code>gamedef.py</code></li>
 </ul>
-<p>Technically, this is the barebone setup for ECS, but we advise adding 2 other files :</p>
+<p>This is the barebone setup for ECS, but we also advise game devs to add one or two
+more files:</p>
 <ul>
-<li>shared.py</li>
-<li>world.py / misc.py</li>
+<li><code>world.py</code> and maybe <code>misc.py</code></li>
 </ul>
 <p>Let's explain them except for gamedef, as this one is really different inbetween games.</p>
-<p>If you want to see more indepth code, go in our <a href="../../Game%20Tutorials/Breakout/">Breakout clone tutorial</a></p>
-<h2 id="systemspy">Systems.py</h2>
+<p>If you want to see more indepth code,
+go check our <a href="../../GameTutorials/Breakout/">breakout clone tutorial</a></p>
+<h3 id="file-systemspy"><a name="ConcreteSystemsPy"></a> File: systems.py</h3>
 <p>System will host all of your ECS systems.
 Let's take our breakout clone as an example of what a system file might look like.</p>
 <pre><code class="language-py">from . import shared
@@ -772,7 +801,7 @@ def endgame_sys(dt):
 <p><strong>Physics</strong> will have the different interactions with the game and the entities.</p>
 <p><strong>Rendering</strong> will handle displaying your entities.</p>
 <p><strong>Endgame</strong> is used here to handle the conditions of win/lose for the breakout.</p>
-<h2 id="sharedpy">shared.py</h2>
+<h3 id="file-sharedpy">File: shared.py</h3>
 <p>This is a file where you specify your constants or global variables, so that they are all in the same place.</p>
 <p>It's pretty straightforward, here's the example of our breakout clone.</p>
 <pre><code class="language-py">
@@ -800,8 +829,12 @@ YSPEED_BALL = 288.0
 BALL_INIT_POS = 480, 277
 BALL_SIZE = 22
 </code></pre>
-<h2 id="worldpymiscpy">world.py/misc.py</h2>
-<p>This file will keep most of the functions that are only called a few times or once by your game.</p>
+<h3 id="files-worldpy-and-miscpy">Files: world.py and misc.py</h3>
+<p>The role of the last two files you can use in your project,
+is to keep the bulk of complex functions, or functions that are only called a few times
+by your game in a different place...</p>
+<p>As we don't want <code>systems.py</code> to become too messy/difficult to read.
+For example:</p>
 <pre><code class="language-py">def player_create():
     pyv.new_entity(
         archetype='player',
@@ -810,7 +843,9 @@ BALL_SIZE = 22
         body=pygame.rect.Rect(shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT)
     )
 </code></pre>
-<p>This is still from our breakout game, we only want to create our player entity once, so we put it there, and call it inside the initialisation of the game.</p>
+<p>This would be useful in a <code>world.py</code> file, for a breakout clone.
+We only wish to create our player entity once,
+so we put it there, and call it inside the init function of the game.</p>
 
 
 
