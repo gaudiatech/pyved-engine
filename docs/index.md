@@ -1,121 +1,56 @@
-# Getting started with PYV
+# PYVED ENGINE
+
+## Introduction
 
 **PYV** is the name of a game engine fully written in python.
 
-It's a wrapper around the popular `pygame` librabry, therefore if you have some
-prior experience with developing games with `pygame`,
-transitioning to **PYV** should be extremely easy!
+It's a wrapper around the popular `pygame` librabry, therefore if you have some prior experience with developing games with `pygame`, transitioning to **PYV** should be extremely easy!
 
-This page source file and media content have been localized after applying
-the [localized build logic](#localized-build-logic) described below.
+### Why Pyved
+
+Confusion appears to exist within the community regarding the differentiation between a Python package, and a game engine.
+
+It's crucial to understand that although Pygame functions as a regular Python package/library. It doesn't provide the extensive array of features present in a specialized 2D game engine! Consequently, it might not satisfy all the prerequisites essential for the development of a fully-realized game.
+
+Pyved wants to create a new standard for python game development adding new features and possibilities, everything will be detailed into the [features](#features) section.
+
+### Goals
+
+- **Objective**: The primary objective of PYV is to elevate the accessibility, learnability, and overall experience of Python game development to new heights.
+
+- **Aspiration**: PYV aspires to elevate Python game development by ensuring it becomes easier to use, easier to learn, and more reliable.
+
+But how a *simple pygame wrapper* will do this ?
+
+## Features
+
+The game engine comes packed with a ton of features:
+
+- **Design pattern** (Such as : **ECS, Mediator and MVC**)
+- **Event queue** (simplifies the use of patterns such as: Mediator, the MVC pattern)
+- **Gamestate stack**, state management via events
+- **Simple GUI creation**: buttons, checkboxes, etc.
+- **Tileset loading**, sprite animation
+- **Tilemap parser** (based on .tmx or .tsj file formats)
+- **Mathematical tools**: matrices ; vectors ; gradient noise functions (->procedural generation)
+- **Helper classes for multiple types of games** : Roguelike, RPG games, Card games (Poker, Blackjack ...).
+- **Helper classes for adding artificial opponents/intelligent entities** (NPCs) to your game
+- **Isometric 3D game engine** 
+- **Ease of distribution** (Our platform KataGames will help deploy the game and make it playable through a browser in seconds)
+
+... It's only the beginning. More features will be added soon.
+
+### Galery
 
 
-## A Basic Example
+## Game architecture 
 
-Here is a quick recap of the files used as source and the generated build structure of
-what you see:
+We mentionned designs pattern before, let's make a brief summary here, but you can find more details in the relevant pages.
 
-```python
-docs
-├── image.en.png  <-- this image file is used here
-├── image.fr.png
-├── index.fr.md
-├── index.md  <-- this file is used here
-├── topic1
-│   ├── named_file.en.md
-│   └── named_file.fr.md
-└── topic2
-    ├── index.en.md
-    └── index.md
-```
+### ECS : Entity Component System
 
-```
-site
-├── en
-│   ├── image.png  <-- you see this image here on the /en version
-│   ├── index.html  <-- you are here on the /en version
-│   ├── topic1
-│   │   └── named_file
-│   │       └── index.html
-│   └── topic2
-│       └── index.html
-├── fr
-│   ├── image.png
-│   ├── index.html
-│   ├── topic1
-│   │   └── named_file
-│   │       └── index.html
-│   └── topic2
-│       └── index.html
-├── image.png  <-- you see this image here on the default version
-├── index.html  <-- you are here on the default version
-├── topic1
-│   └── named_file
-│       └── index.html
-└── topic2
-    └── index.html
-```
+The ECS pattern is a recent industry standard for game development, it's concept is to decompose game entities into "bricks" kind of like legos, so you can assemble things in a easier way and avoid confusion.
 
-## Automatic media / link / asset localization
+Read more in the `ECS` section.
 
-![localized image](image.png)
-
-This image source is dynamically localized while still being referenced in the
-markdown source of the page as `![localized image](image.png)`. This means that
-this plugin allows you to not worry about links, media and static content file
-names, just use their simple name and concentrate on your content translation!
-
----
-
-## Localized build logic
-
-The settings used to build this site is:
-
-```
-plugins:
-  - i18n:
-      default_language: en
-      languages:
-        en: english
-        fr: français
-```
-
-Meaning that we will get three versions of our website:
-
-1. the `default_language` version which will use any `.md` documentation file first and fallback to any `.en.md` file found since `en` is the default language
-2. the `/en` language version which will use any `.en.md` documentation file first and fallback to any `.md` file found
-3. the `/fr` language version which will use any `.fr.md` documentation file first and fallback to either `.en.md` file (default language) or `.md` file (default language fallback) whichever comes first
-
-Given that logic, the following `site` structure is built:
-
-```
-site
-├── 404.html
-├── assets
-│   ├── images
-│   ├── javascripts
-│   └── stylesheets
-├── en
-│   ├── image.png
-│   ├── index.html
-│   ├── topic1
-│   │   └── named_file
-│   │       └── index.html
-│   └── topic2
-│       └── index.html
-├── fr
-│   ├── image.png
-│   ├── index.html
-│   ├── topic1
-│   │   └── named_file
-│   │       └── index.html
-│   └── topic2
-│       └── index.html
-├── image.png
-├── index.html
-├── topic1
-│   └── named_file
-│       └── index.html
-└── topic2
-    └── index.html
-```
+### Mediator 

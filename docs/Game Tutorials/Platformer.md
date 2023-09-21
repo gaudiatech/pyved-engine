@@ -481,7 +481,7 @@ Hopefully, your game now looks like this!
 You are now able to travel between two different worlds...
 Two independant maps!
 
-![The patformer end result](./screenshot.png "Our game")
+![The patformer end result](./img/screenshot.png "Our game")
 
 Et voila... You're done!
 Amazing isn't it?

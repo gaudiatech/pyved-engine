@@ -1,10 +1,7 @@
 
 ## ECS : Entity Component System
 
-
-#### A bit of theory
-> Have you heard about:
-Entity Component System (ECS) for Game Development?
+> Have you heard about : **Entity Component System (ECS)** for Game Development?
 
 The **Entity Component System (ECS)** is a software architectural pattern commonly used in game development to manage and organize game objects, their behavior, and their data. 
 It is designed to improve code performance, scalability, and flexibility by separating the game's logic into distinct components and entities.

@@ -1,1 +1,0 @@
-# ECS (Entités, composants, système)
