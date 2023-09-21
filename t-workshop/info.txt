@@ -1,0 +1,2 @@
+This folder is a "staging area"
+ for any bundle/game example that could become official game templates soon
