@@ -1,32 +1,40 @@
 # ECS in code
 
-Here we will explain to you in further details how we implement ECS with the pyved engine.
+Here we'll explain to you in further detail how we implement ECS with PYV.
+
 
 ## Syntax
 
 Let's explain the syntax to code some of the basic code needed for ECS implementation.
 
+
 ### Entities
 
-```py
-    pyv.new_entity(composant1=X, composant2=Y)
+To create an entity one can use the following syntax:
+```python
+    pyv.new_entity(component1=value_x, component2=value_y)
 ```
-This is the basic implementation of a new entity in pyved.
+Where `value_x` and `value_y` can contain any type of Pyhon vue or expression.
+That is the syntax of creating a new entity using PYV.
 
-Let's see a real implementation examples in order to show some more possibilities :
-
+Now let's see a more precise implementation examples in order to show some more possibilities.
+Here for example we wish to build an entity to model the player...
 ```py
-    pyv.new_entity(
-        archetype='player',
+    player = pyv.new_entity(
         speed=0.0,
         controls={'left': False, 'right': False},
-        body=pygame.rect.Rect(shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT)
+        body=pygame.rect.Rect(
+            shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT
+        )
     )
 ```
 
-Here for example we specify an archetype for the player (This is explained a bit further, but it is not mandatory), and then some components, such as the player speed, the controls, and the hitbox.
+To do so we specify all useful components, such as the player speed,
+the controls, and the hitbox. (We could use an archetype for more clarity, but this
+will explained a bit further. Also, using archetypes is not mandatory).
+In practice, you'd create most entities of your game and call these functions
+at the initialization of the game.
 
-You call these functions at the initialisation of your game.
 
 ### Components
 
@@ -40,36 +48,47 @@ pyv.find_by_components('yourComponent')
 
 ### Systems
 
-The systems hosts the logic of everything happening at all times in the game.
-They will be repeated at each frame, so be careful to either condition it to not run everytime, or just not put a thing called once here. 
+The purpose of systems is to describe the logic of everything that happens
+between two frames of the game.
+Systems are active (repeated) before each frame display. Be careful to add
+conditions to your computations (when appropriate) so you don't run heavy computations
+everytime. You can use boolean flags or various tests to know wether a system really needs
+to update entities in your games, or not!
 
-If you want to read some more indepth code explanation you can read the [system](#systems)
+If you want to learn more about this topic, you could check out the example
+that is given in the [Systems.py example](#ConcreteSystemsPy) showed below.
 
 ### Archetypes 
 
-Archetypes are optionals but recomended when there's a lot of entity to handle because you can find them directly with the function 
+Archetypes are optionals but recomended when there's a lot of entity to handle because
+you can find them directly with the function
 ```
-pyv.find_by_archetype('yourArchetype')
+pyv.find_by_archetype('yourArcheName')
 ```
-This will allow you to focus directly a certain type of entities, instead of searching them by components.
+This will allow you to focus directly a certain type of entities, instead of searching
+them by components.
 
-## Split our code
 
-Usually what we do to have a great ECS implementation is split our game inbetween at least 2 files.
+## Structure of a game
 
-- systems.py
-- gamedef.py
+When using ECS to its full potential, what we do is typically splitting our game
+inbetween three files:
 
-Technically, this is the barebone setup for ECS, but we advise adding 2 other files :
+- `systems.py`
+- `shared.py`
+- `gamedef.py`
 
-- shared.py
-- world.py / misc.py
+This is the barebone setup for ECS, but we also advise game devs to add one or two
+more files:
+
+- `world.py` and maybe `misc.py`
 
 Let's explain them except for gamedef, as this one is really different inbetween games.
 
-If you want to see more indepth code, go in our [Breakout clone tutorial](<../Game Tutorials/Breakout.md>)
+If you want to see more indepth code,
+go check our [breakout clone tutorial](<../GameTutorials/Breakout.md>)
 
-## Systems.py
+### <a name="ConcreteSystemsPy"></a> File: systems.py
 
 System will host all of your ECS systems.
 Let's take our breakout clone as an example of what a system file might look like.
@@ -118,7 +137,7 @@ Of course you'd want to fill up the different systems, but here's a small explan
 
 **Endgame** is used here to handle the conditions of win/lose for the breakout.
 
-## shared.py
+### File: shared.py
 
 This is a file where you specify your constants or global variables, so that they are all in the same place.
 
@@ -152,9 +171,14 @@ BALL_SIZE = 22
 ```
 
 
-## world.py/misc.py
+### Files: world.py and misc.py
 
-This file will keep most of the functions that are only called a few times or once by your game.
+The role of the last two files you can use in your project,
+is to keep the bulk of complex functions, or functions that are only called a few times
+by your game in a different place...
+
+As we don't want `systems.py` to become too messy/difficult to read.
+For example:
 
 ```py
 def player_create():
@@ -165,4 +189,7 @@ def player_create():
         body=pygame.rect.Rect(shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT)
     )
 ```
-This is still from our breakout game, we only want to create our player entity once, so we put it there, and call it inside the initialisation of the game.
+
+This would be useful in a `world.py` file, for a breakout clone.
+We only wish to create our player entity once,
+so we put it there, and call it inside the init function of the game.

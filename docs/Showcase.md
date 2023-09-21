@@ -8,5 +8,5 @@ Note that these are only small game in order to demonstrate what's possible with
 ![Game examples](./images/gallery2.png "Games")
 
 
-![The breakout end result](<./Game Tutorials/img/breakoutend.png> "breakout")
-![The patformer end result](<./Game Tutorials/img/screenshot.png> "Our platformer")
+![The breakout end result](<./GameTutorials/img/breakoutend.png> "breakout")
+![The patformer end result](<./GameTutorials/img/screenshot.png> "Our platformer")

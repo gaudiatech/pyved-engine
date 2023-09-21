@@ -1,17 +1,29 @@
 
 # Platformer
 
-This tutorial is here to help you create a platformer game,
-by building upon an existing foundation.
+This tutorial will help you to create a platformer game,
+we'll proceed by building upon an existing foundation.
 
-We use the platformer template available within the `pyved-engine` package.
+We use the platformer template that ships with the `pyved-engine` package.
+Indeed, we'll use the `pyv-cli` command to initialize the project. That command
+is installed when you install `pyved-engine`.
 
-More precisely we will use the built-in `pyv-cli` command.
+If you need further help for installing PYV, please refer to the
+[Documentation Homepage](https://gaudiatech.github.io/pyved-engine/).
 
-If you need further help for using PYV,
-you can always refer to the
-[**pyved-engine full docs homepage**](https://gaudiatech.github.io/pyved-engine/).
+Before the end of this tutorial, you will need to use a few game assets. You
+can retrieve game assets now by right-clicking them, and downloading these to your
+computer.
 
+<center>
+
+![Player Asset](./img/platformerSource/barry.png)
+
+![Wall Asset](./img/platformerSource/wall_small.png)
+
+![Background Asset](./img/platformerSource/background.png)
+
+</center>
 
 
 ## Step 0. Getting started
@@ -28,17 +40,6 @@ pyv-cli init myGame
 pyv-cli play myGame
 ```
 When prompted about the game template, select __2__ to follow this tutorial.
-
-You will also need some assets by the end of this tutorial, you can retrieve them here
-<center>
-
-![Player Asset](./img/platformerSource/barry.png)
-
-![Wall Asset](./img/platformerSource/wall_small.png)
-
-![Background Asset](./img/platformerSource/background.png)
-
-</center>
 
 #### File structure
 
