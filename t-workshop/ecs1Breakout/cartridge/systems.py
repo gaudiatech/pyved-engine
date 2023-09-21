@@ -23,13 +23,13 @@ def controls_sys(dt):
     player = pyv.find_by_archetype('player')[0]
     active_keys = pg.key.get_pressed()
     if active_keys[pg.K_LEFT]:
-        player.update({'speed': -shared.PLAYER_SPEED})
+        player.speed=-shared.PLAYER_SPEED
 
     elif active_keys[pg.K_RIGHT]:
 
-        player.update({'speed': shared.PLAYER_SPEED})
+        player.speed=shared.PLAYER_SPEED
     else:
-        player.update({'speed':0.0})
+        player.speed=0.0
 
 
 def endgame_sys(dt):
