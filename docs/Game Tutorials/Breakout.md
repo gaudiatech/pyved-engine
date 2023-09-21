@@ -84,7 +84,6 @@ YSPEED_BALL = 288.0
 # ball-related
 BALL_INIT_POS = 480, 277
 BALL_SIZE = 22
-
 ```
 We will use all of those constants laters, but they are important.
 
@@ -95,7 +94,7 @@ Secondly we will create all of our entities, let's head inside `gamedef.py`
 from . import pimodules
 from . import shared
 from . import systems
-from .world import world
+from .world import world #This will change later to import specific functions
 
 pyv = pimodules.pyved_engine
 @pyv.declare_begin
@@ -109,7 +108,6 @@ Let's create our archetypes, this is how we will create the different entities :
     pyv.define_archetype('player', ('body', 'speed', 'controls'))
     pyv.define_archetype('block', ('body', ))
     pyv.define_archetype('ball', ('body', 'speed_Y', 'speed_X'))
-
 ```
 
 We can now go into `world.py`, to create our entities :
@@ -130,7 +128,6 @@ def player_create():
         controls={'left': False, 'right': False},
         body=pygame.rect.Rect(shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT)
     )
-
 ```
 
 We are creating a create_player function, this will create the entities with our default settings, we will do the same for every entity present in our game.
@@ -159,7 +156,6 @@ We will create our ball too, we will keep the same logic, and create it's attrib
 
 
 ```py
-
 def blocks_create():
     bcy = 0
     for row in range(5):
@@ -171,7 +167,6 @@ def blocks_create():
                 archetype='block',
                 body=pygame.rect.Rect(0 + bcx, 0 + bcy, shared.BLOCK_W, shared.BLOCK_H)
             )
-
 ```
 
 Here the code is a bit different, since there's more than one block, we will loop over it to generate as many entity as needed.
@@ -182,14 +177,26 @@ We can now head back into `gamedef.py` and finalise the creation of our entities
 
 
 ```py
+from . import pimodules
+from . import shared
+from . import systems
+from .world import blocks_create, player_create, ball_create
+
+
+pyv = pimodules.pyved_engine
+pygame = pyv.pygame
+
+
 @pyv.declare_begin
 def init_game(vmst=None):
     pyv.init(wcaption='Pyv Breaker')
     screen = pyv.get_surface() 
     shared.screen = screen
+
     pyv.define_archetype('player', ('body', 'speed', 'controls'))
     pyv.define_archetype('block', ('body', ))
     pyv.define_archetype('ball', ('body', 'speed_Y', 'speed_X'))
+
     blocks_create()
     player_create()
     ball_create()
@@ -217,12 +224,11 @@ __all__ = [
     'gamectrl_sys'
 ]
 
-def gamectrl_sys(entities, components):
+def gamectrl_sys(dt):
     pg = pyv.pygame
     for ev in pg.event.get():
         if ev.type == pg.KEYDOWN and ev.key == pg.K_ESCAPE:
             pyv.vars.gameover = True 
-
 ```
 
 This is a base setup for a `systems.py` file, let's make it a bit more full with all of our base systems.
@@ -259,13 +265,12 @@ def gamectrl_sys(dt):
 
 def endgame_sys(dt):
     #Empty for now
-
 ```
 
 Now, we will create our rendering system, to at least have some graphics and wrap this step up.
 
 ```py
-def rendering_sys(entities, components):
+def rendering_sys(dt):
     """
     displays everything that can be rendered
     """
@@ -296,7 +301,6 @@ Since the player and ball are alone, we just go for the first one of the list, a
 Let's head one last time into `gamedef.py`, and add the few details missing in order to display everything fine.
 
 ```py
-
 @pyv.declare_begin
 def init_game(vmst=None):
     pyv.init(wcaption='Pyv Breaker')
@@ -358,7 +362,7 @@ def endgame_sys(dt):
 We will start with the easiest one first, the controls.
 
 ```py
-def controls_sys(entities, components):
+def controls_sys(dt):
     pg = pyv.pygame
     player = pyv.find_by_archetype('player')[0]
     active_keys = pg.key.get_pressed()
@@ -379,7 +383,7 @@ And after this, we make it move to the player speed on a certain direction, and 
 Let's make it happen and go inside the game physics.
 
 ```py
-def physics_sys(entities, components):
+def physics_sys(dt):
     
     if shared.end_game_label is not None:  # block all movements when game over
         return
