@@ -4,7 +4,7 @@
 
 **PYV** is the name of a game engine fully written in python.
 
-It's a wrapper around the popular `pygame` librabry, therefore if you have some prior experience with developing games with `pygame`, transitioning to **PYV** should be extremely easy!
+It's a wrapper around the popular `pygame` library, therefore if you have some prior experience with developing games with `pygame`, transitioning to **PYV** should be extremely easy!
 
 ### Why Pyved
 
@@ -18,7 +18,7 @@ Pyved wants to create a new standard for python game development adding new feat
 
 - **Objective**: The primary objective of PYV is to elevate the accessibility, learnability, and overall experience of Python game development to new heights.
 
-- **Aspiration**: PYV aspires to elevate Python game development by ensuring it becomes easier to use, easier to learn, and more reliable.
+- **Aspirations**: PYV aspires to elevate Python game development by ensuring it becomes easier to use, easier to learn, and more reliable.
 
 But how a *simple pygame wrapper* will do this ?
 
@@ -40,9 +40,9 @@ The game engine comes packed with a ton of features:
 
 ... It's only the beginning. More features will be added soon.
 
-### Galery
-![Game examples](./images/galery1.png "Games")
-![Game examples](./images/galery2.png "Games")
+### Gallery
+![Game examples](./images/gallery1.png "Games")
+![Game examples](./images/gallery2.png "Games")
 
 
 ![The breakout end result](<./Game Tutorials/img/breakoutend.png> "breakout")
@@ -51,7 +51,7 @@ The game engine comes packed with a ton of features:
 
 ## Game architecture 
 
-We mentionned designs pattern before, let's make a brief summary here, but you can find more details in the relevant pages.
+We mentioned designs pattern before, let's make a brief summary here, but you can find more details in the relevant pages.
 
 ### ECS : Entity Component System
 
