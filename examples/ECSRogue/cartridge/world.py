@@ -28,7 +28,7 @@ def create_monster(position):
     monster = pyv.new_from_archetype('monster')
     pyv.init_entity(monster, {
         'body' : position,
-        'damages': 10,
+        'damages': 50,
         'health_point': 20
     })
 

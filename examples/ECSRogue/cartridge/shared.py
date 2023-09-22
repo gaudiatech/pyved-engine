@@ -19,6 +19,9 @@ CELL_SIDE = 32  # px
 WALL_COLOR = (8, 8, 24)
 HIDDEN_CELL_COLOR = (24, 24, 24)
 
+SCR_WIDTH = 960
+SCR_HEIGHT = 720
+
 # extra const
 GRID_REZ = (CELL_SIDE, CELL_SIDE)
 
@@ -27,6 +30,4 @@ MONSTER = None
 TILESET = None
 
 walkable_cells = []  # List to store walkable cells
-old_position = 0
-
 last_hit_key = None

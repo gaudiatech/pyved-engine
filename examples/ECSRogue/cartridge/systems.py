@@ -8,7 +8,8 @@ __all__ = [
     'world_generation_sys',
     'gameover',
     'rendering_sys',
-    'physics_sys'
+    'physics_sys',
+    'ennemyMovement'
 ]
 
 # aliases
@@ -18,6 +19,7 @@ Sprsheet = pyv.gfx.Spritesheet
 BoolMatrx = pyv.e_struct.BoolMatrix
 tileset = None
 pg = pyv.pygame
+test = None
 
 
 def pg_event_proces_sys():
@@ -54,10 +56,12 @@ def world_generation_sys():
     if pl_ent['enter_new_map']:
         pl_ent['enter_new_map'] = False
         print('Level generation...')
+        
         w, h = 24, 24
         shared.game_state["rm"] = pyv.rogue.RandomMaze(
             w, h, min_room_size=3, max_room_size=5)
         shared.game_state["visibility_m"] = BoolMatrx((w, h))
+        test = shared.game_state["visibility_m"]
         shared.game_state['visibility_m'].set_all(False)
         pyv.find_by_archetype('player')[0]['position'] = shared.game_state["rm"].pick_walkable_cell()
         world._update_vision(pyv.find_by_archetype('player')[0]['position'][0], pyv.find_by_archetype('player')[0]['position'][1])
@@ -75,6 +79,7 @@ def rendering_sys():
     scr.fill(shared.WALL_COLOR)
     player = pyv.find_by_archetype('player')[0]
     monster = pyv.find_by_archetype('monster')
+    
 
     # ----------
     #  draw tiles
@@ -102,26 +107,32 @@ def rendering_sys():
                 shared.walkable_cells.append((i, j))
 
 
-    if (player.position[0], player.position[1]) not in shared.walkable_cells:
-        backmove()
-    # ----------
-    #  draw player/enemies
-    # ----------
-    av_i, av_j = pyv.find_by_archetype('player')[0]['position']
-    world._update_vision(player.position[0], player.position[1]) ## Update player vision
+    if shared.end_game_label:
+        lw, lh = shared.end_game_label.get_size()
+        scr.blit(
+            shared.end_game_label, ((shared.SCR_WIDTH-lw)//2, (shared.SCR_HEIGHT-lh)//2)
+        )
+    else:
+        if (player.position[0], player.position[1]) not in shared.walkable_cells:
+            backmove()
+        # ----------
+        #  draw player/enemies
+        # ----------
+        av_i, av_j = pyv.find_by_archetype('player')[0]['position']
+        world._update_vision(player.position[0], player.position[1]) ## Update player vision
 
 
-    # fait une projection coordonnées i,j de matrice vers targx, targy coordonnées en pixel de l'écran
-    proj_function = (lambda locali, localj: (locali * shared.CELL_SIDE, localj * shared.CELL_SIDE))
-    targx, targy = proj_function(av_i, av_j)
-    scr.blit(shared.AVATAR, (targx, targy, 32, 32))
-    # ----- enemies
-    for enemy_info in shared.game_state["enemies_pos2type"].items():
-        pos, t = enemy_info
-        if not shared.game_state['visibility_m'].get_val(*pos):
-            continue
-        en_i, en_j = pos[0] * shared.CELL_SIDE, pos[1] * shared.CELL_SIDE
-        scr.blit(shared.MONSTER, (en_i, en_j, 32, 32))
+        # fait une projection coordonnées i,j de matrice vers targx, targy coordonnées en pixel de l'écran
+        proj_function = (lambda locali, localj: (locali * shared.CELL_SIDE, localj * shared.CELL_SIDE))
+        targx, targy = proj_function(av_i, av_j)
+        scr.blit(shared.AVATAR, (targx, targy, 32, 32))
+        # ----- enemies
+        for enemy_info in shared.game_state["enemies_pos2type"].items():
+            pos, t = enemy_info
+            if not shared.game_state['visibility_m'].get_val(*pos):
+                continue
+            en_i, en_j = pos[0] * shared.CELL_SIDE, pos[1] * shared.CELL_SIDE
+            scr.blit(shared.MONSTER, (en_i, en_j, 32, 32))
 
 
 def physics_sys():
@@ -152,8 +163,16 @@ def backmove():
 def gameover():
     player = pyv.find_by_archetype('player')[0]  
     classic_ftsize = 38
-      
+        
     if player.health_point <= 0 :
-        print("deadge")
-        # ft = pyv.pygame.font.Font(None, classic_ftsize)
-        # shared.end_game_label = ft.render('Game Over', True, (255, 255, 255))
+        ft = pyv.pygame.font.Font(None, classic_ftsize)
+        shared.end_game_label = ft.render('Game Over', True, (255, 255, 255))
+
+
+def ennemyMovement():
+        player = pyv.find_by_archetype('player')[0]  
+        testMonster = pyv.find_by_archetype('monster')[0]
+        pathfinding_result = pyv.terrain.DijkstraPathfinder.find_path(
+            shared.game_state["visibility_m"], testMonster.body,player.position
+        )
+        # print(pathfinding_result)
