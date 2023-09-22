@@ -6,6 +6,7 @@ from . import world
 __all__ = [
     'pg_event_proces_sys',
     'world_generation_sys',
+    'gameover',
     'rendering_sys',
     'physics_sys'
 ]
@@ -57,6 +58,7 @@ def world_generation_sys():
         shared.game_state["rm"] = pyv.rogue.RandomMaze(
             w, h, min_room_size=3, max_room_size=5)
         shared.game_state["visibility_m"] = BoolMatrx((w, h))
+        shared.game_state['visibility_m'].set_all(False)
         pyv.find_by_archetype('player')[0]['position'] = shared.game_state["rm"].pick_walkable_cell()
         world._update_vision(pyv.find_by_archetype('player')[0]['position'][0], pyv.find_by_archetype('player')[0]['position'][1])
         shared.game_state["enemies_pos2type"].clear()
@@ -101,18 +103,13 @@ def rendering_sys():
 
 
     if (player.position[0], player.position[1]) not in shared.walkable_cells:
-        if shared.last_hit_key == "pg.K_RIGHT":
-            player.position[0] -= 1
-        elif shared.last_hit_key == "pg.K_LEFT":
-            player.position[0] += 1
-        elif shared.last_hit_key == "pg.K_UP":
-            player.position[1] += 1
-        elif shared.last_hit_key == "pg.K_DOWN":
-            player.position[1] -= 1
+        backmove()
     # ----------
     #  draw player/enemies
     # ----------
     av_i, av_j = pyv.find_by_archetype('player')[0]['position']
+    world._update_vision(player.position[0], player.position[1]) ## Update player vision
+
 
     # fait une projection coordonnées i,j de matrice vers targx, targy coordonnées en pixel de l'écran
     proj_function = (lambda locali, localj: (locali * shared.CELL_SIDE, localj * shared.CELL_SIDE))
@@ -133,10 +130,30 @@ def physics_sys():
     for m in monster:
         if player.position == m.body:
             m.health_point -= player.damages
+            player.health_point -= m.damages
+            print(player.health_point)
+            backmove()
             if m.health_point < 0:
                 pyv.delete_entity(m)
                 d= shared.game_state["enemies_pos2type"]
                 del d[(m.body[0], m.body[1])]
     
-    
-
+def backmove():
+    player = pyv.find_by_archetype('player')[0]        
+    if shared.last_hit_key == "pg.K_RIGHT":
+        player.position[0] -= 1
+    elif shared.last_hit_key == "pg.K_LEFT":
+        player.position[0] += 1
+    elif shared.last_hit_key == "pg.K_UP":
+        player.position[1] += 1
+    elif shared.last_hit_key == "pg.K_DOWN":
+        player.position[1] -= 1
+        
+def gameover():
+    player = pyv.find_by_archetype('player')[0]  
+    classic_ftsize = 38
+      
+    if player.health_point <= 0 :
+        print("deadge")
+        # ft = pyv.pygame.font.Font(None, classic_ftsize)
+        # shared.end_game_label = ft.render('Game Over', True, (255, 255, 255))

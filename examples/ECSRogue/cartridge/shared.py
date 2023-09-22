@@ -1,4 +1,5 @@
 screen = None
+end_game_label = None
 # (Size of break-out blocks)
 BLOCK_SIZE= 40
 VISION_RANGE = 4
