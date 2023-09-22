@@ -20,19 +20,26 @@ pg = pyv.pygame
 
 
 def pg_event_proces_sys():
-    avpos = shared.game_state["player_pos"]
+    avpos = pyv.find_by_archetype('player')[0]['position']
     for ev in pg.event.get():
         if ev.type == pg.KEYDOWN:
             if ev.key == pg.K_ESCAPE:
                 pyv.vars.gameover = True
             elif ev.key == pg.K_UP:
                 avpos[1] -= 1
+                shared.last_hit_key = "pg.K_UP"
             elif ev.key == pg.K_DOWN:
                 avpos[1] += 1
+                shared.last_hit_key = "pg.K_DOWN"
+
             elif ev.key == pg.K_LEFT:
                 avpos[0] -= 1
+                shared.last_hit_key = "pg.K_LEFT"
+
             elif ev.key == pg.K_RIGHT:
                 avpos[0] += 1
+                shared.last_hit_key = "pg.K_RIGHT"
+
             elif ev.key == pg.K_SPACE:
                 # use flag so we we'll reset level, soon in the future
                 player = pyv.find_by_archetype('player')[0]
@@ -42,6 +49,7 @@ def pg_event_proces_sys():
 def world_generation_sys():
     pl_ent = pyv.find_by_archetype('player')[0]
     mobs = pyv.find_by_archetype('monster')
+
     if pl_ent['enter_new_map']:
         pl_ent['enter_new_map'] = False
         print('Level generation...')
@@ -49,9 +57,8 @@ def world_generation_sys():
         shared.game_state["rm"] = pyv.rogue.RandomMaze(
             w, h, min_room_size=3, max_room_size=5)
         shared.game_state["visibility_m"] = BoolMatrx((w, h))
-        shared.game_state["player_pos"] = shared.game_state["rm"].pick_walkable_cell()
-        pyv.find_by_archetype('player')[0]['position'] = shared.game_state["player_pos"]
-        world._update_vision(shared.game_state["player_pos"][0], shared.game_state["player_pos"][1])
+        pyv.find_by_archetype('player')[0]['position'] = shared.game_state["rm"].pick_walkable_cell()
+        world._update_vision(pyv.find_by_archetype('player')[0]['position'][0], pyv.find_by_archetype('player')[0]['position'][1])
         shared.game_state["enemies_pos2type"].clear()
         for _ in range(5):
             c = shared.game_state['rm'].pick_walkable_cell()
@@ -90,12 +97,22 @@ def rendering_sys():
                 pg.draw.rect(scr, shared.HIDDEN_CELL_COLOR, tmp_r4)
             else:  # visible tile
                 scr.blit(tuile, tmp_r4)
+                shared.walkable_cells.append((i, j))
 
 
+    if (player.position[0], player.position[1]) not in shared.walkable_cells:
+        if shared.last_hit_key == "pg.K_RIGHT":
+            player.position[0] -= 1
+        elif shared.last_hit_key == "pg.K_LEFT":
+            player.position[0] += 1
+        elif shared.last_hit_key == "pg.K_UP":
+            player.position[1] += 1
+        elif shared.last_hit_key == "pg.K_DOWN":
+            player.position[1] -= 1
     # ----------
     #  draw player/enemies
     # ----------
-    av_i, av_j = shared.game_state['player_pos']
+    av_i, av_j = pyv.find_by_archetype('player')[0]['position']
 
     # fait une projection coordonnées i,j de matrice vers targx, targy coordonnées en pixel de l'écran
     proj_function = (lambda locali, localj: (locali * shared.CELL_SIDE, localj * shared.CELL_SIDE))
@@ -111,11 +128,7 @@ def rendering_sys():
 
 
 def physics_sys():
-    player = pyv.find_by_archetype('player')[0]
-    
-    if player.position == shared.game_state['rm'].pick_walkable_cell():
-        print('testmove')
-        
+    player = pyv.find_by_archetype('player')[0]        
     monster = pyv.find_by_archetype('monster')
     for m in monster:
         if player.position == m.body:

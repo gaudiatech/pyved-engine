@@ -11,6 +11,7 @@ Sprsheet = pyv.gfx.Spritesheet
 def create_player():
     player = pyv.new_from_archetype('player')
     pyv.init_entity(player, {
+        'position': None,
         'controls': {'left': False, 'right': False, 'up': False, 'down': False},
         'damages': 10,
         'health_point': 100,
@@ -83,3 +84,14 @@ def init_images():
 def can_see(cell):
     # print( shared.game_state['visibility_m'])
     return shared.game_state['visibility_m'].get_val(*cell)
+
+def get_all_walkable_cells():
+    w, h = 24, 24  # Update these dimensions to match your map size
+    walkable_cells = []
+
+    for i in range(w):
+        for j in range(h):
+            cell = (i, j)
+            walkable_cells.append(cell)
+
+    return walkable_cells

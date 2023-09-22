@@ -7,7 +7,6 @@ fov_computer = None
 
 game_state = {
             "rm": None,
-            "player_pos": None,
             "visibility_m": None,
             "enemies_pos2type": dict(),
             "equipped_spell": None,
@@ -25,3 +24,8 @@ GRID_REZ = (CELL_SIDE, CELL_SIDE)
 AVATAR = None
 MONSTER = None
 TILESET = None
+
+walkable_cells = []  # List to store walkable cells
+old_position = 0
+
+last_hit_key = None

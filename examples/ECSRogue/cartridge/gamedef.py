@@ -11,7 +11,7 @@ def init_game(vmst=None):
     screen = pyv.get_surface() 
     shared.screen = screen
     pyv.define_archetype('player', (
-        'controls', 'body', 'damages', 'health_point', 'enter_new_map'
+        'position','controls', 'body', 'damages', 'health_point', 'enter_new_map'
     ))
     pyv.define_archetype('wall', ('body', ))
     pyv.define_archetype('monster', ('body', 'damages', 'health_point'))
