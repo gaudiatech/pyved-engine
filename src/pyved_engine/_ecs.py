@@ -211,7 +211,8 @@ def delete_entity(entity):
 def wipe_entities():
     for cn, li_entities in _components.items():
         del li_entities[:]
-    _archetypes.clear()
+    for a, li_eid in _archetypes.items():
+        del li_eid[:]
 
 
 def add_component(entity, component_name, data, bypass=False):
