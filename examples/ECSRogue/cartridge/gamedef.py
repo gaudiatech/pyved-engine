@@ -19,7 +19,6 @@ def init_game(vmst=None):
     world.create_player()
     world.create_wall()
     world.create_exit()
-    world.create_monster()
     world.init_images()
     pyv.bulk_add_systems(systems)
 

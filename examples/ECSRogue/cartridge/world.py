@@ -23,9 +23,10 @@ def create_wall():
     pyv.init_entity(wall, {})
 
 
-def create_monster():
+def create_monster(position):
     monster = pyv.new_from_archetype('monster')
     pyv.init_entity(monster, {
+        'body' : position,
         'damages': 10,
         'health_point': 20
     })
@@ -74,3 +75,11 @@ def init_images():
     monster_img = pyv.vars.images['monster']
     monster_img = pygame.transform.scale(monster_img, (32, 32))
     monster_img.set_colorkey((255, 0, 255))
+    shared.AVATAR = planche_avatar.image_by_rank(0)
+    shared.TILESET = tileset
+    shared.MONSTER = monster_img
+
+
+def can_see(cell):
+    # print( shared.game_state['visibility_m'])
+    return shared.game_state['visibility_m'].get_val(*cell)

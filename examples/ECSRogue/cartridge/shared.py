@@ -21,3 +21,7 @@ HIDDEN_CELL_COLOR = (24, 24, 24)
 
 # extra const
 GRID_REZ = (CELL_SIDE, CELL_SIDE)
+
+AVATAR = None
+MONSTER = None
+TILESET = None
