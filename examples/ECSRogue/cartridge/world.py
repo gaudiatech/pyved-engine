@@ -27,7 +27,7 @@ def create_wall():
 def create_monster(position):
     monster = pyv.new_from_archetype('monster')
     pyv.init_entity(monster, {
-        'body' : position,
+        'position' : position,
         'damages': 50,
         'health_point': 20
     })

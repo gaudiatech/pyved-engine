@@ -14,8 +14,8 @@ def init_game(vmst=None):
         'position','controls', 'body', 'damages', 'health_point', 'enter_new_map'
     ))
     pyv.define_archetype('wall', ('body', ))
-    pyv.define_archetype('monster', ('body', 'damages', 'health_point'))
-    pyv.define_archetype('exit', ('body', ))
+    pyv.define_archetype('monster', ('position', 'damages', 'health_point'))
+    pyv.define_archetype('exit', ('position', ))
     world.create_player()
     world.create_wall()
     world.create_exit()

@@ -31,3 +31,4 @@ TILESET = None
 
 walkable_cells = []  # List to store walkable cells
 last_hit_key = None
+level_count = 1

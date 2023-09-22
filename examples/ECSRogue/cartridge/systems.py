@@ -51,7 +51,7 @@ def pg_event_proces_sys():
 
 def world_generation_sys():
     pl_ent = pyv.find_by_archetype('player')[0]
-    mobs = pyv.find_by_archetype('monster')
+    monsters = pyv.find_by_archetype('monster')
 
     if pl_ent['enter_new_map']:
         pl_ent['enter_new_map'] = False
@@ -69,8 +69,17 @@ def world_generation_sys():
         for _ in range(5):
             c = shared.game_state['rm'].pick_walkable_cell()
             shared.game_state["enemies_pos2type"][tuple(c)] = 1  # all enemies type=1
-            print(c)
             world.create_monster(c)
+            
+            
+        while True:
+            exit = shared.game_state['rm'].pick_walkable_cell() 
+            if exit not in [pl_ent.position] + [monster.position for monster in monsters]:
+                print('teleport in :')
+                print(exit)
+                pyv.find_by_archetype('exit')[0].position = exit
+                break 
+
 
 
 def rendering_sys():
@@ -121,6 +130,14 @@ def rendering_sys():
         av_i, av_j = pyv.find_by_archetype('player')[0]['position']
         world._update_vision(player.position[0], player.position[1]) ## Update player vision
 
+        ####### EXIT
+        
+        exit = pyv.find_by_archetype('exit')[0]
+
+        if shared.game_state['visibility_m'].get_val(*exit.position):
+            scr.blit(shared.TILESET.image_by_rank(1092), (exit.position[0]* shared.CELL_SIDE, exit.position[1]* shared.CELL_SIDE, 32, 32))
+
+        
 
         # fait une projection coordonnées i,j de matrice vers targx, targy coordonnées en pixel de l'écran
         proj_function = (lambda locali, localj: (locali * shared.CELL_SIDE, localj * shared.CELL_SIDE))
@@ -138,8 +155,9 @@ def rendering_sys():
 def physics_sys():
     player = pyv.find_by_archetype('player')[0]        
     monster = pyv.find_by_archetype('monster')
+    exit = pyv.find_by_archetype('exit')[0]  
     for m in monster:
-        if player.position == m.body:
+        if player.position == m.position:
             m.health_point -= player.damages
             player.health_point -= m.damages
             print(player.health_point)
@@ -147,7 +165,12 @@ def physics_sys():
             if m.health_point < 0:
                 pyv.delete_entity(m)
                 d= shared.game_state["enemies_pos2type"]
-                del d[(m.body[0], m.body[1])]
+                del d[(m.position[0], m.position[1])]
+                
+    if player.position == exit.position:
+        player['enter_new_map'] = True
+        shared.level_count +=1
+        print('YOU REACHED LEVEL : ' + str(shared.level_count))
     
 def backmove():
     player = pyv.find_by_archetype('player')[0]        
@@ -173,6 +196,6 @@ def ennemyMovement():
         player = pyv.find_by_archetype('player')[0]  
         testMonster = pyv.find_by_archetype('monster')[0]
         pathfinding_result = pyv.terrain.DijkstraPathfinder.find_path(
-            shared.game_state["visibility_m"], testMonster.body,player.position
+            shared.game_state["visibility_m"], testMonster.position,player.position
         )
         # print(pathfinding_result)
