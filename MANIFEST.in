@@ -2,3 +2,5 @@ include src/pyvcmdline/template_2/cartridge/*.ncsv
 include src/pyvcmdline/template_2/cartridge/*.png
 include src/pyvcmdline/template_3/cartridge/*.png
 include src/pyvcmdline/template_3/cartridge/*.txt
+include src/pyvcmdline/template_4/cartridge/*.png
+include src/pyvcmdline/template_4/cartridge/*.txt
