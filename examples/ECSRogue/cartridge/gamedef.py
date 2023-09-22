@@ -16,9 +16,12 @@ def init_game(vmst=None):
     pyv.define_archetype('wall', ('body', ))
     pyv.define_archetype('monster', ('position', 'damages', 'health_point'))
     pyv.define_archetype('exit', ('position', ))
+    pyv.define_archetype('potion', ('position', 'effect',))
+
     world.create_player()
     world.create_wall()
     world.create_exit()
+    world.create_potion()
     world.init_images()
     pyv.bulk_add_systems(systems)
 

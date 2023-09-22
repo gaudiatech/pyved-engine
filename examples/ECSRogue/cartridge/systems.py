@@ -2,6 +2,9 @@ from . import pimodules
 from . import shared
 from . import world
 
+import random
+
+
 
 __all__ = [
     'pg_event_proces_sys',
@@ -52,6 +55,8 @@ def pg_event_proces_sys():
 def world_generation_sys():
     pl_ent = pyv.find_by_archetype('player')[0]
     monsters = pyv.find_by_archetype('monster')
+    potion = pyv.find_by_archetype('potion')[0]
+    exit = pyv.find_by_archetype('exit')[0]
 
     if pl_ent['enter_new_map']:
         pl_ent['enter_new_map'] = False
@@ -61,11 +66,13 @@ def world_generation_sys():
         shared.game_state["rm"] = pyv.rogue.RandomMaze(
             w, h, min_room_size=3, max_room_size=5)
         shared.game_state["visibility_m"] = BoolMatrx((w, h))
-        test = shared.game_state["visibility_m"]
+        shared.walkable_cells = []
         shared.game_state['visibility_m'].set_all(False)
         pyv.find_by_archetype('player')[0]['position'] = shared.game_state["rm"].pick_walkable_cell()
         world._update_vision(pyv.find_by_archetype('player')[0]['position'][0], pyv.find_by_archetype('player')[0]['position'][1])
         shared.game_state["enemies_pos2type"].clear()
+        for monster in monsters :
+            pyv.delete_entity(monster)
         for _ in range(5):
             c = shared.game_state['rm'].pick_walkable_cell()
             shared.game_state["enemies_pos2type"][tuple(c)] = 1  # all enemies type=1
@@ -73,11 +80,21 @@ def world_generation_sys():
             
             
         while True:
-            exit = shared.game_state['rm'].pick_walkable_cell() 
-            if exit not in [pl_ent.position] + [monster.position for monster in monsters]:
-                print('teleport in :')
-                print(exit)
-                pyv.find_by_archetype('exit')[0].position = exit
+            exitPos = shared.game_state['rm'].pick_walkable_cell() 
+            if exitPos not in [pl_ent.position] + [monster.position for monster in monsters]:
+                exit.position = exitPos
+                break 
+            
+        
+        while True:
+            resultat = random.randint(0, 1)
+            potionPos = shared.game_state['rm'].pick_walkable_cell() 
+            if potionPos  not in [pl_ent.position] + [monster.position for monster in monsters] + [exit.position ]:
+                potion.position = potionPos
+                if resultat == 0:
+                    potion.effect = 'Heal'
+                else :
+                    potion.effect = 'Poison'
                 break 
 
 
@@ -133,11 +150,21 @@ def rendering_sys():
         ####### EXIT
         
         exit = pyv.find_by_archetype('exit')[0]
+        potion = pyv.find_by_archetype('potion')[0]
+
 
         if shared.game_state['visibility_m'].get_val(*exit.position):
             scr.blit(shared.TILESET.image_by_rank(1092), (exit.position[0]* shared.CELL_SIDE, exit.position[1]* shared.CELL_SIDE, 32, 32))
-
         
+        if shared.game_state['visibility_m'].get_val(*potion.position):
+            if potion.effect == 'Heal':
+                scr.blit(shared.TILESET.image_by_rank(810), (potion.position[0]* shared.CELL_SIDE, potion.position[1]* shared.CELL_SIDE, 32, 32))
+            elif potion.effect == 'Poison' :
+                scr.blit(shared.TILESET.image_by_rank(810), (potion.position[0]* shared.CELL_SIDE, potion.position[1]* shared.CELL_SIDE, 32, 32))
+            elif potion.effect == 'disabled':
+                scr.blit(tuile, (potion.position[0]* shared.CELL_SIDE, potion.position[1]* shared.CELL_SIDE, 32, 32))
+
+
 
         # fait une projection coordonnées i,j de matrice vers targx, targy coordonnées en pixel de l'écran
         proj_function = (lambda locali, localj: (locali * shared.CELL_SIDE, localj * shared.CELL_SIDE))
@@ -156,6 +183,8 @@ def physics_sys():
     player = pyv.find_by_archetype('player')[0]        
     monster = pyv.find_by_archetype('monster')
     exit = pyv.find_by_archetype('exit')[0]  
+    potion = pyv.find_by_archetype('potion')[0]  
+
     for m in monster:
         if player.position == m.position:
             m.health_point -= player.damages
@@ -171,8 +200,22 @@ def physics_sys():
         player['enter_new_map'] = True
         shared.level_count +=1
         print('YOU REACHED LEVEL : ' + str(shared.level_count))
+        
     
+    if player.position == potion.position:
+        if potion.effect == 'Heal':
+            player.health_point = 100
+            print(player.health_point)
+            potion.effect = 'disabled'
+        elif potion.effect == 'Poison':
+            player.health_point -= 20
+            print(player.health_point)
+            potion.effect = 'disabled'
+
+
+
 def backmove():
+    
     player = pyv.find_by_archetype('player')[0]        
     if shared.last_hit_key == "pg.K_RIGHT":
         player.position[0] -= 1
@@ -199,3 +242,4 @@ def ennemyMovement():
             shared.game_state["visibility_m"], testMonster.position,player.position
         )
         # print(pathfinding_result)
+        

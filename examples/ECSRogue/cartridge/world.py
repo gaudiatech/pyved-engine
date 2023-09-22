@@ -31,6 +31,13 @@ def create_monster(position):
         'damages': 50,
         'health_point': 20
     })
+    
+def create_potion():
+    potion = pyv.new_from_archetype('potion')
+    pyv.init_entity(potion, {
+        'position': None,
+        'effect' : None
+    })
 
 
 def create_exit():
