@@ -33,19 +33,19 @@ def pg_event_proces_sys():
                 pyv.vars.gameover = True
             elif ev.key == pg.K_UP:
                 avpos[1] -= 1
-                shared.last_hit_key = "pg.K_UP"
+                push(1)
             elif ev.key == pg.K_DOWN:
                 avpos[1] += 1
-                shared.last_hit_key = "pg.K_DOWN"
+                push(3)
 
             elif ev.key == pg.K_LEFT:
                 avpos[0] -= 1
-                shared.last_hit_key = "pg.K_LEFT"
+                push(2)
 
             elif ev.key == pg.K_RIGHT:
                 avpos[0] += 1
-                shared.last_hit_key = "pg.K_RIGHT"
-
+                push(0)
+                
             elif ev.key == pg.K_SPACE:
                 # use flag so we we'll reset level, soon in the future
                 player = pyv.find_by_archetype('player')[0]
@@ -133,14 +133,17 @@ def rendering_sys():
                 shared.walkable_cells.append((i, j))
 
 
-    if shared.end_game_label:
-        lw, lh = shared.end_game_label.get_size()
+    if shared.end_game_label0:
+        lw, lh = shared.end_game_label0.get_size()
         scr.blit(
-            shared.end_game_label, ((shared.SCR_WIDTH-lw)//2, (shared.SCR_HEIGHT-lh)//2)
+            shared.end_game_label0, ((shared.SCR_WIDTH-lw)//2, (shared.SCR_HEIGHT-lh)//3)
+        )
+        scr.blit(
+            shared.end_game_label1, ((shared.SCR_WIDTH-lw)//2, (shared.SCR_HEIGHT-lh)//2)
         )
     else:
-        if (player.position[0], player.position[1]) not in shared.walkable_cells:
-            backmove()
+        # if (player.position[0], player.position[1]) not in shared.walkable_cells:
+        #     backmove()
         # ----------
         #  draw player/enemies
         # ----------
@@ -190,7 +193,7 @@ def physics_sys():
             m.health_point -= player.damages
             player.health_point -= m.damages
             print(player.health_point)
-            backmove()
+            # backmove()
             if m.health_point < 0:
                 pyv.delete_entity(m)
                 d= shared.game_state["enemies_pos2type"]
@@ -213,18 +216,20 @@ def physics_sys():
             potion.effect = 'disabled'
 
 
-
-def backmove():
-    
-    player = pyv.find_by_archetype('player')[0]        
-    if shared.last_hit_key == "pg.K_RIGHT":
-        player.position[0] -= 1
-    elif shared.last_hit_key == "pg.K_LEFT":
-        player.position[0] += 1
-    elif shared.last_hit_key == "pg.K_UP":
-        player.position[1] += 1
-    elif shared.last_hit_key == "pg.K_DOWN":
-        player.position[1] -= 1
+def push(dir):
+    player = pyv.find_by_archetype('player')[0]
+    monsters = pyv.find_by_archetype('monster')
+    if (player.position[0], player.position[1]) not in shared.walkable_cells :
+        print('kick')
+        deltas = {
+            0: (+1, 0),
+            1: (0, -1),
+            2: (-1, 0),
+            3: (0, +1)
+        }
+        player.position[0] -= deltas[dir][0]
+        player.position[1] -= deltas[dir][1]
+        
         
 def gameover():
     player = pyv.find_by_archetype('player')[0]  
@@ -232,7 +237,9 @@ def gameover():
         
     if player.health_point <= 0 :
         ft = pyv.pygame.font.Font(None, classic_ftsize)
-        shared.end_game_label = ft.render('Game Over', True, (255, 255, 255))
+        shared.end_game_label0 = ft.render('Game Over', True, (255, 255, 255), 'black')
+        shared.end_game_label1 = ft.render(f'You reached Level : {shared.level_count}' , True, (255, 255, 255), 'black')
+
 
 
 def ennemyMovement():

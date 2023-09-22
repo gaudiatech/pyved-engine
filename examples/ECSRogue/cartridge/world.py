@@ -13,8 +13,8 @@ def create_player():
     pyv.init_entity(player, {
         'position': None,
         'controls': {'left': False, 'right': False, 'up': False, 'down': False},
-        'damages': 10,
-        'health_point': 100,
+        'damages': shared.PLAYER_DMG,
+        'health_point': shared.PLAYER_HP,
         'enter_new_map': True
     })
 
@@ -28,8 +28,8 @@ def create_monster(position):
     monster = pyv.new_from_archetype('monster')
     pyv.init_entity(monster, {
         'position' : position,
-        'damages': 50,
-        'health_point': 20
+        'damages': shared.MONSTER_DMG,
+        'health_point': shared.MONSTER_HP
     })
     
 def create_potion():

@@ -1,5 +1,7 @@
 screen = None
-end_game_label = None
+end_game_label0 = None
+end_game_label1 = None
+
 # (Size of break-out blocks)
 BLOCK_SIZE= 40
 VISION_RANGE = 4
@@ -26,9 +28,15 @@ SCR_HEIGHT = 720
 GRID_REZ = (CELL_SIDE, CELL_SIDE)
 
 AVATAR = None
+
+PLAYER_DMG = 10
+PLAYER_HP = 100
+
+MONSTER_DMG = 10
+MONSTER_HP = 20
 MONSTER = None
 TILESET = None
 
 walkable_cells = []  # List to store walkable cells
-last_hit_key = None
 level_count = 1
+
