@@ -4,15 +4,13 @@ from . import world
 
 import random
 
-
-
 __all__ = [
     'pg_event_proces_sys',
     'world_generation_sys',
     'gameover',
     'rendering_sys',
     'physics_sys',
-    'ennemyMovement'
+    'mob_ai_system'
 ]
 
 # aliases
@@ -26,6 +24,11 @@ test = None
 
 
 def pg_event_proces_sys():
+    if shared.end_game_label0:
+        for ev in pg.event.get():
+            if ev.type == pg.KEYDOWN and ev.key == pg.K_ESCAPE:
+                pyv.vars.gameover = True
+        return
     avpos = pyv.find_by_archetype('player')[0]['position']
     for ev in pg.event.get():
         if ev.type == pg.KEYDOWN:
@@ -45,7 +48,7 @@ def pg_event_proces_sys():
             elif ev.key == pg.K_RIGHT:
                 avpos[0] += 1
                 push(0)
-                
+
             elif ev.key == pg.K_SPACE:
                 # use flag so we we'll reset level, soon in the future
                 player = pyv.find_by_archetype('player')[0]
@@ -56,47 +59,46 @@ def world_generation_sys():
     pl_ent = pyv.find_by_archetype('player')[0]
     monsters = pyv.find_by_archetype('monster')
     potion = pyv.find_by_archetype('potion')[0]
-    exit = pyv.find_by_archetype('exit')[0]
+    exit_ent = pyv.find_by_archetype('exit')[0]
 
     if pl_ent['enter_new_map']:
         pl_ent['enter_new_map'] = False
         print('Level generation...')
-        
+
         w, h = 24, 24
-        shared.game_state["rm"] = pyv.rogue.RandomMaze(
-            w, h, min_room_size=3, max_room_size=5)
+        shared.random_maze = pyv.rogue.RandomMaze(w, h, min_room_size=3, max_room_size=5)
+        # print(shared.game_state['rm'].blocking_map)
+
         shared.game_state["visibility_m"] = BoolMatrx((w, h))
         shared.walkable_cells = []
         shared.game_state['visibility_m'].set_all(False)
-        pyv.find_by_archetype('player')[0]['position'] = shared.game_state["rm"].pick_walkable_cell()
-        world._update_vision(pyv.find_by_archetype('player')[0]['position'][0], pyv.find_by_archetype('player')[0]['position'][1])
+        pyv.find_by_archetype('player')[0]['position'] = shared.random_maze.pick_walkable_cell()
+        world._update_vision(pyv.find_by_archetype('player')[0]['position'][0],
+                             pyv.find_by_archetype('player')[0]['position'][1])
         shared.game_state["enemies_pos2type"].clear()
-        for monster in monsters :
+        for monster in monsters:
             pyv.delete_entity(monster)
         for _ in range(5):
-            c = shared.game_state['rm'].pick_walkable_cell()
+            c = shared.random_maze.pick_walkable_cell()
             shared.game_state["enemies_pos2type"][tuple(c)] = 1  # all enemies type=1
             world.create_monster(c)
-            
-            
+
         while True:
-            exitPos = shared.game_state['rm'].pick_walkable_cell() 
+            exitPos = shared.random_maze.pick_walkable_cell()
             if exitPos not in [pl_ent.position] + [monster.position for monster in monsters]:
-                exit.position = exitPos
-                break 
-            
-        
+                exit_ent.position = exitPos
+                break
+
         while True:
             resultat = random.randint(0, 1)
-            potionPos = shared.game_state['rm'].pick_walkable_cell() 
-            if potionPos  not in [pl_ent.position] + [monster.position for monster in monsters] + [exit.position ]:
+            potionPos = shared.random_maze.pick_walkable_cell()
+            if potionPos not in [pl_ent.position] + [monster.position for monster in monsters] + [exit_ent.position]:
                 potion.position = potionPos
                 if resultat == 0:
                     potion.effect = 'Heal'
-                else :
+                else:
                     potion.effect = 'Poison'
-                break 
-
+                break
 
 
 def rendering_sys():
@@ -105,7 +107,6 @@ def rendering_sys():
     scr.fill(shared.WALL_COLOR)
     player = pyv.find_by_archetype('player')[0]
     monster = pyv.find_by_archetype('monster')
-    
 
     # ----------
     #  draw tiles
@@ -126,20 +127,19 @@ def rendering_sys():
             tmp_r4[1] += j * shared.CELL_SIDE
             tmp_r4[2] = tmp_r4[3] = shared.CELL_SIDE
             if not world.can_see((i, j)):  # hidden cell
-                
+
                 pg.draw.rect(scr, shared.HIDDEN_CELL_COLOR, tmp_r4)
             else:  # visible tile
                 scr.blit(tuile, tmp_r4)
                 shared.walkable_cells.append((i, j))
 
-
     if shared.end_game_label0:
         lw, lh = shared.end_game_label0.get_size()
         scr.blit(
-            shared.end_game_label0, ((shared.SCR_WIDTH-lw)//2, (shared.SCR_HEIGHT-lh)//3)
+            shared.end_game_label0, ((shared.SCR_WIDTH - lw) // 2, (shared.SCR_HEIGHT - lh) // 3)
         )
         scr.blit(
-            shared.end_game_label1, ((shared.SCR_WIDTH-lw)//2, (shared.SCR_HEIGHT-lh)//2)
+            shared.end_game_label1, ((shared.SCR_WIDTH - lw) // 2, (shared.SCR_HEIGHT - lh) // 2)
         )
     else:
         # if (player.position[0], player.position[1]) not in shared.walkable_cells:
@@ -148,26 +148,26 @@ def rendering_sys():
         #  draw player/enemies
         # ----------
         av_i, av_j = pyv.find_by_archetype('player')[0]['position']
-        world._update_vision(player.position[0], player.position[1]) ## Update player vision
+        world._update_vision(player.position[0], player.position[1])  ## Update player vision
 
         ####### EXIT
-        
-        exit = pyv.find_by_archetype('exit')[0]
+
+        exit_ent = pyv.find_by_archetype('exit')[0]
         potion = pyv.find_by_archetype('potion')[0]
 
+        if shared.game_state['visibility_m'].get_val(*exit_ent.position):
+            scr.blit(shared.TILESET.image_by_rank(1092),
+                     (exit_ent.position[0] * shared.CELL_SIDE, exit_ent.position[1] * shared.CELL_SIDE, 32, 32))
 
-        if shared.game_state['visibility_m'].get_val(*exit.position):
-            scr.blit(shared.TILESET.image_by_rank(1092), (exit.position[0]* shared.CELL_SIDE, exit.position[1]* shared.CELL_SIDE, 32, 32))
-        
         if shared.game_state['visibility_m'].get_val(*potion.position):
             if potion.effect == 'Heal':
-                scr.blit(shared.TILESET.image_by_rank(810), (potion.position[0]* shared.CELL_SIDE, potion.position[1]* shared.CELL_SIDE, 32, 32))
-            elif potion.effect == 'Poison' :
-                scr.blit(shared.TILESET.image_by_rank(810), (potion.position[0]* shared.CELL_SIDE, potion.position[1]* shared.CELL_SIDE, 32, 32))
+                scr.blit(shared.TILESET.image_by_rank(810),
+                         (potion.position[0] * shared.CELL_SIDE, potion.position[1] * shared.CELL_SIDE, 32, 32))
+            elif potion.effect == 'Poison':
+                scr.blit(shared.TILESET.image_by_rank(810),
+                         (potion.position[0] * shared.CELL_SIDE, potion.position[1] * shared.CELL_SIDE, 32, 32))
             elif potion.effect == 'disabled':
-                scr.blit(tuile, (potion.position[0]* shared.CELL_SIDE, potion.position[1]* shared.CELL_SIDE, 32, 32))
-
-
+                scr.blit(tuile, (potion.position[0] * shared.CELL_SIDE, potion.position[1] * shared.CELL_SIDE, 32, 32))
 
         # fait une projection coordonnées i,j de matrice vers targx, targy coordonnées en pixel de l'écran
         proj_function = (lambda locali, localj: (locali * shared.CELL_SIDE, localj * shared.CELL_SIDE))
@@ -183,10 +183,10 @@ def rendering_sys():
 
 
 def physics_sys():
-    player = pyv.find_by_archetype('player')[0]        
+    player = pyv.find_by_archetype('player')[0]
     monster = pyv.find_by_archetype('monster')
-    exit = pyv.find_by_archetype('exit')[0]  
-    potion = pyv.find_by_archetype('potion')[0]  
+    exit_ent = pyv.find_by_archetype('exit')[0]
+    potion = pyv.find_by_archetype('potion')[0]
 
     for m in monster:
         if player.position == m.position:
@@ -196,15 +196,14 @@ def physics_sys():
             # backmove()
             if m.health_point < 0:
                 pyv.delete_entity(m)
-                d= shared.game_state["enemies_pos2type"]
+                d = shared.game_state["enemies_pos2type"]
                 del d[(m.position[0], m.position[1])]
-                
-    if player.position == exit.position:
+
+    if player.position == exit_ent.position:
         player['enter_new_map'] = True
-        shared.level_count +=1
+        shared.level_count += 1
         print('YOU REACHED LEVEL : ' + str(shared.level_count))
-        
-    
+
     if player.position == potion.position:
         if potion.effect == 'Heal':
             player.health_point = 100
@@ -216,10 +215,13 @@ def physics_sys():
             potion.effect = 'disabled'
 
 
+saved_player_pos = [None, None]
+
+
 def push(dir):
     player = pyv.find_by_archetype('player')[0]
     monsters = pyv.find_by_archetype('monster')
-    if (player.position[0], player.position[1]) not in shared.walkable_cells :
+    if (player.position[0], player.position[1]) not in shared.walkable_cells:
         print('kick')
         deltas = {
             0: (+1, 0),
@@ -229,24 +231,30 @@ def push(dir):
         }
         player.position[0] -= deltas[dir][0]
         player.position[1] -= deltas[dir][1]
-        
-        
+
+
 def gameover():
-    player = pyv.find_by_archetype('player')[0]  
+    player = pyv.find_by_archetype('player')[0]
     classic_ftsize = 38
-        
-    if player.health_point <= 0 :
+
+    if player.health_point <= 0:
         ft = pyv.pygame.font.Font(None, classic_ftsize)
         shared.end_game_label0 = ft.render('Game Over', True, (255, 255, 255), 'black')
-        shared.end_game_label1 = ft.render(f'You reached Level : {shared.level_count}' , True, (255, 255, 255), 'black')
+        shared.end_game_label1 = ft.render(f'You reached Level : {shared.level_count}', True, (255, 255, 255), 'black')
 
 
+def mob_ai_system():
+    global saved_player_pos
+    i, j = saved_player_pos
+    player = pyv.find_by_archetype('player')[0]
+    curr_pos = player.position
+    if (i is None and j is None) or not(curr_pos[0] == i and curr_pos[1] == j):
+        # position has changed!
+        saved_player_pos[0], saved_player_pos[1] = curr_pos
 
-def ennemyMovement():
-        player = pyv.find_by_archetype('player')[0]  
-        testMonster = pyv.find_by_archetype('monster')[0]
+        test_mob = pyv.find_by_archetype('monster')[0]
+        blockmap = shared.random_maze.blocking_map
         pathfinding_result = pyv.terrain.DijkstraPathfinder.find_path(
-            shared.game_state["visibility_m"], testMonster.position,player.position
+            blockmap, test_mob.position, player.position
         )
-        # print(pathfinding_result)
-        
+        print(pathfinding_result)

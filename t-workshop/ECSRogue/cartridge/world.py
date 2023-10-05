@@ -46,7 +46,7 @@ def create_exit():
 
 
 def get_terrain():
-    return shared.game_state['rm'].getMatrix()
+    return shared.random_maze.getMatrix()
 
 
 def _update_vision(i, j):
@@ -58,7 +58,7 @@ def _update_vision(i, j):
     def func_visibility(a, b):
         if shared.game_state['visibility_m'].is_out(a, b):
             return False
-        if shared.game_state['rm'].getMatrix().get_val(a, b) is None:  # cannot see through walls
+        if shared.random_maze.getMatrix().get_val(a, b) is None:  # cannot see through walls
             return False
         return True
 

@@ -8,8 +8,8 @@ VISION_RANGE = 4
 fov_computer = None
 
 
+random_maze = None
 game_state = {
-            "rm": None,
             "visibility_m": None,
             "enemies_pos2type": dict(),
             "equipped_spell": None,
