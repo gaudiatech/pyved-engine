@@ -1,7 +1,6 @@
 from . import shared
 from . import pimodules
 
-
 pyv = pimodules.pyved_engine
 pyv.bootstrap_e()
 pygame = pyv.pygame
@@ -19,37 +18,39 @@ def create_player():
     })
 
 
-def create_wall():
-    wall = pyv.new_from_archetype('wall')
-    pyv.init_entity(wall, {})
+# def create_wall():
+#     wall = pyv.new_from_archetype('wall')
+#     pyv.init_entity(wall, {})
 
 
 def create_monster(position):
     monster = pyv.new_from_archetype('monster')
     pyv.init_entity(monster, {
-        'position' : position,
+        'position': position,
         'damages': shared.MONSTER_DMG,
-        'health_point': shared.MONSTER_HP
+        'health_point': shared.MONSTER_HP,
+        'active': False  # the mob will become active, once the player sees it
     })
-    
+
+
 def create_potion():
     potion = pyv.new_from_archetype('potion')
     pyv.init_entity(potion, {
         'position': None,
-        'effect' : None
+        'effect': None
     })
 
 
 def create_exit():
-    exit = pyv.new_from_archetype('exit')
-    pyv.init_entity(exit, {})
+    exit_ent = pyv.new_from_archetype('exit')
+    pyv.init_entity(exit_ent, {})
 
 
 def get_terrain():
     return shared.random_maze.getMatrix()
 
 
-def _update_vision(i, j):
+def update_vision_and_mobs(i, j):
     if shared.fov_computer is None:
         shared.fov_computer = pyv.rogue.FOVCalc()
 
@@ -66,6 +67,13 @@ def _update_vision(i, j):
 
     for c in li_visible:
         shared.game_state['visibility_m'].set_val(c[0], c[1], True)
+
+    # we also need to update the state of mobs!
+    all_mobs = pyv.find_by_archetype('monster')
+    for m in all_mobs:
+        if tuple(m.position) in li_visible:
+            m.active = True  # mob "activation" --> will track the player
+            print('mob activation ok')
 
 
 def init_images():
@@ -91,6 +99,7 @@ def init_images():
 def can_see(cell):
     # print( shared.game_state['visibility_m'])
     return shared.game_state['visibility_m'].get_val(*cell)
+
 
 def get_all_walkable_cells():
     w, h = 24, 24  # Update these dimensions to match your map size

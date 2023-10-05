@@ -69,20 +69,27 @@ def world_generation_sys():
         shared.random_maze = pyv.rogue.RandomMaze(w, h, min_room_size=3, max_room_size=5)
         # print(shared.game_state['rm'].blocking_map)
 
-        shared.game_state["visibility_m"] = BoolMatrx((w, h))
-        shared.walkable_cells = []
-        shared.game_state['visibility_m'].set_all(False)
-        pyv.find_by_archetype('player')[0]['position'] = shared.random_maze.pick_walkable_cell()
-        world._update_vision(pyv.find_by_archetype('player')[0]['position'][0],
-                             pyv.find_by_archetype('player')[0]['position'][1])
+        # IMPORTANT: adding mobs comes before computing the visibility
         shared.game_state["enemies_pos2type"].clear()
         for monster in monsters:
             pyv.delete_entity(monster)
         for _ in range(5):
-            c = shared.random_maze.pick_walkable_cell()
-            shared.game_state["enemies_pos2type"][tuple(c)] = 1  # all enemies type=1
-            world.create_monster(c)
+            tmp = shared.random_maze.pick_walkable_cell()
+            pos_key = tuple(tmp)
+            shared.game_state["enemies_pos2type"][pos_key] = 1  # all enemies type=1
+            world.create_monster(tmp)
 
+        # - comp. the visibility
+        shared.game_state["visibility_m"] = BoolMatrx((w, h))
+        shared.walkable_cells = []
+        shared.game_state['visibility_m'].set_all(False)
+        pyv.find_by_archetype('player')[0]['position'] = shared.random_maze.pick_walkable_cell()
+        world.update_vision_and_mobs(
+            pyv.find_by_archetype('player')[0]['position'][0],
+            pyv.find_by_archetype('player')[0]['position'][1]
+        )
+
+        # add-on?
         while True:
             exitPos = shared.random_maze.pick_walkable_cell()
             if exitPos not in [pl_ent.position] + [monster.position for monster in monsters]:
@@ -106,7 +113,7 @@ def rendering_sys():
     scr = shared.screen
     scr.fill(shared.WALL_COLOR)
     player = pyv.find_by_archetype('player')[0]
-    monster = pyv.find_by_archetype('monster')
+    all_mobs = pyv.find_by_archetype('monster')
 
     # ----------
     #  draw tiles
@@ -142,15 +149,10 @@ def rendering_sys():
             shared.end_game_label1, ((shared.SCR_WIDTH - lw) // 2, (shared.SCR_HEIGHT - lh) // 2)
         )
     else:
-        # if (player.position[0], player.position[1]) not in shared.walkable_cells:
-        #     backmove()
         # ----------
         #  draw player/enemies
         # ----------
-        av_i, av_j = pyv.find_by_archetype('player')[0]['position']
-        world._update_vision(player.position[0], player.position[1])  ## Update player vision
-
-        ####### EXIT
+        av_i, av_j = player['position']
 
         exit_ent = pyv.find_by_archetype('exit')[0]
         potion = pyv.find_by_archetype('potion')[0]
@@ -174,8 +176,11 @@ def rendering_sys():
         targx, targy = proj_function(av_i, av_j)
         scr.blit(shared.AVATAR, (targx, targy, 32, 32))
         # ----- enemies
-        for enemy_info in shared.game_state["enemies_pos2type"].items():
-            pos, t = enemy_info
+
+        # for enemy_info in shared.game_state["enemies_pos2type"].items():
+        for mob_ent in all_mobs:
+            pos = mob_ent.position
+            # pos, t = enemy_info
             if not shared.game_state['visibility_m'].get_val(*pos):
                 continue
             en_i, en_j = pos[0] * shared.CELL_SIDE, pos[1] * shared.CELL_SIDE
@@ -196,8 +201,9 @@ def physics_sys():
             # backmove()
             if m.health_point < 0:
                 pyv.delete_entity(m)
-                d = shared.game_state["enemies_pos2type"]
-                del d[(m.position[0], m.position[1])]
+                # old model:
+                # d = shared.game_state["enemies_pos2type"]
+                # del d[(m.position[0], m.position[1])]
 
     if player.position == exit_ent.position:
         player['enter_new_map'] = True
@@ -220,7 +226,7 @@ saved_player_pos = [None, None]
 
 def push(dir):
     player = pyv.find_by_archetype('player')[0]
-    monsters = pyv.find_by_archetype('monster')
+    monsters = pyv.find_by_archetype('monster')  # TODO kick mob feat. here?
     if (player.position[0], player.position[1]) not in shared.walkable_cells:
         print('kick')
         deltas = {
@@ -231,6 +237,9 @@ def push(dir):
         }
         player.position[0] -= deltas[dir][0]
         player.position[1] -= deltas[dir][1]
+
+    # Update player vision
+    world.update_vision_and_mobs(player.position[0], player.position[1])
 
 
 def gameover():
@@ -248,13 +257,19 @@ def mob_ai_system():
     i, j = saved_player_pos
     player = pyv.find_by_archetype('player')[0]
     curr_pos = player.position
-    if (i is None and j is None) or not(curr_pos[0] == i and curr_pos[1] == j):
+
+    if (i is None) or curr_pos[0] != i or curr_pos[1] != j:
         # position has changed!
         saved_player_pos[0], saved_player_pos[1] = curr_pos
-
-        test_mob = pyv.find_by_archetype('monster')[0]
         blockmap = shared.random_maze.blocking_map
-        pathfinding_result = pyv.terrain.DijkstraPathfinder.find_path(
-            blockmap, test_mob.position, player.position
-        )
-        print(pathfinding_result)
+        allmobs = pyv.find_by_archetype('monster')
+        for mob_ent in allmobs:
+            if not mob_ent.active:
+                pass
+            else:
+                pathfinding_result = pyv.terrain.DijkstraPathfinder.find_path(
+                    blockmap, mob_ent.position, player.position
+                )
+                new_pos = pathfinding_result[1]  # index 1 --> 1 step forward!
+                print('pathfind: mob selects', new_pos)
+                mob_ent.position[0], mob_ent.position[1] = new_pos  # TODO a proper "kick the player" feat.
