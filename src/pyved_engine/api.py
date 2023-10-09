@@ -172,12 +172,24 @@ def declare_end(gfunc):  # decorator!
 
 
 def run_game():
-    vars.beginfunc_ref(None)
-    while not vars.gameover:
-        vars.updatefunc_ref(time.time())
-        flip()  # commit gfx mem to screen, already contains the .tick
-    vars.endfunc_ref(None)
+    if __import__('sys').platform in ('emscripten','wasi'):
+        import asyncio
+        async def async_run_game():
+            vars.beginfunc_ref(None)
+            while not vars.gameover:
+                vars.updatefunc_ref(time.time())
+                flip()  # commit gfx mem to screen, already contains the .tick
+                await asyncio.sleep(0)
+            vars.endfunc_ref(None)
 
+        asyncio.run( async_run_game() )
+    else:
+        vars.beginfunc_ref(None)
+        while not vars.gameover:
+            vars.updatefunc_ref(time.time())
+            flip()  # commit gfx mem to screen, already contains the .tick
+        vars.endfunc_ref(None)
+      
 
 # --- rest of functions ---
 def preload_assets(adhoc_dict: dict, prefix_asset_folder=None, webhack=None):
