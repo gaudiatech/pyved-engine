@@ -1,26 +1,30 @@
+import random
+
 from . import pimodules
 from . import shared
 from . import world
 
-import random
 
 __all__ = [
     'pg_event_proces_sys',
     'world_generation_sys',
-    'gameover',
+    'gamestate_update_sys',
     'rendering_sys',
     'physics_sys',
-    'mob_ai_system'
+    'monster_ai_sys'
 ]
+
 
 # aliases
 pyv = pimodules.pyved_engine
-pyv.bootstrap_e()
+pg = pyv.pygame
 Sprsheet = pyv.gfx.Spritesheet
 BoolMatrx = pyv.e_struct.BoolMatrix
+
+
+# global vars
 tileset = None
-pg = pyv.pygame
-test = None
+saved_player_pos = [None, None]
 
 
 def pg_event_proces_sys():
@@ -36,18 +40,18 @@ def pg_event_proces_sys():
                 pyv.vars.gameover = True
             elif ev.key == pg.K_UP:
                 avpos[1] -= 1
-                push(1)
+                _player_push(1)
             elif ev.key == pg.K_DOWN:
                 avpos[1] += 1
-                push(3)
+                _player_push(3)
 
             elif ev.key == pg.K_LEFT:
                 avpos[0] -= 1
-                push(2)
+                _player_push(2)
 
             elif ev.key == pg.K_RIGHT:
                 avpos[0] += 1
-                push(0)
+                _player_push(0)
 
             elif ev.key == pg.K_SPACE:
                 # use flag so we we'll reset level, soon in the future
@@ -108,12 +112,19 @@ def world_generation_sys():
                 break
 
 
+def gamestate_update_sys():
+    player = pyv.find_by_archetype('player')[0]
+    classic_ftsize = 38
+    if player.health_point <= 0 and (shared.end_game_label0 is None):
+        ft = pyv.pygame.font.Font(None, classic_ftsize)
+        shared.end_game_label0 = ft.render('Game Over', True, (255, 255, 255), 'black')
+        shared.end_game_label1 = ft.render(f'You reached Level : {shared.level_count}', True, (255, 255, 255), 'black')
+
+
 def rendering_sys():
     global tileset
     scr = shared.screen
     scr.fill(shared.WALL_COLOR)
-    player = pyv.find_by_archetype('player')[0]
-    all_mobs = pyv.find_by_archetype('monster')
 
     # ----------
     #  draw tiles
@@ -148,62 +159,26 @@ def rendering_sys():
         scr.blit(
             shared.end_game_label1, ((shared.SCR_WIDTH - lw) // 2, (shared.SCR_HEIGHT - lh) // 2)
         )
-    else:
-        # ----------
-        #  draw player/enemies
-        # ----------
-        av_i, av_j = player['position']
-
-        exit_ent = pyv.find_by_archetype('exit')[0]
-        potion = pyv.find_by_archetype('potion')[0]
-
-        if shared.game_state['visibility_m'].get_val(*exit_ent.position):
-            scr.blit(shared.TILESET.image_by_rank(1092),
-                     (exit_ent.position[0] * shared.CELL_SIDE, exit_ent.position[1] * shared.CELL_SIDE, 32, 32))
-
-        if shared.game_state['visibility_m'].get_val(*potion.position):
-            if potion.effect == 'Heal':
-                scr.blit(shared.TILESET.image_by_rank(810),
-                         (potion.position[0] * shared.CELL_SIDE, potion.position[1] * shared.CELL_SIDE, 32, 32))
-            elif potion.effect == 'Poison':
-                scr.blit(shared.TILESET.image_by_rank(810),
-                         (potion.position[0] * shared.CELL_SIDE, potion.position[1] * shared.CELL_SIDE, 32, 32))
-            elif potion.effect == 'disabled':
-                scr.blit(tuile, (potion.position[0] * shared.CELL_SIDE, potion.position[1] * shared.CELL_SIDE, 32, 32))
-
-        # fait une projection coordonnées i,j de matrice vers targx, targy coordonnées en pixel de l'écran
-        proj_function = (lambda locali, localj: (locali * shared.CELL_SIDE, localj * shared.CELL_SIDE))
-        targx, targy = proj_function(av_i, av_j)
-        scr.blit(shared.AVATAR, (targx, targy, 32, 32))
-        # ----- enemies
-
-        # for enemy_info in shared.game_state["enemies_pos2type"].items():
-        for mob_ent in all_mobs:
-            pos = mob_ent.position
-            # pos, t = enemy_info
-            if not shared.game_state['visibility_m'].get_val(*pos):
-                continue
-            en_i, en_j = pos[0] * shared.CELL_SIDE, pos[1] * shared.CELL_SIDE
-            scr.blit(shared.MONSTER, (en_i, en_j, 32, 32))
+        return
+    _draw_all_mobs(scr)
 
 
 def physics_sys():
+    """
+    implements the monster attack mechanic
+    + it also proc any effect on the player based on what happened (potion, exit door etc)
+    """
     player = pyv.find_by_archetype('player')[0]
     monster = pyv.find_by_archetype('monster')
     exit_ent = pyv.find_by_archetype('exit')[0]
     potion = pyv.find_by_archetype('potion')[0]
 
     for m in monster:
-        if player.position == m.position:
+        if m.position == player.position:
             m.health_point -= player.damages
             player.health_point -= m.damages
-            print(player.health_point)
-            # backmove()
             if m.health_point < 0:
                 pyv.delete_entity(m)
-                # old model:
-                # d = shared.game_state["enemies_pos2type"]
-                # del d[(m.position[0], m.position[1])]
 
     if player.position == exit_ent.position:
         player['enter_new_map'] = True
@@ -221,38 +196,7 @@ def physics_sys():
             potion.effect = 'disabled'
 
 
-saved_player_pos = [None, None]
-
-
-def push(dir):
-    player = pyv.find_by_archetype('player')[0]
-    monsters = pyv.find_by_archetype('monster')  # TODO kick mob feat. here?
-    if (player.position[0], player.position[1]) not in shared.walkable_cells:
-        print('kick')
-        deltas = {
-            0: (+1, 0),
-            1: (0, -1),
-            2: (-1, 0),
-            3: (0, +1)
-        }
-        player.position[0] -= deltas[dir][0]
-        player.position[1] -= deltas[dir][1]
-
-    # Update player vision
-    world.update_vision_and_mobs(player.position[0], player.position[1])
-
-
-def gameover():
-    player = pyv.find_by_archetype('player')[0]
-    classic_ftsize = 38
-
-    if player.health_point <= 0:
-        ft = pyv.pygame.font.Font(None, classic_ftsize)
-        shared.end_game_label0 = ft.render('Game Over', True, (255, 255, 255), 'black')
-        shared.end_game_label1 = ft.render(f'You reached Level : {shared.level_count}', True, (255, 255, 255), 'black')
-
-
-def mob_ai_system():
+def monster_ai_sys():
     global saved_player_pos
     i, j = saved_player_pos
     player = pyv.find_by_archetype('player')[0]
@@ -273,3 +217,60 @@ def mob_ai_system():
                 new_pos = pathfinding_result[1]  # index 1 --> 1 step forward!
                 print('pathfind: mob selects', new_pos)
                 mob_ent.position[0], mob_ent.position[1] = new_pos  # TODO a proper "kick the player" feat.
+
+
+# ----------------------------
+#  private/utility functions
+# ----------------------------
+def _draw_all_mobs(scrref):
+    player = pyv.find_by_archetype('player')[0]
+    all_mobs = pyv.find_by_archetype('monster')
+    # ----------
+    #  draw player/enemies
+    # ----------
+    av_i, av_j = player['position']
+    exit_ent = pyv.find_by_archetype('exit')[0]
+    potion = pyv.find_by_archetype('potion')[0]
+    tuile = shared.TILESET.image_by_rank(912)
+    if shared.game_state['visibility_m'].get_val(*exit_ent.position):
+        scrref.blit(shared.TILESET.image_by_rank(1092),
+                    (exit_ent.position[0] * shared.CELL_SIDE, exit_ent.position[1] * shared.CELL_SIDE, 32, 32))
+
+    if shared.game_state['visibility_m'].get_val(*potion.position):
+        if potion.effect == 'Heal':
+            scrref.blit(shared.TILESET.image_by_rank(810),
+                        (potion.position[0] * shared.CELL_SIDE, potion.position[1] * shared.CELL_SIDE, 32, 32))
+        elif potion.effect == 'Poison':
+            scrref.blit(shared.TILESET.image_by_rank(810),
+                        (potion.position[0] * shared.CELL_SIDE, potion.position[1] * shared.CELL_SIDE, 32, 32))
+
+    # fait une projection coordonnées i,j de matrice vers targx, targy coordonnées en pixel de l'écran
+    proj_function = (lambda locali, localj: (locali * shared.CELL_SIDE, localj * shared.CELL_SIDE))
+    targx, targy = proj_function(av_i, av_j)
+    scrref.blit(shared.AVATAR, (targx, targy, 32, 32))
+    # ----- enemies
+    # for enemy_info in shared.game_state["enemies_pos2type"].items():
+    for mob_ent in all_mobs:
+        pos = mob_ent.position
+        # pos, t = enemy_info
+        if not shared.game_state['visibility_m'].get_val(*pos):
+            continue
+        en_i, en_j = pos[0] * shared.CELL_SIDE, pos[1] * shared.CELL_SIDE
+        scrref.blit(shared.MONSTER, (en_i, en_j, 32, 32))
+
+
+def _player_push(directio):
+    player = pyv.find_by_archetype('player')[0]
+    monsters = pyv.find_by_archetype('monster')  # TODO kick mob feat. here?
+    if (player.position[0], player.position[1]) not in shared.walkable_cells:
+        print('kick')
+        deltas = {
+            0: (+1, 0),
+            1: (0, -1),
+            2: (-1, 0),
+            3: (0, +1)
+        }
+        player.position[0] -= deltas[directio][0]
+        player.position[1] -= deltas[directio][1]
+    # Update player vision
+    world.update_vision_and_mobs(player.position[0], player.position[1])
