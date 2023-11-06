@@ -8,7 +8,7 @@ import random
 # ------------------------------------
 # kengi = katasdk.kengi
 import pyved_engine as pyv
-
+pyv.bootstrap_e()
 Card = pyv.tabletop.StandardCard
 CardDeck = pyv.tabletop.CardDeck
 find_best_ph = pyv.tabletop.find_best_ph
@@ -1234,7 +1234,7 @@ class PokerUth(pyv.GameTpl):
         super().enter(vms)
 
         pyv.init()
-        pyv.create_screen()
+        #pyv.init()
         pyv.vars.clock = pyv.create_clock()
 
         # ----------- ajout forced auth -----------
@@ -1253,8 +1253,8 @@ class PokerUth(pyv.GameTpl):
                     common.PokerStates.Flop: FlopState,
                     common.PokerStates.TurnRiver: TurnRiverState,
                     common.PokerStates.Outcome: OutcomeState
-                },
-                self
+                }
+                # self
             )
             self.m = UthModel()
             common.refmodel = self.m

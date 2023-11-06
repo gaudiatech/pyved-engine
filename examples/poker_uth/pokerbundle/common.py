@@ -27,7 +27,7 @@ def chip_scrollup(x):
     refmodel.set_chipvalue(y)
 
 
-PokerStates = kengi.struct.enum(
+PokerStates = kengi.e_struct.enum(
     'AnteSelection',
     'PreFlop',
     'Flop',
