@@ -2,12 +2,13 @@ from . import pimodules
 
 
 pyv = pimodules.pyved_engine
+pyv.bootstrap_e()
+pyg = pyv.pygame
 
 
 @pyv.declare_begin
 def init_game(vmst=None):
     pyv.init(wcaption='Néant')
-
 
 
 @pyv.declare_update
