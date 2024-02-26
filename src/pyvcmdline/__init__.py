@@ -3,13 +3,12 @@ The following module implements the command line that becomes available,
 once the user has installed pyved-engine locally...
 
 After installation, for example you can type:
-  "pyvedengine test chess"
-To run the embedded demo named chess
+  "pyv-cli init myGame"
+To create a new game bundle.
 
-Embedded demos:
+There will be many embedded demos:
  - chess
  - bullethell
  - rogue
+ - ...
 """
-
-# TODO the command isnt working as expected, need to work more on that part!

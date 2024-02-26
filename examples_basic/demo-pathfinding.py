@@ -104,7 +104,9 @@ class PfDemoCtrl(pyv.EvListener):
 
         elif ev.key == pyv.pygame.K_SPACE:
             i, j = self._m.cursor_pos
-            self._m.the_map.set_val(i, j, not self._m.the_map.get_val(i, j))
+            new_bval = not self._m.the_map.get_val(i, j)
+            self._m.the_map.set_val(i, j, new_bval)
+            print('new value set on matrix:', new_bval)
 
         elif ev.key == pyv.pygame.K_UP:
             self.move_cursor('up')

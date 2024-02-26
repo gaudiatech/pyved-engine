@@ -1,5 +1,6 @@
-import random
 import math
+import random
+
 from .. import e_struct as struct
 
 
@@ -59,6 +60,8 @@ class RandomMaze:
     def __init__(self, w, h, min_room_size, max_room_size, density_factor=140):
         self.int_matrix = struct.IntegerMatrix((w, h))
         self.int_matrix.set_all(None)  # super important! Otherwise the algorithm wont work
+        self.blocking_map = struct.BoolMatrix((w, h))
+        self.blocking_map.set_all(True)  # by default, all is blocking
 
         self.room_possib_size = list()
 
@@ -102,6 +105,12 @@ class RandomMaze:
         # (4) suppr. cul-de-sac
         self.tested_pos = set()
         self.recUncarve((1, 1))
+
+        # --- post-processing step: sync the data in self.blocking_map
+        for i in range(dim[0]):
+            for j in range(dim[1]):
+                if self.int_matrix.get_val(i, j):
+                    self.blocking_map.set_val(i, j, False)
 
     def pick_walkable_cell(self):
         # helps choosing a valid initial position for the avatar

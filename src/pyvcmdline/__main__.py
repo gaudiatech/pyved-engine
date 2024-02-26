@@ -1,40 +1,54 @@
 """
     pyved_engine.cmdline
     ~~~~~~~~~~~~~~~~
+    Definition of the command line interface.
 
-    Command line interface.
-
-    :copyright: Copyright 2018-2023 by the Kata.Games team, see AUTHORS.
-    :license: MIT, see LICENSE for details.
+    :copyright: Copyright 2018-2023 by the Kata.Games team.
+    :license: LGPL-3.0, see LICENSE for details.
 """
 import argparse
 import importlib
 import json
 import os
 import re
-import requests
 import shutil
 import sys
 import tempfile
 import time
-from .json_prec import TEMPL_ID_TO_JSON_STR
 import zipfile
 
-# will be used later on, where `pyv-cli share` becomes a thing
-# import requests
+import requests  # used to implement the `pyv-cli share` feature
 
 from pyved_engine import vars
+from .json_prec import TEMPL_ID_TO_JSON_STR
+
 
 __version__ = vars.ENGINE_VERSION_STR
 
 
+# - just various constants
 PLAY_SCRIPT_NAME = 'launch_game'
+POSSIB_TEMPLATES = {
+    0: 'Empty',
+    1: 'Breakout',
+    2: 'Platformer',
+    3: 'Chess',
+    4: 'Roguelike'
+}
+MAX_TEMPLATE_ID = 4
+VERSION_PRINT_MESSAGE = 'Pyved-engine version %s (c) 2018-2023 the Kata.Games Team: Thomas Iwaszko and contributors.'
 VALID_SUBCOMMANDS = (
     'init',
     'play',
     'share',
     'pub'
 )
+TARG_TRIGGER_PUBLISH = 'https://kata.games/api/uploads.php'  # script to upload the end result (Published game)
+
+DEV_SERVER_HOST = 'http://127.0.0.1:8001/'
+TARGET_SCRIPT_SHARE_DEV = DEV_SERVER_HOST+'webapp_backend/do_upload.php'  # script to push a prototype to remote host
+PROD_SERVER_HOST = 'https://app.kata.games/'
+TARGET_SCRIPT_SHARE_PROD = PROD_SERVER_HOST+'do_upload.php'
 
 
 # -----------------------------------
@@ -264,22 +278,13 @@ def init_command(cartridge_name) -> None:
     this is the pyv-cli INIT command, it should create a new game bundle, fully operational
     :param cartridge_name: name for your new bundle...
     """
-    possib_templates = {
-        0: 'Empty',
-        1: 'Breakout',
-        2: 'Platformer',
-        3: 'Chess',
-        4: 'Roguelike'
-    }
-    bsup_template_id = 4
-
     print(f" Using sub-command INIT: your new cartridge name is [{cartridge_name}]")
     print('-' * 60)
     print('  Game templates:')
-    for code, name in possib_templates.items():
+    for code, name in POSSIB_TEMPLATES.items():
         print(f'    {code}:  {name}')
     template_id = input('select a template: ')
-    while not (template_id.isnumeric() and 0 <= int(template_id) <= bsup_template_id):
+    while not (template_id.isnumeric() and 0 <= int(template_id) <= MAX_TEMPLATE_ID):
         print('invalid input!')
         template_id = input('select a template: ')
     template_id = int(template_id)
@@ -384,8 +389,6 @@ def trigger_publish(chosenslug, remote_cart_id) -> bool:
 "cartridge":"flappy"
 }
 """
-    TARG_TRIGGER_PUBLISH = 'https://kata.games/api/uploads.php'
-
     # check that can be deserialized...
     jsondata = json.loads(dummy_json_str)
     jsondata['slug'] = x = chosenslug
@@ -401,11 +404,19 @@ def trigger_publish(chosenslug, remote_cart_id) -> bool:
     print(reply.text)
 
 
-def upload_my_zip_file(zip_file_path, server_host):
-    # new and shiny (ver2 . september23)
-    # TODO: this works only on the local VM, how to port it to work in production mode?
+def upload_my_zip_file(zip_file_path: str, dev_mode: bool) -> None:
+    """
+    :zip_file_path: as param name indicates
+    :param: dev_mode is a flag to say if we target the dev server or prod server...
+
+    Side effect: puts something important in the paperclip!
+    """
     import pyperclip
+
     file_to_send = zip_file_path  # dont forget the extension!
+    api_endpoint = TARGET_SCRIPT_SHARE_DEV if dev_mode else TARGET_SCRIPT_SHARE_PROD
+    serv_host = DEV_SERVER_HOST if dev_mode else PROD_SERVER_HOST
+
     files = {
         'uploadedFile': (file_to_send,
                          open(file_to_send, 'rb'),
@@ -413,14 +424,17 @@ def upload_my_zip_file(zip_file_path, server_host):
                          {'Expires': '0'})
     }
     reply = requests.post(
-        url=server_host + 'webapp_backend/do_upload.php',
+        url=api_endpoint,
         files=files,
         data={'pyv-cli-flag': True, 'uploadBtn': 'Upload'}
     )
     print('upload_my_zip_file called! Resp. is:')
     print(reply.text)
     rep_obj = json.loads(reply.text)
-    fruit_url = server_host + 'play/' + rep_obj[1]
+    if dev_mode:
+        fruit_url = DEV_SERVER_HOST + 'play/' + rep_obj[1]
+    else:
+        fruit_url = PROD_SERVER_HOST + 'vm.php?cartname=' + rep_obj[1]
 
     pyperclip.copy(fruit_url)
     print(f'URL:{fruit_url} has been copied to the paperclip!')
@@ -453,7 +467,7 @@ def upload_my_zip_file(zip_file_path, server_host):
     # print("Response content:", response.text)
 
 
-def subcmd_share(bundle_name):
+def subcmd_share(bundle_name, dev_flag_on):
     # Check if the folder exists, otherwise we'll throw an error
     wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
     if not os.path.exists(wrapper_bundle):
@@ -470,10 +484,7 @@ def subcmd_share(bundle_name):
     # print("ZIP file created:", output_zip_filename)
     # create_zip_from_folder(, os.getcwd())
     # print('tmpfile created ok')
-    upload_my_zip_file(
-        fn,
-        'http://127.0.0.1:8001/'
-    )
+    upload_my_zip_file(fn, dev_flag_on)
 
 
 def main_inner(parser, argns):
@@ -486,8 +497,7 @@ def main_inner(parser, argns):
         return 0
 
     if argns.version:
-        print('Pyved-engine version %s (c) 2018-2023 the Kata.Games Team: Thomas Iwaszko '
-              'and contributors.' % __version__)
+        print(VERSION_PRINT_MESSAGE % __version__)
         return 0
 
     # handle ``init GameBundleName``
@@ -501,7 +511,7 @@ def main_inner(parser, argns):
     elif argns.subcommand == "play":
         play_command(bundname)
     elif argns.subcommand == "share":
-        subcmd_share(bundname)
+        subcmd_share(bundname, argns.dev)
     return 0
 
     # handle ``pygmentize -L``
@@ -863,6 +873,10 @@ def do_parse_args():
     either_one_option.add_argument(
         '-h', '--help', action='store_true',
         help='Print this help.')
+    either_one_option.add_argument(
+        '-d', '--dev', action='store_true',
+        help='Use the developer server (tool debug etc)'
+    )
 
     # ----------------
     #  subcommands
