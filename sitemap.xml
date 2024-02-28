@@ -80,4 +80,12 @@
          <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Other%20patterns/MVC%20examples/"/>
          
     </url>
+    <url>
+         <loc>https://gaudiatech.github.io/pyved-engine/Reference/Using%20sprites/</loc>
+         <lastmod>2024-02-28</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Reference/Using%20sprites/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Reference/Using%20sprites/"/>
+         
+    </url>
 </urlset>
