@@ -590,8 +590,14 @@
 <blockquote>
 <p>Have you heard about : <strong>Entity Component System (ECS)</strong> for Game Development?</p>
 </blockquote>
-<p>The <strong>Entity Component System (ECS)</strong> is a software architectural pattern commonly used in game development to manage and organize game objects, their behavior, and their data. 
-It is designed to improve code performance, scalability, and flexibility by separating the game's logic into distinct components and entities.</p>
+<p>The ECS pattern is a recent industry standard for game development, it's concept
+is to decompose game entities into "bricks" kind of like legos, so you can assemble
+things in a easier way and avoid confusion.</p>
+<p>The <strong>Entity Component System (ECS)</strong> is a modern software design pattern.</p>
+<p>It is commonly used in game development to manage and organize game objects,
+their behavior, and their data. 
+It is designed to improve code performance, scalability,
+and flexibility by separating the game's logic into distinct components and entities.</p>
 <p>Key Components of ECS are:</p>
 <ol>
 <li>
@@ -607,6 +613,10 @@ It is designed to improve code performance, scalability, and flexibility by sepa
 <p>In summary a <strong>component</strong> is a collection of field values.</p>
 <p>An <strong>entity</strong> is a <strong>container of components</strong></p>
 <p>A <strong>system</strong> is a part of the game logic, and have access to <strong>both entities and components</strong> </p>
+<p>To provide a visual description:</p>
+<p><img alt="ECS" src="../../images/ECSBlockDiagram.png" title="ECS Diagram" /></p>
+<p>Image credit: 
+<a href="https://docs.unity3d.com/Packages/com.unity.entities@0.1/manual/ecs_core.html">https://docs.unity3d.com/Packages/com.unity.entities@0.1/manual/ecs_core.html</a></p>
 <p>Let's explore ECS through an example: a role-playing game (RPG) where characters roam a virtual world. 
 We'll consider two types of entities: "Player" and "NPC."</p>
 <h3 id="components">Components :</h3>

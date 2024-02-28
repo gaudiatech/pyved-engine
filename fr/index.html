@@ -243,7 +243,7 @@
         
           <li class="md-nav__item">
   <a href="#why-pyved" class="md-nav__link">
-    Why Pyved
+    Why Pyved?
   </a>
   
 </li>
@@ -271,33 +271,6 @@
   <a href="#game-architecture" class="md-nav__link">
     Game architecture
   </a>
-  
-    <nav class="md-nav" aria-label="Game architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ecs-entity-component-system" class="md-nav__link">
-    ECS : Entity Component System
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mediator" class="md-nav__link">
-    Mediator
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mvc" class="md-nav__link">
-    MVC
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -578,7 +551,7 @@
         
           <li class="md-nav__item">
   <a href="#why-pyved" class="md-nav__link">
-    Why Pyved
+    Why Pyved?
   </a>
   
 </li>
@@ -607,33 +580,6 @@
     Game architecture
   </a>
   
-    <nav class="md-nav" aria-label="Game architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#ecs-entity-component-system" class="md-nav__link">
-    ECS : Entity Component System
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mediator" class="md-nav__link">
-    Mediator
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mvc" class="md-nav__link">
-    MVC
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -658,7 +604,7 @@
 <h2 id="introduction-to-pyved-engine">Introduction to Pyved Engine</h2>
 <p><strong>PYV</strong> is the name of a game engine fully written in python.</p>
 <p>It's a wrapper around the popular <code>pygame</code> library, therefore if you have some prior experience with developing games with <code>pygame</code>, transitioning to <strong>PYV</strong> should be extremely easy!</p>
-<h3 id="why-pyved">Why Pyved</h3>
+<h3 id="why-pyved">Why Pyved?</h3>
 <p>Confusion appears to exist within the community regarding the differentiation between a Python package, and a game engine.</p>
 <p>It's crucial to understand that although Pygame functions as a regular Python package/library. It doesn't provide the extensive array of features present in a specialized 2D game engine! Consequently, it might not satisfy all the prerequisites essential for the development of a fully-realized game.</p>
 <p>Pyved wants to create a new standard for python game development adding new features and possibilities, everything will be detailed into the <a href="#features">features</a> section.</p>
@@ -691,23 +637,26 @@
 <p><img alt="Game examples" src="images/gallery2.png" title="Games" /></p>
 <p><strong>You can checkout other examples of the games we did in the <a href="Showcase/">Showcase page</a></strong>  </p>
 <h2 id="game-architecture">Game architecture</h2>
-<p>We mentioned designs pattern before, let's make a brief summary here, but you can find more details in the relevant pages.</p>
-<h3 id="ecs-entity-component-system">ECS : Entity Component System</h3>
-<p>The ECS pattern is a recent industry standard for game development, it's concept is to decompose game entities into "bricks" kind of like legos, so you can assemble things in a easier way and avoid confusion.</p>
-<p>Read more in the <a href="Entity Component System\A bit of theory.md">ECS Theory</a> section to learn more about the theory behind ECS.</p>
-<p>If you want to checkout some code examples directly, go to <a href="Entity Component System\ECS examples.md">ECS Examples</a></p>
-<p><img alt="ECS" src="images/ECSBlockDiagram.png" title="ECS Diagram" /></p>
-<p>credit : <a href="https://docs.unity3d.com/Packages/com.unity.entities@0.1/manual/ecs_core.html">https://docs.unity3d.com/Packages/com.unity.entities@0.1/manual/ecs_core.html</a></p>
-<h3 id="mediator">Mediator</h3>
-<p>In the realm of game development, the Mediator Pattern serves as a crucial architectural concept. Think of it as the bridge that connects various game elements and entities, allowing for seamless interaction. Much like assembling game components into a cohesive whole, the Mediator Pattern simplifies the orchestration of complex systems, ensuring smoother gameplay and reduced confusion.</p>
-<p><img alt="Mediator" src="images/mediator.webp" title="Mediator diagram" /></p>
-<p>credit : <a href="https://medium.com/@andrewMacmurray/exploring-the-mediator-pattern-eadaebc871b4">https://medium.com/@andrewMacmurray/exploring-the-mediator-pattern-eadaebc871b4</a></p>
-<h3 id="mvc">MVC</h3>
-<p>MVC, or Model-View-Controller, is a foundational architectural pattern that has long been a cornerstone in software development. It divides an application into three interconnected components: Model, View, and Controller. Much like separate pieces of a well-organized puzzle, these components work in harmony to create a structured and efficient software system.</p>
-<p><img alt="MVC" src="images/mvc1.ppm" title="MVC diagram" /></p>
-<p>credit : <a href="https://www.researchgate.net/publication/342748612_Zetcil_Game_Mechanic_Framework_for_Unity_Game_Engine">https://www.researchgate.net/publication/342748612_Zetcil_Game_Mechanic_Framework_for_Unity_Game_Engine</a></p>
-<p><img alt="MVC" src="images/mvc.jpg" title="MVC diagram" /></p>
-<p>credit : <a href="https://www.technoarchsoftwares.com/blog/mvc-framework/">https://www.technoarchsoftwares.com/blog/mvc-framework/</a></p>
+<p>We mentioned design patterns before. In the context of <code>pyv</code>,
+you can select one out of three design patterns:
+- ECS : the <a href="Entity Component System\A bit of theory.md">Entity Component System</a>
+<br><br></p>
+<ul>
+<li>
+<p><a href="Other patterns\Event based programming.md">Mediator</a> : this solution uses a centralized event manager object that will simplify object communication
+<br><br></p>
+</li>
+<li>
+<p>MVC : the <a href="Other patterns\MVC Examples.md">Model-View-Controller pattern</a> is
+simply a more strict variant of the Mediator, where objects that send or receive
+events need to belong to one amongst three categories: model, view, controller.
+Then, the pattern enforces rules for how models, views  and controllers communicate.</p>
+</li>
+</ul>
+<p>Please check each dedicated page to learn more about the design pattern you plan to use.</p>
+<p>About ECS, which is very popular and is slowly becoming an industry standard:</p>
+<p>if you want to directly review some code examples you can go to
+<a href="Entity Component System\ECS examples.md">ECS Examples</a></p>
 
 
 
