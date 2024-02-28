@@ -16,6 +16,8 @@ nav:
     - 'GameTutorials/Breakout.md'
     - 'GameTutorials/Platformer.md'
     - 'GameTutorials/Roguelike.md'
+  - 'Reference':
+    - 'Reference/Using sprites.md'
   - 'ShareYourGames.md'
 
 
