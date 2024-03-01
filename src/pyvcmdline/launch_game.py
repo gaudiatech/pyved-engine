@@ -66,8 +66,8 @@ def game_execution(metadata, game_definition_module):
                 pyv.vars.updatefunc_ref, \
                 pyv.vars.endfunc_ref = game.enter, game.update, game.exit
     current_folder = os.getcwd()
-    if find_spc_folder(metadata['cartridge'], current_folder):
-        adhoc_folder = os.path.join('.', metadata['cartridge'], 'cartridge')
+    if find_spc_folder(metadata['slug'], current_folder):
+        adhoc_folder = os.path.join('.', metadata['slug'], 'cartridge')
     elif find_spc_folder('cartridge', current_folder):
         adhoc_folder = os.path.join('.', 'cartridge')
     else:

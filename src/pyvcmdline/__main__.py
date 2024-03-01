@@ -286,12 +286,12 @@ def create_folder_and_serialize_dict(folder0_name, data_dict):
         json.dump(data_dict, json_file, indent=4)
 
 
-def init_command(cartridge_name) -> None:
+def init_command(game_identifier) -> None:
     """
     this is the pyv-cli INIT command, it should create a new game bundle, fully operational
-    :param cartridge_name: name for your new bundle...
+    :param game_identifier: name for your new bundle...
     """
-    print(f" Using sub-command INIT: your new cartridge name is [{cartridge_name}]")
+    print(f" Calling sub-command INIT: with game identifier(slug)={game_identifier}")
     print('-' * 60)
     print('  Game templates:')
     for code, name in POSSIB_TEMPLATES.items():
@@ -308,15 +308,19 @@ def init_command(cartridge_name) -> None:
     # TODO perform this important check:
     #  assets need to be already available in cartridge/
 
-    pattern = '^[a-zA-Z0-9]+$'
-    is_validname = bool(re.match(pattern, cartridge_name))
-    while not is_validname:
-        print('*** WARNING: bundle name needs to contains only alphanumeric that is A-Z and a-z and 0-9 characters')
-        cartridge_name = input('please select another valid name for your game bundle: ')
-        is_validname = bool(re.match(pattern, cartridge_name))
-    x = cartridge_name
+    ok_pattern = '^[a-zA-Z0-9_]+$'
+    # is_validname = bool(re.match(pattern, game_identifier))
+    func_test_validname = lambda chosen_identifier: bool(re.match(ok_pattern, chosen_identifier))
+    # TODO use network to test if the name is available remotely
 
-    metadata['cartridge'] = x
+    while not func_test_validname(game_identifier):
+        print('*** WARNING: the selected game identifier is rejected. Expected format:')
+        print(' solely alphanumeric that is A-Z and a-z, plus 0-9 numbers and the underscore _ special character')
+        game_identifier = input('enter another game identifier(slug): ')
+
+    x = game_identifier
+
+    metadata['slug'] = x
     tmp = input('whats the name of the game? [Default: Equal to the bundle name]')
     metadata['game_title'] = tmp if len(tmp) > 0 else x
 
@@ -378,21 +382,22 @@ def create_zip_from_folder(bundle_name, source_folder):
 #         return int(os.fstat(self.fileno())[6])
 
 
-def trigger_publish(chosenslug, remote_cart_id) -> bool:
+def trigger_publish(slug) -> bool:
     """
-    once the game is available server-side as a stored cartridge (therefore it has a cartridge_id ...)
+    once the game is available server-side, as a stored cartridge,
+    (therefore your game has a slug/Server-side game identifier)
+
     we trigger the "PUBLISH" op server-side.
     This means the game will spawn/pop within the gaming CMS (cloudarcade)
 
-    :param chosenslug:
-    :param remote_cart_id: str that was provided by the server to uniquely identify a game cartridge
+    :param slug: str that the server uses to uniquely identify a cartridge
     stored server-side
     :return: True/False
     """
     dummy_json_str = """
 {
 "title": "This is the game title",
-"slug": "essaiFlappy",
+"slug": "flappy",
 "description": "This is a test game",
 "instructions": "Click any object to move",
 "width": 960,
@@ -401,13 +406,12 @@ def trigger_publish(chosenslug, remote_cart_id) -> bool:
 "thumb_2": "https://img.gamemonetize.com/ulol31p2l8xogmlxh1yqfa64dxzkyrix/512x384.jpg",
 "category": "Puzzle,Arcade,Action",
 "source": "API",
-"cartridge":"flappy"
 }
 """
     # check that can be deserialized...
     jsondata = json.loads(dummy_json_str)
-    jsondata['slug'] = x = chosenslug
-    jsondata['cartridge'] = y = remote_cart_id
+    jsondata['slug'] = x = slug
+    # jsondata['cartridge'] = y = slug
     # print(jsondata)
     # print(type(jsondata))
 
@@ -419,7 +423,7 @@ def trigger_publish(chosenslug, remote_cart_id) -> bool:
     print(reply.text)
 
 
-def upload_my_zip_file(zip_file_path: str, dev_mode: bool) -> None:
+def upload_my_zip_file(zip_file_path: str, gslug, dev_mode: bool) -> None:
     """
     :zip_file_path: as param name indicates
     :param: dev_mode is a flag to say if we target the dev server or prod server...
@@ -439,7 +443,7 @@ def upload_my_zip_file(zip_file_path: str, dev_mode: bool) -> None:
     reply = requests.post(
         url=api_endpoint,
         files=files,
-        data={'pyv-cli-flag': True, 'uploadBtn': 'Upload'}
+        data={'pyv-cli-flag': True, 'chosen-slug': gslug, 'uploadBtn': 'Upload'}
     )
     print('upload_my_zip_file called! Resp. is:')
     print(reply.text)
@@ -493,11 +497,23 @@ def subcmd_share(bundle_name, dev_flag_on):
     # pre-made func usage
     source_folder = zip_precise_target
 
+    # need to open cartridge, read metadata, read slug,
+    # to answer the question: whats the slug name?
+    whats_open = os.path.sep.join((source_folder, 'metadat.json'))
+    print('READING', whats_open, '...')
+    f_ptr = open(whats_open, 'r')
+    obj = json.load(f_ptr)
+    slug = obj['slug']
+    f_ptr.close()
+
+    print('read slug from metadata found: ', slug)
+    print()
+
     fn = create_zip_from_folder(bundle_name, source_folder)
     # print("ZIP file created:", output_zip_filename)
     # create_zip_from_folder(, os.getcwd())
     # print('tmpfile created ok')
-    upload_my_zip_file(fn, dev_flag_on)
+    upload_my_zip_file(fn, slug, dev_flag_on)
 
 
 def main_inner(parser, argns):
@@ -515,7 +531,7 @@ def main_inner(parser, argns):
 
     # handle ``init GameBundleName``
     if argns.subcommand == "pub":
-        y = trigger_publish(argns.slug, argns.cart_id)
+        y = trigger_publish(argns.slug)
         return 1 if y else 0
 
     bundname = argns.bundle_name
@@ -919,13 +935,10 @@ def do_parse_args():
     )
     # ——————————————————————————————————
     pubpp = subparsers.add_parser(
-        "pub", help="Publish a game based on its cartridge id"
+        "pub", help="Publish a game based on its slug"
     )
     pubpp.add_argument(
-        "slug", type=str, help="Chosen slug (slug means: identifier in the CM system.)"
-    )
-    pubpp.add_argument(
-        "cart_id", type=str, help="Cartridge id required, as provided by the server"
+        "slug", type=str, help="Chosen slug (slug = cartridge identifier in the cloud-based game warehouse)"
     )
     # +++ PUB subcommand {
 
