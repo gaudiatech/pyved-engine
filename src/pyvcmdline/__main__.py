@@ -46,16 +46,8 @@ VALID_SUBCOMMANDS = (
 )
 
 
-# ---------------------
-# constants for the sub command "share"
-# ---------------------
-API_HOST_DEV = 'http://127.0.0.1:8001'
-API_ENDPOINT_DEV = '{}/webapp_backend/do_upload.php'.format(API_HOST_DEV)  # to push a prototype to remote host
-FRUIT_URL_TEMPLATE_DEV = "{}play/{}"  # to add: host, slug
-
-API_HOST_PROD = 'https://jeuxtomi.alwaysdata.net'
-API_ENDPOINT_PROD = '{}/do_upload.php'.format(API_HOST_PROD)
-FRUIT_URL_TEMPLATE_PROD = '{}/vm.php?slug={}'
+from .pyvcli_config import API_HOST_PUSH_DEV, API_HOST_PLAY_DEV, API_HOST_PUSH_DEV, API_ENDPOINT_DEV, FRUIT_URL_TEMPLATE_DEV
+from .pyvcli_config import API_HOST_PUSH_BETA, API_HOST_PLAY_BETA, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
 
 
 # ---------------------
@@ -382,7 +374,7 @@ def create_zip_from_folder(bundle_name, source_folder):
 #         return int(os.fstat(self.fileno())[6])
 
 
-def trigger_publish(slug) -> bool:
+def trigger_publish(slug):
     """
     once the game is available server-side, as a stored cartridge,
     (therefore your game has a slug/Server-side game identifier)
@@ -419,11 +411,11 @@ def trigger_publish(slug) -> bool:
         url=TARG_TRIGGER_PUBLISH,
         data=json.dumps(jsondata)
     )
-    print(f'trigger_publish CALLED (arg:x,y=={x},{y})--- result is...')
+    print(f'trigger_publish CALLED (arg:x=={x})--- result is...')
     print(reply.text)
 
 
-def upload_my_zip_file(zip_file_path: str, gslug, dev_mode: bool) -> None:
+def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
     """
     :zip_file_path: as param name indicates
     :param: dev_mode is a flag to say if we target the dev server or prod server...
@@ -431,7 +423,7 @@ def upload_my_zip_file(zip_file_path: str, gslug, dev_mode: bool) -> None:
     Side effect: puts something important in the paperclip!
     """
     file_to_send = zip_file_path  # dont forget the extension!
-    api_endpoint = API_ENDPOINT_DEV if dev_mode else API_ENDPOINT_PROD
+    api_endpoint = API_ENDPOINT_DEV if debugmode else API_ENDPOINT_BETA
     # serv_host = DEV_SERVER_HOST if dev_mode else PROD_SERVER_HOST
 
     files = {
@@ -448,10 +440,10 @@ def upload_my_zip_file(zip_file_path: str, gslug, dev_mode: bool) -> None:
     print('upload_my_zip_file called! Resp. is:')
     print(reply.text)
     rep_obj = json.loads(reply.text)
-    if dev_mode:
-        fruit_url = FRUIT_URL_TEMPLATE_DEV.format(API_HOST_DEV, rep_obj[1])
+    if debugmode:
+        fruit_url = FRUIT_URL_TEMPLATE_DEV.format(API_HOST_PLAY_DEV, rep_obj[1])
     else:
-        fruit_url = FRUIT_URL_TEMPLATE_PROD.format(API_HOST_PROD, rep_obj[1])
+        fruit_url = FRUIT_URL_TEMPLATE_BETA.format(API_HOST_PLAY_BETA, rep_obj[1])
 
     pyperclip.copy(fruit_url)
     print(f'URL:{fruit_url} has been copied to the paperclip!')
@@ -531,8 +523,8 @@ def main_inner(parser, argns):
 
     # handle ``init GameBundleName``
     if argns.subcommand == "pub":
-        y = trigger_publish(argns.slug)
-        return 1 if y else 0
+        trigger_publish(argns.slug)
+        return
 
     bundname = argns.bundle_name
     if argns.subcommand == "init":
