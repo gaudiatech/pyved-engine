@@ -10,6 +10,10 @@ experience with developing games with `pygame`, transitioning to **PYV** should 
 extremely easy!
 
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 ### Why Pyved?
 
 Confusion appears to exist within the community regarding the differentiation
@@ -22,6 +26,7 @@ prerequisites essential for the development of a fully-realized game.
 
 Pyved wants to create a new standard for python game development adding new features and
 possibilities, everything will be detailed into the [features](#features) section.
+
 
 
 ### Goals
@@ -51,6 +56,7 @@ The game engine comes packed with a ton of features:
 - **Isometric 3D game engine** 
 - **Ease of distribution** (Our platform KataGames will help deploy the game and make it playable through a browser in seconds)
 
+<<<<<<< Updated upstream
 ...It's only the beginning.
 
 More features will be available soon.
@@ -74,6 +80,26 @@ you can select one out of three design patterns:
 <br><br>
 
 - MVC : the [Model-View-Controller pattern](<Other patterns/MVC examples.md>) is
+=======
+... It's only the beginning. More features will be added soon.
+
+![Game examples](./images/gallery2.png "Games")
+
+**You can checkout other examples of the games we did in the [Showcase page](<Showcase.md>)**  
+
+
+## Game architecture 
+
+We mentioned design patterns before. In the context of `pyv`,
+you can select one out of three design patterns:
+- ECS : the [Entity Component System](<Entity Component System\A bit of theory.md>)
+<br><br>
+
+- [Mediator](<Other patterns\Event based programming.md>) : this solution uses a centralized event manager object that will simplify object communication
+<br><br>
+
+- MVC : the [Model-View-Controller pattern](<Other patterns\MVC Examples.md>) is
+>>>>>>> Stashed changes
 simply a more strict variant of the Mediator, where objects that send or receive
 events need to belong to one amongst three categories: model, view, controller.
 Then, the pattern enforces rules for how models, views  and controllers communicate.
