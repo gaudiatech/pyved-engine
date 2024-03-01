@@ -1,9 +1,8 @@
 """
-    pyved_engine.cmdline
-    ~~~~~~~~~~~~~~~~
-    Definition of the command line interface.
+    pyved_engine/__main__
 
-    :copyright: Copyright 2018-2023 by the Kata.Games team.
+    Here, we define the command line interface
+    :copyright: Copyright 2018-2024 by the Kata.Games team.
     :license: LGPL-3.0, see LICENSE for details.
 """
 import argparse
@@ -17,7 +16,9 @@ import tempfile
 import time
 import zipfile
 
+import pyperclip
 import requests  # used to implement the `pyv-cli share` feature
+
 
 from pyved_engine import vars
 from .json_prec import TEMPL_ID_TO_JSON_STR
@@ -43,12 +44,24 @@ VALID_SUBCOMMANDS = (
     'share',
     'pub'
 )
-TARG_TRIGGER_PUBLISH = 'https://kata.games/api/uploads.php'  # script to upload the end result (Published game)
 
-DEV_SERVER_HOST = 'http://127.0.0.1:8001/'
-TARGET_SCRIPT_SHARE_DEV = DEV_SERVER_HOST+'webapp_backend/do_upload.php'  # script to push a prototype to remote host
-PROD_SERVER_HOST = 'https://app.kata.games/'
-TARGET_SCRIPT_SHARE_PROD = PROD_SERVER_HOST+'do_upload.php'
+
+# ---------------------
+# constants for the sub command "share"
+# ---------------------
+API_HOST_DEV = 'http://127.0.0.1:8001'
+API_ENDPOINT_DEV = '{}/webapp_backend/do_upload.php'.format(API_HOST_DEV)  # to push a prototype to remote host
+FRUIT_URL_TEMPLATE_DEV = "{}play/{}"  # to add: host, slug
+
+API_HOST_PROD = 'https://jeuxtomi.alwaysdata.net'
+API_ENDPOINT_PROD = '{}/do_upload.php'.format(API_HOST_PROD)
+FRUIT_URL_TEMPLATE_PROD = '{}/vm.php?slug={}'
+
+
+# ---------------------
+# constants for the sub command "pub"
+# ---------------------
+TARG_TRIGGER_PUBLISH = 'https://kata.games/api/uploads.php'  # script to upload the end result (Published game)
 
 
 # -----------------------------------
@@ -304,7 +317,7 @@ def init_command(cartridge_name) -> None:
     x = cartridge_name
 
     metadata['cartridge'] = x
-    tmp = input('whats the name of your game? [Default: Same as the bundle]')
+    tmp = input('whats the name of the game? [Default: Equal to the bundle name]')
     metadata['game_title'] = tmp if len(tmp) > 0 else x
 
     tmp = input('whos the author? [Default: Unknown]')
@@ -325,6 +338,8 @@ def init_command(cartridge_name) -> None:
     for _ in range(3):
         print()
     print('GAME BUNDLE=', x)
+    print('Important remark: do not rename the name of the folder! (Game bundle)')
+
     print(f'--->Succesfully created! Now you can type `pyv-cli play {x}`')
     print('Go ahead and have fun ;)')
 
@@ -411,11 +426,9 @@ def upload_my_zip_file(zip_file_path: str, dev_mode: bool) -> None:
 
     Side effect: puts something important in the paperclip!
     """
-    import pyperclip
-
     file_to_send = zip_file_path  # dont forget the extension!
-    api_endpoint = TARGET_SCRIPT_SHARE_DEV if dev_mode else TARGET_SCRIPT_SHARE_PROD
-    serv_host = DEV_SERVER_HOST if dev_mode else PROD_SERVER_HOST
+    api_endpoint = API_ENDPOINT_DEV if dev_mode else API_ENDPOINT_PROD
+    # serv_host = DEV_SERVER_HOST if dev_mode else PROD_SERVER_HOST
 
     files = {
         'uploadedFile': (file_to_send,
@@ -432,9 +445,9 @@ def upload_my_zip_file(zip_file_path: str, dev_mode: bool) -> None:
     print(reply.text)
     rep_obj = json.loads(reply.text)
     if dev_mode:
-        fruit_url = DEV_SERVER_HOST + 'play/' + rep_obj[1]
+        fruit_url = FRUIT_URL_TEMPLATE_DEV.format(API_HOST_DEV, rep_obj[1])
     else:
-        fruit_url = PROD_SERVER_HOST + 'vm.php?cartname=' + rep_obj[1]
+        fruit_url = FRUIT_URL_TEMPLATE_PROD.format(API_HOST_PROD, rep_obj[1])
 
     pyperclip.copy(fruit_url)
     print(f'URL:{fruit_url} has been copied to the paperclip!')
