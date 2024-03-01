@@ -15,7 +15,12 @@ JSON_PREC_NOASSETS = """\
 "assets":[
 ],
 "sounds": [
-]
+],
+"slug": "foundation_Cartridge",
+"game_title": "Untitled Game",
+"thumbnail512x384": "thumb_2.png",
+"thumbnail512x512": "thumb_1.png",
+"instructions": "not provided"
 }
 """
 
@@ -31,9 +36,12 @@ JSON_PREC_PLATFORMER = """\
 "my_map.ncsv"
 ],
 "sounds": [],
-"cartridge": "pyvTutoZero",
+"slug": "pyvTutoZero",
 "game_title": "Skeleton for a platformer game",
-"build_date": "Thu Sep 14 11:31:49 2023"
+"build_date": "Thu Sep 14 11:31:49 2023",
+"thumbnail512x384": "thumb_2.png",
+"thumbnail512x512": "thumb_1.png",
+"instructions": "not provided"
 }
 """
 
@@ -63,9 +71,12 @@ JSON_PREC_CHESS ="""
 "cyan_square.png"
 ],
 "sounds": [],
-"cartridge": "testChess",
+"slug": "testChess",
 "game_title": "chessBundle",
-"build_date": "Fri Sep 15 15:10:47 2023"
+"build_date": "Fri Sep 15 15:10:47 2023",
+"thumbnail512x384": "thumb_2.png",
+"thumbnail512x512": "thumb_1.png",
+"instructions": "not provided"
 }
 """
 
@@ -79,9 +90,12 @@ JSON_PREC_ROGUE = """
 "author": "moonbak",
 "assets": ["tileset.png", "monster.png", "avatar1.png"],
 "sounds": [],
-"cartridge": "template4",
+"slug": "template4",
 "game_title": "Roguelike Template",
-"build_date": "Sat Sep 16 22:21:30 2023"
+"build_date": "Sat Sep 16 22:21:30 2023",
+"thumbnail512x384": "thumb_2.png",
+"thumbnail512x512": "thumb_1.png",
+"instructions": "not provided"
 }
 """
 
