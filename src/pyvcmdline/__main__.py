@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 import zipfile
+from pprint import pprint
 
 import pyperclip
 import requests  # used to implement the `pyv-cli share` feature
@@ -40,6 +41,7 @@ MAX_TEMPLATE_ID = 4
 VERSION_PRINT_MESSAGE = 'Pyved-engine version %s (c) 2018-2023 the Kata.Games Team: Thomas Iwaszko and contributors.'
 VALID_SUBCOMMANDS = (
     'init',
+    'test',
     'play',
     'share',
     'pub'
@@ -48,7 +50,7 @@ VALID_SUBCOMMANDS = (
 
 from .pyvcli_config import API_HOST_PUSH_DEV, API_HOST_PLAY_DEV, API_HOST_PUSH_DEV, API_ENDPOINT_DEV, FRUIT_URL_TEMPLATE_DEV
 from .pyvcli_config import API_HOST_PUSH_BETA, API_HOST_PLAY_BETA, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
-
+from .pyvcli_config import VMSTORAGE_URL
 
 # ---------------------
 # constants for the sub command "pub"
@@ -225,7 +227,7 @@ TARG_TRIGGER_PUBLISH = 'https://kata.games/api/uploads.php'  # script to upload 
 #     json.dump(result, sys.stdout)
 
 
-def play_command(x):
+def play_subcommand(x):
     metadata = None
     try:
         fptr = open(fpath_join(x, 'cartridge', 'metadat.json'), 'r')
@@ -284,7 +286,8 @@ def init_command(game_identifier) -> None:
     :param game_identifier: name for your new bundle...
     """
     print(f" Calling sub-command INIT: with game identifier(slug)={game_identifier}")
-    print('-' * 60)
+    print()
+
     print('  Game templates:')
     for code, name in POSSIB_TEMPLATES.items():
         print(f'    {code}:  {name}')
@@ -388,7 +391,7 @@ def trigger_publish(slug):
     """
     dummy_json_str = """
 {
-"title": "This is the game title",
+"game_title": "This is the game title",
 "slug": "flappy",
 "description": "This is a test game",
 "instructions": "Click any object to move",
@@ -413,6 +416,79 @@ def trigger_publish(slug):
     )
     print(f'trigger_publish CALLED (arg:x=={x})--- result is...')
     print(reply.text)
+
+
+def _bundle_renaming(path_to_bundle):
+    # there is a NORM that needs to be followed,
+    # the directory is named accordingly to the slug
+    pass
+
+
+def _query_slug_availability(x):
+    # ---------------------------------------
+    #  test for slug availability!
+    # ---------------------------------------
+    CAN_UPLOAD_SCRIPT = 'can_upload.php'
+    slug_avail_serv_truth = requests.get(
+        VMSTORAGE_URL+CAN_UPLOAD_SCRIPT,
+        {'slug': x}
+    )
+    # error handling after ping the VMstorage remote service
+    if slug_avail_serv_truth.status_code != 200:
+        raise Exception('[netw error] cannot reach the VMstorage service! Contact developers to report that bug please')
+    obj_serv_truth = slug_avail_serv_truth.json()
+    if ('success' not in obj_serv_truth) or not obj_serv_truth['success']:
+        raise Exception('[protocol error] unexpected result after communication with VMstorage service. Contact devs')
+    return obj_serv_truth
+
+
+def ensure_correct_slug(givenslug):
+    """
+    goal=
+    renaming bundle if and only if it is required
+    """
+    server_truth = _query_slug_availability(givenslug)
+    assert(server_truth['success'])
+
+    print('availability?', server_truth['available'])
+    if not (server_truth['available']):
+        print('SUGGESTIONS:')
+        for elt in server_truth['suggestions']:
+            print('   *', elt)
+    print()
+    print('-' * 60)
+
+
+def test_subcommand(bundle_name):
+    print('***TESTING***')
+    print('passed arg:', bundle_name)
+    print()
+    metadat = _read_bundle_metadata(bundle_name)
+    pprint(metadat)
+    print()
+    print('COHESION test:', bundle_name==metadat['slug'])
+    print()
+    print('slug availability:')
+    pprint(_query_slug_availability(metadat['slug']))
+
+
+def _read_bundle_metadata(bundle_name):
+    # Check if the folder exists, otherwise we'll throw an error
+    wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
+    if not os.path.exists(wrapper_bundle):
+        raise FileNotFoundError('ERR! Cannot find the bundle named:', bundle_name)
+
+    cartridge_folder = fpath_join(wrapper_bundle, 'cartridge')
+    if not os.path.exists(cartridge_folder):
+        raise ValueError('ERR! Bundle format isnt valid, cartridge structure is missing')
+
+    # need to open cartridge, read metadata,
+    whats_open = os.path.sep.join((cartridge_folder, 'metadat.json'))
+    print('READING', whats_open, '...')
+    f_ptr = open(whats_open, 'r')
+    obj = json.load(f_ptr)
+    f_ptr.close()
+    return obj
 
 
 def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
@@ -476,32 +552,17 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
     # print("Response content:", response.text)
 
 
-def subcmd_share(bundle_name, dev_flag_on):
-    # Check if the folder exists, otherwise we'll throw an error
-    wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
-    if not os.path.exists(wrapper_bundle):
-        raise FileNotFoundError('ERR! Cannot find the specified bundle, named:', bundle_name)
-
-    zip_precise_target = fpath_join(wrapper_bundle, 'cartridge')
-    if not os.path.exists(zip_precise_target):
-        raise ValueError('ERR! Seems like you have passed smth that is not a game bundle...')
+def share_subcommand(bundle_name, dev_flag_on):
+    # FIRST, need to answer the question: whats the slug name?
+    metadata = _read_bundle_metadata(bundle_name)
+    slug = metadata['slug']
+    print('slug found:', slug)
 
     # pre-made func usage
-    source_folder = zip_precise_target
+    wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
+    zip_precise_target = fpath_join(wrapper_bundle, 'cartridge')
 
-    # need to open cartridge, read metadata, read slug,
-    # to answer the question: whats the slug name?
-    whats_open = os.path.sep.join((source_folder, 'metadat.json'))
-    print('READING', whats_open, '...')
-    f_ptr = open(whats_open, 'r')
-    obj = json.load(f_ptr)
-    slug = obj['slug']
-    f_ptr.close()
-
-    print('read slug from metadata found: ', slug)
-    print()
-
-    fn = create_zip_from_folder(bundle_name, source_folder)
+    fn = create_zip_from_folder(bundle_name, zip_precise_target)
     # print("ZIP file created:", output_zip_filename)
     # create_zip_from_folder(, os.getcwd())
     # print('tmpfile created ok')
@@ -526,13 +587,19 @@ def main_inner(parser, argns):
         trigger_publish(argns.slug)
         return
 
-    bundname = argns.bundle_name
+    bname = argns.bundle_name
     if argns.subcommand == "init":
-        init_command(bundname)
+        init_command(bname)
+
+    elif argns.subcommand == "test":
+        test_subcommand(bname)
+
     elif argns.subcommand == "play":
-        play_command(bundname)
+        play_subcommand(bname)
+
     elif argns.subcommand == "share":
-        subcmd_share(bundname, argns.dev)
+        share_subcommand(bname, argns.dev)
+
     return 0
 
     # handle ``pygmentize -L``
@@ -915,6 +982,15 @@ def do_parse_args():
     )
     play_parser.add_argument(
         "bundle_name", type=str, nargs="?", default=".", help="Specified bundle (default: current folder)"
+    )
+    # ——————————————————————————————————
+
+    # +++ PLAY subcommand
+    play_parser = subparsers.add_parser(
+        "test", help="only for debug"
+    )
+    play_parser.add_argument(
+        "bundle_name", type=str
     )
     # ——————————————————————————————————
 
