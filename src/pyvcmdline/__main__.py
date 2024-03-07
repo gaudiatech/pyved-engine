@@ -16,46 +16,42 @@ import tempfile
 import time
 import zipfile
 from pprint import pprint
-
 import pyperclip
 import requests  # used to implement the `pyv-cli share` feature
-
-
 from pyved_engine import vars
 from .json_prec import TEMPL_ID_TO_JSON_STR
+from .const import *
+from .pyvcli_config import API_HOST_PUSH_DEV, API_HOST_PLAY_DEV, API_HOST_PUSH_DEV, API_ENDPOINT_DEV, \
+    FRUIT_URL_TEMPLATE_DEV
+from .pyvcli_config import API_HOST_PUSH_BETA, API_HOST_PLAY_BETA, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
+from .pyvcli_config import VMSTORAGE_URL
 
 
 __version__ = vars.ENGINE_VERSION_STR
 
 
-# - just various constants
-PLAY_SCRIPT_NAME = 'launch_game'
-POSSIB_TEMPLATES = {
-    0: 'Empty',
-    1: 'Breakout',
-    2: 'Platformer',
-    3: 'Chess',
-    4: 'Roguelike'
-}
-MAX_TEMPLATE_ID = 4
-VERSION_PRINT_MESSAGE = 'Pyved-engine version %s (c) 2018-2023 the Kata.Games Team: Thomas Iwaszko and contributors.'
-VALID_SUBCOMMANDS = (
-    'init',
-    'test',
-    'play',
-    'share',
-    'pub'
-)
-
-
-from .pyvcli_config import API_HOST_PUSH_DEV, API_HOST_PLAY_DEV, API_HOST_PUSH_DEV, API_ENDPOINT_DEV, FRUIT_URL_TEMPLATE_DEV
-from .pyvcli_config import API_HOST_PUSH_BETA, API_HOST_PLAY_BETA, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
-from .pyvcli_config import VMSTORAGE_URL
-
-# ---------------------
-# constants for the sub command "pub"
-# ---------------------
-TARG_TRIGGER_PUBLISH = 'https://kata.games/api/uploads.php'  # script to upload the end result (Published game)
+def _verify_metadata(mdat_obj) -> str:
+    """
+    confirm that the metadata contains all required fields
+    returns a str if something is missing!
+    """
+    expected_fields = (
+        'assets',
+        'author',
+        'build_date',
+        'dependencies',
+        'description',
+        'game_title',
+        'instructions',
+        'slug',
+        'sounds',
+        'thumbnail512x384',
+        'thumbnail512x512',
+        'vmlib_ver'
+    )
+    for k in expected_fields:
+        if k not in mdat_obj:
+            return k
 
 
 # -----------------------------------
@@ -246,7 +242,7 @@ def play_subcommand(x):
         if x == '.':
             vmsl = importlib.import_module(PLAY_SCRIPT_NAME, None)
         else:
-            vmsl = importlib.import_module('.'+PLAY_SCRIPT_NAME, x)
+            vmsl = importlib.import_module('.' + PLAY_SCRIPT_NAME, x)
         vmsl.bootgame(metadata)
 
 
@@ -327,7 +323,7 @@ def init_command(game_identifier) -> None:
 
     # Get the absolute path of the current script
     script_directory = os.path.dirname(os.path.abspath(__file__))
-    lg_script_blueprint_filename = fpath_join(script_directory, PLAY_SCRIPT_NAME+'.py')
+    lg_script_blueprint_filename = fpath_join(script_directory, PLAY_SCRIPT_NAME + '.py')
     template_blueprint_folder = fpath_join(script_directory, f'template_{template_id}')
     target_bundle_folder = fpath_join(os.getcwd(), x)
 
@@ -430,7 +426,7 @@ def _query_slug_availability(x):
     # ---------------------------------------
     CAN_UPLOAD_SCRIPT = 'can_upload.php'
     slug_avail_serv_truth = requests.get(
-        VMSTORAGE_URL+CAN_UPLOAD_SCRIPT,
+        VMSTORAGE_URL + CAN_UPLOAD_SCRIPT,
         {'slug': x}
     )
     # error handling after ping the VMstorage remote service
@@ -448,7 +444,7 @@ def ensure_correct_slug(givenslug):
     renaming bundle if and only if it is required
     """
     server_truth = _query_slug_availability(givenslug)
-    assert(server_truth['success'])
+    assert (server_truth['success'])
 
     print('availability?', server_truth['available'])
     if not (server_truth['available']):
@@ -463,11 +459,19 @@ def test_subcommand(bundle_name):
     print('***TESTING***')
     print('passed arg:', bundle_name)
     print()
+
     metadat = _read_bundle_metadata(bundle_name)
     pprint(metadat)
     print()
-    print('COHESION test:', bundle_name==metadat['slug'])
+    btest = _verify_metadata(metadat)
+    print('valid metadata?', btest is None)
+    if btest is not None:
+        raise ValueError('Invalid metadata file! Missing key= {}'.format(btest))
+
     print()
+    print('COHESION test:', bundle_name == metadat['slug'])
+    print()
+
     print('slug availability:')
     pprint(_query_slug_availability(metadat['slug']))
 
