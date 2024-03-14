@@ -6,7 +6,7 @@ Constants for the sub command "share"
 API_HOST_PLAY_DEV = 'http://127.0.0.1:8001'
 
 API_HOST_PUSH_DEV = 'http://127.0.0.1:8001'
-API_ENDPOINT_DEV = '{}/webapp_backend/do_upload.php'.format(API_HOST_PUSH_DEV)  # to push a prototype to remote host
+API_ENDPOINT_DEV = '{}/do_upload.php'.format(API_HOST_PUSH_DEV)  # to push a prototype to remote host
 FRUIT_URL_TEMPLATE_DEV = "{}/play/{}"  # to add: host, slug
 
 
