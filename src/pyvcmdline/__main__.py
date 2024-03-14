@@ -456,9 +456,7 @@ def ensure_correct_slug(givenslug):
 
 
 def test_subcommand(bundle_name):
-    print('***TESTING***')
-    print('passed arg:', bundle_name)
-    print()
+    print(f"***TESTING bundle {bundle_name}***")
 
     metadat = _read_bundle_metadata(bundle_name)
     pprint(metadat)
@@ -468,12 +466,38 @@ def test_subcommand(bundle_name):
     if btest is not None:
         raise ValueError('Invalid metadata file! Missing key= {}'.format(btest))
 
+    # ensure that thumbnails & assets described do exist:
+    print('ensuring if assets exist')
+    files_exp_li = [  # all expected files need to be known
+        metadat['thumbnail512x384'],
+        metadat['thumbnail512x512']
+    ]
+    files_exp_li.extend(metadat['assets'])
+    for elt in files_exp_li:
+        print('____testing file:', elt)
+        if not _file_exists_cart_folder(elt, bundle_name):
+            raise FileNotFoundError('cannot find asset:', elt)
+    print('assets --->OK')
     print()
+
     print('COHESION test:', bundle_name == metadat['slug'])
     print()
 
-    print('slug availability:')
-    pprint(_query_slug_availability(metadat['slug']))
+    print('~ Serv-side Slug Availability? ~')
+    obj = _query_slug_availability(metadat['slug'])
+    if not obj['success']:
+        raise ValueError('cannot read info from server!')
+    print(' ->', 'yes' if obj['available'] else 'no')
+    if not obj['available']:
+        print('suggestions:')
+        pprint(obj['suggestions'])
+
+
+def _file_exists_cart_folder(filename, bundle_name):
+    wrapper_folder = fpath_join(os.getcwd(), bundle_name)
+    cartridge_folder = fpath_join(wrapper_folder, 'cartridge')
+    targ = os.path.sep.join((cartridge_folder, filename))
+    return os.path.isfile(targ)
 
 
 def _read_bundle_metadata(bundle_name):
@@ -481,7 +505,6 @@ def _read_bundle_metadata(bundle_name):
     wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
     if not os.path.exists(wrapper_bundle):
         raise FileNotFoundError('ERR! Cannot find the bundle named:', bundle_name)
-
     cartridge_folder = fpath_join(wrapper_bundle, 'cartridge')
     if not os.path.exists(cartridge_folder):
         raise ValueError('ERR! Bundle format isnt valid, cartridge structure is missing')
