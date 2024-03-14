@@ -26,7 +26,6 @@ from .pyvcli_config import API_HOST_PUSH_DEV, API_HOST_PLAY_DEV, API_HOST_PUSH_D
 from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
 from .pyvcli_config import VMSTORAGE_URL
 
-
 __version__ = vars.ENGINE_VERSION_STR
 
 
@@ -224,6 +223,8 @@ def _verify_metadata(mdat_obj) -> str:
 
 
 def play_subcommand(x):
+    if '.' != x and os.path.isdir('cartridge'):
+        raise ValueError('launching with a "cartridge" in the current folder, but no parameter "." is forbidden')
     metadata = None
     try:
         fptr = open(fpath_join(x, 'cartridge', 'metadat.json'), 'r')
