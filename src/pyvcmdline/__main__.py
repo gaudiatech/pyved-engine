@@ -23,7 +23,7 @@ from .json_prec import TEMPL_ID_TO_JSON_STR
 from .const import *
 from .pyvcli_config import API_HOST_PUSH_DEV, API_HOST_PLAY_DEV, API_HOST_PUSH_DEV, API_ENDPOINT_DEV, \
     FRUIT_URL_TEMPLATE_DEV
-from .pyvcli_config import API_HOST_PUSH_BETA, API_HOST_PLAY_BETA, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
+from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
 from .pyvcli_config import VMSTORAGE_URL
 
 
@@ -426,7 +426,7 @@ def _query_slug_availability(x):
     # ---------------------------------------
     CAN_UPLOAD_SCRIPT = 'can_upload.php'
     slug_avail_serv_truth = requests.get(
-        VMSTORAGE_URL + CAN_UPLOAD_SCRIPT,
+        VMSTORAGE_URL + '/' + CAN_UPLOAD_SCRIPT,
         {'slug': x}
     )
     # error handling after ping the VMstorage remote service
@@ -523,7 +523,7 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
     if debugmode:
         fruit_url = FRUIT_URL_TEMPLATE_DEV.format(API_HOST_PLAY_DEV, rep_obj[1])
     else:
-        fruit_url = FRUIT_URL_TEMPLATE_BETA.format(API_HOST_PLAY_BETA, rep_obj[1])
+        fruit_url = FRUIT_URL_TEMPLATE_BETA.format(BETA_VM_API_HOST, rep_obj[1])
 
     pyperclip.copy(fruit_url)
     print(f'URL:{fruit_url} has been copied to the paperclip!')
