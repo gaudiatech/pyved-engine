@@ -3,7 +3,6 @@
 # ---------------------
 
 TARG_TRIGGER_PUBLISH = 'https://kata.games/api/uploads.php'  # script to upload the end result (Published game)
-
 # - just various constants
 PLAY_SCRIPT_NAME = 'launch_game'
 POSSIB_TEMPLATES = {
@@ -14,11 +13,4 @@ POSSIB_TEMPLATES = {
     4: 'Roguelike'
 }
 MAX_TEMPLATE_ID = 4
-VERSION_PRINT_MESSAGE = 'Pyved-engine version %s (c) 2018-2023 the Kata.Games Team: Thomas Iwaszko and contributors.'
-VALID_SUBCOMMANDS = (
-    'init',
-    'test',
-    'play',
-    'share',
-    'pub'
-)
+VERSION_PRINT_MESSAGE = 'pyved-engine v. %s (c) 2018-2024 the Kata.Games Team, Thomas EDER et al.'

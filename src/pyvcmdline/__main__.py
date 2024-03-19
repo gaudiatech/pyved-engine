@@ -598,36 +598,42 @@ def share_subcommand(bundle_name, dev_flag_on):
 
 
 def main_inner(parser, argns):
-    if (not argns.version) and argns.subcommand not in VALID_SUBCOMMANDS:
-        parser.print_help()
-        return 1
-
-    if argns.help:
-        parser.print_help()
-        return 0
+    subcommand_mapping = {  # maps the subcommand str to the python func name
+        'init': 'init_command',
+        'test': 'test_subcommand',
+        'upgrade': None,
+        'play': 'play_subcommand',
+        'share': 'share_subcommand',
+        'pub': None  # trigger_publish
+    }
+    extra_flags_subcommands = {'share'}  # mark all subcommands that use the 'dev' mode flag
 
     if argns.version:
         print(VERSION_PRINT_MESSAGE % __version__)
         return 0
 
-    # handle ``init GameBundleName``
-    if argns.subcommand == "pub":
-        trigger_publish(argns.slug)
-        return
+    if argns.help:
+        parser.print_help()
+        return 0
 
-    bname = argns.bundle_name
-    if argns.subcommand == "init":
-        init_command(bname)
+    if argns.subcommand not in subcommand_mapping.keys():
+        parser.print_help()
+        return 1
 
-    elif argns.subcommand == "test":
-        test_subcommand(bname)
+    if argns.subcommand not in subcommand_mapping.keys():
+        raise ValueError(f"subcommand: {argns.subcommand} not recognized!")
 
-    elif argns.subcommand == "play":
-        play_subcommand(bname)
+    if subcommand_mapping[argns.subcommand] is None:
+        raise NotImplementedError(f"subcommand: {argns.subcommand} not implemented yet!")
 
-    elif argns.subcommand == "share":
-        share_subcommand(bname, argns.dev)
+    subcommand_name = subcommand_mapping[argns.subcommand]
+    adhoc_subcommand_func = globals()[subcommand_name]
 
+    if argns.subcommand not in extra_flags_subcommands:
+        adhoc_subcommand_func(argns.bundle_name)
+    else:
+        # a few subcommands require the the dev mode flag, also!
+        adhoc_subcommand_func(argns.bundle_name, argns.dev)
     return 0
 
     # handle ``pygmentize -L``
@@ -994,16 +1000,15 @@ def do_parse_args():
         help='Use the developer server (tool debug etc)'
     )
 
-    # ----------------
-    #  subcommands
-    # ----------------
+    # Declare all subcommands
     subparsers = parser.add_subparsers(title="Subcommands", dest="subcommand", required=False)
 
+    # ——————————————————————————————————
     # +++ INIT subcommand
     init_parser = subparsers.add_parser("init", help="Initialize something")
     init_parser.add_argument("bundle_name", type=str, help="Name of the bundle")
-    # ——————————————————————————————————
 
+    # ——————————————————————————————————
     # +++ PLAY subcommand
     play_parser = subparsers.add_parser(
         "play", help="Play a given game bundle now!"
@@ -1011,17 +1016,27 @@ def do_parse_args():
     play_parser.add_argument(
         "bundle_name", type=str, nargs="?", default=".", help="Specified bundle (default: current folder)"
     )
-    # ——————————————————————————————————
 
-    # +++ PLAY subcommand
+    # ——————————————————————————————————
+    # +++ UPGRADE subcommand:
+    # the goal here is to enable katagames API calls from inside a game
+    play_parser = subparsers.add_parser(
+        "upgrade", help="Upgrade a given game, to enable katagames API calls"
+    )
+    play_parser.add_argument(
+        "bundle_name", type=str, nargs="?", default=".", help="Specified bundle"
+    )
+
+    # ——————————————————————————————————
+    # +++ TEST subcommand
     play_parser = subparsers.add_parser(
         "test", help="only for debug"
     )
     play_parser.add_argument(
         "bundle_name", type=str
     )
-    # ——————————————————————————————————
 
+    # ——————————————————————————————————
     # +++ SHARE subcommand {
     share_parser = subparsers.add_parser(
         "share", help="Share a given game bundle with the world"
@@ -1029,16 +1044,20 @@ def do_parse_args():
     share_parser.add_argument(
         "bundle_name", type=str, nargs="?", default=".", help="Specified bundle (default: current folder)"
     )
+
     # ——————————————————————————————————
+    # +++ PUB subcommand {
     pubpp = subparsers.add_parser(
         "pub", help="Publish a game based on its slug"
     )
     pubpp.add_argument(
         "slug", type=str, help="Chosen slug (slug = cartridge identifier in the cloud-based game warehouse)"
     )
-    # +++ PUB subcommand {
 
     ret_args = parser.parse_args()
+    # print('debug:')
+    # print(ret_args)
+    # print()
     main_inner(parser, ret_args)
 
     # flags_only = parser.add_argument_group('Flags')
