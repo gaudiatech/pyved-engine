@@ -28,7 +28,6 @@ from .pyvcli_config import API_HOST_PLAY_DEV, API_ENDPOINT_DEV, \
 from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
 from .pyvcli_config import VMSTORAGE_URL
 
-
 __version__ = vars.ENGINE_VERSION_STR
 
 
@@ -481,7 +480,7 @@ def ensure_correct_slug(givenslug):
 def test_subcommand(bundle_name):
     print(f"***TESTING bundle {bundle_name}***")
 
-    metadat = _read_bundle_metadata(bundle_name)
+    metadat = _read_metadata(bundle_name)
     pprint(metadat)
     print()
     btest = _verify_metadata(metadat)
@@ -523,7 +522,7 @@ def _file_exists_cart_folder(filename, bundle_name):
     return os.path.isfile(targ)
 
 
-def _read_bundle_metadata(bundle_name):
+def _read_metadata(bundle_name):
     # Check if the folder exists, otherwise we'll throw an error
     wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
     if not os.path.exists(wrapper_bundle):
@@ -539,6 +538,14 @@ def _read_bundle_metadata(bundle_name):
     obj = json.load(f_ptr)
     f_ptr.close()
     return obj
+
+
+def _rewrite_metadata(bundle_name, blob_obj):
+    wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
+    cartridge_folder = fpath_join(wrapper_bundle, 'cartridge')
+    what_to_open = os.path.sep.join((cartridge_folder, 'metadat.json'))
+    with open(what_to_open, 'w') as fptr:
+        fptr.write(json.dumps(blob_obj))
 
 
 def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
@@ -604,7 +611,7 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
 
 def share_subcommand(bundle_name, dev_flag_on):
     # FIRST, need to answer the question: whats the slug name?
-    metadata = _read_bundle_metadata(bundle_name)
+    metadata = _read_metadata(bundle_name)
     slug = metadata['slug']
     print('slug found:', slug)
 
@@ -623,26 +630,42 @@ def upgrade_subcmd(bundlename):
     """
     ordre dans lequel l'algo procèdera, idéalement:
     [1] rebuild le py_connecteur L (local ctx) à la volée, à partir du fichier de SPEC trouvé
-    [2] constitution d'un module network avec ledit connecteur renommé en __init__.py,
-    [3] insertion code network vers le chemin bundle/network
-    - update des metadata
-    - écrasement launch_game.py par la version moddée
+    [2] update des metadata
+    [3] constitution d'un module network avec ledit connecteur renommé en __init__.py,
+    [4] insertion code network vers le chemin bundle/network
+    [5] écrasement launch_game.py par la version moddée
     """
-    #
-
-    # TODO
-    # etape 2, quasi-ok. Pas implem comme il faudrait (là on récupère un network.py statique)
+    # prép. etapes 2 & 3
+    obj = _read_metadata(bundlename)
+    if obj['ktg_services']:
+        print('***WARNING*** ktg_services is already set to True.\n'
+              + 'In order to avoid unexpected behavior, the bundle isnt upgraded')
+        return
+    # tests anticipés pr gérer erreurs:
     bundle_location = os.path.join(os.getcwd(), bundlename)
     new_dir = os.path.join(bundle_location, 'network')
+    if os.path.isdir(new_dir):
+        raise Exception('folder "network" exists in bundle, but non-consistent metadata found')
+
+    # étape 2 stricto sensu
+    obj['ktg_services'] = True
+    _rewrite_metadata(bundlename, obj)
+
+    # TODO améliorations, avec autogen
+    # etape 3, quasi-ok. Pas implem comme il faudrait (là on récupère un network.py statique)
+    bundle_location = os.path.join(os.getcwd(), bundlename)
+    new_dir = os.path.join(bundle_location, 'network')
+    if os.path.isdir(new_dir):
+        raise Exception('folder "network" exists in bundle, but non-consistent metadata found')
     os.makedirs(new_dir)
 
-    # etape 3
+    # etape 4: transfert network component
     root_pyvcli = os.path.dirname(os.path.abspath(__file__))
     read_from_netw = os.path.join(root_pyvcli, 'spare_parts', 'network.py')
     target_file = os.path.join(bundle_location, 'network', '__init__.py')
     shutil.copy(read_from_netw, target_file)
 
-    # pour linstant jai que l'etape 5 d'implem
+    # etape 5: impacter launch_game.py
     _copy_launcher_script(bundlename, False)
 
 
