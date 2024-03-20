@@ -19,7 +19,7 @@ from pprint import pprint
 
 import pyperclip
 import requests  # used to implement the `pyv-cli share` feature
-
+from .pyvcli_cogs import *
 from pyved_engine import vars
 from .const import *
 from .json_prec import TEMPL_ID_TO_JSON_STR
@@ -29,31 +29,6 @@ from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLA
 from .pyvcli_config import VMSTORAGE_URL
 
 __version__ = vars.ENGINE_VERSION_STR
-
-
-def _verify_metadata(mdat_obj) -> str:
-    """
-    confirm that the metadata contains all required fields
-    returns a str if something is missing!
-    """
-    expected_fields = (
-        'assets',
-        'author',
-        'build_date',
-        'dependencies',
-        'description',
-        'game_title',
-        'instructions',
-        'slug',
-        'sounds',
-        'thumbnail512x384',
-        'thumbnail512x512',
-        'ktg_services',
-        'vmlib_ver'
-    )
-    for k in expected_fields:
-        if k not in mdat_obj:
-            return k
 
 
 # -----------------------------------
@@ -230,7 +205,7 @@ def play_subcommand(x):
         raise ValueError('launching with a "cartridge" in the current folder, but no parameter "." is forbidden')
     metadata = None
     try:
-        fptr = open(fpath_join(x, 'cartridge', 'metadat.json'), 'r')
+        fptr = open(os.path.join(x, 'cartridge', 'metadat.json'), 'r')
         metadata = json.load(fptr)
         fptr.close()
         print(f"game bundle {x} found. Loading...")
@@ -250,55 +225,9 @@ def play_subcommand(x):
         vmsl.bootgame(metadata)
 
 
-# alias!
-fpath_join = os.path.join
-
-
-def recursive_copy(source_folder, destination_folder):
-    if not os.path.exists(destination_folder):
-        os.makedirs(destination_folder)
-
-    for item in os.listdir(source_folder):
-        source_item = fpath_join(source_folder, item)
-        destination_item = fpath_join(destination_folder, item)
-
-        if os.path.isdir(source_item):
-            recursive_copy(source_item, destination_item)
-        else:
-            shutil.copy2(source_item, destination_item)
-
-
-def create_folder_and_serialize_dict(folder0_name, data_dict):
-    # Check if the folder exists, create it if not
-    folder1_name = fpath_join(folder0_name, 'cartridge')
-    if not os.path.exists(folder1_name):
-        os.makedirs(folder1_name)
-
-    # Serialize the dictionary using JSON and create a JSON file
-    json_file_path = fpath_join(folder1_name, 'metadat.json')
-    with open(json_file_path, 'w') as json_file:
-        json.dump(data_dict, json_file, indent=4)
-
-
 def _is_valid_identifier(test_identifier):
     ok_pattern = '^[a-zA-Z0-9_]+$'
     return bool(re.match(ok_pattern, test_identifier))
-
-
-def _copy_launcher_script(bundlename, basic_bundle=True):
-    """
-    sélectionne le bon script & le copie vers le bundle identifié par bundlename
-    """
-    # prepare the launch_game.py script
-    root_pyvcli = os.path.dirname(os.path.abspath(__file__))
-    ylist = BASIC_LAUNCH_GAME_SCRIPT_LOC if basic_bundle else NETW_LAUNCH_GAME_SCRIPT_LOC
-    src_file = fpath_join(os.path.join(root_pyvcli, *ylist))
-    filename = f"{LAUNCH_GAME_SCRIPT_BASENAME}.py"
-    dest_file = fpath_join(os.getcwd(), bundlename, filename)
-    # Nota Bene:
-    # shutil.copy2 preserves the original metadata, copy doesnt
-    # here, i can use copy, as launch_game.py metadata doesnt matter
-    shutil.copy(src_file, dest_file)
 
 
 def init_command(game_identifier) -> None:
@@ -345,15 +274,15 @@ def init_command(game_identifier) -> None:
 
     # Get the absolute path of the current script
     script_directory = os.path.dirname(os.path.abspath(__file__))
-    template_blueprint_folder = fpath_join(script_directory, f'template_{template_id}')
-    target_folder = fpath_join(os.getcwd(), x)
+    template_blueprint_folder = os.path.join(script_directory, f'template_{template_id}')
+    target_folder = os.path.join(os.getcwd(), x)
     recursive_copy(template_blueprint_folder, target_folder)
 
-    _copy_launcher_script(x)
-
+    copy_launcher_script(x)
     create_folder_and_serialize_dict(target_folder, data_dict=metadata)
     for _ in range(3):
         print()
+
     print('GAME BUNDLE=', x)
     print('Important remark: do not rename the name of the folder! (Game bundle)')
 
@@ -436,10 +365,12 @@ def trigger_publish(slug):
     print(reply.text)
 
 
-def _bundle_renaming(path_to_bundle):
-    # there is a NORM that needs to be followed,
-    # the directory is named accordingly to the slug
-    pass
+# TODO will be useful for implementing a future "repair" bundle subcommand
+# def _bundle_renaming(path_to_bundle):
+#     # ensure that OUR NORM is respected:
+#     # what norm? We need to enforce the rule that states:
+#     # the directory name == the slug
+#     pass
 
 
 def _query_slug_availability(x):
@@ -480,10 +411,10 @@ def ensure_correct_slug(givenslug):
 def test_subcommand(bundle_name):
     print(f"***TESTING bundle {bundle_name}***")
 
-    metadat = _read_metadata(bundle_name)
+    metadat = read_metadata(bundle_name)
     pprint(metadat)
     print()
-    btest = _verify_metadata(metadat)
+    btest = verify_metadata(metadat)
     print('valid metadata?', btest is None)
     if btest is not None:
         raise ValueError('Invalid metadata file! Missing key= {}'.format(btest))
@@ -497,7 +428,7 @@ def test_subcommand(bundle_name):
     files_exp_li.extend(metadat['assets'])
     for elt in files_exp_li:
         print('____testing file:', elt)
-        if not _file_exists_cart_folder(elt, bundle_name):
+        if not test_isfile_in_cartridge(elt, bundle_name):
             raise FileNotFoundError('cannot find asset:', elt)
     print('assets --->OK')
     print()
@@ -513,39 +444,6 @@ def test_subcommand(bundle_name):
     if not obj['available']:
         print('suggestions:')
         pprint(obj['suggestions'])
-
-
-def _file_exists_cart_folder(filename, bundle_name):
-    wrapper_folder = fpath_join(os.getcwd(), bundle_name)
-    cartridge_folder = fpath_join(wrapper_folder, 'cartridge')
-    targ = os.path.sep.join((cartridge_folder, filename))
-    return os.path.isfile(targ)
-
-
-def _read_metadata(bundle_name):
-    # Check if the folder exists, otherwise we'll throw an error
-    wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
-    if not os.path.exists(wrapper_bundle):
-        raise FileNotFoundError('ERR! Cannot find the bundle named:', bundle_name)
-    cartridge_folder = fpath_join(wrapper_bundle, 'cartridge')
-    if not os.path.exists(cartridge_folder):
-        raise ValueError('ERR! Bundle format isnt valid, cartridge structure is missing')
-
-    # need to open cartridge, read metadata,
-    whats_open = os.path.sep.join((cartridge_folder, 'metadat.json'))
-    print('READING', whats_open, '...')
-    f_ptr = open(whats_open, 'r')
-    obj = json.load(f_ptr)
-    f_ptr.close()
-    return obj
-
-
-def _rewrite_metadata(bundle_name, blob_obj):
-    wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
-    cartridge_folder = fpath_join(wrapper_bundle, 'cartridge')
-    what_to_open = os.path.sep.join((cartridge_folder, 'metadat.json'))
-    with open(what_to_open, 'w') as fptr:
-        fptr.write(json.dumps(blob_obj))
 
 
 def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
@@ -611,13 +509,13 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
 
 def share_subcommand(bundle_name, dev_flag_on):
     # FIRST, need to answer the question: whats the slug name?
-    metadata = _read_metadata(bundle_name)
+    metadata = read_metadata(bundle_name)
     slug = metadata['slug']
     print('slug found:', slug)
 
     # pre-made func usage
-    wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
-    zip_precise_target = fpath_join(wrapper_bundle, 'cartridge')
+    wrapper_bundle = os.path.join(os.getcwd(), bundle_name)
+    zip_precise_target = os.path.join(wrapper_bundle, 'cartridge')
 
     fn = create_zip_from_folder(bundle_name, zip_precise_target)
     # print("ZIP file created:", output_zip_filename)
@@ -636,7 +534,7 @@ def upgrade_subcmd(bundlename):
     [5] écrasement launch_game.py par la version moddée
     """
     # prép. etapes 2 & 3
-    obj = _read_metadata(bundlename)
+    obj = read_metadata(bundlename)
     if obj['ktg_services']:
         print('***WARNING*** ktg_services is already set to True.\n'
               + 'In order to avoid unexpected behavior, the bundle isnt upgraded')
@@ -649,7 +547,7 @@ def upgrade_subcmd(bundlename):
 
     # étape 2 stricto sensu
     obj['ktg_services'] = True
-    _rewrite_metadata(bundlename, obj)
+    rewrite_metadata(bundlename, obj)
 
     # TODO améliorations, avec autogen
     # etape 3, quasi-ok. Pas implem comme il faudrait (là on récupère un network.py statique)
@@ -666,45 +564,46 @@ def upgrade_subcmd(bundlename):
     shutil.copy(read_from_netw, target_file)
 
     # etape 5: impacter launch_game.py
-    _copy_launcher_script(bundlename, False)
+    copy_launcher_script(bundlename, False)
 
 
 def main_inner(parser, argns):
-    subcommand_mapping = {  # maps the subcommand str to the python func name
-        'init': 'init_command',
-        'test': 'test_subcommand',
-        'upgrade': 'upgrade_subcmd',
-        'play': 'play_subcommand',
-        'share': 'share_subcommand',
-        'pub': None  # trigger_publish
+    # definitions
+    subcommand_mapping = {
+        'init': init_command,
+        'test': test_subcommand,
+        'upgrade': upgrade_subcmd,
+        'play': play_subcommand,
+        'share': share_subcommand,
+        'pub': None,
+        # 'autogen': proc_autogen_localctx
     }
+    no_arg_subcommands = {'autogen'}
     extra_flags_subcommands = {'share'}  # mark all subcommands that use the 'dev' mode flag
+
+    # the algorithm
+    ope_name = argns.subcommand
 
     if argns.version:
         print(VERSION_PRINT_MESSAGE % __version__)
         return 0
-
     if argns.help:
         parser.print_help()
         return 0
-
-    if argns.subcommand not in subcommand_mapping.keys():
+    if ope_name not in subcommand_mapping:
         parser.print_help()
         return 1
+    if subcommand_mapping[ope_name] is None:
+        raise NotImplementedError(f"subcommand \"{ope_name}\" is valid, but isnt implemented yet!")
 
-    if argns.subcommand not in subcommand_mapping.keys():
-        raise ValueError(f"subcommand: {argns.subcommand} not recognized!")
-
-    if subcommand_mapping[argns.subcommand] is None:
-        raise NotImplementedError(f"subcommand: {argns.subcommand} not implemented yet!")
-
-    subcommand_name = subcommand_mapping[argns.subcommand]
-    adhoc_subcommand_func = globals()[subcommand_name]
-
-    if argns.subcommand not in extra_flags_subcommands:
+    adhoc_subcommand_func = subcommand_mapping[ope_name]
+    if ope_name in no_arg_subcommands:
+        # a few subcommands do not take an argument
+        adhoc_subcommand_func()
+    elif ope_name not in extra_flags_subcommands:
         adhoc_subcommand_func(argns.bundle_name)
     else:
-        # a few subcommands require the the dev mode flag, also!
+        # a few subcommands require the the dev mode flag!
         adhoc_subcommand_func(argns.bundle_name, argns.dev)
     return 0
 
@@ -1090,13 +989,19 @@ def do_parse_args():
     )
 
     # ——————————————————————————————————
+    # +++ AUTOGEN subcommand
+    # autogen = subparsers.add_parser(
+    #     "autogen", help="Command for admins ->test the connector autogen system"
+    # )
+
+    # ——————————————————————————————————
     # +++ UPGRADE subcommand:
     # the goal here is to enable katagames API calls from inside a game
     play_parser = subparsers.add_parser(
         "upgrade", help="Upgrade a given game, to enable katagames API calls"
     )
     play_parser.add_argument(
-        "bundle_name", type=str, nargs="?", default=".", help="Specified bundle"
+        "bundle_name", type=str, help="Specified bundle"
     )
 
     # ——————————————————————————————————
