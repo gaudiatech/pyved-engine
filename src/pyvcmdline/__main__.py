@@ -241,9 +241,9 @@ def play_subcommand(x):
     if metadata is not None:
         sys.path.append(os.getcwd())
         if x == '.':
-            vmsl = importlib.import_module(PLAY_SCRIPT_NAME, None)
+            vmsl = importlib.import_module(LAUNCH_GAME_SCRIPT_BASENAME, None)
         else:
-            vmsl = importlib.import_module('.' + PLAY_SCRIPT_NAME, x)
+            vmsl = importlib.import_module('.' + LAUNCH_GAME_SCRIPT_BASENAME, x)
         vmsl.bootgame(metadata)
 
 
@@ -277,6 +277,27 @@ def create_folder_and_serialize_dict(folder0_name, data_dict):
         json.dump(data_dict, json_file, indent=4)
 
 
+def _is_valid_identifier(test_identifier):
+    ok_pattern = '^[a-zA-Z0-9_]+$'
+    return bool(re.match(ok_pattern, test_identifier))
+
+
+def _copy_launcher_script(bundlename, basic_bundle=True):
+    """
+    sélectionne le bon script & le copie vers le bundle identifié par bundlename
+    """
+    # prepare the launch_game.py script
+    scx = os.path.dirname(os.path.abspath(__file__))
+    ylist = BASIC_LAUNCH_GAME_SCRIPT_LOC if basic_bundle else NETW_LAUNCH_GAME_SCRIPT_LOC
+    src_file = fpath_join(os.path.join(scx, *ylist))
+    filename = f"{LAUNCH_GAME_SCRIPT_BASENAME}.py"
+    dest_file = fpath_join(os.getcwd(), bundlename, filename)
+    # Nota Bene:
+    # shutil.copy2 preserves the original metadata, copy doesnt
+    # here, i can use copy, as launch_game.py metadata doesnt matter
+    shutil.copy(src_file, dest_file)
+
+
 def init_command(game_identifier) -> None:
     """
     this is the pyv-cli INIT command, it should create a new game bundle, fully operational
@@ -297,15 +318,12 @@ def init_command(game_identifier) -> None:
 
     adhoc_json_prec = TEMPL_ID_TO_JSON_STR[template_id]
     metadata = json.loads(adhoc_json_prec)
-    # TODO perform this important check:
-    #  assets need to be already available in cartridge/
 
-    ok_pattern = '^[a-zA-Z0-9_]+$'
-    # is_validname = bool(re.match(pattern, game_identifier))
-    func_test_validname = lambda chosen_identifier: bool(re.match(ok_pattern, chosen_identifier))
-    # TODO use network to test if the name is available remotely
+    # TODO: shall we use HERE
+    #  the network to test if the name is remotely available?
+    #  that feature is already implemented by the 'test' subcommand
 
-    while not func_test_validname(game_identifier):
+    while not _is_valid_identifier(game_identifier):
         print('*** WARNING: the selected game identifier is rejected. Expected format:')
         print(' solely alphanumeric that is A-Z and a-z, plus 0-9 numbers and the underscore _ special character')
         game_identifier = input('enter another game identifier(slug): ')
@@ -324,13 +342,13 @@ def init_command(game_identifier) -> None:
 
     # Get the absolute path of the current script
     script_directory = os.path.dirname(os.path.abspath(__file__))
-    lg_script_blueprint_filename = fpath_join(script_directory, PLAY_SCRIPT_NAME + '.py')
     template_blueprint_folder = fpath_join(script_directory, f'template_{template_id}')
-    target_bundle_folder = fpath_join(os.getcwd(), x)
+    target_folder = fpath_join(os.getcwd(), x)
+    recursive_copy(template_blueprint_folder, target_folder)
 
-    recursive_copy(template_blueprint_folder, target_bundle_folder)
-    shutil.copy2(lg_script_blueprint_filename, target_bundle_folder)
-    create_folder_and_serialize_dict(target_bundle_folder, data_dict=metadata)
+    _copy_launcher_script(x)
+
+    create_folder_and_serialize_dict(target_folder, data_dict=metadata)
     for _ in range(3):
         print()
     print('GAME BUNDLE=', x)
@@ -595,6 +613,24 @@ def share_subcommand(bundle_name, dev_flag_on):
     # create_zip_from_folder(, os.getcwd())
     # print('tmpfile created ok')
     upload_my_zip_file(fn, slug, dev_flag_on)
+
+
+def upgrade_subcmd(bundlename):
+    """
+    ordre dans lequel l'algo procèdera, idéalement:
+    - rebuild le py_connecteur L (local ctx) à la volée, à partir du fichier de SPEC trouvé
+    - constitution d'un module network avec ledit connecteur renommé en __init__.py,
+    - insertion module network fraichement créé ds le bundle à patcher
+    - update des metadata
+    - écrasement launch_game.py par la version moddée
+    """
+    # bundle_location = os.path.join(os.getcwd(), bundlename)
+
+    # etape 3 quasi-ok ; pas implem comme il faudrait (là on récupère un network.py statique)
+    # TODO
+
+    # pour linstant jai que l'etape 5 d'implem
+    _copy_launcher_script(bundlename, False)
 
 
 def main_inner(parser, argns):
