@@ -1,7 +1,9 @@
 # PY CONNECTOR, automatically gen. Do not modify by hand!
-# filename:auto_connector.py - generation date: 2024-03-19 11:55:33
+# filename:autogened_localctx_connector.py
+# Generation date: 2024-03-20 23:06:11
 import requests
 import json
+
 
 api_url = 'https://t-api-beta.kata.games'
 
@@ -88,7 +90,7 @@ def get_user_infos(user_id: int):
 def can_pay_challenge(jwt: str, game_id: int):
     # GET request to /challenge/canPay
     if not _ensure_type_hexstr(jwt):
-        raise Exception("hexstr type not recognized!, value:", jwt)
+        raise Exception("hexstr type not recognized! Value: "+str(jwt))
     try:
         resobj = _get_request('/challenge/canPay', {'jwt': jwt, 'game_id': game_id})
         return resobj.to_json()
@@ -110,7 +112,7 @@ def get_rank(user_id: int, game_id: int):
 def can_pay_game_fee(jwt: str, game_price: int):
     # GET request to /games/canPayGameFee
     if not _ensure_type_hexstr(jwt):
-        raise Exception("hexstr type not recognized!, value:", jwt)
+        raise Exception("hexstr type not recognized! Value: "+str(jwt))
     try:
         resobj = _get_request('/games/canPayGameFee', {'jwt': jwt, 'game_price': game_price})
         return resobj.to_json()
@@ -122,7 +124,7 @@ def can_pay_game_fee(jwt: str, game_price: int):
 def pay_challenge(jwt: str, game_id: int):
     # GET request to /challenge/pay
     if not _ensure_type_hexstr(jwt):
-        raise Exception("hexstr type not recognized!, value:", jwt)
+        raise Exception("hexstr type not recognized! Value: "+str(jwt))
     try:
         resobj = _get_request('/challenge/pay', {'jwt': jwt, 'game_id': game_id})
         return resobj.to_json()
@@ -134,7 +136,7 @@ def pay_challenge(jwt: str, game_id: int):
 def register_score(score: int, token: str):
     # GET request to /challenge/score
     if not _ensure_type_hexstr(token):
-        raise Exception("hexstr type not recognized!, value:", token)
+        raise Exception("hexstr type not recognized! Value: "+str(token))
     try:
         resobj = _get_request('/challenge/score', {'score': score, 'token': token})
         return resobj.to_json()
@@ -146,7 +148,7 @@ def register_score(score: int, token: str):
 def pay_game_fee(jwt: str, game_id: int, game_price: int):
     # GET request to /games/payGameFee
     if not _ensure_type_hexstr(jwt):
-        raise Exception("hexstr type not recognized!, value:", jwt)
+        raise Exception("hexstr type not recognized! Value: "+str(jwt))
     try:
         resobj = _get_request('/games/payGameFee', {'jwt': jwt, 'game_id': game_id, 'game_price': game_price})
         return resobj.to_json()

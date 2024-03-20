@@ -20,7 +20,7 @@ To join our Discord community:<br>
 
 ## 1. Introduction
 
-### Cpabilities of a game engine
+### Capabilities of a game engine
 
 A game engine provides invaluable time-saving benefits by storing a collection
 of useful and reusable code snippets within its framework.

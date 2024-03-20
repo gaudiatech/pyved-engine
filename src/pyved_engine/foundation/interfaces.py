@@ -1,8 +1,9 @@
 """
-code (c) 2018-2022, by Thomas Iwaszko
-contact - tom@kata.games
+Licensed code LGPL 3
+(c) 2018-2024, to the Kata.Games company
 
-TL;DR - KENGI does not use 100% of pygame capabilities. How much of pygame do we use?
+TL;DR - Pyved is not using 100% of pygame functions.
+So how much of pygame do we use?
 
 More precisely: this file is here so I can:
 (A) specify (for this I propose an informal interface) a SUBSET of pygame
