@@ -16,15 +16,18 @@ import tempfile
 import time
 import zipfile
 from pprint import pprint
+
 import pyperclip
 import requests  # used to implement the `pyv-cli share` feature
+
 from pyved_engine import vars
-from .json_prec import TEMPL_ID_TO_JSON_STR
 from .const import *
-from .pyvcli_config import API_HOST_PUSH_DEV, API_HOST_PLAY_DEV, API_HOST_PUSH_DEV, API_ENDPOINT_DEV, \
+from .json_prec import TEMPL_ID_TO_JSON_STR
+from .pyvcli_config import API_HOST_PLAY_DEV, API_ENDPOINT_DEV, \
     FRUIT_URL_TEMPLATE_DEV
 from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
 from .pyvcli_config import VMSTORAGE_URL
+
 
 __version__ = vars.ENGINE_VERSION_STR
 
@@ -46,6 +49,7 @@ def _verify_metadata(mdat_obj) -> str:
         'sounds',
         'thumbnail512x384',
         'thumbnail512x512',
+        'ktg_services',
         'vmlib_ver'
     )
     for k in expected_fields:

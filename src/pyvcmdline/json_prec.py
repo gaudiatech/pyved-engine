@@ -20,6 +20,7 @@ JSON_PREC_NOASSETS = """\
 "game_title": "Untitled Game",
 "thumbnail512x384": "thumb_2.png",
 "thumbnail512x512": "thumb_1.png",
+"ktg_services": false,
 "instructions": "not provided"
 }
 """
@@ -41,6 +42,7 @@ JSON_PREC_PLATFORMER = """\
 "build_date": "Thu Sep 14 11:31:49 2023",
 "thumbnail512x384": "thumb_2.png",
 "thumbnail512x512": "thumb_1.png",
+"ktg_services": false,
 "instructions": "not provided"
 }
 """
@@ -76,6 +78,7 @@ JSON_PREC_CHESS ="""
 "build_date": "Fri Sep 15 15:10:47 2023",
 "thumbnail512x384": "thumb_2.png",
 "thumbnail512x512": "thumb_1.png",
+"ktg_services": false,
 "instructions": "not provided"
 }
 """
@@ -95,6 +98,7 @@ JSON_PREC_ROGUE = """
 "build_date": "Sat Sep 16 22:21:30 2023",
 "thumbnail512x384": "thumb_2.png",
 "thumbnail512x512": "thumb_1.png",
+"ktg_services": false,
 "instructions": "not provided"
 }
 """
