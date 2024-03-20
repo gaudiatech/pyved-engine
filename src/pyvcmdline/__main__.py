@@ -291,9 +291,9 @@ def _copy_launcher_script(bundlename, basic_bundle=True):
     sélectionne le bon script & le copie vers le bundle identifié par bundlename
     """
     # prepare the launch_game.py script
-    scx = os.path.dirname(os.path.abspath(__file__))
+    root_pyvcli = os.path.dirname(os.path.abspath(__file__))
     ylist = BASIC_LAUNCH_GAME_SCRIPT_LOC if basic_bundle else NETW_LAUNCH_GAME_SCRIPT_LOC
-    src_file = fpath_join(os.path.join(scx, *ylist))
+    src_file = fpath_join(os.path.join(root_pyvcli, *ylist))
     filename = f"{LAUNCH_GAME_SCRIPT_BASENAME}.py"
     dest_file = fpath_join(os.getcwd(), bundlename, filename)
     # Nota Bene:
@@ -622,16 +622,25 @@ def share_subcommand(bundle_name, dev_flag_on):
 def upgrade_subcmd(bundlename):
     """
     ordre dans lequel l'algo procèdera, idéalement:
-    - rebuild le py_connecteur L (local ctx) à la volée, à partir du fichier de SPEC trouvé
-    - constitution d'un module network avec ledit connecteur renommé en __init__.py,
-    - insertion module network fraichement créé ds le bundle à patcher
+    [1] rebuild le py_connecteur L (local ctx) à la volée, à partir du fichier de SPEC trouvé
+    [2] constitution d'un module network avec ledit connecteur renommé en __init__.py,
+    [3] insertion code network vers le chemin bundle/network
     - update des metadata
     - écrasement launch_game.py par la version moddée
     """
-    # bundle_location = os.path.join(os.getcwd(), bundlename)
+    #
 
-    # etape 3 quasi-ok ; pas implem comme il faudrait (là on récupère un network.py statique)
     # TODO
+    # etape 2, quasi-ok. Pas implem comme il faudrait (là on récupère un network.py statique)
+    bundle_location = os.path.join(os.getcwd(), bundlename)
+    new_dir = os.path.join(bundle_location, 'network')
+    os.makedirs(new_dir)
+
+    # etape 3
+    root_pyvcli = os.path.dirname(os.path.abspath(__file__))
+    read_from_netw = os.path.join(root_pyvcli, 'spare_parts', 'network.py')
+    target_file = os.path.join(bundle_location, 'network', '__init__.py')
+    shutil.copy(read_from_netw, target_file)
 
     # pour linstant jai que l'etape 5 d'implem
     _copy_launcher_script(bundlename, False)
@@ -641,7 +650,7 @@ def main_inner(parser, argns):
     subcommand_mapping = {  # maps the subcommand str to the python func name
         'init': 'init_command',
         'test': 'test_subcommand',
-        'upgrade': None,
+        'upgrade': 'upgrade_subcmd',
         'play': 'play_subcommand',
         'share': 'share_subcommand',
         'pub': None  # trigger_publish
