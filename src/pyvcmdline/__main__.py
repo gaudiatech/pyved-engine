@@ -576,7 +576,7 @@ def main_inner(parser, argns):
         'play': play_subcommand,
         'share': share_subcommand,
         'pub': None,
-        # 'autogen': proc_autogen_localctx
+        'autogen': proc_autogen_localctx
     }
     no_arg_subcommands = {'autogen'}
     extra_flags_subcommands = {'share'}  # mark all subcommands that use the 'dev' mode flag
@@ -990,9 +990,9 @@ def do_parse_args():
 
     # ——————————————————————————————————
     # +++ AUTOGEN subcommand
-    # autogen = subparsers.add_parser(
-    #     "autogen", help="Command for admins ->test the connector autogen system"
-    # )
+    autogen = subparsers.add_parser(
+        "autogen", help="Command to be used only by admins ->tool for py connector autogen"
+    )
 
     # ——————————————————————————————————
     # +++ UPGRADE subcommand:

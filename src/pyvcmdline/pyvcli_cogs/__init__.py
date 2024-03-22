@@ -10,7 +10,7 @@ spawns all useful misc functions in the current scope, all at once
 import json
 import os
 import shutil
-# from .autogen_localctx import proc_autogen_localctx
+from .autogen_localctx import proc_autogen_localctx
 
 
 __all__ = [
@@ -18,7 +18,7 @@ __all__ = [
 
     'copy_launcher_script',
     'create_folder_and_serialize_dict',
-    # 'proc_autogen_localctx',
+    'proc_autogen_localctx',
     'read_metadata',
     'recursive_copy',
     'rewrite_metadata',
