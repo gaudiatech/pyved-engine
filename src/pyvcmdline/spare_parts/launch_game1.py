@@ -87,7 +87,10 @@ def bootgame(metadata):
         from .cartridge import pimodules
         rel_imports = True
     mon_inj = Injector(None)
-    from . import network
+    if rel_imports:
+        from . import network
+    else:
+        import network
     mon_inj.set_lazy_loaded_module('pyved_engine', 'pyved_engine')
     mon_inj.set_preloaded_module('network', network)
     upward_link(mon_inj)
