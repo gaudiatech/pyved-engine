@@ -75,6 +75,7 @@ JSON_PREC_CHESS ="""
 "sounds": [],
 "slug": "testChess",
 "game_title": "chessBundle",
+"instructions": "no instructions provided.",
 "build_date": "Fri Sep 15 15:10:47 2023",
 "thumbnail512x384": "thumb_2.png",
 "thumbnail512x512": "thumb_1.png",
