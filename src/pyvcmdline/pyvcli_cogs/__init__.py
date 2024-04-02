@@ -121,7 +121,7 @@ def verify_metadata(mdat_obj) -> str:
         'build_date',
         'dependencies',
         'description',
-        'game_title',
+        'title',
         'instructions',
         'slug',
         'sounds',
