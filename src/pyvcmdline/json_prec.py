@@ -86,21 +86,27 @@ JSON_PREC_CHESS ="""
 
 JSON_PREC_ROGUE = """
 {
-"vmlib_ver": "23_9a2",
-"dependencies": {
-"pyved_engine": "???"
-},
-"description": "this is a placeholder so you can describe your game",
-"author": "moonbak",
-"assets": ["tileset.png", "monster.png", "avatar1.png"],
-"sounds": [],
-"slug": "template4",
-"title": "Roguelike Template",
-"build_date": "Sat Sep 16 22:21:30 2023",
-"thumbnail512x384": "thumb_2.png",
-"thumbnail512x512": "thumb_1.png",
-"ktg_services": false,
-"instructions": "not provided"
+    "vmlib_ver": "24_3a1",
+    "dependencies": {
+        "pyved_engine": "???"
+    },
+    "description": "a basic demo for a roguelike game",
+    "author": "moonbak",
+    "assets": [
+        "smallninja_sprites.json",
+        "tileset.png",
+        "monster.png",
+        "avatar1.png"
+    ],
+    "sounds": [],
+    "slug": "roguelikeDemo",
+    "title": "Roguelike Template",
+    "build_date": "Tue Apr  2 15:40:11 2024",
+    "thumbnail512x384": "thumb_2.png",
+    "thumbnail512x512": "thumb_1.png",
+    "ktg_services": false,
+    "instructions": "no instructions provided",
+    "game_title": "Untitled Roguelike"
 }
 """
 

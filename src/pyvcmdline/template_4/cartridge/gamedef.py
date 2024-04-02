@@ -1,5 +1,6 @@
 from . import pimodules
 from .mvc_parts import NinjamazeMod, NinjamazeView, NinjamazeCtrl, SpecificEvTypes
+from . import glvars
 
 
 pyv = pimodules.pyved_engine
@@ -22,15 +23,33 @@ class MiniStorage:
         self.ev_manager.setup(SpecificEvTypes)
         self.screen = pyv.get_surface()
 
+class DummyDisp(pyv.EvListener):
+    def __init__(self,color):
+        super().__init__()
+        self.col = color
+    
+    def on_paint(self, ev):
+        ev.screen.fill(self.col)
+
 
 @pyv.declare_begin
 def rogue_begin(vms=None):
     pyv.init(wcaption='roguelike template')
+    # bind obj to glvars
+    glvars.avatar_sprite_sheet = pyv.vars.spritesheets['smallninja_sprites']
+
     MiniStorage.instance()  # by doing this, we also init the ev_manager
     m = NinjamazeMod()
-    # be careful: you wont be able to instantiate the View if the ev_manager isnt ready
-    NinjamazeView(m).turn_on()
+ 
+    # Careful:
+    # you wont be able to instantiate the View if the ev_manager isnt ready
+    v = NinjamazeView(m)
+    # *debugging
+    # v = DummyDisp('pink')
+    v.turn_on()
+
     NinjamazeCtrl(m).turn_on()
+
     print_help()  # so the player knows how to "play"
 
 

@@ -3,7 +3,7 @@ this file contains 3 basic mvc COMPOnents
 that can implement a rogue-like
 """
 from . import pimodules
-
+from . import glvars
 pyv = pimodules.pyved_engine
 pyv.bootstrap_e()
 
@@ -123,25 +123,36 @@ class NinjamazeView(ReceiverObj):
     HIDDEN_CELL_COLOR = (24, 24, 24)
 
     def __init__(self, ref_mod):
+        print('------------------------ dans NinjamazeView !! --------------------------------')
+        print()
         super().__init__()
         self.assoc_r_col = dict()
         grid_rez = (32, 32)
 
         img = pyv.vars.images['tileset']
+        print('etape 0')
         self.tileset = Sprsheet(img, 2)  # use upscaling x2
+        print('etape 1')
         self.tileset.set_infos(grid_rez)
+        print('etape 2')
 
-        img = pyv.vars.images['avatar1']
-        self.planche_avatar = Sprsheet(img, 2)  # upscaling x2
-        self.planche_avatar.set_infos(grid_rez)
-        self.planche_avatar.colorkey = (255, 0, 255)
-
+        # img = pyv.vars.images['avatar1']
+        # self.planche_avatar = Sprsheet(img, 2)  # upscaling x2
+        # self.planche_avatar.set_infos(grid_rez)
+        # self.planche_avatar.colorkey = (255, 0, 255)
+        flashy_pink = (255, 0, 255)
         self.monster_img = pyv.vars.images['monster']
-        self.monster_img = pygame.transform.scale(self.monster_img, (32, 32))
-        self.monster_img.set_colorkey((255, 0, 255))
+        # self.monster_img = pygame.transform.scale(self.monster_img, (32, 32))
+        # self.monster_img.set_colorkey(flashy_pink)
 
         self.mod = ref_mod
-        self.avatar_apparence = self.planche_avatar.image_by_rank(0)
+        print('*** avant planche_avatar.image_by_rank !!! ')
+        print()
+        self.avatar_apparence = glvars.avatar_sprite_sheet['av0.png']
+        # self.avatar_apparence.set_colorkey(flashy_pink)
+        # self.avatar_apparence = self.planche_avatar.image_by_rank(0)
+        print('*** ok c bon')
+
         self.pos_avatar = ref_mod.get_av_pos()
 
     def on_player_moves(self, ev):  # custom event hook
@@ -154,7 +165,8 @@ class NinjamazeView(ReceiverObj):
         nw_corner = (0, 0)
         tmp_r4 = [None, None, None, None]
 
-        tuile = self.tileset.image_by_rank(912)
+        # TODO recup image depuis le tilesheet et l'upscale x 2 à la mano
+        # tuile = self.tileset.image_by_rank(912)
 
         dim = self.mod.get_terrain().get_size()
         for i in range(dim[0]):
@@ -171,11 +183,11 @@ class NinjamazeView(ReceiverObj):
                 if not self.mod.can_see((i, j)):  # hidden cell
                     pygame.draw.rect(scr, self.HIDDEN_CELL_COLOR, tmp_r4)
                 else:  # visible tile
-                    scr.blit(tuile, tmp_r4)
+                    pygame.draw.rect(scr, pyv.pal.punk['green'], tmp_r4)
 
-        # draw avatar process
-        av_i, av_j = self.pos_avatar[0] * self.CELL_SIDE, self.pos_avatar[1] * self.CELL_SIDE
-        scr.blit(self.avatar_apparence, (av_i, av_j, 32, 32))
+                    # scr.blit(tuile, tmp_r4)
+                    # scr.blit(tuile, (tmp_r4[0], tmp_r4[1]))#, tmp_r4)
+                    # pass
 
         # draw enemies
         for enemy_info in self.mod.enemies_pos2type.items():
@@ -183,7 +195,13 @@ class NinjamazeView(ReceiverObj):
             if not self.mod.visibility_m.get_val(*pos):
                 continue
             en_i, en_j = pos[0] * self.CELL_SIDE, pos[1] * self.CELL_SIDE
+            # pass
             scr.blit(self.monster_img, (en_i, en_j, 32, 32))
+
+        # draw avatar process
+        av_x, av_y = self.pos_avatar[0] * self.CELL_SIDE, self.pos_avatar[1] * self.CELL_SIDE
+        # scr.blit(self.avatar_apparence, (av_i, av_j, 32, 32))
+        scr.blit(self.avatar_apparence, (av_x, av_y))
 
 
 class NinjamazeCtrl(ReceiverObj):
