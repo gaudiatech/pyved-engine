@@ -37,6 +37,8 @@ pck_list = [
     #"pyved_engine.looparts.tmx",
     "pyvcmdline",
     "pyvcmdline.emb_demos",
+    "pyvcmdline.pyvcli_cogs",
+    "pyvcmdline.spare_parts",
     # templates
     "pyvcmdline.template_0",
     "pyvcmdline.template_0.cartridge",

@@ -8,7 +8,9 @@ Instead use functions like pyv.preload_assets(...) or init(max_fps=..., ...) etc
 """
 
 
-ENGINE_VERSION_STR = '24.3a1'  # a read-only value, can this val. from outside via a func. call on pyv.get_version()
+# below is a read-only value,
+# to retrieve this value from outside you can call pyv.get_version()
+ENGINE_VERSION_STR = '24.4a1'
 
 # deprecated but mandatory for web ctx
 STD_SCR_SIZE = [960, 720]

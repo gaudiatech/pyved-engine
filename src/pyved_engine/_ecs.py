@@ -239,11 +239,16 @@ def find_by_components(*compokeys):
     :param compokeys:
     :return: a list
     """
+    # print('DANST TRUC find by componets')
+    
     res = list()
     for entity in _entities:
+        # print('curr entity:', entity)
         compat = True
         for c in compokeys:
-            if c not in entity:  #not entity.has_component(c):
+            if not entity.has_component(c):
+            # below line = faster, used to break things in web Ctx
+            # if c not in entity: 
                 compat = False
                 break
         if compat:
