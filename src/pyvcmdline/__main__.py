@@ -454,9 +454,10 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
     # ----------------------
     try:
         pyperclip.copy('hello world')
-    except NotImplementedError:
+    except pyperclip.PyperclipException:
         info_err_url = 'https://pyperclip.readthedocs.io/en/latest/#not-implemented-error'
-        print('ERROR: a software component is missing on your system.')
+        print('ERROR: a required software component was not found on your system.')
+        print()
         print('In order to enable the pyved-engine \'s usage of the paperclip')
         print('you MUST use a command such as: `apt install xclip` at first')
         print()

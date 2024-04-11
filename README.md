@@ -72,7 +72,7 @@ pyv-cli -v
 ```
 This prints out the version and lets you know your `pyved-engine` installation is Ok.
 
-####Important remark for Linux users
+#### Important remark for Linux users
 In case you have installed `pyved-engine` only for the local user, and
 the `pyv-cli` command seems to be missing,
 you would need to update your PATH variable by hand! To do so:
@@ -81,7 +81,7 @@ you would need to update your PATH variable by hand! To do so:
 
 ## 2. Getting started
 
-####Create your very first game
+#### Create your very first game
 
 In order to create a new game bundle, you can type:
 
@@ -99,7 +99,7 @@ an interesting example, yet not too complex one.
 When prompted other questions (that are not mandatory) you're free
 to *press Enter* at every step. In that way, the tool keeps default values.
 
-####Running your game
+#### Running your game
 After the game bundle initialisation step, to verify that everything went well,
 let us type:
 ```shell
@@ -113,28 +113,28 @@ game bundle with almost any name you like.
 ## 3. Sharing games
 
 The most unique feature our toolbox provides you with,
-is the ability to *easily share your python-based game through the web*.
+is the ability to *easily share your python-based game through the web*!
 
-A possible result is shown via the screenshot below:<br>
-![Shared game](shared.game.png?raw=true "Example of shared game")
-
-You can test it out
-and go to the following URL [https://pyvm.kata.games/play/tfinalise](https://pyvm.kata.games/play/tfinalise).
+You can test that this principle works, by loading the following webpage in your browser:<br>
+[https://pyvm.kata.games/play/tfinalise](https://pyvm.kata.games/play/tfinalise).
 
 In order to share an existing game bundle, you can use the dedicated sub-command:
-
 ```
 pyv-cli share myFirstDemo
 ```
 
-####Remark
+A possible result is shown via the screenshot below:<br>
+![Shared game](shared.game.png?raw=true "Example of shared game")
+
+
+#### Remark
 Note that the game identifier (in our system, this is sometimes called 'slug') must be unique.
 If your game identifier is already used server-side, you will need to rename your game bundle.
 This is handled automatically (interactive behavior in the terminal after running `pyv-cli share`).
 
 ## 4. Some theory
 
-####Vision and goals behind pyv
+#### Vision and goals behind pyv
 
 The vision behind the work done on PYV is as follows:
 
@@ -156,7 +156,7 @@ to distribute one's games__ via a new gaming platform named
 In that way, your Python game can be played directly 
 in any modern browser (Chrome, Brave, *etc*).
 
-####How do Pyv and Pygame differ, precisely?
+#### How do Pyv and Pygame differ, precisely?
 
 Confusion appears to exist within the community regarding the differentiation
 between a Python package, and a game engine.
@@ -207,7 +207,7 @@ and share digital experiences swiftly, super efficiently!
 This platform should the first one that will share games created using __pyv__.
 
 
-### 5. Modifying a game bundle
+## 5. Modifying a game bundle
 
 ...TODO...
 
@@ -217,7 +217,7 @@ That part is written yet, but we invite you to refer to our
 Many game engine features are well described there.
 
 
-####To go further
+#### To go further
 
 [Platformer tutorial](https://gaudiatech.github.io/pyved-engine/GameTutorials/Platformer/)
 
@@ -226,7 +226,7 @@ Many game engine features are well described there.
 [A linktree, to explore related sites](https://linktr.ee/katagames)
 
 
-### 6. Contribute
+## 6. Contribute
 
 *Everyone is welcome to join our developer team!*
 
@@ -242,7 +242,7 @@ then install the lib but using the `pip` special mode "editable mode":
 -in this way you are able to use the unstable (so-called
 "bleeding edge") version, modify it an see how your changes impact the tool in real time.
 
-####Improving the documentation
+#### Improving the documentation
 Discussing ideas with the Python community more broadly
 allows to enhance the design of __pyv__ and to support Game Devs.
 
@@ -251,14 +251,14 @@ Our documentation is built via the `mkdocs` tool. Feel free to read about
 mkdocs [here](https://realpython.com/python-project-documentation-with-mkdocs/),
 and improve the __pyv__ documentation that you can find in the [docs folder](docs/)
 
-####Issues
+#### Issues
 
 If you spot a bug, create an issue and tell everyone how to reproduce the bug.
 We will try to solve it as soon as possible.
 You are welcome to comment in this open-source project.
 Newcomers are always treated with equity in our community.
 
-####Pull requests
+#### Pull requests
 
 Pull requests are welcome.
 
@@ -269,7 +269,7 @@ it's recommended but not mandatory to join our Discord server and discuss with
 the community changes you would like to see/to add in the future.
 
 
-####Acknowledgements:
+#### Acknowledgements:
 
 * many thanks to Rik Cross for being an inspiration (ECS pattern)
 * thank you Thorbjørn for providing indie game devs with an amazing tool (Tiled)
