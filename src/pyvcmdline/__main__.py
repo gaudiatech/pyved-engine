@@ -456,12 +456,15 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
         pyperclip.copy('hello world')
     except pyperclip.PyperclipException:
         info_err_url = 'https://pyperclip.readthedocs.io/en/latest/#not-implemented-error'
-        print('ERROR: a required software component was not found on your system.')
-        print()
+        print('FATAL ERROR! A required software component was not found on your system.')
         print('In order to enable the pyved-engine \'s usage of the paperclip')
-        print('you MUST use a command such as: `apt install xclip` at first')
+        print('you MUST first use a command such as:')
         print()
-        print(f'For more information, refer to: {info_err_url}')
+        print('   sudo apt-get install xclip')
+        print()
+        print('This will upgrade components available on your systems.')
+        print(f'For more information, please refer to: {info_err_url}')
+        print('If the command does not solve your problem, get in touch with KataGames devs via Discord')
         sys.exit(16)
 
     # ----------------------
