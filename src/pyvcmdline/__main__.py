@@ -19,14 +19,15 @@ from pprint import pprint
 
 import pyperclip
 import requests  # used to implement the `pyv-cli share` feature
-from .pyvcli_cogs import *
+
 from pyved_engine import vars
 from .const import *
 from .json_prec import TEMPL_ID_TO_JSON_STR
-from .pyvcli_config import API_HOST_PLAY_DEV, API_ENDPOINT_DEV, \
-    FRUIT_URL_TEMPLATE_DEV
+from .pyvcli_cogs import *
+from .pyvcli_config import API_HOST_PLAY_DEV, API_ENDPOINT_DEV, FRUIT_URL_TEMPLATE_DEV
 from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
 from .pyvcli_config import VMSTORAGE_URL
+
 
 __version__ = vars.ENGINE_VERSION_STR
 
@@ -49,7 +50,6 @@ __version__ = vars.ENGINE_VERSION_STR
 # from pygments.filters import get_all_filters, find_filter_class
 # from pygments.styles import get_all_styles, get_style_by_name
 
-
 # def _parse_options(o_strs):
 #     opts = {}
 #     if not o_strs:
@@ -70,7 +70,6 @@ __version__ = vars.ENGINE_VERSION_STR
 #                 opts[o_key] = o_val
 #     return opts
 #
-#
 # def _parse_filters(f_strs):
 #     filters = []
 #     if not f_strs:
@@ -82,7 +81,6 @@ __version__ = vars.ENGINE_VERSION_STR
 #         else:
 #             filters.append((f_str, {}))
 #     return filters
-#
 #
 # def _print_help(what, name):
 #     try:
@@ -102,7 +100,6 @@ __version__ = vars.ENGINE_VERSION_STR
 #     except (AttributeError, ValueError):
 #         print("%s not found!" % what, file=sys.stderr)
 #         return 1
-#
 #
 # def _print_list(what):
 #     if what == 'lexer':
@@ -153,7 +150,6 @@ __version__ = vars.ENGINE_VERSION_STR
 #             cls = get_style_by_name(name)
 #             print("* " + name + ':')
 #             print("    %s" % docstring_headline(cls))
-#
 #
 # def _print_list_as_json(requested_items):
 #     import json
@@ -305,12 +301,12 @@ def create_zip_from_folder(bundle_name, source_folder):
                 zipf.write(file_path, arcname)
 
     # move from temp dir to cwd
-    source_file = output_zip_path
-    destination_file = os.path.join(os.getcwd(), f"{bundle_name}.zip")
-    shutil.copy(source_file, destination_file)
-    print('Newly created file:', destination_file)
-    return destination_file
-
+    # source_file = output_zip_path
+    # destination_file = os.path.join(os.getcwd(), f"{bundle_name}.zip")
+    # shutil.copy(source_file, destination_file)
+    # print('Newly created file:', destination_file)
+    # return destination_file
+    return output_zip_path
 
 # import os
 # import urllib2
@@ -398,14 +394,15 @@ def ensure_correct_slug(givenslug):
     """
     server_truth = _query_slug_availability(givenslug)
     assert (server_truth['success'])
+    print('That slug is available' if server_truth['available'] else 'Slug already taken!')
+    bval = server_truth['available']
 
-    print('availability?', server_truth['available'])
-    if not (server_truth['available']):
+    if not bval:
         print('SUGGESTIONS:')
-        for elt in server_truth['suggestions']:
-            print('   *', elt)
-    print()
-    print('-' * 60)
+        for k, elt in enumerate(server_truth['suggestions']):
+            print(f'{k}/  {elt}')
+        return False, server_truth['suggestions']
+    return True, None
 
 
 def test_subcommand(bundle_name):
@@ -450,78 +447,107 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
     """
     :zip_file_path: as param name indicates
     :param: dev_mode is a flag to say if we target the dev server or prod server...
-
     Side effect: puts something important in the paperclip!
     """
-    file_to_send = zip_file_path  # dont forget the extension!
-    api_endpoint = API_ENDPOINT_DEV if debugmode else API_ENDPOINT_BETA
-    # serv_host = DEV_SERVER_HOST if dev_mode else PROD_SERVER_HOST
+    # ----------------------
+    #  test if paperclip can indeed, be accessed
+    # ----------------------
+    try:
+        pyperclip.copy('hello world')
+    except NotImplementedError:
+        info_err_url = 'https://pyperclip.readthedocs.io/en/latest/#not-implemented-error'
+        print('ERROR: a software component is missing on your system.')
+        print('In order to enable the pyved-engine \'s usage of the paperclip')
+        print('you MUST use a command such as: `apt install xclip` at first')
+        print()
+        print(f'For more information, refer to: {info_err_url}')
+        sys.exit(16)
 
+    # ----------------------
+    #  push file to the server
+    # ----------------------
+    if zip_file_path[-3:] != 'zip':  # to ensure we dont forget the extension:
+        raise ValueError('the argument `zip_file_path` is expected to use the extension .zip')
     files = {
-        'uploadedFile': (file_to_send,
-                         open(file_to_send, 'rb'),
-                         'application/zip',
-                         {'Expires': '0'})
+        'uploadedFile': (
+            zip_file_path,
+            open(zip_file_path, 'rb'),
+            'application/zip',
+            {'Expires': '0'}
+        )
     }
+    api_endpoint = API_ENDPOINT_DEV if debugmode else API_ENDPOINT_BETA
     reply = requests.post(
         url=api_endpoint,
         files=files,
         data={'pyv-cli-flag': True, 'chosen-slug': gslug, 'uploadBtn': 'Upload'}
     )
-    print('upload_my_zip_file called! Resp. is:')
-    print(reply.text)
-    rep_obj = json.loads(reply.text)
+    try:
+        rep_obj = json.loads(reply.text)
+    except json.decoder.JSONDecodeError:
+        print('cannot parse server response!')
+        print('raw text was:')
+        print(reply.text)
+        sys.exit(15)
+    print('server responde to request:\n', rep_obj[0])
+
+    # ------------------------
+    #  save target URL to the paperclip
+    # -----------------------
     if debugmode:
         fruit_url = FRUIT_URL_TEMPLATE_DEV.format(API_HOST_PLAY_DEV, rep_obj[1])
     else:
         fruit_url = FRUIT_URL_TEMPLATE_BETA.format(BETA_VM_API_HOST, rep_obj[1])
-
     pyperclip.copy(fruit_url)
-    print(f'URL:{fruit_url} has been copied to the paperclip!')
+    print(f'{fruit_url} has been saved to the paperclip')
 
-    # new and shiny (ver1 . august23):
-    # theFile = EnhancedFile('a.xml', 'r')
-    # theUrl = "http://example.com/abcde"
-    # theHeaders = {'Content-Type': 'text/xml'}
-    # theRequest = urllib2.Request(theUrl, theFile, theHeaders)
-    # response = urllib2.urlopen(theRequest)
-    # theFile.close()
-    # for line in response:
-    #     print
-    #     line
 
-    # ----- old shit: ------
-    # Extract data from the ZIP file
-    # with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-    #    extracted_data = zip_ref.read(zip_ref.namelist()[0])
+def _bundle_renaming(source, dest):
+    print('Renaming the game bundle...')
+    print(f'{source} --> {dest}')
+    if os.path.isdir(dest):
+        raise ValueError(f'cannot rename game bundle, because {dest} already exists in the current folder')
+    md_obj = read_metadata(source)
 
-    # Prepare the HTTP POST request
-    # files = {'zip_data': ('data.zip', extracted_data)}
-    # response = requests.post(server_url, files=files)
-
-    # Example usage
-    # zip_file_path = "path/to/your/file.zip"
-    # server_url = "http://example.com/upload.php"
-    # response = upload_zip_file(zip_file_path, server_url)
-    # print("Response status code:", response.status_code)
-    # print("Response content:", response.text)
+    os.rename(source, dest)
+    md_obj['slug'] = dest
+    rewrite_metadata(dest, md_obj)
+    print('OK.')
 
 
 def share_subcommand(bundle_name, dev_flag_on):
-    # FIRST, need to answer the question: whats the slug name?
-    metadata = read_metadata(bundle_name)
-    slug = metadata['slug']
-    print('slug found:', slug)
+    # TODO in the future,
+    #  we may want to create a 'pack' subcommand that would only produce the .zip, not send it elsewhere
 
-    # pre-made func usage
+    # ----------
+    #  1) enforce slug validity
+    # ----------
+    renamed = False
+    slug = read_metadata(bundle_name)['slug']  # to find out what is the slug name
+    slug_correctness = ensure_correct_slug(slug)
+    while not slug_correctness[0]:
+        tmp = input('what alternative do you choose (please select a number: 0 to 3)? ')
+        if tmp.isnumeric() and (-1 < int(tmp) < 4):
+            choice = int(tmp)
+            slug = slug_correctness[1][choice]
+            slug_correctness = ensure_correct_slug(slug)
+            renamed = True
+        else:
+            print('invalid input, you can retry.')
+    # if renamed, then we need to sync both the metadata and the folder name
+    if renamed:
+        _bundle_renaming(bundle_name, slug)
+        bundle_name = slug
+
     wrapper_bundle = os.path.join(os.getcwd(), bundle_name)
     zip_precise_target = os.path.join(wrapper_bundle, 'cartridge')
+    fn = create_zip_from_folder(None, zip_precise_target)
 
-    fn = create_zip_from_folder(bundle_name, zip_precise_target)
     # print("ZIP file created:", output_zip_filename)
     # create_zip_from_folder(, os.getcwd())
     # print('tmpfile created ok')
-    upload_my_zip_file(fn, slug, dev_flag_on)
+
+    upload_my_zip_file(fn, slug, dev_flag_on)  # the final step
 
 
 def upgrade_subcmd(bundlename):
@@ -567,6 +593,16 @@ def upgrade_subcmd(bundlename):
     copy_launcher_script(bundlename, False)
 
 
+def _remove_junk_from_bundle_name(x):
+    """
+    if a trailing slash or backslash
+     is found, then we need to remove it
+    """
+    t = x.rstrip('/')
+    t = t.rstrip('\\')
+    return t
+
+
 def main_inner(parser, argns):
     # definitions
     subcommand_mapping = {
@@ -600,11 +636,13 @@ def main_inner(parser, argns):
     if ope_name in no_arg_subcommands:
         # a few subcommands do not take an argument
         adhoc_subcommand_func()
-    elif ope_name not in extra_flags_subcommands:
-        adhoc_subcommand_func(argns.bundle_name)
     else:
-        # a few subcommands require the the dev mode flag!
-        adhoc_subcommand_func(argns.bundle_name, argns.dev)
+        xarg = _remove_junk_from_bundle_name(argns.bundle_name)
+        if ope_name not in extra_flags_subcommands:
+            adhoc_subcommand_func(xarg)
+        else:
+            # a few subcommands require the the dev mode flag!
+            adhoc_subcommand_func(xarg, argns.dev)
     return 0
 
     # handle ``pygmentize -L``
@@ -976,13 +1014,13 @@ def do_parse_args():
 
     # ——————————————————————————————————
     # +++ INIT subcommand
-    init_parser = subparsers.add_parser("init", help="Initialize something")
+    init_parser = subparsers.add_parser("init", help="used to initialize a new game bundle")
     init_parser.add_argument("bundle_name", type=str, help="Name of the bundle")
 
     # ——————————————————————————————————
     # +++ PLAY subcommand
     play_parser = subparsers.add_parser(
-        "play", help="Play a given game bundle now!"
+        "play", help="play a given game bundle in the local context"
     )
     play_parser.add_argument(
         "bundle_name", type=str, nargs="?", default=".", help="Specified bundle (default: current folder)"
@@ -991,7 +1029,7 @@ def do_parse_args():
     # ——————————————————————————————————
     # +++ AUTOGEN subcommand
     autogen = subparsers.add_parser(
-        "autogen", help="Command to be used only by admins ->tool for py connector autogen"
+        "autogen", help="for system devs only (=a dev tool equivalent to a PyConnector autogen script)"
     )
 
     # ——————————————————————————————————
@@ -1007,7 +1045,7 @@ def do_parse_args():
     # ——————————————————————————————————
     # +++ TEST subcommand
     play_parser = subparsers.add_parser(
-        "test", help="only for debug"
+        "test", help="can be used to test if the specified game bundle is valid or not"
     )
     play_parser.add_argument(
         "bundle_name", type=str
@@ -1025,10 +1063,10 @@ def do_parse_args():
     # ——————————————————————————————————
     # +++ PUB subcommand {
     pubpp = subparsers.add_parser(
-        "pub", help="Publish a game based on its slug"
+        "pub", help="request game publication given a game slug share via the sandboxed mode"
     )
     pubpp.add_argument(
-        "slug", type=str, help="Chosen slug (slug = cartridge identifier in the cloud-based game warehouse)"
+        "slug", type=str, help="existing game slug (=identifier in the cloud-based storage)"
     )
 
     ret_args = parser.parse_args()
@@ -1176,3 +1214,7 @@ def do_parse_args():
     #     print('*** If this is a bug you want to report, please rerun with -v.',
     #           file=sys.stderr)
     #     return 1
+
+
+if __name__ == '__main__':  # to allow to run the current file via "python3 -m pyvcmdline"
+    do_parse_args()

@@ -74,9 +74,10 @@ def read_metadata(bundle_name):
     cartridge_folder = fpath_join(wrapper_bundle, 'cartridge')
     if not os.path.exists(cartridge_folder):
         raise ValueError('ERR! Bundle format isnt valid, cartridge structure is missing')
+
     # need to open cartridge, read metadata,
     whats_open = os.path.sep.join((cartridge_folder, 'metadat.json'))
-    print('READING', whats_open, '...')
+    # print('READING', whats_open, '...')
     f_ptr = open(whats_open, 'r')
     obj = json.load(f_ptr)
     f_ptr.close()
@@ -99,6 +100,7 @@ def rewrite_metadata(bundle_name, blob_obj):
     wrapper_bundle = fpath_join(os.getcwd(), bundle_name)
     cartridge_folder = fpath_join(wrapper_bundle, 'cartridge')
     what_to_open = os.path.sep.join((cartridge_folder, 'metadat.json'))
+    print(f'REWRITING file {what_to_open}...')
     with open(what_to_open, 'w') as fptr:
         fptr.write(json.dumps(blob_obj))
 

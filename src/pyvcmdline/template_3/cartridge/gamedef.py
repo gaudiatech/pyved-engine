@@ -6,7 +6,7 @@ This is a joint work, authors are:
     -Steve Osborne (the very first prototype, encoding game rules)
     [contact: srosborne_at_gmail.com]
 
-    -Thomas Iwaszko (port to python3+pyv, various improvements)
+    - moonbak (port to python3+pyv, various improvements)
     [contact: thomas.iw@kata.games]
 """
 
