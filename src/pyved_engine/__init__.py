@@ -6,7 +6,7 @@
 | https://github.com/gaudiatech/pyved-engine         |
 | an open-source project started by GAUDIA TECH INC. |
 |                                                    |
-| Main author is Thomas Iwaszko a.k.a. moonbak       |
+| Main author is Thomas EDER a.k.a. moonbak       |
 | (github.com/wkta) - Contact thomas.iw@kata.games   |
 +----------------------------------------------------+
 """

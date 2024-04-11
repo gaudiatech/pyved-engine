@@ -1,6 +1,6 @@
 """
-code (c) 2018-2022, by Thomas Iwaszko
-contact - tom@kata.games
+code by moonbak
+contact - thomas.iw@kata.games
 
 That file contains everything that's needed to implement
 kengi.event... That is:
