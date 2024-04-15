@@ -14,23 +14,38 @@ class JsonBasedSprSheet:
         p = pathinfo if pathinfo else ''
         self.sheet_surf = _hub.pygame.image.load(f'{p}{filename_noext_nopath}.png')
         json_def_file = open(f'{p}{filename_noext_nopath}.json', 'r')
+        jsondata = json.load(json_def_file)
+        chosen_scale = "1.0"
+        meta = jsondata.get("meta", "")
+        if meta:
+            chosen_scale = meta.get("scale", chosen_scale)
+        
+        try:
+            chosen_scale_f = float(chosen_scale)
+        except:
+            chosen_scale_f = 1.0
+            print(f"Error in JsonBasedSprSheet: can't convert scale '{chosen_scale}' to float. Using scale of 1.")
+            
+        if chosen_scale_f != 1.0:
+            homo = _hub.pygame.transform.scale
+            w, h = self.sheet_surf.get_size()
+            self.sheet_surf = homo(self.sheet_surf, (chosen_scale_f * w, chosen_scale_f * h))
 
         if ck:
             self.sheet_surf.set_colorkey(ck)
 
-        jsondata = json.load(json_def_file)
         assoc_tmp = dict()
         self.all_names = set()
         if isinstance(jsondata['frames'], list):  # we support 2 formats of json desc
             for infos in jsondata['frames']:
                 gname = infos['filename']
                 self.all_names.add(gname)
-                args = (infos['frame']['x'], infos['frame']['y'], infos['frame']['w'], infos['frame']['h'])
+                args = (infos['frame']['x'] * chosen_scale_f, infos['frame']['y'] * chosen_scale_f, infos['frame']['w'] * chosen_scale_f, infos['frame']['h'] * chosen_scale_f)
                 assoc_tmp[gname] = self.sheet_surf.subsurface(_hub.pygame.Rect(*args)).copy()
         else:
             for sprname, infos in jsondata['frames'].items():
                 self.all_names.add(sprname)
-                args = (infos['frame']['x'], infos['frame']['y'], infos['frame']['w'], infos['frame']['h'])
+                args = (infos['frame']['x'] * chosen_scale_f, infos['frame']['y'] * chosen_scale_f, infos['frame']['w'] * chosen_scale_f, infos['frame']['h'] * chosen_scale_f)
                 assoc_tmp[sprname] = self.sheet_surf.subsurface(_hub.pygame.Rect(*args)).copy()
         self.assoc_name_spr = assoc_tmp
 
