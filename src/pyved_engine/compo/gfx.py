@@ -24,8 +24,9 @@ class JsonBasedSprSheet:
             chosen_scale_f = float(chosen_scale)
         except:
             chosen_scale_f = 1.0
-        if chosen_scale_f != 1.0:
             print(f"Error in JsonBasedSprSheet: can't convert scale '{chosen_scale}' to float. Using scale of 1.")
+            
+        if chosen_scale_f != 1.0:
             homo = _hub.pygame.transform.scale
             w, h = self.sheet_surf.get_size()
             self.sheet_surf = homo(self.sheet_surf, (chosen_scale_f * w, chosen_scale_f * h))
