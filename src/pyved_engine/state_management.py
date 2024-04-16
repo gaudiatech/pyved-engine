@@ -20,6 +20,9 @@ class StateStackCtrl(events.EvListener):
         self._st_container.setup(all_gs, stmapping, None)
         self.__state_stack = Stack()
 
+    def state_code_to_str(self, x):
+        return self._gs_omega.inv_map[x]
+
     def turn_on(self):
         super().turn_on()
         print('>>>>>>>>>* Note: State stack is OPERATIONAL *')

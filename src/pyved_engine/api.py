@@ -16,7 +16,7 @@ from io import StringIO
 # does all of this need to be visible from outside? PB: OOP. understanding required
 # TODO reflect if this can be rephrased to let go of OOP. without compromising on feature diversity & quantity
 from .compo import gfx
-from . import pal  # pal also added so it is includes in the api
+from . import pal, state_management  # pal also added so it is includes in the api
 from . import custom_struct as e_struct
 import time
 from .core import events
@@ -376,6 +376,19 @@ def create_clock():
 
 def get_ev_manager():
     return EvManager.instance()
+
+
+def curr_state() -> int:
+    return state_management.stack_based_ctrl.current
+
+
+def curr_statename() -> str:
+    """
+    :returns: a str
+    """
+    return state_management.stack_based_ctrl.state_code_to_str(
+        state_management.stack_based_ctrl.current
+    )
 
 
 def get_surface():
