@@ -628,6 +628,20 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Reference/Gamestates/" class="md-nav__link">
+        Gamestates
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -833,14 +847,14 @@ computer.</p>
 <p></center></p>
 <h2 id="step-0-getting-started">Step 0. Getting started</h2>
 <h4 id="download-and-init-the-game-template-platformer">Download and init. the game template (Platformer)</h4>
-<p>If you havent done it yet, to install PYV, type:</p>
-<pre><code class="language-shell">pip install pyved-engine
-</code></pre>
-<p>Next, you can type (still in the shell):</p>
-<pre><code class="language-shell">pyv-cli init myGame
-pyv-cli play myGame
-</code></pre>
-<p>When prompted about the game template, select <strong>2</strong> to follow this tutorial.</p>
+<p>If you havent done it yet, to install PYV, type:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>pyved-engine
+</code></pre></div>
+Next, you can type (still in the shell):
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pyv-cli<span class="w"> </span>init<span class="w"> </span>myGame
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pyv-cli<span class="w"> </span>play<span class="w"> </span>myGame
+</code></pre></div>
+When prompted about the game template, select <strong>2</strong> to follow this tutorial.</p>
 <h4 id="file-structure">File structure</h4>
 <p>Let's go for a quick tour around the code in order for you to best understand
 how to customize this template to your liking.</p>
@@ -881,44 +895,44 @@ What if we give a <strong>jetpack</strong> to our player?!</p>
 <p>So, let's start by adding the jetpack attributes to our player.</p>
 <h4 id="adding-a-jetpack-component">Adding a jetpack component</h4>
 <p>Go into <code>World.py</code> and <code>gamedef.py</code> </p>
-<p><code>World.py</code>  We first have this code : </p>
-<pre><code class="language-py">        pyv.init_entity(player, {
-            'speed': [0.0, 0.0],
-            'accel_y': 0.0,
-            'gravity': 14.5,
-            'lower_block': None,
-            'body': pygame.rect.Rect(shared.SPAWN[0], shared.SPAWN[1], shared.AVATAR_SIZE, shared.AVATAR_SIZE),
-            'camera': cam_ref,
-            'controls': {'up': False, 'down': False, 'left': False, 'right': False}
-            })
-</code></pre>
+<p><code>World.py</code>  We first have this code : 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>        <span class="n">pyv</span><span class="o">.</span><span class="n">init_entity</span><span class="p">(</span><span class="n">player</span><span class="p">,</span> <span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>            <span class="s1">&#39;speed&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>            <span class="s1">&#39;accel_y&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>            <span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="mf">14.5</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>            <span class="s1">&#39;lower_block&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>            <span class="s1">&#39;body&#39;</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">rect</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span><span class="n">shared</span><span class="o">.</span><span class="n">SPAWN</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shared</span><span class="o">.</span><span class="n">SPAWN</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">shared</span><span class="o">.</span><span class="n">AVATAR_SIZE</span><span class="p">,</span> <span class="n">shared</span><span class="o">.</span><span class="n">AVATAR_SIZE</span><span class="p">),</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>            <span class="s1">&#39;camera&#39;</span><span class="p">:</span> <span class="n">cam_ref</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>            <span class="s1">&#39;controls&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;up&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>            <span class="p">})</span>
+</code></pre></div></p>
 <p>We will add a jetpack attribute inside of the player entity </p>
-<pre><code class="language-py">        pyv.init_entity(player, {
-            'speed': [0.0, 0.0],
-            'accel_y': 0.0,
-            'gravity': 14.5,
-            'lower_block': None,
-            'jetpack': False,
-            'body': pygame.rect.Rect(shared.SPAWN[0], shared.SPAWN[1], shared.AVATAR_SIZE, shared.AVATAR_SIZE),
-            'camera': cam_ref,
-            'controls': {'up': False, 'down': False, 'left': False, 'right': False}
-            })
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>        <span class="n">pyv</span><span class="o">.</span><span class="n">init_entity</span><span class="p">(</span><span class="n">player</span><span class="p">,</span> <span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>            <span class="s1">&#39;speed&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>            <span class="s1">&#39;accel_y&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>            <span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="mf">14.5</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>            <span class="s1">&#39;lower_block&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>            <span class="s1">&#39;jetpack&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>            <span class="s1">&#39;body&#39;</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">rect</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span><span class="n">shared</span><span class="o">.</span><span class="n">SPAWN</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shared</span><span class="o">.</span><span class="n">SPAWN</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">shared</span><span class="o">.</span><span class="n">AVATAR_SIZE</span><span class="p">,</span> <span class="n">shared</span><span class="o">.</span><span class="n">AVATAR_SIZE</span><span class="p">),</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>            <span class="s1">&#39;camera&#39;</span><span class="p">:</span> <span class="n">cam_ref</span><span class="p">,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>            <span class="s1">&#39;controls&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;up&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>            <span class="p">})</span>
+</code></pre></div>
 <p>Now, let's dive into the <code>gamedef.py</code> file : </p>
-<pre><code class="language-py">    pyv.define_archetype('player', (
-        'speed', 'accel_y', 'gravity', 'lower_block', 'body', 'camera', 'controls'
-    ))
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>    <span class="n">pyv</span><span class="o">.</span><span class="n">define_archetype</span><span class="p">(</span><span class="s1">&#39;player&#39;</span><span class="p">,</span> <span class="p">(</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>        <span class="s1">&#39;speed&#39;</span><span class="p">,</span> <span class="s1">&#39;accel_y&#39;</span><span class="p">,</span> <span class="s1">&#39;gravity&#39;</span><span class="p">,</span> <span class="s1">&#39;lower_block&#39;</span><span class="p">,</span> <span class="s1">&#39;body&#39;</span><span class="p">,</span> <span class="s1">&#39;camera&#39;</span><span class="p">,</span> <span class="s1">&#39;controls&#39;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="p">))</span>
+</code></pre></div>
 <p>And we also add the jetpack here :</p>
-<pre><code class="language-py">    pyv.define_archetype('player', (
-        'speed', 'accel_y', 'gravity', 'lower_block', 'jetpack', 'body', 'camera', 'controls'
-    ))
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>    <span class="n">pyv</span><span class="o">.</span><span class="n">define_archetype</span><span class="p">(</span><span class="s1">&#39;player&#39;</span><span class="p">,</span> <span class="p">(</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>        <span class="s1">&#39;speed&#39;</span><span class="p">,</span> <span class="s1">&#39;accel_y&#39;</span><span class="p">,</span> <span class="s1">&#39;gravity&#39;</span><span class="p">,</span> <span class="s1">&#39;lower_block&#39;</span><span class="p">,</span> <span class="s1">&#39;jetpack&#39;</span><span class="p">,</span> <span class="s1">&#39;body&#39;</span><span class="p">,</span> <span class="s1">&#39;camera&#39;</span><span class="p">,</span> <span class="s1">&#39;controls&#39;</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="p">))</span>
+</code></pre></div>
 <h4 id="tuning-the-jetpack-power">Tuning the jetpack power!</h4>
 <p>This step is pretty straightforward, go inside the <code>shared.py</code> file</p>
-<p>We will simply add the attribute constant here :</p>
-<pre><code class="language-py">JETPACK_RATIO = 0.05
-</code></pre>
+<p>We will simply add the attribute constant here :
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">JETPACK_RATIO</span> <span class="o">=</span> <span class="mf">0.05</span>
+</code></pre></div></p>
 <h4 id="jetpack-steering">Jetpack steering?</h4>
 <p>This is now the hard part, lets add logic to our code in order to be able to interract with the jetpack.</p>
 <p>Let's go inside  <code>systems.py</code>, now find the block <code>def steering_sys(...):</code></p>
@@ -926,38 +940,38 @@ What if we give a <strong>jetpack</strong> to our player?!</p>
 we will handle our jetpack is to check if our player is using it,
 in order to disable the jump if the player is using the jetpack since it will
 replace it.
-What we need to do is: find the following line..</p>
-<pre><code class="language-py">ctrl['down'] = activekeys[pg.K_DOWN]
-</code></pre>
-<p>Right beneath that line, we will add this code:</p>
-<pre><code class="language-py">        if not prevdown_key_value and ctrl['down']:
-            ent['jetpack'] = not ent['jetpack']
-            print('JETPACK:', ('on' if ent['jetpack'] else 'off'))
-</code></pre>
-<p>this will act like a switch on the jetpack flag, tied to the Player entity.</p>
+What we need to do is: find the following line..
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">ctrl</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">activekeys</span><span class="p">[</span><span class="n">pg</span><span class="o">.</span><span class="n">K_DOWN</span><span class="p">]</span>
+</code></pre></div>
+Right beneath that line, we will add this code:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">prevdown_key_value</span> <span class="ow">and</span> <span class="n">ctrl</span><span class="p">[</span><span class="s1">&#39;down&#39;</span><span class="p">]:</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>            <span class="n">ent</span><span class="p">[</span><span class="s1">&#39;jetpack&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">ent</span><span class="p">[</span><span class="s1">&#39;jetpack&#39;</span><span class="p">]</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;JETPACK:&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;on&#39;</span> <span class="k">if</span> <span class="n">ent</span><span class="p">[</span><span class="s1">&#39;jetpack&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;off&#39;</span><span class="p">))</span>
+</code></pre></div>
+this will act like a switch on the jetpack flag, tied to the Player entity.</p>
 <p>Next, we can go inside the game and check if the console we start it from displays
 the jetpack on/off message whenever we press the arrow up key.</p>
 <p>It displays fine, but we still jump, no jetpack power is available...
 Let's fix this !
 Still in steering system, you need to find a chunk of code that looks like this:</p>
-<pre><code class="language-py">        if ent['lower_block']:
-            if not prevup_key_value and ctrl['up']:
-                ent['accel_y'] -= shared.JUMP_POWER
-                ent['lower_block'] = None
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>        <span class="k">if</span> <span class="n">ent</span><span class="p">[</span><span class="s1">&#39;lower_block&#39;</span><span class="p">]:</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>            <span class="k">if</span> <span class="ow">not</span> <span class="n">prevup_key_value</span> <span class="ow">and</span> <span class="n">ctrl</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">]:</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>                <span class="n">ent</span><span class="p">[</span><span class="s1">&#39;accel_y&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">shared</span><span class="o">.</span><span class="n">JUMP_POWER</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>                <span class="n">ent</span><span class="p">[</span><span class="s1">&#39;lower_block&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre></div>
 <p>And this is how we handle our jump mechanic,
 we will extend this logic (add a condition over it, make it more complex)
 in order to create a scenario where:</p>
 <p>In one case: player uses the jetpack, and in the other case player simply jumps.</p>
-<pre><code class="language-py">        if not ent['jetpack']:
-            if ent['lower_block']:
-                if not prevup_key_value and ctrl['up']:
-                    ent['accel_y'] -= shared.JUMP_POWER
-                    ent['lower_block'] = None
-        else:  # other rules apply!
-            if ctrl['up']:
-                ent['accel_y'] = -shared.JUMP_POWER * shared.JETPACK_RATIO
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">ent</span><span class="p">[</span><span class="s1">&#39;jetpack&#39;</span><span class="p">]:</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>            <span class="k">if</span> <span class="n">ent</span><span class="p">[</span><span class="s1">&#39;lower_block&#39;</span><span class="p">]:</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>                <span class="k">if</span> <span class="ow">not</span> <span class="n">prevup_key_value</span> <span class="ow">and</span> <span class="n">ctrl</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">]:</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>                    <span class="n">ent</span><span class="p">[</span><span class="s1">&#39;accel_y&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">shared</span><span class="o">.</span><span class="n">JUMP_POWER</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>                    <span class="n">ent</span><span class="p">[</span><span class="s1">&#39;lower_block&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>        <span class="k">else</span><span class="p">:</span>  <span class="c1"># other rules apply!</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>            <span class="k">if</span> <span class="n">ctrl</span><span class="p">[</span><span class="s1">&#39;up&#39;</span><span class="p">]:</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>                <span class="n">ent</span><span class="p">[</span><span class="s1">&#39;accel_y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">shared</span><span class="o">.</span><span class="n">JUMP_POWER</span> <span class="o">*</span> <span class="n">shared</span><span class="o">.</span><span class="n">JETPACK_RATIO</span>
+</code></pre></div>
 <p>As you can see above, we basically use the same formula to calculate our jumping
 acceleration, we just multiply it with the <code>JETPACK_RATIO</code> we've set earlier.</p>
 <p>If you've modified everything as we explained,
@@ -978,11 +992,11 @@ we provide you with sample files in the:
 You can download the 3 and put it in the <code>cartridge/</code> folder of your game.</p>
 <p>Now open the <code>metadat.json</code> file to edit it.
 We need list new game assets, in the <code>assets</code> field:</p>
-<pre><code class="language-json">&quot;assets&quot;: [
-    &quot;my_map.ncsv&quot;, &quot;background.png&quot;, &quot;wall_small.png&quot;, &quot;barry.png&quot;
-],
-</code></pre>
-<p>These assets will get loaded automatically (pre-loading assets is a feature our game engine relies on)
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">&quot;assets&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="s2">&quot;my_map.ncsv&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;background.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;wall_small.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;barry.png&quot;</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="p">],</span>
+</code></pre></div>
+These assets will get loaded automatically (pre-loading assets is a feature our game engine relies on)
 PYV handles the loading of images from your drive to your program.
 So we have added our background, our wall texture and our player image.</p>
 <p>However, since we are unsure whether the size of our assets matches
@@ -996,39 +1010,39 @@ one is suboptimized, and can be harmful to the game performance in some cases.</
 <p>Once again,
 go to <code>gamedef.py</code>, inside the function <code>troid_init(...)</code>
 add a component named <code>icon</code> add the player archetype:</p>
-<pre><code class="language-py">    pyv.define_archetype('player', (
-        'speed',
-        'accel_y',
-        'gravity',
-        'lower_block',
-        'body',
-        'camera',
-        'controls',
-        'icon'
-    ))
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>    <span class="n">pyv</span><span class="o">.</span><span class="n">define_archetype</span><span class="p">(</span><span class="s1">&#39;player&#39;</span><span class="p">,</span> <span class="p">(</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>        <span class="s1">&#39;speed&#39;</span><span class="p">,</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>        <span class="s1">&#39;accel_y&#39;</span><span class="p">,</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>        <span class="s1">&#39;gravity&#39;</span><span class="p">,</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>        <span class="s1">&#39;lower_block&#39;</span><span class="p">,</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>        <span class="s1">&#39;body&#39;</span><span class="p">,</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>        <span class="s1">&#39;camera&#39;</span><span class="p">,</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>        <span class="s1">&#39;controls&#39;</span><span class="p">,</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        <span class="s1">&#39;icon&#39;</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    <span class="p">))</span>
+</code></pre></div>
 <p>Next, go to <code>World.py</code>, 
 search for the <code>create_avatar</code> method.
  Here, at the very beginning of the method,
 we will create an <code>icon</code> variable,
 add the following lines above the <code>pyv.new_from_archetype(...)</code> call</p>
-<pre><code class="language-py">        player_image = pyv.vars.images['barry']
-        icon = pygame.transform.scale(player_image, (shared.AVATAR_SIZE, shared.AVATAR_SIZE))
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>        <span class="n">player_image</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">vars</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="s1">&#39;barry&#39;</span><span class="p">]</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>        <span class="n">icon</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">player_image</span><span class="p">,</span> <span class="p">(</span><span class="n">shared</span><span class="o">.</span><span class="n">AVATAR_SIZE</span><span class="p">,</span> <span class="n">shared</span><span class="o">.</span><span class="n">AVATAR_SIZE</span><span class="p">))</span>
+</code></pre></div>
 <p>Then, at the player entity initialization, we can set a value for
 the component <code>icon</code>:</p>
-<pre><code class="language-py">        pyv.init_entity(player, {
-            'speed': [0.0, 0.0],
-            'accel_y': 0.0,
-            'gravity': 14.5,
-            'lower_block': None,
-            'jetpack': False,
-            'body': pygame.rect.Rect(shared.SPAWN[0], shared.SPAWN[1], shared.AVATAR_SIZE, shared.AVATAR_SIZE),
-            'camera': cam_ref,
-            'controls': {'up': False, 'down': False, 'left': False, 'right': False},
-            'icon': icon
-        })
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>        <span class="n">pyv</span><span class="o">.</span><span class="n">init_entity</span><span class="p">(</span><span class="n">player</span><span class="p">,</span> <span class="p">{</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>            <span class="s1">&#39;speed&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>            <span class="s1">&#39;accel_y&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>            <span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="mf">14.5</span><span class="p">,</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>            <span class="s1">&#39;lower_block&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>            <span class="s1">&#39;jetpack&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>            <span class="s1">&#39;body&#39;</span><span class="p">:</span> <span class="n">pygame</span><span class="o">.</span><span class="n">rect</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span><span class="n">shared</span><span class="o">.</span><span class="n">SPAWN</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shared</span><span class="o">.</span><span class="n">SPAWN</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">shared</span><span class="o">.</span><span class="n">AVATAR_SIZE</span><span class="p">,</span> <span class="n">shared</span><span class="o">.</span><span class="n">AVATAR_SIZE</span><span class="p">),</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>            <span class="s1">&#39;camera&#39;</span><span class="p">:</span> <span class="n">cam_ref</span><span class="p">,</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>            <span class="s1">&#39;controls&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;up&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;down&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>            <span class="s1">&#39;icon&#39;</span><span class="p">:</span> <span class="n">icon</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>        <span class="p">})</span>
+</code></pre></div>
 <p>Here we load our image from the pyved image loader, and then resize it.
 This is suboptimized because it is resized everytime the player is loaded, in this case, it is not that problematic since the player is only loaded whenever the level is created.</p>
 <h4 id="prepare-assets-method-2">Prepare assets: method 2</h4>
@@ -1036,48 +1050,48 @@ This is suboptimized because it is resized everytime the player is loaded, in th
 we will use another approach from the one before
 We will create a dictionnary where all of our images will be kept.
 So go into <code>shared.py</code> and add at the end of the file, the block:</p>
-<pre><code class="language-py">gam_assets = dict()
-
-
-def prepare_game_assets():
-    global gam_assets
-    gam_assets['bg'] = pygame.transform.scale(pyv.vars.images['background'], (WIDTH, HEIGHT))
-    gam_assets['wall'] = pygame.transform.scale(pyv.vars.images['wall_small'], (BLOCKSIZE, BLOCKSIZE))
-</code></pre>
-<p>Here you can see we created new constants for images,
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">gam_assets</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="k">def</span> <span class="nf">prepare_game_assets</span><span class="p">():</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>    <span class="k">global</span> <span class="n">gam_assets</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="n">gam_assets</span><span class="p">[</span><span class="s1">&#39;bg&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">pyv</span><span class="o">.</span><span class="n">vars</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="s1">&#39;background&#39;</span><span class="p">],</span> <span class="p">(</span><span class="n">WIDTH</span><span class="p">,</span> <span class="n">HEIGHT</span><span class="p">))</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="n">gam_assets</span><span class="p">[</span><span class="s1">&#39;wall&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pygame</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">pyv</span><span class="o">.</span><span class="n">vars</span><span class="o">.</span><span class="n">images</span><span class="p">[</span><span class="s1">&#39;wall_small&#39;</span><span class="p">],</span> <span class="p">(</span><span class="n">BLOCKSIZE</span><span class="p">,</span> <span class="n">BLOCKSIZE</span><span class="p">))</span>
+</code></pre></div>
+Here you can see we created new constants for images,
 and transformed them to match the size we're using in the project.</p>
 <p>This function needs to be called at the beginning of our program,
 so add it in the <code>init_troid(...)</code> function, in the <code>gamedef.py</code> file.</p>
-<pre><code class="language-python">def troid_init(vms=None):
-    pyv.init()
-    screen = pyv.get_surface()
-    shared.screen = screen
-    shared.prepare_game_assets()
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">def</span> <span class="nf">troid_init</span><span class="p">(</span><span class="n">vms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="n">pyv</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">screen</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">get_surface</span><span class="p">()</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    <span class="n">shared</span><span class="o">.</span><span class="n">screen</span> <span class="o">=</span> <span class="n">screen</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>    <span class="n">shared</span><span class="o">.</span><span class="n">prepare_game_assets</span><span class="p">()</span>
+</code></pre></div>
 <h4 id="use-assets-for-real-just-do-it">Use assets. For real, just do it</h4>
 <p>Since all assets are now ready (loaded into the memory at runtime),
 the rest of the task is to adapt what's rendered by replacing the colored
 squares with real images. To do so, navigate to <code>systems.py</code>, in the <code>rendering_sys</code>.</p>
 <p>Let's first add the background, just after the background fill :</p>
-<pre><code class="language-py">    scr.fill((0, 27, 0))
-    scr.blit(shared.gam_assets['bg'], [0, 0])
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>    <span class="n">scr</span><span class="o">.</span><span class="n">fill</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="n">scr</span><span class="o">.</span><span class="n">blit</span><span class="p">(</span><span class="n">shared</span><span class="o">.</span><span class="n">gam_assets</span><span class="p">[</span><span class="s1">&#39;bg&#39;</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+</code></pre></div>
 <p>And look for thi chunk of code, we will replace it:</p>
-<pre><code class="language-py">    # draw player!
-    disp(scr, pl_ent, 'red')
-    # draw blocks
-    li_blocks = pyv.find_by_archetype('block')
-    for b in li_blocks:
-        disp(scr, b, 'blue')
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>    <span class="c1"># draw player!</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    <span class="n">disp</span><span class="p">(</span><span class="n">scr</span><span class="p">,</span> <span class="n">pl_ent</span><span class="p">,</span> <span class="s1">&#39;red&#39;</span><span class="p">)</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="c1"># draw blocks</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">li_blocks</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">find_by_archetype</span><span class="p">(</span><span class="s1">&#39;block&#39;</span><span class="p">)</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">li_blocks</span><span class="p">:</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>        <span class="n">disp</span><span class="p">(</span><span class="n">scr</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+</code></pre></div>
 <p>The new version is:</p>
-<pre><code class="language-py"> # draw player!
-    disp(scr, pl_ent, img=pl_ent['icon'])
-    # draw blocks
-    li_blocks = pyv.find_by_archetype('block')
-    for b in li_blocks:
-        disp(scr, b, img=shared.gam_assets['wall'])
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a> <span class="c1"># draw player!</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    <span class="n">disp</span><span class="p">(</span><span class="n">scr</span><span class="p">,</span> <span class="n">pl_ent</span><span class="p">,</span> <span class="n">img</span><span class="o">=</span><span class="n">pl_ent</span><span class="p">[</span><span class="s1">&#39;icon&#39;</span><span class="p">])</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="c1"># draw blocks</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">li_blocks</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">find_by_archetype</span><span class="p">(</span><span class="s1">&#39;block&#39;</span><span class="p">)</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">li_blocks</span><span class="p">:</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>        <span class="n">disp</span><span class="p">(</span><span class="n">scr</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">img</span><span class="o">=</span><span class="n">shared</span><span class="o">.</span><span class="n">gam_assets</span><span class="p">[</span><span class="s1">&#39;wall&#39;</span><span class="p">])</span>
+</code></pre></div>
 <p>Watch out, do not modify <code>mob_blocks</code> (displayed in orange)
 We're all done for that step!</p>
 <p>One could add more textures for the moving blocks for example,
@@ -1103,8 +1117,8 @@ go into <code>gamedef.py</code>, where we will add a new <strong>archetype</stro
 As defined before, the archetypes allows us to creates new entities
 with special rules.</p>
 <p>Go after the existing list of archetypes and let's add our new block, the <code>tp_block</code></p>
-<pre><code class="language-py">    pyv.define_archetype('tp_block', ['body', ])
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>    <span class="n">pyv</span><span class="o">.</span><span class="n">define_archetype</span><span class="p">(</span><span class="s1">&#39;tp_block&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;body&#39;</span><span class="p">,</span> <span class="p">])</span>
+</code></pre></div>
 <p>Here we just added the property <code>body</code> to our block,
 because we just need it to have an actual hitbox, the logic of what happens whenever we reach the blocks is elsewhere.</p>
 <p>Now that our archetype exists, we need our world to know who's this new kid in the block.</p>
@@ -1113,14 +1127,14 @@ because we just need it to have an actual hitbox, the logic of what happens when
 let's add the logic:
 how to process our value "4", link it to a <code>tp_block</code> entity:
 Be careful, this needs to be added <strong>inside the for loop</strong>, not outside.</p>
-<pre><code class="language-py">            elif btype == 4:
-                pyv.init_entity(
-                    pyv.new_from_archetype('tp_block'), {
-                        'body': rrect
-                    }
-                )
-                self._platforms.append(rrect)
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>            <span class="k">elif</span> <span class="n">btype</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>                <span class="n">pyv</span><span class="o">.</span><span class="n">init_entity</span><span class="p">(</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>                    <span class="n">pyv</span><span class="o">.</span><span class="n">new_from_archetype</span><span class="p">(</span><span class="s1">&#39;tp_block&#39;</span><span class="p">),</span> <span class="p">{</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>                        <span class="s1">&#39;body&#39;</span><span class="p">:</span> <span class="n">rrect</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>                    <span class="p">}</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>                <span class="p">)</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">_platforms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rrect</span><span class="p">)</span>
+</code></pre></div>
 <p>We give the property <code>rect</code> to the <code>body</code>, 
 this will allow us to give the block a proper hitbox.</p>
 <p>Now we will take a small break from all of this hard stuff,
@@ -1137,11 +1151,11 @@ list of assets to load, as specified in your <code>metadat.json</code> file
 go back to the same place where we previously (Step 2. of the tutorial)
 changed how way blocks are displayed. It's around line 200 of that file.
 Add the following line after the display of orange blocks:</p>
-<pre><code class="language-py">    temp = pyv.find_by_archetype('tp_block')
-    if len(temp):
-        tp_block = temp[0]
-        disp(scr, tp_block, 'purple', 3)
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>    <span class="n">temp</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">find_by_archetype</span><span class="p">(</span><span class="s1">&#39;tp_block&#39;</span><span class="p">)</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">temp</span><span class="p">):</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>        <span class="n">tp_block</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>        <span class="n">disp</span><span class="p">(</span><span class="n">scr</span><span class="p">,</span> <span class="n">tp_block</span><span class="p">,</span> <span class="s1">&#39;purple&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
 <p>Now that the block is present on the map,
 let's add some logic for it,
 in order to make it truly a new feature.</p>
@@ -1152,23 +1166,23 @@ be useful for you to understand how we proceed.</p>
 <p>In that pre-defined function, all we do is using the
 component <code>next_map</code> to tell
 the game where the player should be teleported to,
-and we re-create the avatar entity. Here's the code we refer to:</p>
-<pre><code class="language-py">def _proc_unload_load():
-    player = pyv.find_by_archetype('player')[0]
-    camref = player['camera']
-    pyv.wipe_entities()
-    shared.world.load_map(player['next_map'])
-    shared.world.create_avatar(camref)
-</code></pre>
+and we re-create the avatar entity. Here's the code we refer to:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="k">def</span> <span class="nf">_proc_unload_load</span><span class="p">():</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>    <span class="n">player</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">find_by_archetype</span><span class="p">(</span><span class="s1">&#39;player&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    <span class="n">camref</span> <span class="o">=</span> <span class="n">player</span><span class="p">[</span><span class="s1">&#39;camera&#39;</span><span class="p">]</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>    <span class="n">pyv</span><span class="o">.</span><span class="n">wipe_entities</span><span class="p">()</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>    <span class="n">shared</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">load_map</span><span class="p">(</span><span class="n">player</span><span class="p">[</span><span class="s1">&#39;next_map&#39;</span><span class="p">])</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>    <span class="n">shared</span><span class="o">.</span><span class="n">world</span><span class="o">.</span><span class="n">create_avatar</span><span class="p">(</span><span class="n">camref</span><span class="p">)</span>
+</code></pre></div></p>
 <p>Now, go inside the <code>teleport_sys</code> (a system that handles player teleportation),
 at the end of that function please add:</p>
-<pre><code class="language-py">    temp = pyv.find_by_archetype('tp_block')
-    if len(temp):
-        tp_block = temp[0]
-        if player['body'].colliderect(tp_block['body']):
-            player['next_map'] = 'map2'
-            _proc_unload_load()
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>    <span class="n">temp</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">find_by_archetype</span><span class="p">(</span><span class="s1">&#39;tp_block&#39;</span><span class="p">)</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">temp</span><span class="p">):</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>        <span class="n">tp_block</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>        <span class="k">if</span> <span class="n">player</span><span class="p">[</span><span class="s1">&#39;body&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">colliderect</span><span class="p">(</span><span class="n">tp_block</span><span class="p">[</span><span class="s1">&#39;body&#39;</span><span class="p">]):</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>            <span class="n">player</span><span class="p">[</span><span class="s1">&#39;next_map&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;map2&#39;</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>            <span class="n">_proc_unload_load</span><span class="p">()</span>
+</code></pre></div>
 <p>Here what we're doing is creating a var <code>temp</code> that will reference
 our <code>tp_block</code>, and thanks to <code>colliderect</code> we will detect if the 2 blocks
 are colliding.

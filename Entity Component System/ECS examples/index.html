@@ -581,6 +581,20 @@
 
             
           
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Reference/Gamestates/" class="md-nav__link">
+        Gamestates
+      </a>
+    </li>
+  
+
+            
+          
         </ul>
       </nav>
     </li>
@@ -726,21 +740,21 @@
 <h2 id="syntax">Syntax</h2>
 <p>Let's explain the syntax to code some of the basic code needed for ECS implementation.</p>
 <h3 id="entities">Entities</h3>
-<p>To create an entity one can use the following syntax:</p>
-<pre><code class="language-python">    pyv.new_entity(component1=value_x, component2=value_y)
-</code></pre>
-<p>Where <code>value_x</code> and <code>value_y</code> can contain any type of Pyhon vue or expression.
+<p>To create an entity one can use the following syntax:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>    <span class="n">pyv</span><span class="o">.</span><span class="n">new_entity</span><span class="p">(</span><span class="n">component1</span><span class="o">=</span><span class="n">value_x</span><span class="p">,</span> <span class="n">component2</span><span class="o">=</span><span class="n">value_y</span><span class="p">)</span>
+</code></pre></div>
+Where <code>value_x</code> and <code>value_y</code> can contain any type of Pyhon vue or expression.
 That is the syntax of creating a new entity using PYV.</p>
 <p>Now let's see a more precise implementation examples in order to show some more possibilities.
-Here for example we wish to build an entity to model the player...</p>
-<pre><code class="language-py">    player = pyv.new_entity(
-        speed=0.0,
-        controls={'left': False, 'right': False},
-        body=pygame.rect.Rect(
-            shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT
-        )
-    )
-</code></pre>
+Here for example we wish to build an entity to model the player...
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>    <span class="n">player</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">new_entity</span><span class="p">(</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>        <span class="n">speed</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="n">controls</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="n">body</span><span class="o">=</span><span class="n">pygame</span><span class="o">.</span><span class="n">rect</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>            <span class="n">shared</span><span class="o">.</span><span class="n">SCR_WIDTH</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">635</span><span class="p">,</span> <span class="n">shared</span><span class="o">.</span><span class="n">PL_WIDTH</span><span class="p">,</span> <span class="n">shared</span><span class="o">.</span><span class="n">PL_HEIGHT</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="p">)</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="p">)</span>
+</code></pre></div></p>
 <p>To do so we specify all useful components, such as the player speed,
 the controls, and the hitbox. (We could use an archetype for more clarity, but this
 will explained a bit further. Also, using archetypes is not mandatory).
@@ -749,9 +763,9 @@ at the initialization of the game.</p>
 <h3 id="components">Components</h3>
 <p>As shown before, the components are part of an entity, the components can be pretty much everything.
 It's a characteristic of an entity, could be speed, hit points, position and so much more...</p>
-<p>You can call your entities by their components with </p>
-<pre><code>pyv.find_by_components('yourComponent')
-</code></pre>
+<p>You can call your entities by their components with 
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pyv.find_by_components(&#39;yourComponent&#39;)
+</code></pre></div></p>
 <h3 id="systems">Systems</h3>
 <p>The purpose of systems is to describe the logic of everything that happens
 between two frames of the game.
@@ -763,10 +777,10 @@ to update entities in your games, or not!</p>
 that is given in the <a href="#ConcreteSystemsPy">Systems.py example</a> showed below.</p>
 <h3 id="archetypes">Archetypes</h3>
 <p>Archetypes are optionals but recomended when there's a lot of entity to handle because
-you can find them directly with the function</p>
-<pre><code>pyv.find_by_archetype('yourArcheName')
-</code></pre>
-<p>This will allow you to focus directly a certain type of entities, instead of searching
+you can find them directly with the function
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pyv.find_by_archetype(&#39;yourArcheName&#39;)
+</code></pre></div>
+This will allow you to focus directly a certain type of entities, instead of searching
 them by components.</p>
 <h2 id="structure-of-a-game">Structure of a game</h2>
 <p>When using ECS to its full potential, what we do is typically splitting our game
@@ -787,38 +801,38 @@ go check our <a href="../../GameTutorials/Breakout/">breakout clone tutorial</a>
 <h3 id="file-systemspy"><a name="ConcreteSystemsPy"></a> File: systems.py</h3>
 <p>System will host all of your ECS systems.
 Let's take our breakout clone as an example of what a system file might look like.</p>
-<pre><code class="language-py">from . import shared
-from . import pimodules
-
-pyv = pimodules.pyved_engine
-pyv.bootstrap_e()
-
-__all__ = [
-    'controls_sys',
-    'physics_sys',
-    'rendering_sys',
-    'gamectrl_sys',
-    'endgame_sys'
-]
-
-def controls_sys(dt):
-    #Empty for now
-
-def physics_sys(dt):
-    #Empty for now
-
-def rendering_sys(dt):
-    #Empty for now
-
-def gamectrl_sys(dt):
-    pg = pyv.pygame
-    for ev in pg.event.get():
-        if ev.type == pg.KEYDOWN and ev.key == pg.K_ESCAPE:
-            pyv.vars.gameover = True 
-
-def endgame_sys(dt):
-    #Empty for now
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">shared</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">pimodules</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">pyv</span> <span class="o">=</span> <span class="n">pimodules</span><span class="o">.</span><span class="n">pyved_engine</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">pyv</span><span class="o">.</span><span class="n">bootstrap_e</span><span class="p">()</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="s1">&#39;controls_sys&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="s1">&#39;physics_sys&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="s1">&#39;rendering_sys&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="s1">&#39;gamectrl_sys&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="s1">&#39;endgame_sys&#39;</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="p">]</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="k">def</span> <span class="nf">controls_sys</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="c1">#Empty for now</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="k">def</span> <span class="nf">physics_sys</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="c1">#Empty for now</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="k">def</span> <span class="nf">rendering_sys</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>    <span class="c1">#Empty for now</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="k">def</span> <span class="nf">gamectrl_sys</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>    <span class="n">pg</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">pygame</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>    <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">pg</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">get</span><span class="p">():</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>        <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">pg</span><span class="o">.</span><span class="n">KEYDOWN</span> <span class="ow">and</span> <span class="n">ev</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pg</span><span class="o">.</span><span class="n">K_ESCAPE</span><span class="p">:</span>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>            <span class="n">pyv</span><span class="o">.</span><span class="n">vars</span><span class="o">.</span><span class="n">gameover</span> <span class="o">=</span> <span class="kc">True</span> 
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="k">def</span> <span class="nf">endgame_sys</span><span class="p">(</span><span class="n">dt</span><span class="p">):</span>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a>    <span class="c1">#Empty for now</span>
+</code></pre></div>
 <p>Of course you'd want to fill up the different systems, but here's a small explanation on how to fill it up.</p>
 <p><strong>Controls</strong> would host your player controls, for example what the different keys would do.</p>
 <p><strong>Physics</strong> will have the different interactions with the game and the entities.</p>
@@ -827,45 +841,44 @@ def endgame_sys(dt):
 <h3 id="file-sharedpy">File: shared.py</h3>
 <p>This is a file where you specify your constants or global variables, so that they are all in the same place.</p>
 <p>It's pretty straightforward, here's the example of our breakout clone.</p>
-<pre><code class="language-py">
-screen = None
-blocks_pop = None
-prev_time_info = None
-end_game_label = None  # != None means player cannot move bc he/she lost
-
-# (Size of break-out blocks)
-BLOCK_W = 54
-BLOCK_H = 30
-BLOCK_SPACING = 2
-SCR_WIDTH = 960
-SCR_HEIGHT = 720
-LIMIT = SCR_WIDTH / (BLOCK_W + BLOCK_SPACING)
-WALL_X, WALL_Y = 4, 80
-
-# physics
-PL_WIDTH, PL_HEIGHT = 110, 25
-PLAYER_SPEED = 280
-MAX_XSPEED_BALL = 225.0
-YSPEED_BALL = 288.0
-
-# ball-related
-BALL_INIT_POS = 480, 277
-BALL_SIZE = 22
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">screen</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">blocks_pop</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">prev_time_info</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">end_game_label</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># != None means player cannot move bc he/she lost</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># (Size of break-out blocks)</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">BLOCK_W</span> <span class="o">=</span> <span class="mi">54</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">BLOCK_H</span> <span class="o">=</span> <span class="mi">30</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">BLOCK_SPACING</span> <span class="o">=</span> <span class="mi">2</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="n">SCR_WIDTH</span> <span class="o">=</span> <span class="mi">960</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="n">SCR_HEIGHT</span> <span class="o">=</span> <span class="mi">720</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="n">LIMIT</span> <span class="o">=</span> <span class="n">SCR_WIDTH</span> <span class="o">/</span> <span class="p">(</span><span class="n">BLOCK_W</span> <span class="o">+</span> <span class="n">BLOCK_SPACING</span><span class="p">)</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="n">WALL_X</span><span class="p">,</span> <span class="n">WALL_Y</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">80</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="c1"># physics</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="n">PL_WIDTH</span><span class="p">,</span> <span class="n">PL_HEIGHT</span> <span class="o">=</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">25</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="n">PLAYER_SPEED</span> <span class="o">=</span> <span class="mi">280</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="n">MAX_XSPEED_BALL</span> <span class="o">=</span> <span class="mf">225.0</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="n">YSPEED_BALL</span> <span class="o">=</span> <span class="mf">288.0</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="c1"># ball-related</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="n">BALL_INIT_POS</span> <span class="o">=</span> <span class="mi">480</span><span class="p">,</span> <span class="mi">277</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="n">BALL_SIZE</span> <span class="o">=</span> <span class="mi">22</span>
+</code></pre></div>
 <h3 id="files-worldpy-and-miscpy">Files: world.py and misc.py</h3>
 <p>The role of the last two files you can use in your project,
 is to keep the bulk of complex functions, or functions that are only called a few times
 by your game in a different place...</p>
 <p>As we don't want <code>systems.py</code> to become too messy/difficult to read.
 For example:</p>
-<pre><code class="language-py">def player_create():
-    pyv.new_entity(
-        archetype='player',
-        speed=0.0,
-        controls={'left': False, 'right': False},
-        body=pygame.rect.Rect(shared.SCR_WIDTH // 2, 635, shared.PL_WIDTH, shared.PL_HEIGHT)
-    )
-</code></pre>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">def</span> <span class="nf">player_create</span><span class="p">():</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">pyv</span><span class="o">.</span><span class="n">new_entity</span><span class="p">(</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="n">archetype</span><span class="o">=</span><span class="s1">&#39;player&#39;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="n">speed</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="n">controls</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;left&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="n">body</span><span class="o">=</span><span class="n">pygame</span><span class="o">.</span><span class="n">rect</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span><span class="n">shared</span><span class="o">.</span><span class="n">SCR_WIDTH</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">635</span><span class="p">,</span> <span class="n">shared</span><span class="o">.</span><span class="n">PL_WIDTH</span><span class="p">,</span> <span class="n">shared</span><span class="o">.</span><span class="n">PL_HEIGHT</span><span class="p">)</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="p">)</span>
+</code></pre></div>
 <p>This would be useful in a <code>world.py</code> file, for a breakout clone.
 We only wish to create our player entity once,
 so we put it there, and call it inside the init function of the game.</p>
