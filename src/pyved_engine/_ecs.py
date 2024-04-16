@@ -33,34 +33,12 @@ _systems = list()
 # def delete_entity(entity):
 #     _legacy_entities.remove(entity)
 
-
-def wipe_entities():
-    del _legacy_entities[:]
-
-
 def init_entity(entity, values):
     entity.update(values)
 
 
 def dissect_entity(given_ent, keys_li):
     return [given_ent[k] for k in keys_li]
-
-
-def add_component(entity, component_name, data, bypass=False):
-    if not bypass and component_name == 'Archetype':
-        raise ValueError('ERR: Cannot declare a component named "Archetype"!')
-    component = {component_name: data}
-    entity.update(component)
-    if component_name not in _legacy_components:
-        _legacy_components[component_name] = []
-    _legacy_components[component_name].append(entity)
-
-
-def remove_component(entity, component_name):
-    if component_name in entity:
-        entity.pop(component_name)
-        if component_name in _legacy_components:
-            _legacy_components[component_name].remove(entity)
 
 
 # def new_from_archetype(archetype_name):
@@ -80,28 +58,48 @@ def new_from_archetype(archetype_name):
     return eo
 
 
+# def define_archetype(archetype_name, component_names):
+#     _legacy_archetypes[archetype_name] = component_names
+#
 def define_archetype(archetype_name, component_names):
-    _legacy_archetypes[archetype_name] = component_names
+    _archetype_def[archetype_name] = component_names
+    _archetypes[archetype_name] = list()
 
+
+# def has_archetype(entity, archetype_name):
+#     if 'Archetype' not in entity:
+#         return False
+#     return entity['Archetype'] == archetype_name
+#
+#
+# def find_by_archetype(archetype_name):
+#     return list(filter(lambda e: has_archetype(e, archetype_name), _legacy_entities))
+#
+#
+# def list_all_archetypes():
+#     return tuple(_legacy_archetypes.keys())
 
 def has_archetype(entity, archetype_name):
-    if 'Archetype' not in entity:
-        return False
-    return entity['Archetype'] == archetype_name
+    return entity.archetype == archetype_name
 
 
 def find_by_archetype(archetype_name):
-    return list(filter(lambda e: has_archetype(e, archetype_name), _legacy_entities))
+    li_e_id = _archetypes[archetype_name]
+    return list(map(lambda x: _EntityCls.globalmapping[x], li_e_id))
 
 
 def list_all_archetypes():
-    return tuple(_legacy_archetypes.keys())
+    return tuple(_archetypes.keys())
 
 
 def archetype_of(entity_ref):  # we simply extract the archetype
-    if 'Archetype' not in entity_ref:
-        return None
-    return entity_ref['Archetype']
+    return entity_ref.archetype
+
+
+# def archetype_of(entity_ref):
+#     if 'Archetype' not in entity_ref:
+#         return None
+#     return entity_ref['Archetype']
 
 
 # --------------------------------
@@ -208,6 +206,9 @@ def delete_entity(entity):
     _entities.remove(entity)
 
 
+# def wipe_entities():
+#     del _legacy_entities[:]
+
 def wipe_entities():
     for cn, li_entities in _components.items():
         del li_entities[:]
@@ -215,11 +216,26 @@ def wipe_entities():
         del li_eid[:]
 
 
+# def add_component(entity, component_name, data, bypass=False):
+#     if not bypass and component_name == 'Archetype':
+#         raise ValueError('ERR: Cannot declare a component named "Archetype"!')
+#     component = {component_name: data}
+#     entity.update(component)
+#     if component_name not in _legacy_components:
+#         _legacy_components[component_name] = []
+#     _legacy_components[component_name].append(entity)
+
 def add_component(entity, component_name, data, bypass=False):
     if not bypass and component_name == 'Archetype':
         raise ValueError('ERR: Cannot declare a component named "Archetype"!')
     entity.add_component(component_name, data)
 
+
+# def remove_component(entity, component_name):
+#     if component_name in entity:
+#         entity.pop(component_name)
+#         if component_name in _legacy_components:
+#             _legacy_components[component_name].remove(entity)
 
 def remove_component(entity, component_name):
     if component_name in entity:
@@ -228,19 +244,12 @@ def remove_component(entity, component_name):
             _components[component_name].remove(entity)
 
 
-def define_archetype(archetype_name, component_names):
-    _archetype_def[archetype_name] = component_names
-    _archetypes[archetype_name] = list()
-
-
 def find_by_components(*compokeys):
     """
     this func will return all entities that satisfy each on of compokeys (=has that list of components in it)
     :param compokeys:
     :return: a list
     """
-    # print('DANST TRUC find by componets')
-    
     res = list()
     for entity in _entities:
         # print('curr entity:', entity)
@@ -260,28 +269,11 @@ def all_entities(scene=None):
     return iter(_entities)  # TODO fetch from a given scene ...
 
 
-def has_archetype(entity, archetype_name):
-    return entity.archetype == archetype_name
-
-
 def one_by_archetype(archetype_name):
     if (archetype_name not in _archetypes) or (not len(_archetypes[archetype_name])):
         raise ValueError(f'archetype named {archetype_name} not found!')
     adhoc_eid = _archetypes[archetype_name][0]
     return _EntityCls.globalmapping[adhoc_eid]
-
-
-def find_by_archetype(archetype_name):
-    li_e_id = _archetypes[archetype_name]
-    return list(map(lambda x: _EntityCls.globalmapping[x], li_e_id))
-
-
-def list_all_archetypes():
-    return tuple(_archetypes.keys())
-
-
-def archetype_of(entity_ref):  # we simply extract the archetype
-    return entity_ref.archetype
 
 
 def add_system(system_func):

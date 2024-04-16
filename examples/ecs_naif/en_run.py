@@ -11,8 +11,8 @@ game_systems = pyv.SystemManager()
 
 def init_game():
     global clock, game_systems
-    pyv.init(pyv.RETRO_MODE, maxfps=45, caption='my game (ECS fashion)')
-    clock = pyv.vars.game_ticker
+    pyv.init(mode=pyv.LOW_RES_MODE) #, maxfps=45, caption='my game (ECS fashion)')
+    clock = pyv.vars.clock # vars.game_ticker
 
     # -----------------------
     #  Declare the pool of entities + all game systems
