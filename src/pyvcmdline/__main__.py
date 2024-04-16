@@ -526,31 +526,27 @@ def share_subcommand(bundle_name, dev_flag_on):
     # ----------
     #  1) enforce slug validity
     # ----------
-    renamed = False
     slug = read_metadata(bundle_name)['slug']  # to find out what is the slug name
-    slug_correctness = ensure_correct_slug(slug)
-    while not slug_correctness[0]:
-        tmp = input('what alternative do you choose (please select a number: 0 to 3)? ')
-        if tmp.isnumeric() and (-1 < int(tmp) < 4):
-            choice = int(tmp)
-            slug = slug_correctness[1][choice]
-            slug_correctness = ensure_correct_slug(slug)
-            renamed = True
-        else:
-            print('invalid input, you can retry.')
-    # if renamed, then we need to sync both the metadata and the folder name
-    if renamed:
-        _bundle_renaming(bundle_name, slug)
-        bundle_name = slug
+    if not dev_flag_on:
+        renamed = False
+        slug_correctness = ensure_correct_slug(slug)
+        while not slug_correctness[0]:
+            tmp = input('what alternative do you choose (please select a number: 0 to 3)? ')
+            if tmp.isnumeric() and (-1 < int(tmp) < 4):
+                choice = int(tmp)
+                slug = slug_correctness[1][choice]
+                slug_correctness = ensure_correct_slug(slug)
+                renamed = True
+            else:
+                print('invalid input, you can retry.')
+        # if renamed, then we need to sync both the metadata and the folder name
+        if renamed:
+            _bundle_renaming(bundle_name, slug)
+            bundle_name = slug
 
     wrapper_bundle = os.path.join(os.getcwd(), bundle_name)
     zip_precise_target = os.path.join(wrapper_bundle, 'cartridge')
     fn = create_zip_from_folder(None, zip_precise_target)
-
-    # print("ZIP file created:", output_zip_filename)
-    # create_zip_from_folder(, os.getcwd())
-    # print('tmpfile created ok')
-
     upload_my_zip_file(fn, slug, dev_flag_on)  # the final step
 
 
