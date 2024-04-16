@@ -18,6 +18,7 @@ nav:
     - 'GameTutorials/Roguelike.md'
   - 'Reference':
     - 'Reference/Using sprites.md'
+    - 'Reference/Gamestates.md'
   - 'ShareYourGames.md'
 
 
@@ -35,11 +36,11 @@ extra:
       name: Pyved-engine on Github
 
 
-
-
-
 markdown_extensions:
   - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
 
 
 plugins:
