@@ -41,7 +41,7 @@ _scr_init_flag = False
 from abc import ABCMeta, abstractmethod
 from . import vars
 from math import degrees as _degrees
-from .classes import Spritesheet as _Spritesheet
+# from .classes import Spritesheet as _Spritesheet
 from . import _hub
 import time
 from .compo import vscreen

@@ -16,7 +16,7 @@ class JsonBasedSprSheet:
         avoid several bugs that exist in the pyVM component.
         (scaling images, and use .subsurface on these images for cutting sub images)
         As long as the pyVM has not bee toroughly debugged and tested,
-        I recommend not modifying the following code /!\ unless you want to take risks
+        I recommend not modifying the following code, unless you want to take risks
         """
 
         print('create SpriteSheet based on json:', filename_noext_nopath)
@@ -91,7 +91,7 @@ class BaseCfont:
     def __init__(self):
         self.forcing_transparency = False
 
-        self._sheet = None
+        self._sheet = dict()
         self._init_sheet_attr()
 
         # specific to capello-ft.png and capello-ft.json...
@@ -134,11 +134,11 @@ class BaseCfont:
 
         # - generic
         self.ascii2img = dict()
-        defaultw = self._sheet['tile{:03d}.png'.format(self.UNKNOWN_CAR_RK)].get_width()
+        defaultw = self._sheet["tile{:03d}.png".format(self.UNKNOWN_CAR_RK)].get_width()
         self.car_width = defaultdict(lambda: defaultw)
 
         for my_asciicode in mappingtable.keys():
-            ssurf = self._sheet['tile{:03d}.png'.format(mappingtable[my_asciicode])]
+            ssurf = self._sheet["tile{:03d}.png".format(mappingtable[my_asciicode])]
             self.ascii2img[my_asciicode] = ssurf
             self.car_width[chr(my_asciicode)] = ssurf.get_width()
 
