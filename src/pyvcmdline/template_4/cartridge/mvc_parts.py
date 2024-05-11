@@ -13,7 +13,7 @@ EngineEvTypes = pyv.EngineEvTypes
 CogObject = pyv.Emitter
 ReceiverObj = pyv.EvListener
 Sprsheet = pyv.gfx.Spritesheet
-BoolMatrx = pyv.e_struct.BoolMatrix
+BoolMatrx = pyv.struct.BoolMatrix
 
 
 # game-specific declarations
