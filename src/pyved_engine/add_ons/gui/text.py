@@ -23,10 +23,10 @@ def swap_color(img, old_c, new_c):
     return surf
 
 
-def load_font_img(path, font_color, precomp_letter_widths=None, verbose=False):
+def load_font_img(font_img, font_color, precomp_letter_widths=None, verbose=False):
     fg_color = (255, 0, 0)
     bg_color = (0, 0, 0)
-    font_img = pygame.image.load(path).convert()
+    # font_img = pygame.image.load(path).convert()
     valid_letter_h = font_img.get_height()
 
     # N.B. theres a BUG when interactin with KataSDK, thats why I have
@@ -82,14 +82,23 @@ class ImgBasedFont:
     precomputed_widths_data = None
     debugmode_flag = False
 
-    def __init__(self, path, color):
-        self._spr_sheet_like = pygame.image.load(path)
+    def __init__(self, color, img=None, path=None):
+        if (path is None) and (img is None):
+            raise ValueError('using the ImgBasedFont requires you to pass either a "path" or an "img" named argument!')
+        if img is not None:
+            if path is not None:
+                print('### warning: unused argument "path" passed to ImgBasedFont, as the "img" argument is sufficient')
+            if not isinstance(img, pygame.Surface):
+                raise ValueError('unexpected data type for parameter img! Expected: pygame.Surface')
+            self._spr_sheet_like = tmp = img
+        else:
+            self._spr_sheet_like = tmp = pygame.image.load(path)
 
         if self.precomputed_widths_data:
-            triplet = load_font_img(path, color, precomp_letter_widths=self.precomputed_widths_data,
+            triplet = load_font_img(tmp, color, precomp_letter_widths=self.precomputed_widths_data,
                                     verbose=self.debugmode_flag)
         else:
-            triplet = load_font_img(path, color)
+            triplet = load_font_img(tmp, color)
 
         self.letters_rects, self.letter_spacing, self.line_height = triplet
         self.font_order = [
