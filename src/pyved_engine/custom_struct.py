@@ -3,12 +3,27 @@ import abc
 from .util import underscore_format
 
 
-def enum_builder_generic(to_upper, starting_index, *sequential, **named):
+def enum_builder_generic(to_upper, starting_index, *sequential, **extra_manset_codes):
     domaine = range(starting_index, len(sequential) + starting_index)
-    enums = dict(zip(sequential, domaine), **named)
-    tmp_inv_map = {v: k for k, v in enums.items()}
-    tmp_all_codes = domaine
+    enums = dict(zip(sequential, domaine))
 
+    # can update the dictionnary if some codes are manually set
+    # *BUT*
+    # be careful, this must be used wisely and
+    # one has to print warnings in case codes are overriden by the user
+    if len(extra_manset_codes)>0:
+        for chosen_name, code in extra_manset_codes.items():
+            if code in enums.values():
+                for prevname, c in enums.items():
+                    if c == code:
+                        break
+                old = prevname
+                del enums[prevname]
+                new = chosen_name
+                print(f'### warning! enum_builder_generic overrides the id {code} ( {old}-->{new} )')
+            enums[chosen_name] = code
+
+    tmp_inv_map = {v: k for k, v in enums.items()}
     if to_upper:
         tmp = dict()
         for k, v in enums.items():
@@ -18,8 +33,8 @@ def enum_builder_generic(to_upper, starting_index, *sequential, **named):
         enums = tmp
 
     enums['inv_map'] = tmp_inv_map
-    enums['all_codes'] = tmp_all_codes
     enums['last_code'] = len(sequential) + starting_index - 1
+    enums['all_codes'] = tuple(tmp_inv_map.keys())
     return type('Enum', (), enums)
 
 

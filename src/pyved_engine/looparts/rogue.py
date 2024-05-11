@@ -1,7 +1,7 @@
 import math
 import random
 
-from .. import e_struct as struct
+from .. import custom_struct as struct
 
 
 # ----------------------------

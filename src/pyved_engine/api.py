@@ -17,7 +17,8 @@ from io import StringIO
 # TODO reflect if this can be rephrased to let go of OOP. without compromising on feature diversity & quantity
 from .compo import gfx
 from . import pal, state_management  # pal also added so it is includes in the api
-from . import custom_struct as e_struct
+from . import custom_struct as struct
+from .custom_struct import enum, enum_from_n
 import time
 from .core import events
 from .core.events import Emitter, EvListener, EngineEvTypes, game_events_enum
