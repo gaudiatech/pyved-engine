@@ -5,11 +5,22 @@ by Tom (thomas.iw@kata.games)
 
 ## Early period
 
-- **April 2019:** <br>
+- **Year 2017:**<br>
 A first draft of a custom game engine written in Python was proposed as early as 2017.
-The early names of the game engine, when the source code was still closed-source,
-have been forgotten. However, in April 2019, the source code of the engine was released,
-and that primitive game engine was dubbed coremon_engine.
+Early names of the game engine, back when the source code was still rough and experimental,
+have been forgotten.
+
+
+- **August 2018:**<br>
+An early version of the engine called `dingus2` has introduced the MVC pattern, and that
+piece of software has been shared with two other game developers.
+As far as I know, for the first time this engine has been used in a large-scale project (used for programming a python-based massively multiplayer game named *'Brutos Online'*)
+Both projects (the game and the engine) were closed-source at that point.
+
+
+- **April 2019:** <br>
+In April 2019, the source code of the engine was made public (->open-sourced),
+and that primitive game engine was dubbed `coremon_engine`.
 
 
 ## Period of exploration and discovery
