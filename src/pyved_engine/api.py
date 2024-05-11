@@ -7,10 +7,8 @@ Pyv API := Ecs func/procedures
 # ----------------------
 #  enriching the API
 # ----------------------
-from ._ecs import *
 from ._utility import *
 import csv
-from io import StringIO
 # ------------------
 
 # does all of this need to be visible from outside? PB: OOP. understanding required
@@ -21,10 +19,8 @@ from . import custom_struct as struct
 from .custom_struct import enum, enum_from_n
 import time
 from .core import events
-from .core.events import Emitter, EvListener, EngineEvTypes, game_events_enum
-from ._classes import BaseGameState
+from .core.events import game_events_enum
 from .state_management import declare_game_states
-from .Singleton import Singleton
 
 
 # const. for init
@@ -201,6 +197,8 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None, webhack=None):
     :param adhoc_dict:
     :return:
     """
+    from io import StringIO
+
     print('*'*50)
     print(' CALL to preload assets')
     print('*'*50)
