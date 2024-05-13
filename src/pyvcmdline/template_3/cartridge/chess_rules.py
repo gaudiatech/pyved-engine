@@ -213,36 +213,58 @@ class ChessRules:
             if 1 == dt_col and 1 == dt_row:
                 return True
 
-        # test du roque est pas pareil selon blancs ou noirs:
+        # Castling is different for white and black players:
         if chesscolor == C_WHITE_PLAYER:
-            if not boardref.wK_moved:  # and not ChessRules.is_player_in_check(boardref, chesscolor):
-                # TODO cmt vérifier que rien fait échec sur la ligne de deplacement?
-                coords_pt_roque = alg_to_coords('g1')
-                coords_gd_roque = alg_to_coords('c1')
-                if to_sq == coords_pt_roque and (not boardref.wR8_moved):  # test petit roque
-                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq,
-                                                                                               to_sq):
-                        return True
-                if to_sq == coords_gd_roque and (not boardref.wR1_moved):  # test petit roque
-                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq,
-                                                                                               to_sq):
-                        return True
+            # Updating the if condition to verify if Castling is allowed for user
+            if not boardref.wK_moved and not ChessRules.is_player_in_check(boardref, chesscolor):
+                coords_short_castle = alg_to_coords('g1')
+                coords_long_castle = alg_to_coords('c1')
+                if to_sq == coords_short_castle and (not boardref.wR8_moved):  # Test short castling
+                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq, to_sq):
+                        # Called a new method to verify if it is safe for the user to castle.
+                        if not ChessRules.is_king_threatened_after_move(boardref, chesscolor, from_sq, to_sq):
+                            return True
+                if to_sq == coords_long_castle and (not boardref.wR1_moved):  # Test long castling
+                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq, to_sq):
+                        # Called a new method to verify if it is safe for the user to castle.
+                        if not ChessRules.is_king_threatened_after_move(boardref, chesscolor, from_sq, to_sq):
+                            return True
 
         elif chesscolor == C_BLACK_PLAYER:
-            if not boardref.bK_moved:  # and not ChessRules.is_player_in_check(boardref, chesscolor):
-                # TODO cmt vérifier que rien fait échec sur la ligne de deplacement?
-                coords_pt_roque = alg_to_coords('g8')
-                coords_gd_roque = alg_to_coords('c8')
-                if to_sq == coords_pt_roque and (not boardref.bR8_moved):  # test petit roque
-                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq,
-                                                                                               to_sq):
-                        return True
-                if to_sq == coords_gd_roque and (not boardref.bR1_moved):  # test petit roque
-                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq,
-                                                                                               to_sq):
-                        return True
+            # Updating the if condition to verify if Castling is allowed for user
+            if not boardref.bK_moved and not ChessRules.is_player_in_check(boardref, chesscolor):
+                coords_short_castle = alg_to_coords('g8')
+                coords_long_castle = alg_to_coords('c8')
+                if to_sq == coords_short_castle and (not boardref.bR8_moved):  # Test short castling
+                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq, to_sq):
+                        # Called a new method to verify if it is safe for the user to castle.
+                        if not ChessRules.is_king_threatened_after_move(boardref, chesscolor, from_sq, to_sq):
+                            return True
+                if to_sq == coords_long_castle and (not boardref.bR1_moved):  # Test long castling
+                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq, to_sq):
+                        # Called a new method to verify if it is safe for the user to castle.
+                        if not ChessRules.is_king_threatened_after_move(boardref, chesscolor, from_sq, to_sq):
+                            return True
 
         return False
+
+    # Method created to check if the king is under threat after the move to the new square in terms of castling.
+    @staticmethod
+    def is_king_threatened_after_move(boardref, chesscolor, from_sq, to_sq):
+        # Make a temporary move
+        from_piece = boardref.state[from_sq[0]][from_sq[1]]
+        to_piece = boardref.state[to_sq[0]][to_sq[1]]
+        boardref.state[to_sq[0]][to_sq[1]] = from_piece
+        boardref.state[from_sq[0]][from_sq[1]] = C_EMPTY_SQUARE
+
+        # Check if the king is threatened in the new position
+        is_threatened = ChessRules.is_player_in_check(boardref, chesscolor)
+
+        # Undo the temporary move
+        boardref.state[from_sq[0]][from_sq[1]] = from_piece
+        boardref.state[to_sq[0]][to_sq[1]] = to_piece
+
+        return is_threatened
 
     @staticmethod
     def puts_player_in_check(board_obj, color, fromTuple, toTuple):
