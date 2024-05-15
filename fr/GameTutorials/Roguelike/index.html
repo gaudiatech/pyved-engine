@@ -424,9 +424,81 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Grid-based 2d Roguelike
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         Grid-based 2d Roguelike
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#step-0-getting-started" class="md-nav__link">
+    Step 0. Getting Started :
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 0. Getting Started :">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-a-roguelike" class="md-nav__link">
+    What is a roguelike ?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#either-download-the-init-or-just-the-template" class="md-nav__link">
+    Either Download the init, or just the template
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-setup-the-mvc" class="md-nav__link">
+    Step 1. Setup the MVC.
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-create-the-necessary-functions" class="md-nav__link">
+    Step 2. Create the necessary functions :
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-move-the-player" class="md-nav__link">
+    Step 3. Move the player :
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -537,6 +609,62 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#step-0-getting-started" class="md-nav__link">
+    Step 0. Getting Started :
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 0. Getting Started :">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-a-roguelike" class="md-nav__link">
+    What is a roguelike ?
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#either-download-the-init-or-just-the-template" class="md-nav__link">
+    Either Download the init, or just the template
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-setup-the-mvc" class="md-nav__link">
+    Step 1. Setup the MVC.
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-create-the-necessary-functions" class="md-nav__link">
+    Step 2. Create the necessary functions :
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-move-the-player" class="md-nav__link">
+    Step 3. Move the player :
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -554,6 +682,113 @@
 
 
 <h1 id="grid-based-2d-roguelike">Grid-based 2d Roguelike</h1>
+<p>This tutorial will help you to create a 2D roguelike game from the ground up.</p>
+<p>If you want to build upon the foundation of the roguelike template, you can use the roguelike template that ships with the pyved-engine package. Indeed, we'll use the pyv-cli command to initialize the project. That command is installed when you install pyved-engine.</p>
+<p>If you need further help for installing PYV, please refer to the Documentation Homepage.</p>
+<p>Here is the final render of this tutorial : </p>
+<p><img alt="Game example" src="../img/rogueSource/image.png" /></p>
+<h2 id="step-0-getting-started">Step 0. Getting Started :</h2>
+<h3 id="what-is-a-roguelike">What is a roguelike ?</h3>
+<p>A roguelike is a type of video game where you explore dungeons, fight monsters, and find treasure.</p>
+<p>Every time you play, the dungeon is different because it's randomly generated.</p>
+<p>If your character dies, you start over from the beginning, losing all your progress. These games often have turn-based gameplay, meaning you and the enemies take turns to move or attack.</p>
+<h3 id="either-download-the-init-or-just-the-template">Either Download the init, or just the template</h3>
+<p>If you want to follow this tutorial and recreate this roguelike game, start by downloading the empty template of the <code>pyv-cli</code></p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pyv-cli<span class="w"> </span>init<span class="w"> </span>myGame
+</code></pre></div>
+Choose the empty template</p>
+<p>Start by creating the following files in the cartridge folder.</p>
+<ul>
+<li>glvars.py</li>
+<li>mvc_parts.py</li>
+</ul>
+<p>WARNING : Since this is a pretty complex project, we recommand you try another simpler project first.
+This project will take some time to be complete, as there is a lot of intertwined parts.</p>
+<p>If you want to build upon the foundation of the rogue template, you can download it by doing the following</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pyv-cli<span class="w"> </span>init<span class="w"> </span>myGame
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pyv-cli<span class="w"> </span>play<span class="w"> </span>myGame
+</code></pre></div>
+And choose the Rogue template.</p>
+<h2 id="step-1-setup-the-mvc">Step 1. Setup the MVC.</h2>
+<p>Since we are making a game using the MVC design pattern, let's go inside the <code>mvc_parts.py</code> file.</p>
+<p>We will start by creating the different variables needed for our future code : </p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">pimodules</span> <span class="c1">#Import the pygame module</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">glvars</span> <span class="c1">#Import a file that is empty for now</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">pyv</span> <span class="o">=</span> <span class="n">pimodules</span><span class="o">.</span><span class="n">pyved_engine</span> <span class="c1"># Assign the pyved engine to the var</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">pyv</span><span class="o">.</span><span class="n">bootstrap_e</span><span class="p">()</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">pygame</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">pygame</span> <span class="c1">#Assign the pygame lib to a var</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">EngineEvTypes</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">EngineEvTypes</span> <span class="c1">#</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">CogObject</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">Emitter</span> <span class="c1">#</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="n">ReceiverObj</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">EvListener</span> <span class="c1">#This allows to listen to event</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">Sprsheet</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">gfx</span><span class="o">.</span><span class="n">Spritesheet</span> <span class="c1">#</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">BoolMatrx</span> <span class="o">=</span> <span class="n">pyv</span><span class="o">.</span><span class="n">e_struct</span><span class="o">.</span><span class="n">BoolMatrix</span> <span class="c1">#</span>
+</code></pre></div>
+<p>Let's write the commands to move our player first.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span> <span class="nc">NinjamazeMod</span><span class="p">(</span><span class="n">CogObject</span><span class="p">)</span> <span class="p">:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">class</span> <span class="nc">NinjamazeView</span><span class="p">(</span><span class="n">ReceiverObj</span><span class="p">):</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="k">class</span> <span class="nc">NinjamazeCtrl</span><span class="p">(</span><span class="n">ReceiverObj</span><span class="p">):</span>
+</code></pre></div>
+<p>This code is pretty straightforward, we create the 3 parts of our MVC, but are left empty for now.</p>
+<h2 id="step-2-create-the-necessary-functions">Step 2. Create the necessary functions :</h2>
+<p>Let's create the push_player function, it will allow us to update the player position :</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>    <span class="k">def</span> <span class="nf">get_terrain</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rm</span><span class="o">.</span><span class="n">getMatrix</span><span class="p">()</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="k">def</span> <span class="nf">push_player</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="p">):</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span class="n">deltas</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>            <span class="mi">0</span><span class="p">:</span> <span class="p">(</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>            <span class="mi">1</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>            <span class="mi">2</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>            <span class="mi">3</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="p">}</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="n">delta</span> <span class="o">=</span> <span class="n">deltas</span><span class="p">[</span><span class="n">direction</span><span class="p">]</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span class="n">dest</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">player_pos</span><span class="p">)</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>        <span class="n">dest</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">delta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>        <span class="n">dest</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">delta</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_terrain</span><span class="p">()</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>        <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">is_out</span><span class="p">(</span><span class="o">*</span><span class="n">dest</span><span class="p">):</span>  <span class="c1"># out of bounds</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>            <span class="k">return</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>        <span class="k">if</span> <span class="n">t</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="o">*</span><span class="n">dest</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># wall</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>            <span class="k">return</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">player_pos</span> <span class="o">=</span> <span class="n">dest</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_update_vision</span><span class="p">(</span><span class="o">*</span><span class="n">dest</span><span class="p">)</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">pev</span><span class="p">(</span><span class="n">SpecificEvTypes</span><span class="o">.</span><span class="n">PlayerMoves</span><span class="p">,</span> <span class="n">new_pos</span><span class="o">=</span><span class="n">dest</span><span class="p">)</span>
+</code></pre></div>
+<p>We define first the different possible positions we can go to, then define through the pressed key where we are supposed to move the player.
+If we can't, we stop the execution, if it's a possible destination, we update the player position.</p>
+<h2 id="step-3-move-the-player">Step 3. Move the player :</h2>
+<p>Start by going back to this part of the code : </p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span> <span class="nc">NinjamazeCtrl</span><span class="p">(</span><span class="n">ReceiverObj</span><span class="p">):</span>
+</code></pre></div>
+<p>We will fill it up with the player movement : </p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span> <span class="nc">NinjamazeCtrl</span><span class="p">(</span><span class="n">ReceiverObj</span><span class="p">):</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ref_mod</span><span class="p">):</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">mod</span> <span class="o">=</span> <span class="n">ref_mod</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="k">def</span> <span class="nf">on_keydown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ev</span><span class="p">):</span>  <span class="c1"># need to use EngineEvTypes, because custom event manager is active</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        <span class="k">if</span> <span class="n">ev</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_RIGHT</span><span class="p">:</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">mod</span><span class="o">.</span><span class="n">push_player</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="k">elif</span> <span class="n">ev</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_UP</span><span class="p">:</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">mod</span><span class="o">.</span><span class="n">push_player</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="k">elif</span> <span class="n">ev</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_LEFT</span><span class="p">:</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">mod</span><span class="o">.</span><span class="n">push_player</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="k">elif</span> <span class="n">ev</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_DOWN</span><span class="p">:</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">mod</span><span class="o">.</span><span class="n">push_player</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>        <span class="k">elif</span> <span class="n">ev</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_SPACE</span><span class="p">:</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">mod</span><span class="o">.</span><span class="n">reset_level</span><span class="p">()</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>        <span class="k">elif</span> <span class="n">ev</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="n">pygame</span><span class="o">.</span><span class="n">K_ESCAPE</span><span class="p">:</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>            <span class="n">pyv</span><span class="o">.</span><span class="n">vars</span><span class="o">.</span><span class="n">gameover</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre></div>
+<p>This code is pretty straightforward, we filled our controller with movement by assigning the push player function to the arrows, a quit button on escape, and reset_level on space.</p>
 
 
 
