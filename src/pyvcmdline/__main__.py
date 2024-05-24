@@ -9,21 +9,19 @@ import argparse
 import importlib
 import json
 import os
-import re
-import shutil
-import sys
-import tempfile
-import time
-import zipfile
-from pprint import pprint
-
 import pyperclip
 import requests  # used to implement the `pyv-cli share` feature
-
+import shutil
+import sys
+import time
+from pprint import pprint
+from .cmdline_utils import do_bundle_renaming, create_zip_from_folder, safe_open_question,\
+    template_pyconnector_config_file, safe_YN_question, read_metadata, rewrite_metadata, verify_metadata
 from pyved_engine import vars
 from .const import *
 from .json_prec import TEMPL_ID_TO_JSON_STR
-from .pyvcli_cogs import *
+from .pyvcli_cogs import test_isfile_in_cartridge, proc_autogen_localctx, copy_launcher_script
+from .pyvcli_cogs import LAUNCH_GAME_SCRIPT_BASENAME
 from .pyvcli_config import API_HOST_PLAY_DEV, API_ENDPOINT_DEV, FRUIT_URL_TEMPLATE_DEV
 from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
 from .pyvcli_config import VMSTORAGE_URL
@@ -221,11 +219,6 @@ def play_subcommand(x):
         vmsl.bootgame(metadata)
 
 
-def _is_valid_identifier(test_identifier):
-    ok_pattern = '^[a-zA-Z0-9_]+$'
-    return bool(re.match(ok_pattern, test_identifier))
-
-
 def init_command(game_identifier) -> None:
     """
     this is the pyv-cli INIT command, it should create a new game bundle, fully operational
@@ -251,7 +244,7 @@ def init_command(game_identifier) -> None:
     #  the network to test if the name is remotely available?
     #  that feature is already implemented by the 'test' subcommand
 
-    while not _is_valid_identifier(game_identifier):
+    while not is_valid_game_identifier(game_identifier):
         print('*** WARNING: the selected game identifier is rejected. Expected format:')
         print(' solely alphanumeric that is A-Z and a-z, plus 0-9 numbers and the underscore _ special character')
         game_identifier = input('enter another game identifier(slug): ')
@@ -285,28 +278,6 @@ def init_command(game_identifier) -> None:
     print(f'--->Succesfully created! Now you can type `pyv-cli play {x}`')
     print('Go ahead and have fun ;)')
 
-
-def create_zip_from_folder(bundle_name, source_folder):
-    # origin_no_sep = source_folder.rstrip('/\\')
-    tmp_output_zip_filename = 'output.zip'
-    temp_dir = tempfile.gettempdir()
-    # print('temp_dir=', temp_dir)
-    output_zip_path = os.path.join(temp_dir, tmp_output_zip_filename)
-    # print('writing zip file in:', output_zip_filename)
-    with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for root, _, files in os.walk(source_folder):
-            for file in files:
-                file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, source_folder)
-                zipf.write(file_path, arcname)
-
-    # move from temp dir to cwd
-    # source_file = output_zip_path
-    # destination_file = os.path.join(os.getcwd(), f"{bundle_name}.zip")
-    # shutil.copy(source_file, destination_file)
-    # print('Newly created file:', destination_file)
-    # return destination_file
-    return output_zip_path
 
 # import os
 # import urllib2
@@ -506,19 +477,6 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
     print(f'{fruit_url} has been saved to the paperclip')
 
 
-def _bundle_renaming(source, dest):
-    print('Renaming the game bundle...')
-    print(f'{source} --> {dest}')
-    if os.path.isdir(dest):
-        raise ValueError(f'cannot rename game bundle, because {dest} already exists in the current folder')
-    md_obj = read_metadata(source)
-
-    os.rename(source, dest)
-    md_obj['slug'] = dest
-    rewrite_metadata(dest, md_obj)
-    print('OK.')
-
-
 def share_subcommand(bundle_name, dev_flag_on):
     # TODO in the future,
     #  we may want to create a 'pack' subcommand that would only produce the .zip, not send it elsewhere
@@ -541,12 +499,12 @@ def share_subcommand(bundle_name, dev_flag_on):
                 print('invalid input, you can retry.')
         # if renamed, then we need to sync both the metadata and the folder name
         if renamed:
-            _bundle_renaming(bundle_name, slug)
+            do_bundle_renaming(bundle_name, slug)
             bundle_name = slug
 
     wrapper_bundle = os.path.join(os.getcwd(), bundle_name)
     zip_precise_target = os.path.join(wrapper_bundle, 'cartridge')
-    fn = create_zip_from_folder(None, zip_precise_target)
+    fn = create_zip_from_folder(zip_precise_target)
     upload_my_zip_file(fn, slug, dev_flag_on)  # the final step
 
 
@@ -566,37 +524,61 @@ def upgrade_subcmd(bundlename):
     # a l'heure actuelle, le fichier de API spec n'est PAS utilisé pour générer dynamiquement le pyconnector Local
     # on utilise ce qu'il y a dans pyvcmdline/spare_parts
 
-    # prép. etapes 2 & 3
+    # étape 1 préparatifs
     obj = read_metadata(bundlename)
-    if obj['ktg_services']:
-        print('***WARNING*** ktg_services is already set to True.\n'
-              + 'In order to avoid unexpected behavior, the bundle isnt upgraded')
-        return
-    # tests anticipés pr gérer erreurs:
     bundle_location = os.path.join(os.getcwd(), bundlename)
-    new_dir = os.path.join(bundle_location, 'network')
-    if os.path.isdir(new_dir):
-        raise Exception('folder "network" exists in bundle, but non-consistent metadata found')
+    netw_dir = os.path.join(bundle_location, 'network')
+    if obj['ktg_services']:
+        print('***WARNING*** ktg_services is already set to true!')
+        rez = safe_YN_question('Do you wish to keep existing files, not rewriting the pyConnector config?', 'y')
+        if rez == 'y':
+            print('Upgrade operation aborted!')
+            return
+        else:
+            if os.path.isdir(netw_dir):
+                shutil.rmtree(netw_dir)
 
-    # étape 2 stricto sensu
-    obj['ktg_services'] = True
-    rewrite_metadata(bundlename, obj)
+    # ÉTAPE 2: Génération pyConnector, ou prise en compte "spare_parts/network.py"
+    # pour le déplacer dans bundle_folder/network
+    using_autogen = safe_YN_question('Do you prefer to use the static pyConnector (no autogen)?', 'y')
+    if using_autogen == 'y':
+        root_pyvcli = os.path.dirname(os.path.abspath(__file__))
+        read_from_netw = os.path.join(root_pyvcli, 'spare_parts', 'network.py')
+        target_file = os.path.join(bundle_location, 'network', '__init__.py')
+    else:
+        print('cant use the autogen, its not implemented just yet')
+        raise NotImplementedError
 
     # TODO améliorations, avec autogen
-    # etape 3, quasi-ok. Pas implem comme il faudrait (là on récupère un network.py statique)
+    # etape 3, création du dossier network dans le bundle folder
+    # Pas implem comme il faudrait (là on récupère un network.py statique)
     bundle_location = os.path.join(os.getcwd(), bundlename)
     new_dir = os.path.join(bundle_location, 'network')
     if os.path.isdir(new_dir):
         raise Exception('folder "network" exists in bundle, but non-consistent metadata found')
     os.makedirs(new_dir)
 
-    # etape 4: transfert network component
-    root_pyvcli = os.path.dirname(os.path.abspath(__file__))
-    read_from_netw = os.path.join(root_pyvcli, 'spare_parts', 'network.py')
-    target_file = os.path.join(bundle_location, 'network', '__init__.py')
+    # étape 4 stricto sensu
     shutil.copy(read_from_netw, target_file)
+    obj['ktg_services'] = True
+    rewrite_metadata(bundlename, obj)
 
-    # etape 5: impacter launch_game.py
+    # etape 5:
+    pyconnector_config_obj = json.loads(template_pyconnector_config_file)
+    new_url = safe_open_question('whats the URL for api services?', pyconnector_config_obj['api_url'])
+    new_jwt = safe_open_question('jwt value?', None)
+    new_user_id = safe_open_question('user_id?', None)
+    new_username = safe_open_question('username?', None)
+    pyconnector_config_obj['api_url'] = new_url
+    pyconnector_config_obj['jwt'] = new_jwt
+    pyconnector_config_obj['user_id'] = new_user_id
+    pyconnector_config_obj['username'] = new_username
+    path_written_config = os.path.join(bundle_location, 'pyconnector_config.json')
+    with open(path_written_config, 'w') as fptr:
+        fptr.write(json.dumps(pyconnector_config_obj))
+        print('file:', path_written_config, 'has been written')
+
+    # etape 6: impacter launch_game.py
     copy_launcher_script(bundlename, False)
 
 

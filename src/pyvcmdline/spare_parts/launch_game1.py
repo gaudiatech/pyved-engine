@@ -91,6 +91,7 @@ def bootgame(metadata):
         from . import network
     else:
         import network
+    network.slugname = metadata['slug']
     mon_inj.set_lazy_loaded_module('pyved_engine', 'pyved_engine')
     mon_inj.set_preloaded_module('network', network)
     upward_link(mon_inj)

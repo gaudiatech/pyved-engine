@@ -4,24 +4,25 @@
 import requests
 import json
 
-
-api_url = 'https://beta-services.kata.games'
-
+slugname = ''
 
 # ----dummy----, thats not network
-def get_jwt():
-    #return None
-    return '008dfb197042e56174837aae66c2c60e29e0f6ca7a36e10f'
+def read_config():
+    global slugname
+    with open(slugname+'/pyconnector_config.json', 'r') as file:
+        return json.load(file)
 
+def get_jwt():
+    config = read_config()
+    return config.get('jwt')
 
 def get_username():
-    #return None
-    return 'Mickeys38'
-
+    config = read_config()
+    return config.get('username')
 
 def get_user_id():
-    #return None
-    return 1
+    config = read_config()
+    return config.get('user_id')
 
 
 class GetResult:
@@ -40,6 +41,8 @@ def _ensure_type_hexstr(data):
 
 
 def _get_request(url, given_data=None):
+    config = read_config()
+    api_url = config.get('api_url')
     try:
         response = requests.get(f"{api_url}{url}", params=given_data)
         print('sending GET, url:', f"{api_url}{url}")
@@ -58,6 +61,8 @@ def get(url, data=None):
 
 
 def _post_request(url, given_data=None):
+    config = read_config()
+    api_url = config.get('api_url')
     try:
         print('sending POST, url:', f"{api_url}{url}")
         print('sending POST, params:', given_data)
@@ -65,6 +70,16 @@ def _post_request(url, given_data=None):
         response.raise_for_status()
         print('raw result:', response.text)
         return GetResult(response.text)
+    except requests.exceptions.RequestException as e:
+        print('Error:', e)
+        return None
+
+
+def get_challenge_entry_price(game_id: int):
+    # GET request to /challenge/entryPrice
+    try:
+        resobj = _get_request('/challenge/entryPrice', {'game_id': game_id})
+        return resobj.to_json()
     except requests.exceptions.RequestException as e:
         print('Error:', e)
         return None
