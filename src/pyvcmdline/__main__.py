@@ -559,6 +559,13 @@ def upgrade_subcmd(bundlename):
     [4] insertion code network vers le chemin bundle/network
     [5] écrasement launch_game.py par la version moddée
     """
+
+    # TODO:
+    # faut fix ce souci
+    #
+    # a l'heure actuelle, le fichier de API spec n'est PAS utilisé pour générer dynamiquement le pyconnector Local
+    # on utilise ce qu'il y a dans pyvcmdline/spare_parts
+
     # prép. etapes 2 & 3
     obj = read_metadata(bundlename)
     if obj['ktg_services']:

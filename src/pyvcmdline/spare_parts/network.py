@@ -1,24 +1,27 @@
 # PY CONNECTOR, automatically gen. Do not modify by hand!
 # filename:autogened_localctx_connector.py
-# Generation date: 2024-03-20 23:06:11
+# Generation date: 2024-05-22 23:06:11
 import requests
 import json
 
 
-api_url = 'https://t-api-beta.kata.games'
+api_url = 'https://beta-services.kata.games'
 
 
 # ----dummy----, thats not network
 def get_jwt():
-    return 'abcde'
+    #return None
+    return '008dfb197042e56174837aae66c2c60e29e0f6ca7a36e10f'
 
 
 def get_username():
-    return None
+    #return None
+    return 'Mickeys38'
 
 
 def get_user_id():
-    return None
+    #return None
+    return 1
 
 
 class GetResult:
@@ -62,6 +65,16 @@ def _post_request(url, given_data=None):
         response.raise_for_status()
         print('raw result:', response.text)
         return GetResult(response.text)
+    except requests.exceptions.RequestException as e:
+        print('Error:', e)
+        return None
+
+
+def get_challenge_seed(game_id: int):
+    # GET request to /user/infos
+    try:
+        resobj = _get_request('/challenge/seed', {'game_id': game_id})
+        return resobj.to_json()
     except requests.exceptions.RequestException as e:
         print('Error:', e)
         return None

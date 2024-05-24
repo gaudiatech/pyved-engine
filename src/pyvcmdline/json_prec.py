@@ -106,7 +106,6 @@ JSON_PREC_ROGUE = """
     "thumbnail512x512": "thumb_1.png",
     "ktg_services": false,
     "instructions": "no instructions provided",
-    "game_title": "Untitled Roguelike"
 }
 """
 
