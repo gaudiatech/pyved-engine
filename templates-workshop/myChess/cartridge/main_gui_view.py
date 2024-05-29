@@ -69,6 +69,7 @@ class PopupPromotion(pyv.EvListener):
         if self._mod.fetch_player_type(ev.plcolor) == 'AI':
             # the AI will always promote to queen
             self._mod.get_board().promote(ev.target_square, 'queen')
+            self._mod.tests_post_move()
         else:
             # the human can choose!
             self._popup_on = True
@@ -86,6 +87,7 @@ class PopupPromotion(pyv.EvListener):
             if y:
                 print('clicked:', y)
                 self._mod.get_board().promote(self._target_square_promo, y)
+                self._mod.tests_post_move()
                 self._popup_on = False
             else:
                 print('please click smth')

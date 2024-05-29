@@ -1,7 +1,10 @@
 from . import chdefs
-from .ai_players import ChessAI_random, ChessAI_defense, ChessAI_offense
-from .model import ChessRules, ChessBoard, ChessPlayer, C_WHITE_PLAYER, C_BLACK_PLAYER
 from . import pimodules
+from .ai_players import ChessAI_random, ChessAI_defense, ChessAI_offense
+from .chess_symbols import C_WHITE_PLAYER, C_BLACK_PLAYER
+from .model import ChessRules, ChessPlayer
+from .ChessBoard import ChessBoard
+from .chdefs import ChessEvents
 
 
 pyv = pimodules.pyved_engine
@@ -25,8 +28,19 @@ class ChessgameMod(pyv.Emitter):
     def play(self, move_tuple):
         report = self._board.move_piece(move_tuple)
 
-        self._board.tests_post_move()
+        # self._board.tests_post_move()
+        self.tests_post_move()
         return report
+
+    def tests_post_move(self):
+        current_color = self.get_curr_player()  # avant:  .curr_player
+        if ChessRules.is_checkmate(self._board, current_color):
+            self.pev(chdefs.ChessEvents.Checkmate)
+            # debug.print('PEV - checkmate')
+
+        elif ChessRules.is_player_in_check(self._board, current_color):
+            self.pev(chdefs.ChessEvents.Check)
+            # debug.print('PEV - check')
 
     def get_turn(self):
         return self._board.turn

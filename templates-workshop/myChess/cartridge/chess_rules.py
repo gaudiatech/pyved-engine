@@ -1,46 +1,101 @@
-C_KING, C_QUEEN, C_ROOK, C_BISHOP, C_KNIGHT, C_PAWN = 'K', 'Q', 'R', 'B', 'N', '_'
-C_BLACK_PLAYER, C_WHITE_PLAYER = 'black', 'white'  # its better use such identifiers rather than str
-C_EMPTY_SQUARE = 'ee'  # empty cell symbol
-
-
-# ------------------------
-#  five util. functions
-# ------------------------
-def enemy(x):
-    return C_BLACK_PLAYER if (x == C_WHITE_PLAYER) else C_WHITE_PLAYER
-
-
-def alg_to_coords(algebraic_id_sq):
-    c0, c1 = algebraic_id_sq
-    row = 8 - int(c1)
-    col = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].index(c0)
-    return row, col
-
-
-def to_algebraic_notation_row(row):
-    # (row,col) format used in Python Chess code starts at (0,0) in the upper left.
-    # Algebraic notation starts in the lower left and uses "a..h" for the column.
-    B = ['8', '7', '6', '5', '4', '3', '2', '1']
-    return B[row]
-
-
-def to_algebraic_notation_col(col):
-    # (row,col) format used in Python Chess code starts at (0,0) in the upper left.
-    # Algebraic notation starts in the lower left and uses "a..h" for the column.
-    A = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-    return A[col]
-
-
-def coords_to_alg(rowcol_idxes):
-    row, col = rowcol_idxes
-    # Converts (row,col) to algebraic notation
-    # (row,col) format used in Python Chess code starts at (0,0) in the upper left.
-    # Algebraic notation starts in the lower left and uses "a..h" for the column.
-    return to_algebraic_notation_col(col) + to_algebraic_notation_row(row)
+from .ChessBoard import ChessBoard
+from .chess_symbols import *
 
 
 class ChessRules:
     valid_moves_cache = dict()
+
+    @staticmethod
+    def chebyshev_distance(from_pos, to_pos):
+        # see https://en.wikipedia.org/wiki/Chebyshev_distance if needed
+        return max(
+            abs(from_pos[0] - to_pos[0]), abs(from_pos[1] - to_pos[1])
+        )
+
+    @staticmethod
+    def clear_los_predicate(board, from_pos, to_pos):
+        """
+        LoS = Line of Sight
+
+        The goal of that function is to return True whenever there is nothing in a straight line between
+        from_pos and to_pos cells... Non-inclusive!
+        Direction can be one out of three: horizontal, vertical, or diagonal
+
+        :param board:
+        :param from_pos:
+        :param to_pos:
+        :return:
+        """
+        if from_pos[0] == to_pos[0] and from_pos[1] == to_pos[1]:
+            raise ValueError('ERROR! clear_los_predicate: receives one identical value for from_pos, to_pos params')
+        if ChessRules.chebyshev_distance(from_pos, to_pos) < 2:
+            print('*warning* Testing clear_los_predicate on two adjacent cells!')
+            return True  # nothing is blocking line of sight, because line of sight doesnt exist
+
+        # sometimes we'll need to swap from_pos and to_pos.
+        # This preleminary step is to have less cases to handle (4 instead of 6)
+        need_to_swap = False
+        direction = 'diag'
+        if not abs(from_pos[0] - to_pos[0]):
+            direction = 'horz'
+            if from_pos[1] > to_pos[1]:
+                need_to_swap = True
+        if not abs(from_pos[1] - to_pos[1]):
+            direction = 'vert'
+            if from_pos[0] > to_pos[0]:
+                need_to_swap = True
+        if direction == 'diag':
+            if from_pos[0] > to_pos[0]:
+                need_to_swap = True
+        if need_to_swap:
+            temp_var = to_pos
+            to_pos = from_pos
+            from_pos = temp_var
+        if direction == 'diag':
+            if from_pos[1] < to_pos[1]:
+                direction = 'diag_down'
+            else:
+                direction = 'diag_up'
+
+        all_increm_vectors = {
+            'diag_down': (1, 1),
+            'diag_up': (1, -1),
+            'horz': (0, 1),
+            'vert': (1, 0)
+        }
+        # - debug
+        # print('PARAMS_TESTING:', from_pos, to_pos, direction)
+        curr_cell = list(from_pos)
+        adhoc_v = all_increm_vectors[direction]
+        i_cap, j_cap = to_pos
+
+        curr_cell[0] += adhoc_v[0]
+        curr_cell[1] += adhoc_v[1]
+        while not (curr_cell[0] == i_cap and curr_cell[1] == j_cap):
+            # - debug
+            # print('tested cell:', curr_cell[0], curr_cell[1])
+            if board.state[curr_cell[1]][curr_cell[0]] != C_EMPTY_SQUARE:
+                return False
+            curr_cell[0] += adhoc_v[0]
+            curr_cell[1] += adhoc_v[1]
+        return True
+
+    @staticmethod
+    def piece_threatens(piece, board, source, dest) -> bool:
+        """
+        retunts True/False wether the given piece located at X controls/threatens the Y cell
+        :param piece: describes a piece, for example 'wB' or 'bQ' (white bishop, or black Queen)
+        :param board:
+        :param source: the X cell, where the piece is located
+        :param dest: the Y cell
+        :return: True/False
+        """
+        # print('call piece_threatens !')
+        # print(piece, board, source, dest)
+        # print('...')
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        return False  # TODO fix!
 
     @staticmethod
     def is_checkmate(board_obj, chesscolor: str):
@@ -114,7 +169,7 @@ class ChessRules:
                     return True
                 if fromSquare_r == 1 and toSquare_r == fromSquare_r + 2 and toSquare_c == fromSquare_c and toPiece == C_EMPTY_SQUARE:
                     # black pawn on starting row can move forward 2 spaces if there is no one directly ahead
-                    if ChessRules.is_clear_path(board, from_tuple, to_tuple):
+                    if ChessRules.clear_los_predicate(board, from_tuple, to_tuple):
                         return True
                 if board.jumped_over is not None:  # en passant
                     if (toSquare_r == fromSquare_r + 1) and board.jumped_over[0] == toSquare_r and board.jumped_over[
@@ -131,7 +186,7 @@ class ChessRules:
                     return True
                 if fromSquare_r == 6 and toSquare_r == fromSquare_r - 2 and toSquare_c == fromSquare_c and toPiece == C_EMPTY_SQUARE:
                     # black pawn on starting row can move forward 2 spaces if there is no one directly ahead
-                    if ChessRules.is_clear_path(board, from_tuple, to_tuple):
+                    if ChessRules.clear_los_predicate(board, from_tuple, to_tuple):
                         return True
                 if board.jumped_over is not None:  # en passant
                     if (toSquare_r == fromSquare_r - 1) and board.jumped_over[0] == toSquare_r and board.jumped_over[
@@ -146,7 +201,7 @@ class ChessRules:
             # Rook
             if (toSquare_r == fromSquare_r or toSquare_c == fromSquare_c) and (
                     toPiece == C_EMPTY_SQUARE or (enemy_sym_color in toPiece)):
-                if ChessRules.is_clear_path(board, from_tuple, to_tuple):
+                if ChessRules.clear_los_predicate(board, from_tuple, to_tuple):
                     return True
 
         elif board.square_has(from_tuple, C_KNIGHT):
@@ -175,18 +230,18 @@ class ChessRules:
             # Bishop
             if (abs(toSquare_r - fromSquare_r) == abs(toSquare_c - fromSquare_c)) and (
                     toPiece == C_EMPTY_SQUARE or (enemy_sym_color in toPiece)):
-                if ChessRules.is_clear_path(board, from_tuple, to_tuple):
+                if ChessRules.clear_los_predicate(board, from_tuple, to_tuple):
                     return True
 
         elif board.square_has(from_tuple, C_QUEEN):
             # Queen
             if (toSquare_r == fromSquare_r or toSquare_c == fromSquare_c) and (
                     toPiece == C_EMPTY_SQUARE or (enemy_sym_color in toPiece)):
-                if ChessRules.is_clear_path(board, from_tuple, to_tuple):
+                if ChessRules.clear_los_predicate(board, from_tuple, to_tuple):
                     return True
             if (abs(toSquare_r - fromSquare_r) == abs(toSquare_c - fromSquare_c)) and (
                     toPiece == C_EMPTY_SQUARE or (enemy_sym_color in toPiece)):
-                if ChessRules.is_clear_path(board, from_tuple, to_tuple):
+                if ChessRules.clear_los_predicate(board, from_tuple, to_tuple):
                     return True
 
         elif board.square_has(from_tuple, C_KING):
@@ -216,16 +271,21 @@ class ChessRules:
         # Castling is different for white and black players:
         if chesscolor == C_WHITE_PLAYER:
             # Updating the if condition to verify if Castling is allowed for user
-            if not boardref.wK_moved and not ChessRules.is_player_in_check(boardref, chesscolor):
+
+            # TODO : the problem here is that we still cannot call is_player_in_check,
+            #  as it will create infinite recursion
+            if not boardref.wK_moved:  # and not ChessRules.is_player_in_check(boardref, chesscolor):
                 coords_short_castle = alg_to_coords('g1')
                 coords_long_castle = alg_to_coords('c1')
                 if to_sq == coords_short_castle and (not boardref.wR8_moved):  # Test short castling
-                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq, to_sq):
+                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.clear_los_predicate(boardref, from_sq,
+                                                                                               to_sq):
                         # Called a new method to verify if it is safe for the user to castle.
                         if not ChessRules.is_king_threatened_after_move(boardref, chesscolor, from_sq, to_sq):
                             return True
                 if to_sq == coords_long_castle and (not boardref.wR1_moved):  # Test long castling
-                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq, to_sq):
+                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.clear_los_predicate(boardref, from_sq,
+                                                                                               to_sq):
                         # Called a new method to verify if it is safe for the user to castle.
                         if not ChessRules.is_king_threatened_after_move(boardref, chesscolor, from_sq, to_sq):
                             return True
@@ -236,12 +296,14 @@ class ChessRules:
                 coords_short_castle = alg_to_coords('g8')
                 coords_long_castle = alg_to_coords('c8')
                 if to_sq == coords_short_castle and (not boardref.bR8_moved):  # Test short castling
-                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq, to_sq):
+                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.clear_los_predicate(boardref, from_sq,
+                                                                                               to_sq):
                         # Called a new method to verify if it is safe for the user to castle.
                         if not ChessRules.is_king_threatened_after_move(boardref, chesscolor, from_sq, to_sq):
                             return True
                 if to_sq == coords_long_castle and (not boardref.bR1_moved):  # Test long castling
-                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.is_clear_path(boardref, from_sq, to_sq):
+                    if boardref.square_has(to_sq, C_EMPTY_SQUARE) and ChessRules.clear_los_predicate(boardref, from_sq,
+                                                                                               to_sq):
                         # Called a new method to verify if it is safe for the user to castle.
                         if not ChessRules.is_king_threatened_after_move(boardref, chesscolor, from_sq, to_sq):
                             return True
@@ -313,55 +375,15 @@ class ChessRules:
                 if 'K' in piece and myColor in piece:
                     kingTuple = (row, col)
 
-        # Check if any of enemy player's pieces has a legal move to current player's king
+        # Check if any of enemy player's pieces is threatening the current player's king
         for row in range(8):
             for col in range(8):
                 piece = board.state[row][col]
                 if enemyColor in piece:
+                    source = (row, col)
+                    dest = kingTuple
                     if ChessRules.is_legal_move(board, enemyColorFull, (row, col), kingTuple):
+                    # TODO break the cause of infinite recursion, by implementing a new func piece_threatens
+                    # if ChessRules.piece_threatens(piece, board, source, dest):
                         return True
-        return False
-
-    @staticmethod
-    def is_clear_path(board, from_pos, to_pos):
-        # Return true if there is nothing in a straight line between fromTuple and toTuple, non-inclusive
-        # Direction could be +/- vertical, +/- horizontal, +/- diagonal
-        fromSquare_r = from_pos[0]
-        fromSquare_c = from_pos[1]
-        toSquare_r = to_pos[0]
-        toSquare_c = to_pos[1]
-        fromPiece = board.state[fromSquare_r][fromSquare_c]
-
-        if abs(fromSquare_r - toSquare_r) <= 1 and abs(fromSquare_c - toSquare_c) <= 1:
-            # The base case: just one square apart
-            return True
-        else:
-            if toSquare_r > fromSquare_r and toSquare_c == fromSquare_c:
-                # vertical +
-                newTuple = (fromSquare_r + 1, fromSquare_c)
-            elif toSquare_r < fromSquare_r and toSquare_c == fromSquare_c:
-                # vertical -
-                newTuple = (fromSquare_r - 1, fromSquare_c)
-            elif toSquare_r == fromSquare_r and toSquare_c > fromSquare_c:
-                # horizontal +
-                newTuple = (fromSquare_r, fromSquare_c + 1)
-            elif toSquare_r == fromSquare_r and toSquare_c < fromSquare_c:
-                # horizontal -
-                newTuple = (fromSquare_r, fromSquare_c - 1)
-            elif toSquare_r > fromSquare_r and toSquare_c > fromSquare_c:
-                # diagonal "SE"
-                newTuple = (fromSquare_r + 1, fromSquare_c + 1)
-            elif toSquare_r > fromSquare_r and toSquare_c < fromSquare_c:
-                # diagonal "SW"
-                newTuple = (fromSquare_r + 1, fromSquare_c - 1)
-            elif toSquare_r < fromSquare_r and toSquare_c > fromSquare_c:
-                # diagonal "NE"
-                newTuple = (fromSquare_r - 1, fromSquare_c + 1)
-            elif toSquare_r < fromSquare_r and toSquare_c < fromSquare_c:
-                # diagonal "NW"
-                newTuple = (fromSquare_r - 1, fromSquare_c - 1)
-
-        # TODO wtf ? recursive isnt good here
-        if board.state[newTuple[0]][newTuple[1]] == C_EMPTY_SQUARE:
-            return ChessRules.is_clear_path(board, newTuple, to_pos)
         return False

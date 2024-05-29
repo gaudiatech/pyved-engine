@@ -1,75 +1,9 @@
-"""
-model for the game of chess (whats a chess Player/a chess Board +what are the rules?)
-"""
-from .chess_rules import *
-from . import chdefs
-from .chdefs import ChessEvents
 from . import pimodules
+from .chess_symbols import *
+from .chdefs import ChessEvents
 
 
 pyv = pimodules.pyved_engine
-# todo future model will use a class for chesspiece + an int matrix
-# i should be able to write high-level ideas such as:
-# if board['d4'].is_pawn():
-#     ...
-
-# -------------------------------------
-#  projekt below!
-# -------------------------------------
-# class ChessPiece:
-#     KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN = 'king', 'queen', 'rook', 'bishop', 'knight', 'pawn'
-#     TYPES = (KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN)
-#
-#     free_id = 2048  # abritrary
-#
-#     # warning! That trick wont work if you change chesspiece codes. Now Im using str values
-#     def __getattr__(self, attr_name):
-#         if attr_name[0:3] == 'is_':
-#             x = attr_name[3:]
-#             if x == 'white':
-#                 return lambda: self.color == C_WHITE_PLAYER
-#             elif x == 'black':
-#                 return lambda: self.color == C_BLACK_PLAYER
-#             else:
-#                 for cp_type in self.TYPES:
-#                     if x == cp_type:
-#                         return lambda: self.cp_type == x
-#         raise AttributeError('')
-#
-#     def __init__(self, color, cp_type, curr_square=None):
-#         self.p_id = self.__class__.free_id
-#         self.__class__.free_id -= 1
-#         self.color = color
-#         if color not in (C_BLACK_PLAYER, C_WHITE_PLAYER):
-#             raise ValueError('ERR: looks like the "color" arg. passed isnt valid:', color)
-#         self.cp_type = cp_type
-#         self.loc = curr_square
-#         if curr_square:
-#             if not (0 <= curr_square[0] < 8 and 0 <= curr_square[1] < 8):
-#                 raise ValueError('ERR: looks like the curr_square arg. passed isnt valid:', curr_square)
-#
-#
-# tt = ChessPiece('black', 'king')
-# print(tt.is_black())
-# print(tt.is_white())
-# print('-')
-# print(tt.is_pawn())
-# print(tt.is_bishop())
-# print(tt.is_king())
-
-
-__all__ = [
-    'C_KING', 'C_QUEEN', 'C_ROOK', 'C_BISHOP', 'C_KNIGHT', 'C_PAWN',
-    'C_BLACK_PLAYER', 'C_WHITE_PLAYER',
-    'C_EMPTY_SQUARE',
-
-    'ChessPlayer',
-    'ChessBoard',
-    'ChessRules',
-
-    'to_algebraic_notation_col',
-    'to_algebraic_notation_row'
-]
 
 
 def colorsym(x):
@@ -80,41 +14,6 @@ def colorsym(x):
     else:
         raise ValueError('non-valid chesscolor:', x)
     return adhoc_sym
-
-
-class ChessPlayer:
-    @classmethod
-    def conv_move(cls, packedcoords):
-        """
-        utility method so i can input moves such as 'e2e4' instead of ((4,1),(4,3))
-        which is very un-natural
-        """
-        if len(packedcoords) != 4:
-            raise ValueError('arg passed to ChessAI.conv_move has not the expected format! Received:', packedcoords)
-        li_given_char = list(packedcoords)
-        ref = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-        t1 = [8 - int(li_given_char[1]), ref.index(li_given_char[0])]
-        t2 = [8 - int(li_given_char[3]), ref.index(li_given_char[2])]
-        return tuple(t1), tuple(t2)
-
-    def __init__(self, name, color: str):
-        self._name = name
-        if color not in (C_BLACK_PLAYER, C_WHITE_PLAYER):
-            raise ValueError('invalid player color passed!')
-        self._color = color
-        self._type = 'human'
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def color(self):
-        return self._color
-
-    @property
-    def type(self):
-        return self._type
 
 
 class ChessBoard(pyv.Emitter):
@@ -499,41 +398,3 @@ class ChessBoard(pyv.Emitter):
         self.pawn_jumped = False
         self.jumping_pawn_loc = None
         self.jumped_over = None
-
-
-if __name__ == "__main__":
-    testcode = int(input('What do you wish to test? 1 for rules, 2 for board, 3 serialize, 4 pieces pos > '))
-
-    if testcode == 4:
-        print()
-        cb = ChessBoard(0)
-        pt = input('wat type? ')
-        col = input('wat color? ')
-        print(cb.get_piece_positions(col, pt))
-
-    elif testcode == 3:
-        cb = ChessBoard(0)
-        print(cb.serialize())
-
-    elif testcode == 2:
-        cb = ChessBoard(0)
-        board1 = cb.state
-        for r in range(8):
-            for c in range(8):
-                print(board1[r][c], end='')
-            print("")
-
-        print("Move piece test...")
-        cb.move_piece(((0, 0), (4, 4)))
-        board2 = cb.state
-        for r in range(8):
-            for c in range(8):
-                print(board2[r][c], end='')
-            print("")
-
-    elif testcode == 1:
-        cb = ChessBoard()
-        rules = ChessRules()
-        print(rules.is_checkmate(cb, C_WHITE_PLAYER))
-        print(rules.is_clear_path(cb, (0, 0), (5, 5)))
-        print(rules.is_clear_path(cb, (1, 1), (5, 5)))
