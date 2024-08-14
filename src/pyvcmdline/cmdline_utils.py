@@ -6,7 +6,7 @@ import json
 
 template_pyconnector_config_file ="""
 {
-  "api_url": "https://beta-services.kata.games",
+  "api_url": "https://services-beta.kata.games",
   "jwt": "ce60ff8ecbeec9d16d7b329be193894d89982abab75bcb02",
   "username": "badmojo",
   "user_id": 6
