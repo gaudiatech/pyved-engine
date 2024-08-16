@@ -32,7 +32,9 @@ def verify_metadata(mdat_obj) -> str:
         'thumbnail512x384',
         'thumbnail512x512',
         'ktg_services',
-        'vmlib_ver'
+        'vmlib_ver',
+        'uses_challenge',
+        'has_game_server'
     )
     for k in expected_fields:
         if k not in mdat_obj:
@@ -64,20 +66,6 @@ def rewrite_metadata(bundle_name, blob_obj):
     print(f'REWRITING file {what_to_open}...')
     with open(what_to_open, 'w') as fptr:
         fptr.write(json.dumps(blob_obj))
-
-
-def create_zip_from_folder(source_folder, wanted_zip_filename='output.zip'):
-    systmp_directory = tempfile.gettempdir()
-
-    output_zip_path = os.path.join(systmp_directory, wanted_zip_filename)
-    with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for root, _, files in os.walk(source_folder):
-            for file in files:
-                file_path = os.path.join(root, file)
-                arcname = os.path.relpath(file_path, source_folder)
-                zipf.write(file_path, arcname)
-
-    return output_zip_path
 
 
 def do_bundle_renaming(source, dest):

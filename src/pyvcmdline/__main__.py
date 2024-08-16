@@ -11,14 +11,16 @@ import json
 import os
 import shutil
 import sys
+import tempfile  # so we can use a temporary file storage
 import time
+import zipfile
 from pprint import pprint
 
 import pyperclip
 import requests  # used to implement the `pyv-cli share` feature
 
 from pyved_engine import vars
-from .cmdline_utils import do_bundle_renaming, create_zip_from_folder, safe_open_question, \
+from .cmdline_utils import do_bundle_renaming, safe_open_question, \
     template_pyconnector_config_file, safe_YN_question, read_metadata, rewrite_metadata, verify_metadata
 from .cmdline_utils import is_valid_game_identifier
 from .const import *
@@ -212,11 +214,14 @@ def do_login_via_terminal(ref_metadat):
         obj = json.load(json_fptr)
         print('session config file read ok->', obj)
 
-    PROMPT_MSG = 'want to open your user session in local Ctx (Y/N)? '
+    PROMPT_MSG = 'wanna set a Specific  user session for the local Ctx? Y/N, or hit Enter to use previous saved infos: '
     rez = input(PROMPT_MSG)
-    while rez not in ('Y', 'N', 'y', 'n'):
+    while rez not in ('Y', 'N', 'y', 'n', ''):
         print(' invalid reply, please retry:')
         rez = input(PROMPT_MSG)
+
+    if rez == '':
+        return
 
     if rez in ('n', 'N'):
         # we only support the guest mode
@@ -557,35 +562,64 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
     print(f'{fruit_url} has been saved to the paperclip')
 
 
+def pack_game_cartridge(bundl_name, using_temp_dir=True) -> str:
+    """
+    @param bundl_name:
+    @param using_temp_dir:
+    @return: a path to the produced ZIP archive
+    """
+    wrapper_bundle = os.path.join(os.getcwd(), bundl_name)
+    zip_precise_target = os.path.join(wrapper_bundle, 'cartridge')
+
+    def _inner_func(source_folder, wanted_zip_filename='output.zip'):
+        systmp_directory = tempfile.gettempdir()
+        output_zip_path = os.path.join(systmp_directory, wanted_zip_filename)
+        with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, _, files in os.walk(source_folder):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, source_folder)
+                    zipf.write(file_path, arcname)
+        return output_zip_path
+
+    return _inner_func(zip_precise_target)
+
+
 def share_subcommand(bundle_name, dev_flag_on):
     # TODO in the future,
     #  we may want to create a 'pack' subcommand that would only produce the .zip, not send it elsewhere
+    metadat = read_metadata(bundle_name)
+    slug = metadat['slug']
 
-    # ----------
-    #  1) enforce slug validity
-    # ----------
-    slug = read_metadata(bundle_name)['slug']  # to find out what is the slug name
-    if not dev_flag_on:
-        renamed = False
-        slug_correctness = ensure_correct_slug(slug)
-        while not slug_correctness[0]:
-            tmp = input('what alternative do you choose (please select a number: 0 to 3)? ')
-            if tmp.isnumeric() and (-1 < int(tmp) < 4):
-                choice = int(tmp)
-                slug = slug_correctness[1][choice]
-                slug_correctness = ensure_correct_slug(slug)
-                renamed = True
-            else:
-                print('invalid input, you can retry.')
-        # if renamed, then we need to sync both the metadata and the folder name
-        if renamed:
-            do_bundle_renaming(bundle_name, slug)
-            bundle_name = slug
+    if dev_flag_on:
+        zipfile_path = pack_game_cartridge(slug)
+        upload_my_zip_file(zipfile_path, slug, True)
+        return
 
-    wrapper_bundle = os.path.join(os.getcwd(), bundle_name)
-    zip_precise_target = os.path.join(wrapper_bundle, 'cartridge')
-    fn = create_zip_from_folder(zip_precise_target)
-    upload_my_zip_file(fn, slug, dev_flag_on)  # the final step
+    # if we're in prod mode, we HAVE TO pass all tests (slug is valid & available, etc.)
+    # before uploading
+    if verify_metadata(metadat) is not None:
+        print('ERROR: share is impossible yet:')
+        print('invalid metadat.json detected.')
+        print('Use "pyv-cli test XXX" to get more information')
+        return
+    renamed = False
+    slug_correctness = ensure_correct_slug(slug)
+    while not slug_correctness[0]:
+        tmp = input('what alternative do you choose (please select a number: 0 to 3)? ')
+        if tmp.isnumeric() and (-1 < int(tmp) < 4):
+            choice = int(tmp)
+            slug = slug_correctness[1][choice]
+            slug_correctness = ensure_correct_slug(slug)
+            renamed = True
+        else:
+            print('invalid input, you can retry.')
+    # if renamed, then we need to sync both the metadata and the folder name
+    if renamed:
+        do_bundle_renaming(bundle_name, slug)
+        bundle_name = slug
+    zipfile_path = pack_game_cartridge(bundle_name)
+    upload_my_zip_file(zipfile_path, slug, False)
 
 
 def upgrade_subcmd(bundlename):
