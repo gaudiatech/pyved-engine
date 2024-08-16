@@ -3,7 +3,7 @@ Constants for the sub command "share"
 """
 
 
-API_HOST_PLAY_DEV = 'http://127.0.0.1:8001'
+API_HOST_PLAY_DEV = 'http://127.0.0.1:8000'
 
 API_HOST_PUSH_DEV = 'http://127.0.0.1:8001'
 API_ENDPOINT_DEV = '{}/do_upload.php'.format(API_HOST_PUSH_DEV)  # to push a prototype to remote host
@@ -15,3 +15,5 @@ VMSTORAGE_URL = 'https://pyvm.kata.games'
 
 API_ENDPOINT_BETA = '{}/do_upload.php'.format(BETA_VM_API_HOST)
 FRUIT_URL_TEMPLATE_BETA = '{}/play/{}'
+
+FACADE_API_HOST = 'https://cms-beta.kata.games/content/plugins/facade/'

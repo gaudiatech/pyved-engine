@@ -9,23 +9,26 @@ import argparse
 import importlib
 import json
 import os
-import pyperclip
-import requests  # used to implement the `pyv-cli share` feature
 import shutil
 import sys
 import time
 from pprint import pprint
-from .cmdline_utils import do_bundle_renaming, create_zip_from_folder, safe_open_question,\
-    template_pyconnector_config_file, safe_YN_question, read_metadata, rewrite_metadata, verify_metadata
+
+import pyperclip
+import requests  # used to implement the `pyv-cli share` feature
+
 from pyved_engine import vars
+from .cmdline_utils import do_bundle_renaming, create_zip_from_folder, safe_open_question, \
+    template_pyconnector_config_file, safe_YN_question, read_metadata, rewrite_metadata, verify_metadata
+from .cmdline_utils import is_valid_game_identifier
 from .const import *
 from .json_prec import TEMPL_ID_TO_JSON_STR
-from .pyvcli_cogs import test_isfile_in_cartridge, proc_autogen_localctx, copy_launcher_script
 from .pyvcli_cogs import LAUNCH_GAME_SCRIPT_BASENAME
+from .pyvcli_cogs import create_folder_and_serialize_dict, recursive_copy
+from .pyvcli_cogs import test_isfile_in_cartridge, proc_autogen_localctx, copy_launcher_script
 from .pyvcli_config import API_HOST_PLAY_DEV, API_ENDPOINT_DEV, FRUIT_URL_TEMPLATE_DEV
 from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
-from .pyvcli_config import VMSTORAGE_URL
-
+from .pyvcli_config import VMSTORAGE_URL, FACADE_API_HOST
 
 __version__ = vars.ENGINE_VERSION_STR
 
@@ -193,30 +196,107 @@ __version__ = vars.ENGINE_VERSION_STR
 #
 #     json.dump(result, sys.stdout)
 
+def do_login_via_terminal(ref_metadat):
+    target_session_config_file = os.path.join(ref_metadat['slug'], 'pyconnector_config.json')
+    # read then update...
+    # the format is probably like:
+    # {
+    #     "api_url": "https://services-beta.kata.games/pvp",
+    #     "jwt": "d0a14c7dc320584df85cf2eb4a244df6995455b0b5ae54cb",
+    #     "username": "Mickeys38",
+    #     "user_id": 1
+    # }
+    print('game uses ktg_services !')
+    print('you can auth, or play as a guest ***')
+    with open(target_session_config_file, 'r') as json_fptr:
+        obj = json.load(json_fptr)
+        print('session config file read ok->', obj)
+
+    PROMPT_MSG = 'want to open your user session in local Ctx (Y/N)? '
+    rez = input(PROMPT_MSG)
+    while rez not in ('Y', 'N', 'y', 'n'):
+        print(' invalid reply, please retry:')
+        rez = input(PROMPT_MSG)
+
+    if rez in ('n', 'N'):
+        # we only support the guest mode
+        obj['jwt'] = ''
+        obj['username'] = ''
+        obj['user_id'] = None
+
+    else:  # - effective network comms for triggering the auth procedure!
+        # URL c'est: cms-beta.kata.games/content/plugins/facade/user/auth
+        # args= username, password
+        tmp = input('name and pwd, separated by a comma?').split(',')
+        while len(tmp) != 2:
+            print('unexpected length for the pair username,password. Please re-try')
+            tmp = input('name and pwd, separated by a comma?').split(',')
+        inp_name, inp_pwd = tmp
+
+        # --- GET
+        # AUTH_URL = FACADE_API_HOST+'user/auth?username={}&password={}'
+        # print(inp_name, inp_pwd)
+        # req = requests.get(
+        #    AUTH_URL.format(inp_name, inp_pwd)
+        # )
+        url = FACADE_API_HOST + 'user/auth'
+        myjson = {'username': inp_name, 'password': inp_pwd}
+        req = requests.post(url, data=myjson)
+
+        # retour attendu:
+        # {"reply_code":200,"message":"","user_id":1,"jwt":"2bed4997e655a9fbfc6f58d03e14747bb375a372a9cd412f"}
+        if req.status_code != 200:
+            raise requests.ConnectionError('cannot auth via the usual API (target component:facade)')
+        reply_obj = json.loads(req.text)
+        if reply_obj['reply_code'] != 200:
+            y = reply_obj['reply_code']
+            print('ERROR=:', reply_obj['message'])
+            print('-' * 44)
+            print()
+            raise requests.ConnectionError(f'API for auth can be reached, but bad reply_code noticed: {y}')
+
+        received_jwt = reply_obj['jwt']
+        print('Access Granted!')  # Your jwt is now', received_jwt)
+
+        obj['jwt'] = received_jwt
+        obj['username'] = inp_name
+        obj['user_id'] = reply_obj['user_id']
+
+    # save session infos
+    with open(target_session_config_file, 'w') as json_fptr:
+        json_fptr.write(json.dumps(obj))
+    print('The session storage file has been overwritten just yet!')
+
 
 def play_subcommand(x):
     if '.' != x and os.path.isdir('cartridge'):
         raise ValueError('launching with a "cartridge" in the current folder, but no parameter "." is forbidden')
     metadata = None
     try:
-        fptr = open(os.path.join(x, 'cartridge', 'metadat.json'), 'r')
-        metadata = json.load(fptr)
-        fptr.close()
-        print(f"game bundle {x} found. Loading...")
-        print('Metadata:\n', metadata)
-    except FileNotFoundError:
-        print(f'Error: cannot find the game bundle you specified: {x}')
-        print('  Are you sure it exists in the current folder? Alternatively you can try to')
-        print('  change directory (cd) and simply type `pyv-cli play`')
-        print('  once you are inside the bundle')
+        with open(os.path.join(x, 'cartridge', 'metadat.json'), 'r') as fptr:
+            print(f"game bundle {x} found. Reading metadata...")
+            metadata = json.load(fptr)
 
-    if metadata is not None:
+        # - debug
+        # print('Metadata:\n', metadata)
+
+        # when ktg_services are enabled, we probably wish to set a user session (=login)
+        # this will help:
+        if metadata['ktg_services']:
+            do_login_via_terminal(metadata)
+
         sys.path.append(os.getcwd())
         if x == '.':
             vmsl = importlib.import_module(LAUNCH_GAME_SCRIPT_BASENAME, None)
         else:
             vmsl = importlib.import_module('.' + LAUNCH_GAME_SCRIPT_BASENAME, x)
         vmsl.bootgame(metadata)
+
+    except FileNotFoundError:
+        print(f'Error: cannot find the game bundle you specified: {x}')
+        print('  Are you sure it exists in the current folder? Alternatively you can try to')
+        print('  change directory (cd) and simply type `pyv-cli play`')
+        print('  once you are inside the bundle')
 
 
 def init_command(game_identifier) -> None:
