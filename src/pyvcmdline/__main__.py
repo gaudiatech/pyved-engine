@@ -30,7 +30,7 @@ from .pyvcli_cogs import create_folder_and_serialize_dict, recursive_copy
 from .pyvcli_cogs import test_isfile_in_cartridge, proc_autogen_localctx, copy_launcher_script
 from .pyvcli_config import API_HOST_PLAY_DEV, API_ENDPOINT_DEV, FRUIT_URL_TEMPLATE_DEV
 from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
-from .pyvcli_config import VMSTORAGE_URL, FACADE_API_HOST
+from .pyvcli_config import VMSTORAGE_URL, FACADE_API_HOST, DEFAULT_API_SERVICES
 
 __version__ = vars.ENGINE_VERSION_STR
 
@@ -208,8 +208,19 @@ def do_login_via_terminal(ref_metadat):
     #     "username": "Mickeys38",
     #     "user_id": 1
     # }
-    print('game uses ktg_services !')
-    print('you can auth, or play as a guest ***')
+    print('That cartridge uses ktg_services...')
+    empty_session_signature = {
+        "api_url": DEFAULT_API_SERVICES,
+        "jwt": None,
+        "username": None,
+        "user_id": None
+    }
+
+    print('You can auth, or play as a guest. The choice is yours ***')
+    if not os.path.exists(target_session_config_file):  # if no file, we HAVE TO create one now
+        with open(target_session_config_file, 'w') as newfile_ptr:
+            json.dump(empty_session_signature, newfile_ptr)
+
     with open(target_session_config_file, 'r') as json_fptr:
         obj = json.load(json_fptr)
         print('session config file read ok->', obj)
@@ -225,30 +236,23 @@ def do_login_via_terminal(ref_metadat):
 
     if rez in ('n', 'N'):
         # we only support the guest mode
-        obj['jwt'] = ''
-        obj['username'] = ''
-        obj['user_id'] = None
+        obj.update(empty_session_signature)
 
-    else:  # - effective network comms for triggering the auth procedure!
-        # URL c'est: cms-beta.kata.games/content/plugins/facade/user/auth
-        # args= username, password
+    else:  # effective network comms for triggering the auth procedure!
+        # special (uncommon) API endpoint:
+        # cms-beta.kata.games/content/plugins/facade/user/auth
+        # And args are: username, password
         tmp = input('name and pwd, separated by a comma?').split(',')
         while len(tmp) != 2:
             print('unexpected length for the pair username,password. Please re-try')
             tmp = input('name and pwd, separated by a comma?').split(',')
         inp_name, inp_pwd = tmp
 
-        # --- GET
-        # AUTH_URL = FACADE_API_HOST+'user/auth?username={}&password={}'
-        # print(inp_name, inp_pwd)
-        # req = requests.get(
-        #    AUTH_URL.format(inp_name, inp_pwd)
-        # )
         url = FACADE_API_HOST + 'user/auth'
         myjson = {'username': inp_name, 'password': inp_pwd}
         req = requests.post(url, data=myjson)
 
-        # retour attendu:
+        # The expected response is:
         # {"reply_code":200,"message":"","user_id":1,"jwt":"2bed4997e655a9fbfc6f58d03e14747bb375a372a9cd412f"}
         if req.status_code != 200:
             raise requests.ConnectionError('cannot auth via the usual API (target component:facade)')
@@ -261,22 +265,20 @@ def do_login_via_terminal(ref_metadat):
             raise requests.ConnectionError(f'API for auth can be reached, but bad reply_code noticed: {y}')
 
         received_jwt = reply_obj['jwt']
-        print('Access Granted!')  # Your jwt is now', received_jwt)
-
+        print('Access Granted!')
         obj['jwt'] = received_jwt
         obj['username'] = inp_name
         obj['user_id'] = reply_obj['user_id']
 
-    # save session infos
+    # persist the session
     with open(target_session_config_file, 'w') as json_fptr:
         json_fptr.write(json.dumps(obj))
-    print('The session storage file has been overwritten just yet!')
 
 
 def play_subcommand(x):
     if '.' != x and os.path.isdir('cartridge'):
         raise ValueError('launching with a "cartridge" in the current folder, but no parameter "." is forbidden')
-    metadata = None
+
     try:
         with open(os.path.join(x, 'cartridge', 'metadat.json'), 'r') as fptr:
             print(f"game bundle {x} found. Reading metadata...")
