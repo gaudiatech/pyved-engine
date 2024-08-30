@@ -4,21 +4,27 @@
 import requests
 import json
 
+
 slugname = ''
+# don't set "api_url" here because it will be overriden by the session config anywayz!
+
 
 # ----dummy----, thats not network
 def read_config():
     global slugname
-    with open(slugname+'/pyconnector_config.json', 'r') as file:
+    with open(slugname + '/pyconnector_config.json', 'r') as file:
         return json.load(file)
+
 
 def get_jwt():
     config = read_config()
     return config.get('jwt')
 
+
 def get_username():
     config = read_config()
     return config.get('username')
+
 
 def get_user_id():
     config = read_config()
@@ -40,9 +46,10 @@ def _ensure_type_hexstr(data):
     return False
 
 
-def _get_request(url, given_data=None):
-    config = read_config()
-    api_url = config.get('api_url')
+def _get_request(url, given_data=None, api_url=None):
+    if api_url is None:
+        config = read_config()
+        api_url = config.get('api_url')
     try:
         response = requests.get(f"{api_url}{url}", params=given_data)
         print('sending GET, url:', f"{api_url}{url}")
@@ -56,8 +63,8 @@ def _get_request(url, given_data=None):
 
 
 # added alias
-def get(url, data=None):
-    return _get_request(url, data)
+def get(api_url, url, data=None):
+    return _get_request(url, data, api_url=api_url)
 
 
 def _post_request(url, given_data=None):
@@ -118,7 +125,7 @@ def get_user_infos(user_id: int):
 def can_pay_challenge(jwt: str, game_id: int):
     # GET request to /challenge/canPay
     if not _ensure_type_hexstr(jwt):
-        raise Exception("hexstr type not recognized! Value: "+str(jwt))
+        raise Exception("hexstr type not recognized! Value: " + str(jwt))
     try:
         resobj = _get_request('/challenge/canPay', {'jwt': jwt, 'game_id': game_id})
         return resobj.to_json()
@@ -140,7 +147,7 @@ def get_rank(user_id: int, game_id: int):
 def can_pay_game_fee(jwt: str, game_price: int):
     # GET request to /games/canPayGameFee
     if not _ensure_type_hexstr(jwt):
-        raise Exception("hexstr type not recognized! Value: "+str(jwt))
+        raise Exception("hexstr type not recognized! Value: " + str(jwt))
     try:
         resobj = _get_request('/games/canPayGameFee', {'jwt': jwt, 'game_price': game_price})
         return resobj.to_json()
@@ -152,7 +159,7 @@ def can_pay_game_fee(jwt: str, game_price: int):
 def pay_challenge(jwt: str, game_id: int):
     # GET request to /challenge/pay
     if not _ensure_type_hexstr(jwt):
-        raise Exception("hexstr type not recognized! Value: "+str(jwt))
+        raise Exception("hexstr type not recognized! Value: " + str(jwt))
     try:
         resobj = _get_request('/challenge/pay', {'jwt': jwt, 'game_id': game_id})
         return resobj.to_json()
@@ -164,7 +171,7 @@ def pay_challenge(jwt: str, game_id: int):
 def register_score(score: int, token: str):
     # GET request to /challenge/score
     if not _ensure_type_hexstr(token):
-        raise Exception("hexstr type not recognized! Value: "+str(token))
+        raise Exception("hexstr type not recognized! Value: " + str(token))
     try:
         resobj = _get_request('/challenge/score', {'score': score, 'token': token})
         return resobj.to_json()
@@ -176,7 +183,7 @@ def register_score(score: int, token: str):
 def pay_game_fee(jwt: str, game_id: int, game_price: int):
     # GET request to /games/payGameFee
     if not _ensure_type_hexstr(jwt):
-        raise Exception("hexstr type not recognized! Value: "+str(jwt))
+        raise Exception("hexstr type not recognized! Value: " + str(jwt))
     try:
         resobj = _get_request('/games/payGameFee', {'jwt': jwt, 'game_id': game_id, 'game_price': game_price})
         return resobj.to_json()
