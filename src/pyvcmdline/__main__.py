@@ -30,7 +30,7 @@ from .pyvcli_cogs import create_folder_and_serialize_dict, recursive_copy
 from .pyvcli_cogs import test_isfile_in_cartridge, proc_autogen_localctx, copy_launcher_script
 from .pyvcli_config import API_HOST_PLAY_DEV, API_ENDPOINT_DEV, FRUIT_URL_TEMPLATE_DEV
 from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
-from .pyvcli_config import VMSTORAGE_URL, FACADE_API_HOST, DEFAULT_API_SERVICES
+from .pyvcli_config import VMSTORAGE_URL, API_FACADE_URL_TEMPL, API_SERVICES_URL_TEMPL
 
 __version__ = vars.ENGINE_VERSION_STR
 
@@ -198,7 +198,7 @@ __version__ = vars.ENGINE_VERSION_STR
 #
 #     json.dump(result, sys.stdout)
 
-def do_login_via_terminal(ref_metadat):
+def do_login_via_terminal(ref_metadat, prod_mode=False):
     target_session_config_file = os.path.join(ref_metadat['slug'], 'pyconnector_config.json')
     # read then update...
     # the format is probably like:
@@ -210,7 +210,7 @@ def do_login_via_terminal(ref_metadat):
     # }
     print('That cartridge uses ktg_services...')
     empty_session_signature = {
-        "api_url": DEFAULT_API_SERVICES,
+        "api_url": API_SERVICES_URL_TEMPL.format('' if prod_mode else '-beta'),
         "jwt": None,
         "username": None,
         "user_id": None
@@ -225,20 +225,27 @@ def do_login_via_terminal(ref_metadat):
         obj = json.load(json_fptr)
         print('session config file read ok->', obj)
 
-    PROMPT_MSG = 'wanna set a Specific  user session for the local Ctx? Y/N, or hit Enter to use previous saved infos: '
+    PROMPT_MSG = 'Using pre-defined session stored in {} ; hit N to start a new one. [Y]/N? '
+    PROMPT_MSG = PROMPT_MSG.format(target_session_config_file)
     rez = input(PROMPT_MSG)
     while rez not in ('Y', 'N', 'y', 'n', ''):
         print(' invalid reply, please retry:')
         rez = input(PROMPT_MSG)
 
-    if rez == '':
+    if rez in ('y', 'Y', ''):
         return
 
-    if rez in ('n', 'N'):
-        # we only support the guest mode
-        obj.update(empty_session_signature)
+    PROMPT_MSG = 'Start game as guest? Otherwise you\'ll be prompted to input credentials. [Y]/N? '
+    rez = input(PROMPT_MSG)
+    while rez not in ('Y', 'N', 'y', 'n', ''):
+        print(' invalid reply, please retry:')
+        rez = input(PROMPT_MSG)
 
-    else:  # effective network comms for triggering the auth procedure!
+    if rez in ('y', 'Y', ''):
+        # force the guest mode
+        obj.update(empty_session_signature)
+    else:
+        # effective network comms for triggering the auth procedure!
         # special (uncommon) API endpoint:
         # cms-beta.kata.games/content/plugins/facade/user/auth
         # And args are: username, password
@@ -248,13 +255,17 @@ def do_login_via_terminal(ref_metadat):
             tmp = input('name and pwd, separated by a comma?').split(',')
         inp_name, inp_pwd = tmp
 
-        url = FACADE_API_HOST + 'user/auth'
         myjson = {'username': inp_name, 'password': inp_pwd}
-        req = requests.post(url, data=myjson)
+        adhoc_url = API_FACADE_URL_TEMPL.format('' if prod_mode else '-beta')+'/user/auth'
+        req = requests.post(
+            adhoc_url,
+            data=myjson
+        )
 
         # The expected response is:
         # {"reply_code":200,"message":"","user_id":1,"jwt":"2bed4997e655a9fbfc6f58d03e14747bb375a372a9cd412f"}
         if req.status_code != 200:
+            print(adhoc_url)
             raise requests.ConnectionError('cannot auth via the usual API (target component:facade)')
         reply_obj = json.loads(req.text)
         if reply_obj['reply_code'] != 200:
@@ -275,7 +286,7 @@ def do_login_via_terminal(ref_metadat):
         json_fptr.write(json.dumps(obj))
 
 
-def play_subcommand(x):
+def play_subcommand(x, devflag_on):
     if '.' != x and os.path.isdir('cartridge'):
         raise ValueError('launching with a "cartridge" in the current folder, but no parameter "." is forbidden')
 
@@ -290,7 +301,7 @@ def play_subcommand(x):
         # when ktg_services are enabled, we probably wish to set a user session (=login)
         # this will help:
         if metadata['ktg_services']:
-            do_login_via_terminal(metadata)
+            do_login_via_terminal(metadata, not devflag_on)
 
         sys.path.append(os.getcwd())
         if x == '.':
@@ -720,7 +731,7 @@ def main_inner(parser, argns):
         'autogen': proc_autogen_localctx
     }
     no_arg_subcommands = {'autogen'}
-    extra_flags_subcommands = {'share'}  # mark all subcommands that use the 'dev' mode flag
+    extra_flags_subcommands = {'share', 'play'}  # mark all subcommands that use the 'dev' mode flag
 
     # the algorithm
     ope_name = argns.subcommand
