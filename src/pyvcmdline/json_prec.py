@@ -21,7 +21,9 @@ JSON_PREC_NOASSETS = """\
 "thumbnail512x384": "thumb_2.png",
 "thumbnail512x512": "thumb_1.png",
 "ktg_services": false,
-"instructions": "not provided"
+"instructions": "not provided",
+"uses_challenge": false,
+"has_game_server": false
 }
 """
 
@@ -43,7 +45,9 @@ JSON_PREC_PLATFORMER = """\
 "thumbnail512x384": "thumb_2.png",
 "thumbnail512x512": "thumb_1.png",
 "ktg_services": false,
-"instructions": "not provided"
+"instructions": "not provided",
+"uses_challenge": false,
+"has_game_server": false
 }
 """
 
@@ -80,32 +84,36 @@ JSON_PREC_CHESS ="""
 "thumbnail512x384": "thumb_2.png",
 "thumbnail512x512": "thumb_1.png",
 "ktg_services": false,
-"instructions": "not provided"
+"instructions": "not provided",
+"uses_challenge": false,
+"has_game_server": false
 }
 """
 
 JSON_PREC_ROGUE = """
 {
-    "vmlib_ver": "24_3a1",
-    "dependencies": {
-        "pyved_engine": "???"
-    },
-    "description": "a basic demo for a roguelike game",
-    "author": "moonbak",
-    "assets": [
-        "smallninja_sprites.json",
-        "tileset.png",
-        "monster.png",
-        "avatar1.png"
-    ],
-    "sounds": [],
-    "slug": "roguelikeDemo",
-    "title": "Roguelike Template",
-    "build_date": "Tue Apr  2 15:40:11 2024",
-    "thumbnail512x384": "thumb_2.png",
-    "thumbnail512x512": "thumb_1.png",
-    "ktg_services": false,
-    "instructions": "no instructions provided",
+"vmlib_ver": "24_3a1",
+"dependencies": {
+    "pyved_engine": "???"
+},
+"description": "a basic demo for a roguelike game",
+"author": "moonbak",
+"assets": [
+    "smallninja_sprites.json",
+    "tileset.png",
+    "monster.png",
+    "avatar1.png"
+],
+"sounds": [],
+"slug": "roguelikeDemo",
+"title": "Roguelike Template",
+"build_date": "Tue Apr  2 15:40:11 2024",
+"thumbnail512x384": "thumb_2.png",
+"thumbnail512x512": "thumb_1.png",
+"ktg_services": false,
+"instructions": "no instructions provided",
+"uses_challenge": false,
+"has_game_server": false
 }
 """
 
