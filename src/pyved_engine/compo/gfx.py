@@ -9,7 +9,7 @@ from .. import _hub
 
 
 class JsonBasedSprSheet:
-    def __init__(self, filename_noext_nopath, pathinfo=None, ck=None):
+    def __init__(self, filename_noext_nopath, pathinfo=None, ck=None, is_webhack=False):
         """
         warning:
         the current source-code looks stupid, but it has written that way in order to
@@ -20,8 +20,16 @@ class JsonBasedSprSheet:
         """
 
         print('create SpriteSheet based on json:', filename_noext_nopath)
-        p = pathinfo if pathinfo else ''
-        self.sheet_surf = _hub.pygame.image.load(f'{p}{filename_noext_nopath}.png')
+
+        if is_webhack:
+            p = ''
+        else:
+            p = pathinfo
+        open_img= f'{p}{filename_noext_nopath}.png'
+        print('open img->', open_img)
+        self.sheet_surf = _hub.pygame.image.load(open_img)
+        if pathinfo and pathinfo != './':
+            p = pathinfo
         json_def_file = open(f'{p}{filename_noext_nopath}.json', 'r')
         jsondata = json.load(json_def_file)
 

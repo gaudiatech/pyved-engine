@@ -211,11 +211,15 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
             # print('prefix_asset_folder?', prefix_asset_folder)
 
             if kk[1] == 'json':
+
+                y = prefix_asset_folder
                 if webhack:
-                    y = webhack
-                else:
-                    y = prefix_asset_folder
-                vars.spritesheets[kk[0]] = gfx.JsonBasedSprSheet(kk[0], pathinfo=y)
+                    y = webhack+prefix_asset_folder
+
+                #print("argzz", kk[0], y)
+                vars.spritesheets[kk[0]] = gfx.JsonBasedSprSheet(
+                    kk[0], pathinfo=y, is_webhack=(webhack is not None)
+                )
 
             elif kk[1] == 'ncsv':
                 # filepath = prefix_asset_folder + asset_desc if prefix_asset_folder else asset_desc
