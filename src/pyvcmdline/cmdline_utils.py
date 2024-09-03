@@ -30,7 +30,12 @@ def verify_metadata(mdat_obj) -> str:
     returns a str if something is missing!
     """
     expected_fields = (
-        'assets',
+        'asset_base_folder',
+        'asset_list',
+        'sound_base_folder',
+        'sound_list',
+
+        'vmlib_ver',
         'author',
         'build_date',
         'dependencies',
@@ -38,11 +43,10 @@ def verify_metadata(mdat_obj) -> str:
         'title',
         'instructions',
         'slug',
-        'sounds',
         'thumbnail512x384',
         'thumbnail512x512',
         'ktg_services',
-        'vmlib_ver',
+
         'uses_challenge',
         'has_game_server',
         'ncr_faucet',

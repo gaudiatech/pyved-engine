@@ -189,7 +189,7 @@ def run_game():
       
 
 # --- rest of functions ---
-def preload_assets(adhoc_dict: dict, prefix_asset_folder=None, webhack=None):
+def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, webhack=None):
     """
     expected to find the (mandatory) key 'images',
     also we may find the (optionnal) key 'sounds'
@@ -203,7 +203,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None, webhack=None):
     print(' CALL to preload assets')
     print('*'*50)
     print()
-    for asset_desc in adhoc_dict['assets']:
+    for asset_desc in adhoc_dict['asset_list']:
 
         if isinstance(asset_desc, str):  # either sprsheet or image
             kk = asset_desc.split('.')
@@ -223,7 +223,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None, webhack=None):
                 if webhack:
                     y = webhack + csv_filename
                 else:
-                    y = prefix_asset_folder + csv_filename if prefix_asset_folder else csv_filename
+                    y = prefix_asset_folder + csv_filename
                 with open(y, 'r') as file:
                     # csvreader = csv.reader(file)
                     str_csv = file.read()
@@ -235,33 +235,32 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder=None, webhack=None):
                             map_data.append(list(map(int, row)))
                     vars.csvdata[kk[0]] = map_data
 
-            else:
-                filepath = prefix_asset_folder + asset_desc if prefix_asset_folder else asset_desc
+            elif kk[1] == 'ttf':  # a TTF font
+                key = "custom_ft"
+                ft_size = 22
+                ft_filename = asset_desc
+
+                if webhack:
+                    y = webhack + ft_filename
+                else:
+                    y = prefix_asset_folder + ft_filename
+                print('fetching font:', key, ft_filename, f'[{y}]')
+                vars.fonts[key] = _hub.pygame.font.Font(
+                    y,
+                    ft_size
+                )
+
+            else:  # necessarily an image
+                filepath = prefix_asset_folder + asset_desc
                 print('fetching image:', kk[0], filepath)
                 vars.images[kk[0]] = _hub.pygame.image.load(filepath)
 
-        else:  # necessarily a TTF font
-            key, ft_filename, ft_size = asset_desc
-
-            if webhack:
-                y = webhack + ft_filename
-            else:
-                y = prefix_asset_folder + ft_filename if prefix_asset_folder else ft_filename
-            print('fetching font:', key, ft_filename, f'[{y}]')
-            vars.fonts[key] = _hub.pygame.font.Font(
-                y,
-                ft_size
-            )
-
-    if 'sounds' not in adhoc_dict:
-        return
-
-    for snd_elt in adhoc_dict['sounds']:
+    for snd_elt in adhoc_dict['sound_list']:
         k = snd_elt.split('.')[0]
-        filepath = snd_elt if (prefix_asset_folder is None) else prefix_asset_folder + snd_elt
+        filepath = prefix_sound_folder + snd_elt
         if webhack is not None:
             filepath = webhack+filepath
-        print('fetching sound:', k, filepath)
+        print('fetching the sound:', k, filepath)
         vars.sounds[k] = _hub.pygame.mixer.Sound(filepath)
 
 

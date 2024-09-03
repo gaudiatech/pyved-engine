@@ -540,7 +540,9 @@ def test_subcommand(bundle_name):
             metadat['thumbnail512x384'],
             metadat['thumbnail512x512']
         ]
-        files_exp_li.extend(metadat['assets'])
+        for asset_name in metadat['asset_list']:
+            files_exp_li.append(metadat['asset_base_folder']+'/'+asset_name)
+
         for elt in files_exp_li:
             print('____testing file:', elt)
             if not test_isfile_in_cartridge(elt, bundle_name):
