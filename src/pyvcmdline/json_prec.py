@@ -24,7 +24,8 @@ JSON_PREC_NOASSETS = """\
 "instructions": "not provided",
 "uses_challenge": false,
 "has_game_server": false,
-"ncr_faucet": false
+"ncr_faucet": false,
+"game_genre": ["Experimental"]
 }
 """
 
@@ -49,7 +50,8 @@ JSON_PREC_PLATFORMER = """\
 "instructions": "not provided",
 "uses_challenge": false,
 "has_game_server": false,
-"ncr_faucet": false
+"ncr_faucet": false,
+"game_genre": ["Platformer"]
 }
 """
 
@@ -89,7 +91,8 @@ JSON_PREC_CHESS ="""
 "instructions": "not provided",
 "uses_challenge": false,
 "has_game_server": false,
-"ncr_faucet": false
+"ncr_faucet": false,
+"game_genre": ["Classics"]
 }
 """
 
@@ -117,7 +120,8 @@ JSON_PREC_ROGUE = """
 "instructions": "no instructions provided",
 "uses_challenge": false,
 "has_game_server": false,
-"ncr_faucet": false
+"ncr_faucet": false,
+"game_genre": ["Roguelike"]
 }
 """
 

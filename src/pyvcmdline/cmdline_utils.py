@@ -1,8 +1,11 @@
-import os
-import tempfile
-import zipfile
-import re
 import json
+import os
+import re
+
+import requests
+
+from . import pyvcli_config
+
 
 template_pyconnector_config_file ="""
 {
@@ -12,6 +15,13 @@ template_pyconnector_config_file ="""
   "user_id": 6
 }
 """
+
+
+def fetch_remote_game_genres():
+    url = pyvcli_config.get_game_genres_url(False)  # TODO support <dev> and <testnet> modes
+    r = requests.get(url)
+    li_game_genres = json.loads(r.text)
+    return li_game_genres
 
 
 def verify_metadata(mdat_obj) -> str:
@@ -35,11 +45,21 @@ def verify_metadata(mdat_obj) -> str:
         'vmlib_ver',
         'uses_challenge',
         'has_game_server',
-        'ncr_faucet'
+        'ncr_faucet',
+        'game_genre'
     )
     for k in expected_fields:
         if k not in mdat_obj:
-            return k
+            return 'Missing key= {}'.format(k)
+
+    # we also need to test whether Y or N, categories specified are still recognized within the CMS!
+    if (not isinstance(mdat_obj['game_genre'], list)) or (len(mdat_obj['game_genre']) == 0):
+        return 'Invalid metadat format: value tied to "game_genre" has to be a list with non-zero length'
+    ok_game_genres = fetch_remote_game_genres()
+    for elt in mdat_obj['game_genre']:
+        if elt not in ok_game_genres:
+            return f'Game genre "{elt}" rejected by the Kata.Games system, please contact an Admin, or replace value'
+    print('--Metadata is valid--')
 
 
 def read_metadata(bundle_name):

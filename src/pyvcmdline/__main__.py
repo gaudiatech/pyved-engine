@@ -20,16 +20,17 @@ import pyperclip
 import requests  # used to implement the `pyv-cli share` feature
 
 from pyved_engine import vars
+from . import pyvcli_config
 from .cmdline_utils import do_bundle_renaming, safe_open_question, \
-    template_pyconnector_config_file, safe_YN_question, read_metadata, rewrite_metadata, verify_metadata
+    template_pyconnector_config_file, safe_YN_question, read_metadata, rewrite_metadata, verify_metadata, \
+    fetch_remote_game_genres
 from .cmdline_utils import is_valid_game_identifier
 from .const import *
 from .json_prec import TEMPL_ID_TO_JSON_STR
 from .pyvcli_cogs import LAUNCH_GAME_SCRIPT_BASENAME
 from .pyvcli_cogs import create_folder_and_serialize_dict, recursive_copy
 from .pyvcli_cogs import test_isfile_in_cartridge, proc_autogen_localctx, copy_launcher_script
-from .pyvcli_config import API_HOST_PLAY_DEV, API_ENDPOINT_DEV, FRUIT_URL_TEMPLATE_DEV
-from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
+from .pyvcli_config import API_HOST_PLAY_DEV, FRUIT_URL_TEMPLATE_DEV, FRUIT_URL_TEMPLATE_BETA
 from .pyvcli_config import VMSTORAGE_URL, API_FACADE_URL_TEMPL, API_SERVICES_URL_TEMPL
 
 
@@ -292,6 +293,7 @@ def gen_build_date_now():
 
 
 def bump_subcommand(bundle_name):
+    print('bump bundle to current version that is', __version__)
     metadata_obj = read_metadata(bundle_name)
     metadata_obj['vmlib_ver'] = __version__.replace('.', '_')
     metadata_obj['build_date'] = gen_build_date_now()
@@ -327,6 +329,47 @@ def play_subcommand(x, devflag_on):
         print('  Are you sure it exists in the current folder? Alternatively you can try to')
         print('  change directory (cd) and simply type `pyv-cli play`')
         print('  once you are inside the bundle')
+
+
+def procedure_select_game_genre(mutable_obj):
+    """
+    @param mutable_obj: metadata to be changed, or no
+    """
+    prompt0 = 'do yo want to select other genres? Y/[N]'
+    prompt1 = 'please select the ones that suit you game,separate by commas:'
+
+    print('it is important to give hints about your game genre. The default genre is')
+    if len(mutable_obj['game_genre']) > 1:
+        print(','.join(mutable_obj['game_genre']))
+    else:
+        print(mutable_obj['game_genre'][0])
+    inp = input(prompt0)
+    while inp not in ('y', 'Y', 'n', 'N', ''):
+        print('invalid answer! Re-trying')
+        inp = input(prompt0)
+    if inp in ('n', 'N', ''):
+        return
+    # select different genres +failsafe input
+    omega = fetch_remote_game_genres()
+    print('server currently accepts these values:', omega)
+    print(prompt1)
+
+    is_valid_input = False
+    new_genres_list = list()
+    while not is_valid_input:
+        is_valid_input = True
+        inp_g = input()
+        all_values = inp_g.split(',')
+        for k in range(len(all_values)):
+            all_values[k] = all_values[k].lstrip()  # remove spaces char. after the comma, if any
+        for elt in all_values:
+            if elt not in omega:
+                is_valid_input = False
+                print('error detected in your input, try again. Example of valid input-> "Experimental,Cards"')
+                break
+        if is_valid_input:
+            new_genres_list.extend(all_values)
+    mutable_obj['game_genre'] = new_genres_list
 
 
 def init_command(game_identifier) -> None:
@@ -368,8 +411,10 @@ def init_command(game_identifier) -> None:
     tmp = input('whos the author? [Default: Unknown]')
     metadata['author'] = tmp if len(tmp) > 0 else 'Unknown'
     metadata['vmlib_ver'] = __version__.replace('.', '_')
-
     metadata['build_date'] = gen_build_date_now()
+
+    # here, we modify the metadata based on what game genres the user wish to set
+    procedure_select_game_genre(metadata)
 
     # Get the absolute path of the current script
     script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -413,6 +458,8 @@ def trigger_publish(slug):
     stored server-side
     :return: True/False
     """
+    raise NotImplementedError  # deprecated function
+
     dummy_json_str = """
 {
 "game_title": "This is the game title",
@@ -427,15 +474,10 @@ def trigger_publish(slug):
 "source": "API",
 }
 """
-    # check that can be deserialized...
     jsondata = json.loads(dummy_json_str)
     jsondata['slug'] = x = slug
-    # jsondata['cartridge'] = y = slug
-    # print(jsondata)
-    # print(type(jsondata))
-
     reply = requests.post(
-        url=TARG_TRIGGER_PUBLISH,
+        url='https://kata.games/api/uploads.php',
         data=json.dumps(jsondata)
     )
     print(f'trigger_publish CALLED (arg:x=={x})--- result is...')
@@ -487,41 +529,38 @@ def ensure_correct_slug(givenslug):
 
 
 def test_subcommand(bundle_name):
-    print(f"***TESTING bundle {bundle_name}***")
-
+    print(f"...Now testing the game bundle title: {bundle_name}")
     metadat = read_metadata(bundle_name)
-    pprint(metadat)
-    print()
-    btest = verify_metadata(metadat)
-    print('valid metadata?', btest is None)
-    if btest is not None:
-        raise ValueError('Invalid metadata file! Missing key= {}'.format(btest))
+    err_message = verify_metadata(metadat)
 
-    # ensure that thumbnails & assets described do exist:
-    print('ensuring if assets exist')
-    files_exp_li = [  # all expected files need to be known
-        metadat['thumbnail512x384'],
-        metadat['thumbnail512x512']
-    ]
-    files_exp_li.extend(metadat['assets'])
-    for elt in files_exp_li:
-        print('____testing file:', elt)
-        if not test_isfile_in_cartridge(elt, bundle_name):
-            raise FileNotFoundError('cannot find asset:', elt)
-    print('assets --->OK')
-    print()
+    if err_message is None:
+        # ensure that thumbnails & assets described do exist:
+        print('ensuring if assets exist')
+        files_exp_li = [  # all expected files need to be known
+            metadat['thumbnail512x384'],
+            metadat['thumbnail512x512']
+        ]
+        files_exp_li.extend(metadat['assets'])
+        for elt in files_exp_li:
+            print('____testing file:', elt)
+            if not test_isfile_in_cartridge(elt, bundle_name):
+                raise FileNotFoundError('cannot find asset:', elt)
+        print('assets --->OK')
+        print()
 
-    print('COHESION test:', bundle_name == metadat['slug'])
-    print()
+        print('COHESION test:', bundle_name == metadat['slug'])
+        print()
 
-    print('~ Serv-side Slug Availability? ~')
-    obj = _query_slug_availability(metadat['slug'])
-    if not obj['success']:
-        raise ValueError('cannot read info from server!')
-    print(' ->', 'yes' if obj['available'] else 'no')
-    if not obj['available']:
-        print('suggestions:')
-        pprint(obj['suggestions'])
+        print('~ Serv-side Slug Availability? ~')
+        obj = _query_slug_availability(metadat['slug'])
+        if not obj['success']:
+            raise ValueError('cannot read info from server!')
+        print(' ->', 'yes' if obj['available'] else 'no')
+        if not obj['available']:
+            print('suggestions:')
+            pprint(obj['suggestions'])
+    else:  # metadat is not valid
+        raise ValueError('Invalid metadata file! ' + err_message)
 
 
 def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
@@ -561,7 +600,7 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
             {'Expires': '0'}
         )
     }
-    api_endpoint = API_ENDPOINT_DEV if debugmode else API_ENDPOINT_BETA
+    api_endpoint = pyvcli_config.get_upload_url(debugmode)
     reply = requests.post(
         url=api_endpoint,
         files=files,
@@ -582,7 +621,7 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
     if debugmode:
         fruit_url = FRUIT_URL_TEMPLATE_DEV.format(API_HOST_PLAY_DEV, rep_obj[1])
     else:
-        fruit_url = FRUIT_URL_TEMPLATE_BETA.format(BETA_VM_API_HOST, rep_obj[1])
+        fruit_url = FRUIT_URL_TEMPLATE_BETA.format(pyvcli_config.VMSTORAGE_URL, rep_obj[1])
     pyperclip.copy(fruit_url)
     print(f'{fruit_url} has been saved to the paperclip')
 
