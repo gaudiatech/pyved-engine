@@ -23,7 +23,8 @@ JSON_PREC_NOASSETS = """\
 "ktg_services": false,
 "instructions": "not provided",
 "uses_challenge": false,
-"has_game_server": false
+"has_game_server": false,
+"ncr_faucet": false
 }
 """
 
@@ -47,7 +48,8 @@ JSON_PREC_PLATFORMER = """\
 "ktg_services": false,
 "instructions": "not provided",
 "uses_challenge": false,
-"has_game_server": false
+"has_game_server": false,
+"ncr_faucet": false
 }
 """
 
@@ -86,7 +88,8 @@ JSON_PREC_CHESS ="""
 "ktg_services": false,
 "instructions": "not provided",
 "uses_challenge": false,
-"has_game_server": false
+"has_game_server": false,
+"ncr_faucet": false
 }
 """
 
@@ -113,7 +116,8 @@ JSON_PREC_ROGUE = """
 "ktg_services": false,
 "instructions": "no instructions provided",
 "uses_challenge": false,
-"has_game_server": false
+"has_game_server": false,
+"ncr_faucet": false
 }
 """
 

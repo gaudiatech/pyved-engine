@@ -34,7 +34,8 @@ def verify_metadata(mdat_obj) -> str:
         'ktg_services',
         'vmlib_ver',
         'uses_challenge',
-        'has_game_server'
+        'has_game_server',
+        'ncr_faucet'
     )
     for k in expected_fields:
         if k not in mdat_obj:
