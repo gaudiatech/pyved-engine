@@ -32,6 +32,7 @@ from .pyvcli_config import API_HOST_PLAY_DEV, API_ENDPOINT_DEV, FRUIT_URL_TEMPLA
 from .pyvcli_config import BETA_VM_API_HOST, API_ENDPOINT_BETA, FRUIT_URL_TEMPLATE_BETA
 from .pyvcli_config import VMSTORAGE_URL, API_FACADE_URL_TEMPL, API_SERVICES_URL_TEMPL
 
+
 __version__ = vars.ENGINE_VERSION_STR
 
 
@@ -286,6 +287,17 @@ def do_login_via_terminal(ref_metadat, prod_mode=False):
         json_fptr.write(json.dumps(obj))
 
 
+def gen_build_date_now():
+    return time.ctime(time.time())
+
+
+def bump_subcommand(bundle_name):
+    metadata_obj = read_metadata(bundle_name)
+    metadata_obj['vmlib_ver'] = __version__.replace('.', '_')
+    metadata_obj['build_date'] = gen_build_date_now()
+    rewrite_metadata(bundle_name, metadata_obj)
+
+
 def play_subcommand(x, devflag_on):
     if '.' != x and os.path.isdir('cartridge'):
         raise ValueError('launching with a "cartridge" in the current folder, but no parameter "." is forbidden')
@@ -357,7 +369,7 @@ def init_command(game_identifier) -> None:
     metadata['author'] = tmp if len(tmp) > 0 else 'Unknown'
     metadata['vmlib_ver'] = __version__.replace('.', '_')
 
-    metadata['build_date'] = time.ctime(time.time())
+    metadata['build_date'] = gen_build_date_now()
 
     # Get the absolute path of the current script
     script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -728,6 +740,7 @@ def main_inner(parser, argns):
         'play': play_subcommand,
         'share': share_subcommand,
         'pub': None,
+        'bump': bump_subcommand,
         'autogen': proc_autogen_localctx
     }
     no_arg_subcommands = {'autogen'}
@@ -1162,6 +1175,15 @@ def do_parse_args():
     # +++ TEST subcommand
     play_parser = subparsers.add_parser(
         "test", help="can be used to test if the specified game bundle is valid or not"
+    )
+    play_parser.add_argument(
+        "bundle_name", type=str
+    )
+
+    # ——————————————————————————————————
+    # +++ BUMP subcommand
+    play_parser = subparsers.add_parser(
+        "bump", help="can be used to upgrade the metadata, to mark that we use the current pyved-engine revision"
     )
     play_parser.add_argument(
         "bundle_name", type=str

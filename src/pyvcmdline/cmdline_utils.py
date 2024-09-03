@@ -45,7 +45,7 @@ def read_metadata(bundle_name):
     # Check if the folder exists, otherwise we'll throw an error
     wrapper_bundle = os.path.join(os.getcwd(), bundle_name)
     if not os.path.exists(wrapper_bundle):
-        raise FileNotFoundError('ERR! Cannot find the bundle named:', bundle_name)
+        raise FileNotFoundError(f'ERR! Cant find the specified game bundle ({bundle_name})')
     cartridge_folder = os.path.join(wrapper_bundle, 'cartridge')
     if not os.path.exists(cartridge_folder):
         raise ValueError('ERR! Bundle format isnt valid, cartridge structure is missing')
