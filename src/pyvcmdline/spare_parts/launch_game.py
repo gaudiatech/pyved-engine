@@ -47,7 +47,7 @@ class Injector:
     def set_lazy_loaded_module(self, sub_module_name, python_path):
         self.lazy_loading[sub_module_name] = _PyModulePromise(sub_module_name, python_path, self.package_arg)
     def __getitem__(self, item):
-        print(f"LVL0 injector:importing[{item}]")
+        print(f"importing[{item}]")
         print(self.registered_modules)
         print()
         if item in self.registered_modules:
@@ -92,14 +92,12 @@ def bootgame(metadata):
         rel_imports = True
     mon_inj = Injector(None)
     mon_inj.set_lazy_loaded_module('pyved_engine', 'pyved_engine')
-    # specific to network-enabled game launcher{
     if rel_imports:
         from . import network
     else:
         import network
     network.slugname = metadata['slug']
     mon_inj.set_preloaded_module('network', network)
-    # done}
     upward_link(mon_inj)
     if rel_imports:
         pimodules.upward_link = mon_inj

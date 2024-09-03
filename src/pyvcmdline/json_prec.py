@@ -12,9 +12,11 @@ JSON_PREC_NOASSETS = """\
 },
 "description":"this is a placeholder so you can describe your game",
 "author":"placeholder_author",
-"assets":[
+"asset_list":[
 ],
-"sounds": [
+"asset_base_folder":".",
+"sound_base_folder":".",
+"sound_list": [
 ],
 "slug": "foundation_Cartridge",
 "title": "Untitled Game",
@@ -37,10 +39,12 @@ JSON_PREC_PLATFORMER = """\
 },
 "description": "this is an example of platformer",
 "author": "KataGames_Team",
-"assets": [
+"asset_list": [
 "my_map.ncsv"
 ],
-"sounds": [],
+"asset_base_folder":".",
+"sound_base_folder":".",
+"sound_list": [],
 "slug": "pyvTutoZero",
 "title": "Skeleton for a platformer game",
 "build_date": "Thu Sep 14 11:31:49 2023",
@@ -63,7 +67,9 @@ JSON_PREC_CHESS ="""
 },
 "description": "this is a placeholder so you can describe your game",
 "author": "moonbak et al.",
-"assets": [
+"asset_base_folder":".",
+"sound_base_folder":".",
+"asset_list": [
 "black_bishop.png",
 "black_king.png",
 "black_knight.png",
@@ -80,7 +86,7 @@ JSON_PREC_CHESS ="""
 "brown_square.png",
 "cyan_square.png"
 ],
-"sounds": [],
+"sound_list": [],
 "slug": "testChess",
 "title": "chessBundle",
 "instructions": "no instructions provided.",
@@ -104,13 +110,15 @@ JSON_PREC_ROGUE = """
 },
 "description": "a basic demo for a roguelike game",
 "author": "moonbak",
-"assets": [
+"asset_base_folder":".",
+"sound_base_folder":".",
+"asset_list": [
     "smallninja_sprites.json",
     "tileset.png",
     "monster.png",
     "avatar1.png"
 ],
-"sounds": [],
+"sound_list": [],
 "slug": "roguelikeDemo",
 "title": "Roguelike Template",
 "build_date": "Tue Apr  2 15:40:11 2024",

@@ -47,7 +47,12 @@ class Injector:
     def set_lazy_loaded_module(self, sub_module_name, python_path):
         self.lazy_loading[sub_module_name] = _PyModulePromise(sub_module_name, python_path, self.package_arg)
     def __getitem__(self, item):
-        return self.registered_modules.get(item, self.lazy_loading[item].result)
+        print(f"LVL0 injector:importing[{item}]")
+        print(self.registered_modules)
+        print()
+        if item in self.registered_modules:
+            return self.registered_modules[item]
+        return self.lazy_loading[item].result
     def is_loaded(self, package_name):
         return package_name in self.registered_modules or self.lazy_loading[package_name].is_ready()
 def upward_link(link_to_pimodules):
@@ -72,7 +77,11 @@ def game_execution(metadata, game_definition_module):
         adhoc_folder = os.path.join('.', 'cartridge')
     else:
         raise FileNotFoundError("ERR: Asset dir for pre-loading assets cannot be found!")
-    pyv.preload_assets(metadata, prefix_asset_folder=adhoc_folder+os.sep)
+    pyv.preload_assets(
+        metadata,
+        prefix_asset_folder=adhoc_folder+os.sep+metadata['asset_base_folder']+os.sep,
+        prefix_sound_folder=adhoc_folder+os.sep+metadata['sound_base_folder']+os.sep,
+    )
     pyv.run_game()
 def bootgame(metadata):
     try:
