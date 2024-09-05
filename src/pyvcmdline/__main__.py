@@ -324,7 +324,7 @@ def bump_subcommand(bundle_name):
     """
     print('bump bundle to current version that is', __version__)
     my_metadat = read_metadata(bundle_name)
-    my_metadat['vmlib_ver'] = __version__.replace('.', '_')
+    my_metadat['dependencies']['pyved_engine'] = [__version__.replace('.', '_'), 'pyv']  # alias = pyv
     rewrite_metadata(bundle_name, my_metadat)
 
 
