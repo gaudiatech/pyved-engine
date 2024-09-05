@@ -33,7 +33,6 @@ from .pyvcli_cogs import test_isfile_in_cartridge, proc_autogen_localctx, copy_l
 from .pyvcli_config import API_HOST_PLAY_DEV, FRUIT_URL_TEMPLATE_DEV, FRUIT_URL_TEMPLATE_BETA
 from .pyvcli_config import VMSTORAGE_URL, API_FACADE_URL_TEMPL, API_SERVICES_URL_TEMPL
 
-
 __version__ = vars.ENGINE_VERSION_STR
 
 
@@ -292,12 +291,41 @@ def gen_build_date_now():
     return time.ctime(time.time())
 
 
+def save_list_of_py_files(directory, metadat_obj):
+    """
+    Recursively find *.py files récursivement tous les fichiers avec une extension .py dans un dossier donné.
+    """
+    python_files = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.py'):
+                # Ajoute le chemin relatif à partir du dossier de base
+                python_files.append(
+                    os.path.relpath(os.path.join(root, file), directory).replace('\\', '/')
+                )
+
+    # Mise à jour de la clé "source_files"
+    metadat_obj['source_files'] = python_files
+
+    # Update date de construction
+    metadat_obj['build_date'] = gen_build_date_now()
+
+
+def refresh_subcommand(bundle_name):
+    print('list of source files has been updated')
+    my_metadat = read_metadata(bundle_name)
+    save_list_of_py_files(os.path.join(bundle_name, 'cartridge'), my_metadat)
+    rewrite_metadata(bundle_name, my_metadat)
+
+
 def bump_subcommand(bundle_name):
+    """
+    Nota Bene: operations bump, share automatically update the list of source files
+    """
     print('bump bundle to current version that is', __version__)
-    metadata_obj = read_metadata(bundle_name)
-    metadata_obj['vmlib_ver'] = __version__.replace('.', '_')
-    metadata_obj['build_date'] = gen_build_date_now()
-    rewrite_metadata(bundle_name, metadata_obj)
+    my_metadat = read_metadata(bundle_name)
+    my_metadat['vmlib_ver'] = __version__.replace('.', '_')
+    rewrite_metadata(bundle_name, my_metadat)
 
 
 def play_subcommand(x, devflag_on):
@@ -654,38 +682,44 @@ def pack_game_cartridge(bundl_name, using_temp_dir=True) -> str:
 def share_subcommand(bundle_name, dev_flag_on):
     # TODO in the future,
     #  we may want to create a 'pack' subcommand that would only produce the .zip, not send it elsewhere
-    metadat = read_metadata(bundle_name)
-    slug = metadat['slug']
+    # that pack subcommand would pack and send it to the cwd, whereas the classic pack uses the tempfile/tempdir logic
 
-    if dev_flag_on:
+    # - refresh list of files
+    metadat = read_metadata(bundle_name)
+    save_list_of_py_files(os.path.join(bundle_name, 'cartridge'), metadat)
+    rewrite_metadata(bundle_name, metadat)
+
+    slug = metadat['slug']
+    if dev_flag_on:  # in devmode, all tests on metadata are skipped
         zipfile_path = pack_game_cartridge(slug)
         upload_my_zip_file(zipfile_path, slug, True)
         return
 
+    err_msg_lines = [
+        'ERROR: the "share" is impossible yet, invalid metadat.json detected.',
+        'Please use "pyv-cli test BundleName"',
+        'in order to get more information and fix the problem'
+    ]
     # if we're in prod mode, we HAVE TO pass all tests (slug is valid & available, etc.)
     # before uploading
-    if verify_metadata(metadat) is not None:
-        print('ERROR: share is impossible yet:')
-        print('invalid metadat.json detected.')
-        print('Use "pyv-cli test XXX" to get more information')
-        return
-    renamed = False
-    slug_correctness = ensure_correct_slug(slug)
-    while not slug_correctness[0]:
-        tmp = input('what alternative do you choose (please select a number: 0 to 3)? ')
-        if tmp.isnumeric() and (-1 < int(tmp) < 4):
-            choice = int(tmp)
-            slug = slug_correctness[1][choice]
-            slug_correctness = ensure_correct_slug(slug)
-            renamed = True
-        else:
-            print('invalid input, you can retry.')
-    # if renamed, then we need to sync both the metadata and the folder name
-    if renamed:
-        do_bundle_renaming(bundle_name, slug)
-        bundle_name = slug
-    zipfile_path = pack_game_cartridge(bundle_name)
-    upload_my_zip_file(zipfile_path, slug, False)
+    if verify_metadata(metadat) is None:
+        slug_correctness = ensure_correct_slug(slug)
+        while not slug_correctness[0]:
+            tmp = input('what alternative do you choose (please select a number: 0 to 3)? ')
+            if not (tmp.isnumeric() and (-1 < int(tmp) < 4)):
+                print('invalid input, please retry.')
+            else:
+                choice = int(tmp)
+                slug = slug_correctness[1][choice]
+                slug_correctness = ensure_correct_slug(slug)
+                # when renaming, both the metadata and the folder name need to be changed
+                do_bundle_renaming(bundle_name, slug)
+                bundle_name = slug
+        zipfile_path = pack_game_cartridge(bundle_name)
+        upload_my_zip_file(zipfile_path, slug, False)
+    else:
+        for msg_line in err_msg_lines:  # printing a multi-line error message
+            print(msg_line)
 
 
 def upgrade_subcmd(bundlename):
@@ -782,6 +816,7 @@ def main_inner(parser, argns):
         'share': share_subcommand,
         'pub': None,
         'bump': bump_subcommand,
+        'refresh': refresh_subcommand,
         'autogen': proc_autogen_localctx
     }
     no_arg_subcommands = {'autogen'}
@@ -1220,7 +1255,14 @@ def do_parse_args():
     play_parser.add_argument(
         "bundle_name", type=str
     )
-
+    # ——————————————————————————————————
+    # +++ REFRESH subcommand
+    play_parser = subparsers.add_parser(
+        "refresh", help="refreshes the list of all source-files, and modify the bundle metadata accordingly"
+    )
+    play_parser.add_argument(
+        "bundle_name", type=str
+    )
     # ——————————————————————————————————
     # +++ BUMP subcommand
     play_parser = subparsers.add_parser(

@@ -7,6 +7,31 @@ import requests
 from . import pyvcli_config
 
 
+EXP_METADAT_KEYS = (
+        'asset_base_folder',
+        'asset_list',
+        'sound_base_folder',
+        'sound_list',
+
+        'vmlib_ver',
+        'author',
+        'build_date',
+        'dependencies',
+        'description',
+        'title',
+        'instructions',
+        'slug',
+        'thumbnail512x384',
+        'thumbnail512x512',
+        'ktg_services',
+        'source_files',
+
+        'uses_challenge',
+        'has_game_server',
+        'ncr_faucet',
+        'game_genre'
+    )
+
 template_pyconnector_config_file ="""
 {
   "api_url": "https://services-beta.kata.games",
@@ -29,30 +54,8 @@ def verify_metadata(mdat_obj) -> str:
     confirm that the metadata contains all required fields
     returns a str if something is missing!
     """
-    expected_fields = (
-        'asset_base_folder',
-        'asset_list',
-        'sound_base_folder',
-        'sound_list',
-
-        'vmlib_ver',
-        'author',
-        'build_date',
-        'dependencies',
-        'description',
-        'title',
-        'instructions',
-        'slug',
-        'thumbnail512x384',
-        'thumbnail512x512',
-        'ktg_services',
-
-        'uses_challenge',
-        'has_game_server',
-        'ncr_faucet',
-        'game_genre'
-    )
-    for k in expected_fields:
+    global EXP_METADAT_KEYS
+    for k in EXP_METADAT_KEYS:
         if k not in mdat_obj:
             return 'Missing key= {}'.format(k)
 
@@ -90,7 +93,7 @@ def rewrite_metadata(bundle_name, blob_obj):
     what_to_open = os.path.sep.join((cartridge_folder, 'metadat.json'))
     print(f'REWRITING file {what_to_open}...')
     with open(what_to_open, 'w') as fptr:
-        fptr.write(json.dumps(blob_obj))
+        json.dump(blob_obj, fptr, indent=2)
 
 
 def do_bundle_renaming(source, dest):
