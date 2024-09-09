@@ -215,10 +215,14 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                 y = prefix_asset_folder
                 if webhack:
                     y = webhack+prefix_asset_folder
-
-                #print("argzz", kk[0], y)
+                adhocv = None
+                if webhack:
+                    if prefix_asset_folder == './':
+                        adhocv=''
+                    else:
+                        adhocv = prefix_asset_folder
                 vars.spritesheets[kk[0]] = gfx.JsonBasedSprSheet(
-                    kk[0], pathinfo=y, is_webhack=(webhack is not None)
+                    kk[0], pathinfo=y, is_webhack=adhocv
                 )
 
             elif kk[1] == 'ncsv':
@@ -255,7 +259,10 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                 )
 
             else:  # necessarily an image
-                filepath = prefix_asset_folder + asset_desc
+                if prefix_asset_folder == './':
+                    filepath = asset_desc
+                else:
+                    filepath = prefix_asset_folder + asset_desc
                 print('fetching image:', kk[0], filepath)
                 vars.images[kk[0]] = _hub.pygame.image.load(filepath)
 
