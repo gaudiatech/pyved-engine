@@ -1,7 +1,6 @@
-from . import pimodules
+from .glvars import pyv
 
 
-pyv = pimodules.pyved_engine
 pyv.bootstrap_e()
 pyg = pyv.pygame
 screen = None
@@ -28,7 +27,8 @@ def upd(time_info=None):
 
     screen.fill('paleturquoise3')
     if len(kpressed):
-        pyv.draw_rect(screen, 'orange', r4)
+        # pyv.draw_rect(screen, 'orange', r4)
+        screen.blit(pyv.vars.images['lion'], (r4[0],r4[1]))
     pyv.flip()
 
 
