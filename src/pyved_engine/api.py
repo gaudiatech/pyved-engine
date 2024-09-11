@@ -20,7 +20,12 @@ from .custom_struct import enum, enum_from_n
 import time
 from .core import events
 from .core.events import game_events_enum
+from . import state_management
 from .state_management import declare_game_states
+
+
+def get_gs_obj(k):
+    return state_management.stack_based_ctrl.get_state_by_code(k)
 
 
 # const. for init
@@ -30,7 +35,6 @@ HIGH_RES_MODE, LOW_RES_MODE, RETRO_MODE = 1, 2, 3
 _engine_rdy = False
 _upscaling_var = None
 _scr_init_flag = False
-
 
 # -----------------------
 # all imports HERE hav been written only to help us, with the implem of API
@@ -169,7 +173,8 @@ def declare_end(gfunc):  # decorator!
 
 
 def run_game():
-    if __import__('sys').platform in ('emscripten','wasi'):
+    # special case for pygbag or something similar:
+    if __import__('sys').platform in ('emscripten', 'wasi'):
         import asyncio
         async def async_run_game():
             vars.beginfunc_ref(None)
@@ -178,15 +183,17 @@ def run_game():
                 flip()  # commit gfx mem to screen, already contains the .tick
                 await asyncio.sleep(0)
             vars.endfunc_ref(None)
+        asyncio.run(async_run_game())
+        return
 
-        asyncio.run( async_run_game() )
-    else:
-        vars.beginfunc_ref(None)
-        while not vars.gameover:
-            vars.updatefunc_ref(time.time())
-            flip()  # commit gfx mem to screen, already contains the .tick
-        vars.endfunc_ref(None)
-      
+    vars.beginfunc_ref(None)
+    while not vars.gameover:
+        # it is assumed that the developer calls pyv.flip,
+        # once per frame,
+        # without the engine having to take care of that
+        vars.updatefunc_ref(time.time())
+    vars.endfunc_ref(None)
+
 
 # --- rest of functions ---
 def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, webhack=None):
@@ -199,9 +206,9 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
     """
     from io import StringIO
 
-    print('*'*50)
+    print('*' * 50)
     print(' CALL to preload assets')
-    print('*'*50)
+    print('*' * 50)
     print()
     for asset_desc in adhoc_dict['asset_list']:
 
@@ -214,11 +221,11 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
 
                 y = prefix_asset_folder
                 if webhack:
-                    y = webhack+prefix_asset_folder
+                    y = webhack + prefix_asset_folder
                 adhocv = None
                 if webhack:
                     if prefix_asset_folder == './':
-                        adhocv=''
+                        adhocv = ''
                     else:
                         adhocv = prefix_asset_folder
                 vars.spritesheets[kk[0]] = gfx.JsonBasedSprSheet(
@@ -227,7 +234,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
 
             elif kk[1] == 'ncsv':
                 # filepath = prefix_asset_folder + asset_desc if prefix_asset_folder else asset_desc
-                csv_filename = kk[0]+'.'+'ncsv'
+                csv_filename = kk[0] + '.' + 'ncsv'
                 if webhack:
                     y = webhack + csv_filename
                 else:
@@ -270,7 +277,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
         k = snd_elt.split('.')[0]
         filepath = prefix_sound_folder + snd_elt
         if webhack is not None:
-            filepath = webhack+filepath
+            filepath = webhack + filepath
         print('fetching the sound:', k, filepath)
         vars.sounds[k] = _hub.pygame.mixer.Sound(filepath)
 
@@ -413,6 +420,7 @@ def surface_create(size):
 def surface_rotate(img, angle):
     return _hub.pygame.transform.rotate(img, _degrees(-1 * angle))
 
+
 # -------
 #  september 23 version. It did break upscalin in web ctx
 # def flip():
@@ -430,6 +438,8 @@ def surface_rotate(img, angle):
 #  restoring an older version of .flip() + proj_to_vscreen
 from .compo.vscreen import flip as _oflip
 from .compo.vscreen import proj_to_vscreen
+
+
 def flip():
     _oflip()
     if vars.max_fps:
