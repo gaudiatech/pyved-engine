@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://www.gaudia-tech.com/mirror/pyv-logo.jpg" alt="pyv logo" />
+  <img src="https://kata.games/pyv-logo.jpg" alt="pyv logo" />
 </p>
 
 
