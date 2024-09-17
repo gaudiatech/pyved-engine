@@ -8,7 +8,6 @@ JSON_PREC_GAMEZERO = """\
 {
 "vmlib_ver":"void",
 "dependencies":{
-"pyved_engine": ["24_9a1","pyv"]
 },
 "description":"this is a placeholder so you can describe your game",
 "author":"placeholder_author",
@@ -34,7 +33,6 @@ JSON_PREC_PLATFORMER = """\
 {
 "vmlib_ver":"void",
 "dependencies":{
-"pyved_engine": ["24_9a1","pyv"]
 },
 "description": "this is an example of platformer",
 "author": "KataGames_Team",
@@ -62,7 +60,6 @@ JSON_PREC_CHESS ="""\
 {
 "vmlib_ver":"void",
 "dependencies":{
-"pyved_engine": ["24_9a1","pyv"]
 },
 "description": "this is a placeholder so you can describe your game",
 "author": "moonbak et al.",
@@ -105,30 +102,38 @@ JSON_PREC_ROGUE = """
 {
 "vmlib_ver":"void",
 "dependencies":{
-"pyved_engine": ["24_9a1","pyv"]
 },
-"description": "a basic demo for a roguelike game",
-"author": "moonbak",
-"asset_base_folder":".",
-"sound_base_folder":".",
-"asset_list": [
+  "description": "a basic demo for a roguelike game",
+  "author": "thomas",
+  "asset_base_folder": ".",
+  "sound_base_folder": ".",
+  "asset_list": [
     "smallninja_sprites.json",
     "tileset.png",
     "monster.png",
     "avatar1.png"
-],
-"sound_list": [],
-"slug": "roguelikeDemo",
-"title": "Roguelike Template",
-"build_date": "Tue Apr  2 15:40:11 2024",
-"thumbnail512x384": "thumb_2.png",
-"thumbnail512x512": "thumb_1.png",
-"ktg_services": false,
-"instructions": "no instructions provided",
-"uses_challenge": false,
-"has_game_server": false,
-"ncr_faucet": false,
-"game_genre": ["Roguelike"]
+  ],
+  "sound_list": [],
+  "slug": "JeuEvolue",
+  "title": "Roguelike Template",
+  "build_date": "Tue Sep 17 09:06:21 2024",
+  "thumbnail512x384": "thumb_2.png",
+  "thumbnail512x512": "thumb_1.png",
+  "ktg_services": false,
+  "instructions": "no instructions provided",
+  "uses_challenge": false,
+  "has_game_server": false,
+  "ncr_faucet": false,
+  "game_genre": [
+    "Roguelike"
+  ],
+  "game_title": "JeuEvolue",
+  "source_files": [
+    "gamedef.py",
+    "glvars.py",
+    "mvc_parts.py",
+    "__init__.py"
+  ]
 }
 """
 
