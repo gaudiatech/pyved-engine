@@ -28,7 +28,7 @@ from .compo import vscreen
 # TODO remove this when we can
 # ive kept it for retro-compatibility with projects that target pyv v23.6a1
 # such as demos/ecs_naif or the very early stage pyved ships-with-GUI editor
-# from ._ecs_pattern import entity, component, System, SystemManager, EntityManager
+from ._ecs_pattern import entity, component, System, SystemManager, EntityManager
 
 # useful ALIAS! (webctx)
 defs = vars

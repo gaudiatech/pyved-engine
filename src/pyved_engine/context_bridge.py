@@ -7,38 +7,44 @@ from .highlevel_functions import my_enum
 from .api import curr_state, draw_polygon, draw_line, declare_game_states, enum, enum_from_n, game_events_enum,\
     get_ev_manager, get_surface, get_pressed_keys, close_game, bootstrap_e, declare_begin, declare_update, declare_end,\
     preload_assets, run_game, init, draw_rect, draw_circle, flip, get_gs_obj
-# from ._ecs import all_entities, find_by_components, find_by_archetype, archetype_of, define_archetype, init_entity,\
-#    new_from_archetype, bulk_add_systems, systems_proc, delete_entity
+from ._ecs import all_entities, find_by_components, find_by_archetype, archetype_of, define_archetype, init_entity,\
+    new_from_archetype, bulk_add_systems, systems_proc, delete_entity
 
 
 # - define the full engine API for end users!
 __all__ = [
     # - API of the Legacy ECS implementation
-    # this has been superseded by the usage of "esper" as a game bundle dependency
+
+    # this may be superseded soon by the usage of "esper" as a game bundle dependency
     # for modern projects
+    # But we keep this info as long as required so old game demos(roguelike, Breakout, etc)
+    # need to be functional
 
-    # We keep this info as long as required so old game demos(roguelike, Breakout, etc)
-    # can be rewritten using "esper"
-
-    # 'all_entities',
-    # 'archetype_of',
-    # 'bulk_add_systems',
-    # 'define_archetype',
-    # 'delete_entity',
-    # 'find_by_archetype',
-    # 'find_by_components',
-    # 'init_entity',
-    # 'new_from_archetype',
-    # 'systems_proc'
+    # legacy part of the api
+    'all_entities',
+    'archetype_of',
+    'bulk_add_systems',
+    'define_archetype',
+    'delete_entity',
+    'find_by_archetype',
+    'find_by_components',
+    'init_entity',
+    'new_from_archetype',
+    'systems_proc',
+    
+    # other
     'get_gs_obj',
 
     'bootstrap_e',
+    'bulk_add_systems',
     'close_game',
     'curr_state',
     'declare_begin',
     'declare_end',
     'declare_game_states',
     'declare_update',
+    'define_archetype',
+    'delete_entity',
     'draw_circle',
     'draw_line',
     'draw_polygon',
@@ -47,16 +53,21 @@ __all__ = [
     'engine_init',
     'enum',
     'enum_from_n',
+    'find_by_archetype',
+    'find_by_components',
     'flip',
     'game_events_enum',
     'get_ev_manager',
     'get_pressed_keys',
     'get_surface',
     'init',
+    'init_entity',
     'machin',
     'my_enum',
+    'new_from_archetype',
     'preload_assets',
     'run_game',
+    'systems_proc'
 ]
 
 
