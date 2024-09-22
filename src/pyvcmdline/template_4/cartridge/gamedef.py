@@ -1,9 +1,8 @@
-from . import pimodules
 from .mvc_parts import NinjamazeMod, NinjamazeView, NinjamazeCtrl, SpecificEvTypes
 from . import glvars
+from .glvars import pyv
 
 
-pyv = pimodules.pyved_engine
 EngineEvTypes = pyv.EngineEvTypes
 
 

@@ -324,7 +324,7 @@ def bump_subcommand(bundle_name):
     """
     print('bump bundle to current version that is', __version__)
     my_metadat = read_metadata(bundle_name)
-    my_metadat['vmlib_ver'] = __version__.replace('.', '_')
+    my_metadat['dependencies']['pyved_engine'] = [__version__.replace('.', '_'), 'pyv']  # alias = pyv
     rewrite_metadata(bundle_name, my_metadat)
 
 
@@ -444,11 +444,18 @@ def init_command(game_identifier) -> None:
     # here, we modify the metadata based on what game genres the user wish to set
     procedure_select_game_genre(metadata)
 
+    # ensure to have registered the latest pyved_engine version +use the default alias:
+    metadata['dependencies']['pyved_engine'] = [
+        __version__.replace('.', '_'), 'pyv'
+    ]  # defaut alias for the engine is "pyv"
+
     # Get the absolute path of the current script
     script_directory = os.path.dirname(os.path.abspath(__file__))
     template_blueprint_folder = os.path.join(script_directory, f'template_{template_id}')
     target_folder = os.path.join(os.getcwd(), x)
     recursive_copy(template_blueprint_folder, target_folder)
+    # once we've copied all source files, it is the norm to list all files and update the metadat.json
+    save_list_of_py_files(os.path.join(x, 'cartridge'), metadata)
 
     copy_launcher_script(x)
     create_folder_and_serialize_dict(target_folder, data_dict=metadata)
@@ -460,18 +467,6 @@ def init_command(game_identifier) -> None:
 
     print(f'--->Succesfully created! Now you can type `pyv-cli play {x}`')
     print('Go ahead and have fun ;)')
-
-
-# import os
-# import urllib2
-#
-#
-# class EnhancedFile(file):
-#     def __init__(self, *args, **keyws):
-#         file.__init__(self, *args, **keyws)
-#
-#     def __len__(self):
-#         return int(os.fstat(self.fileno())[6])
 
 
 def trigger_publish(slug):
@@ -488,28 +483,28 @@ def trigger_publish(slug):
     """
     raise NotImplementedError  # deprecated function
 
-    dummy_json_str = """
-{
-"game_title": "This is the game title",
-"slug": "flappy",
-"description": "This is a test game",
-"instructions": "Click any object to move",
-"width": 960,
-"height": 720,
-"thumb_1": "https://img.gamemonetize.com/ulol31p2l8xogmlxh1yqfa64dxzkyrix/512x384.jpg",
-"thumb_2": "https://img.gamemonetize.com/ulol31p2l8xogmlxh1yqfa64dxzkyrix/512x384.jpg",
-"category": "Puzzle,Arcade,Action",
-"source": "API",
-}
-"""
-    jsondata = json.loads(dummy_json_str)
-    jsondata['slug'] = x = slug
-    reply = requests.post(
-        url='https://kata.games/api/uploads.php',
-        data=json.dumps(jsondata)
-    )
-    print(f'trigger_publish CALLED (arg:x=={x})--- result is...')
-    print(reply.text)
+    # dummy_json_str = """\
+    # {
+    # "game_title": "This is the game title",
+    # "slug": "flappy",
+    # "description": "This is a test game",
+    # "instructions": "Click any object to move",
+    # "width": 960,
+    # "height": 720,
+    # "thumb_1": "https://img.gamemonetize.com/ulol31p2l8xogmlxh1yqfa64dxzkyrix/512x384.jpg",
+    # "thumb_2": "https://img.gamemonetize.com/ulol31p2l8xogmlxh1yqfa64dxzkyrix/512x384.jpg",
+    # "category": "Puzzle,Arcade,Action",
+    # "source": "API",
+    # }
+    # """
+    # jsondata = json.loads(dummy_json_str)
+    # jsondata['slug'] = x = slug
+    # reply = requests.post(
+    #     url='https://kata.games/api/uploads.php',
+    #     data=json.dumps(jsondata)
+    # )
+    # print(f'trigger_publish CALLED (arg:x=={x})--- result is...')
+    # print(reply.text)
 
 
 # TODO will be useful for implementing a future "repair" bundle subcommand
@@ -626,14 +621,16 @@ def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
         'uploadedFile': (
             zip_file_path,
             open(zip_file_path, 'rb'),
-            'application/zip',
-            {'Expires': '0'}
+            'application/zip'
+            #{'Expires': '0'}
         )
     }
     api_endpoint = pyvcli_config.get_upload_url(debugmode)
+    print('before requests.post')
     reply = requests.post(
         url=api_endpoint,
         files=files,
+        timeout=8,  # 8 sec is the max
         data={'pyv-cli-flag': True, 'chosen-slug': gslug, 'uploadBtn': 'Upload'}
     )
     try:
@@ -692,6 +689,7 @@ def share_subcommand(bundle_name, dev_flag_on):
     slug = metadat['slug']
     if dev_flag_on:  # in devmode, all tests on metadata are skipped
         zipfile_path = pack_game_cartridge(slug)
+        print(f'file:{zipfile_path} packed, uploading it now...')
         upload_my_zip_file(zipfile_path, slug, True)
         return
 

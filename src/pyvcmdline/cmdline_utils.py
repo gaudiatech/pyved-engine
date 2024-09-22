@@ -8,29 +8,30 @@ from . import pyvcli_config
 
 
 EXP_METADAT_KEYS = (
-        'asset_base_folder',
-        'asset_list',
-        'sound_base_folder',
-        'sound_list',
+    'dependencies',
+    'asset_base_folder',
+    'asset_list',
+    'sound_base_folder',
+    'sound_list',
 
-        'vmlib_ver',
-        'author',
-        'build_date',
-        'dependencies',
-        'description',
-        'title',
-        'instructions',
-        'slug',
-        'thumbnail512x384',
-        'thumbnail512x512',
-        'ktg_services',
-        'source_files',
+    'vmlib_ver',
+    'author',
+    'build_date',
+    'dependencies',
+    'description',
+    'title',
+    'instructions',
+    'slug',
+    'thumbnail512x384',
+    'thumbnail512x512',
+    'ktg_services',
+    'source_files',
 
-        'uses_challenge',
-        'has_game_server',
-        'ncr_faucet',
-        'game_genre'
-    )
+    'uses_challenge',
+    'has_game_server',
+    'ncr_faucet',
+    'game_genre'
+)
 
 template_pyconnector_config_file ="""
 {
@@ -58,6 +59,9 @@ def verify_metadata(mdat_obj) -> str:
     for k in EXP_METADAT_KEYS:
         if k not in mdat_obj:
             return 'Missing key= {}'.format(k)
+    # need to test that pyved_engine is in dependencies...
+    if "pyved_engine" not in mdat_obj['dependencies']:
+        return 'Invalid list detected: "pyved_engine" not listed in the list of dependencies'
 
     # we also need to test whether Y or N, categories specified are still recognized within the CMS!
     if (not isinstance(mdat_obj['game_genre'], list)) or (len(mdat_obj['game_genre']) == 0):
@@ -66,7 +70,7 @@ def verify_metadata(mdat_obj) -> str:
     for elt in mdat_obj['game_genre']:
         if elt not in ok_game_genres:
             return f'Game genre "{elt}" rejected by the Kata.Games system, please contact an Admin, or replace value'
-    print('--Metadata is valid--')
+    print('Metadata->OK')
 
 
 def read_metadata(bundle_name):

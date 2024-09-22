@@ -20,6 +20,9 @@ class StateStackCtrl(events.EvListener):
         self._st_container.setup(all_gs, stmapping, None)
         self.__state_stack = Stack()
 
+    def get_state_by_code(self, k):
+        return self._st_container.retrieve(k)
+
     def state_code_to_str(self, x):
         return self._gs_omega.inv_map[x]
 
@@ -86,6 +89,7 @@ def declare_game_states(gs_enum, assoc_gscode_gscls):
     :param refgame: ref on the object whose type inherits from pyv.GameTpl
     """
     global stack_based_ctrl, multistate_flag
+
     multistate_flag = True
     stack_based_ctrl = StateStackCtrl(gs_enum, assoc_gscode_gscls)
     # activation Autho!

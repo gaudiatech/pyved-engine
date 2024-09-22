@@ -23,5 +23,3 @@ def register_lib(alias, libname, value):  # handy for dependency injection
 # ------
 # custom code the gamedev added
 # --------
-
-avatar_sprite_sheet = None

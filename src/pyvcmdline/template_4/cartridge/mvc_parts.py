@@ -2,11 +2,11 @@
 this file contains 3 basic mvc COMPOnents
 that can implement a rogue-like
 """
-from . import pimodules
 from . import glvars
-pyv = pimodules.pyved_engine
-pyv.bootstrap_e()
+from .glvars import pyv
 
+
+pyv.bootstrap_e()
 
 pygame = pyv.pygame
 EngineEvTypes = pyv.EngineEvTypes
