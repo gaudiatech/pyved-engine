@@ -1,8 +1,7 @@
-from . import shared
-from . import pimodules
+from . import glvars
+from .glvars import pyv
 
 
-pyv = pimodules.pyved_engine
 pyv.bootstrap_e()
 
 __all__ = [
@@ -43,17 +42,17 @@ def steering_sys(entities, components):
         ctrl['down'] = activekeys[pg.K_DOWN]
 
         if ctrl['right']:
-            ent['speed'][0] = shared.AV_SPEED
+            ent['speed'][0] = glvars.AV_SPEED
 
         if ctrl['left']:
-            ent['speed'][0] = -shared.AV_SPEED
+            ent['speed'][0] = -glvars.AV_SPEED
 
         if not (ctrl['left'] or ctrl['right']):
             ent['speed'][0] = 0.0
 
         if ent['lower_block']:
             if not prevup_key_value and ctrl['up']:
-                ent['accel_y'] -= shared.JUMP_POWER
+                ent['accel_y'] -= glvars.JUMP_POWER
                 ent['lower_block'] = None
 
 
@@ -68,7 +67,7 @@ def automob_sys(entities, components):
 
         if mblo['speed'][k] == 0.0:
             # init the movement
-            mblo['speed'][k] = -shared.BLOCK_SPEED
+            mblo['speed'][k] = -glvars.BLOCK_SPEED
             continue
 
         adhoc_coord = rrect.x if mblo['horz_flag'] else rrect.y
@@ -93,28 +92,34 @@ def cameratracking_sys(entities, components):
 
 
 def physics_sys(entities, components):
-    if shared.t_last_update is None:
+    if glvars.t_last_update is None:
         dt = 0.0
     else:
-        dt = shared.t_now - shared.t_last_update
-    shared.t_last_update = shared.t_now
+        dt = glvars.t_now - glvars.t_last_update
+    glvars.t_last_update = glvars.t_now
 
     player = pyv.find_by_archetype('player')[0]
 
     # move all mobile blocks
     mob_blocks = pyv.find_by_archetype('mob_block')
+
     for mblock in mob_blocks:
         vx, vy = mblock['speed']
         px, py = mblock['body'].topleft
 
         mblock['body'].left = px + vx * dt
         mblock['body'].top = py + vy * dt
+        
+        if player['lower_block'] == mblock:
+            # lock feet on the movin platform
+            player['speed'][1] = 0.0
+            player['body'].bottom = mblock['body'].top
 
     # player-related
     player['speed'][1] += player['accel_y']
-    if abs(player['speed'][1]) > shared.SPEED_CAP:
+    if abs(player['speed'][1]) > glvars.SPEED_CAP:
         sign = -1 if player['speed'][1] < 0 else 1
-        player['speed'][1] = sign * shared.SPEED_CAP
+        player['speed'][1] = sign * glvars.SPEED_CAP
 
     org_x, org_y = player['body'].topleft
     vx, vy = player['speed']
@@ -167,7 +172,7 @@ def rendering_sys(entities, components):
     """
     displays everything that can be rendered
     """
-    scr = shared.screen
+    scr = glvars.screen
 
     scr.fill((0, 27, 0))
 
@@ -195,7 +200,7 @@ def rendering_sys(entities, components):
         disp(scr, b, 'orange')
 
     # draw world edges (need to show where its forbidden to go!)
-    a, b = shared.world.limits
+    a, b = glvars.world.limits
     binf_x, binf_y = -a, -b
     bsup_x, bsup_y = a, b
     binf_x -= cam.viewport.x
@@ -217,17 +222,17 @@ def _proc_unload_load():
     player = pyv.find_by_archetype('player')[0]
     camref = player['camera']
     pyv.wipe_entities()
-    shared.world.load_map(player['next_map'])
-    shared.world.create_avatar(camref)
+    glvars.world.load_map(player['next_map'])
+    glvars.world.create_avatar(camref)
 
 
 def teleport_sys(entities, components):
     player = pyv.find_by_archetype('player')[0]
-    bsup_x, bsup_y = shared.world.limits
+    bsup_x, bsup_y = glvars.world.limits
     binf_x = -1.0*bsup_x
     binf_y = -1.0*bsup_y
     x, y = player['body'].topleft
     if y <= binf_y or y > bsup_y or x < binf_x or x > bsup_x:
-        player['body'].topleft = shared.SPAWN[0], shared.SPAWN[1]
+        player['body'].topleft = glvars.SPAWN[0], glvars.SPAWN[1]
         # reset player speed when he respawns...
         player['speed'][0], player['speed'][1] = [0.0, 0.0]

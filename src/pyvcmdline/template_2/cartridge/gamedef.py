@@ -1,13 +1,12 @@
 import os
 
-from . import pimodules
-from . import shared
+from . import glvars
+from .glvars import pyv
 from . import systems
 from .World import World
 from .classes import Camera
 
 
-pyv = pimodules.pyved_engine
 pyv.bootstrap_e()
 pygame = pyv.pygame
 ts_prev_frame = None
@@ -17,7 +16,7 @@ ts_prev_frame = None
 def troid_init(vms=None):
     pyv.init()
     screen = pyv.get_surface()
-    shared.screen = screen
+    glvars.screen = screen
     pyv.define_archetype('player', (
         'speed', 'accel_y', 'gravity', 'lower_block', 'body', 'camera', 'controls'
     ))
@@ -26,7 +25,7 @@ def troid_init(vms=None):
 
     world = World(2128.0, 1255.0)
     world.load_map('my_map')
-    shared.world = world
+    glvars.world = world
     world.add_game_obj(
         {'key': 'origin'}
     )
@@ -38,7 +37,7 @@ def troid_init(vms=None):
 
 @pyv.declare_update
 def troid_update(timeinfo):
-    shared.t_now=timeinfo
+    glvars.t_now=timeinfo
     pyv.systems_proc(pyv.all_entities(), None)
     pyv.flip()
 

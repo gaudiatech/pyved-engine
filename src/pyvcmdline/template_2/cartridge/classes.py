@@ -1,9 +1,9 @@
 import csv
 from io import StringIO
-from . import pimodules
-from . import shared
+from . import glvars
+from .glvars import pyv
 
-pyv = pimodules.pyved_engine
+
 pygame = pyv.pygame
 
 
@@ -12,9 +12,9 @@ class Camera:
 
     def __init__(self, position, world_ref):
         x, y = position
-        self.viewport = pygame.Rect(x, y, shared.WIDTH, shared.HEIGHT)
-        self.width = shared.WIDTH
-        self.height = shared.HEIGHT
+        self.viewport = pygame.Rect(x, y, glvars.WIDTH, glvars.HEIGHT)
+        self.width = glvars.WIDTH
+        self.height = glvars.HEIGHT
         self.world = world_ref
 
         for obj in self.world.objects:
@@ -77,8 +77,8 @@ class Terrain:
         self.game_over = False
 
         self.collidable_tiles = {'x', 'y'}
-        self.screen_center_x = shared.WIDTH // 2
-        self.screen_center_y = shared.HEIGHT // 2
+        self.screen_center_x = glvars.WIDTH // 2
+        self.screen_center_y = glvars.HEIGHT // 2
 
 
 # class Player:

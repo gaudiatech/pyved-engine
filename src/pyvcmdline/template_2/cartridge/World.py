@@ -1,8 +1,8 @@
-from . import pimodules
-from . import shared
+from . import glvars
+from .glvars import pyv
 from .classes import Terrain
 
-pyv = pimodules.pyved_engine
+
 pygame = pyv.pygame
 
 
@@ -30,8 +30,8 @@ class World:
         return self._game_objects
 
     def load_map(self, mapname):
-        shared.terrain = Terrain(pyv.vars.csvdata[mapname])
-        self.add_terrain_blocks(shared.terrain, terrain_origin=[-1324.0, -100.0])
+        glvars.terrain = Terrain(pyv.vars.csvdata[mapname])
+        self.add_terrain_blocks(glvars.terrain, terrain_origin=[-1324.0, -100.0])
 
     def create_avatar(self, cam_ref):
         player = pyv.new_from_archetype('player')
@@ -40,7 +40,7 @@ class World:
             'accel_y': 0.0,
             'gravity': 14.5,
             'lower_block': None,
-            'body': pygame.rect.Rect(shared.SPAWN[0], shared.SPAWN[1], shared.AVATAR_SIZE, shared.AVATAR_SIZE),
+            'body': pygame.rect.Rect(glvars.SPAWN[0], glvars.SPAWN[1], glvars.AVATAR_SIZE, glvars.AVATAR_SIZE),
             'camera': cam_ref,
             'controls': {'up': False, 'down': False, 'left': False, 'right': False}
             })
@@ -60,9 +60,9 @@ class World:
 
         for bcoords, btype in block_coords_to_btype.items():
             bcx, bcy = bcoords
-            bcx *= shared.BLOCKSIZE
-            bcy *= shared.BLOCKSIZE
-            rrect = pygame.rect.Rect(basex + bcx, basey + bcy, shared.BLOCKSIZE, shared.BLOCKSIZE)
+            bcx *= glvars.BLOCKSIZE
+            bcy *= glvars.BLOCKSIZE
+            rrect = pygame.rect.Rect(basex + bcx, basey + bcy, glvars.BLOCKSIZE, glvars.BLOCKSIZE)
             self.add_game_obj(
                 {'key': 'block', 'rect': rrect}
             )
@@ -79,7 +79,7 @@ class World:
                     pyv.new_from_archetype('mob_block'), {
                         'body': rrect,
                         'speed': [0.0, 0.0],
-                        'bounds': [tmp - shared.BLOCKSIZE*4, tmp],
+                        'bounds': [tmp - glvars.BLOCKSIZE*4, tmp],
                         'horz_flag': btype == 2,
                     }
                 )
