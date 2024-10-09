@@ -154,6 +154,14 @@ def draw_circle(surface, color_arg, position2d, radius, width=0):
     _hub.pygame.draw.circle(surface, color_arg, position2d, radius, width)
 
 
+def new_font_obj(font_src, font_size: int):  # src can be None!
+    return _hub.pygame.font.Font(font_src, font_size)
+
+
+def new_rect_obj(*args):  # probably: x, y, w, h
+    return _hub.pygame.Rect(*args)
+
+
 # --------------
 #  3 decorators + the game_exec func to make gameloops standardized
 # --------------

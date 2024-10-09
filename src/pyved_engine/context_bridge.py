@@ -6,7 +6,7 @@ import importlib as _importlib
 from .highlevel_functions import my_enum
 from .api import curr_state, draw_polygon, draw_line, declare_game_states, enum, enum_from_n, game_events_enum,\
     get_ev_manager, get_surface, get_pressed_keys, close_game, bootstrap_e, declare_begin, declare_update, declare_end,\
-    preload_assets, run_game, init, draw_rect, draw_circle, flip, get_gs_obj
+    preload_assets, run_game, init, draw_rect, draw_circle, flip, get_gs_obj, new_font_obj, new_rect_obj
 from ._ecs import all_entities, find_by_components, find_by_archetype, archetype_of, define_archetype, init_entity,\
     new_from_archetype, bulk_add_systems, systems_proc, delete_entity, wipe_entities
 
@@ -50,6 +50,10 @@ __all__ = [
     'draw_line',
     'draw_polygon',
     'draw_rect',
+
+    'new_font_obj',
+    'new_rect_obj',
+
     'engine_activation',
     'engine_init',
     'enum',

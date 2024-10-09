@@ -10,7 +10,7 @@ Instead use functions like pyv.preload_assets(...) or init(max_fps=..., ...) etc
 
 # below is a read-only value,
 # to retrieve this value from outside you can call pyv.get_version()
-ENGINE_VERSION_STR = '24.9a2'
+ENGINE_VERSION_STR = '24.9a3'
 
 # deprecated but mandatory for web ctx
 STD_SCR_SIZE = [960, 720]
