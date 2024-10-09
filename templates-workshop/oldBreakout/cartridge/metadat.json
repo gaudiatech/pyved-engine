@@ -1,0 +1,13 @@
+{
+    "vmlib_ver": "23_9a2",
+    "dependencies": {
+        "pyved_engine": "???"
+    },
+    "description": "this is a placeholder so you can describe your game",
+    "author": "Unknown",
+    "assets": [],
+    "sounds": [],
+    "cartridge": "oldBreakout",
+    "game_title": "oldBreakout",
+    "build_date": "Wed Sep 20 16:23:23 2023"
+}

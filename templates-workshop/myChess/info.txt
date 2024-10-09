@@ -1,0 +1,1 @@
+a rather clumsy attempt as modifying the implementation of the game of chess
