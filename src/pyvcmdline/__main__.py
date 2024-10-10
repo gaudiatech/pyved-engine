@@ -552,40 +552,50 @@ def ensure_correct_slug(givenslug):
 
 
 def test_subcommand(bundle_name):
-    print(f"...Now testing the game bundle title: {bundle_name}")
+    print(f"Folder targetted to inspect game bundle: {bundle_name}")
     metadat = read_metadata(bundle_name)
     err_message = verify_metadata(metadat)
+    if err_message is not None:
+        raise ValueError(f'The metadata file has an invalid format! ({err_message})')
 
-    if err_message is None:
-        # ensure that thumbnails & assets described do exist:
-        print('ensuring if assets exist')
-        files_exp_li = [  # all expected files need to be known
-            metadat['thumbnail512x384'],
-            metadat['thumbnail512x512']
-        ]
-        for asset_name in metadat['asset_list']:
-            files_exp_li.append(metadat['asset_base_folder']+'/'+asset_name)
+    # ensure that thumbnails & all assets listed in metadat.json
+    # actually exist!
+    print('___Testing___ asset existence...')
+    files_exp_li = [
+        metadat['thumbnail512x384'],
+        metadat['thumbnail512x512']
+    ]
+    for asset_name in metadat['asset_list']:
+        files_exp_li.append(metadat['asset_base_folder']+'/'+asset_name)
+    for elt in files_exp_li:
+        if not test_isfile_in_cartridge(elt, bundle_name):
+            raise FileNotFoundError('Thumbnail/Asset not found:', elt)
+    print('-->Test Passed', end='\n\n')
 
-        for elt in files_exp_li:
-            print('____testing file:', elt)
-            if not test_isfile_in_cartridge(elt, bundle_name):
-                raise FileNotFoundError('cannot find asset:', elt)
-        print('assets --->OK')
-        print()
+    # ensure folder name is ok
+    print('___Testing___ folder naming cohesion test...')
+    if bundle_name != metadat['slug']:
+        y = metadat['slug']
+        raise ValueError(f'Either the folder should be named: {y} or the chosen slug is invalid')
+    else:
+        print('-->Test Passed', end='\n\n')
 
-        print('COHESION test:', bundle_name == metadat['slug'])
-        print()
+    # ensure source files listed actually exist
+    print('___Testing___ source files existence...')
+    to_test = metadat['source_files']
+    for elt in to_test:
+        if not test_isfile_in_cartridge(elt, bundle_name):
+            raise FileNotFoundError('Source file not found:', elt)
+    print('-->Test Passed', end='\n\n')
 
-        print('~ Serv-side Slug Availability? ~')
-        obj = _query_slug_availability(metadat['slug'])
-        if not obj['success']:
-            raise ValueError('cannot read info from server!')
-        print(' ->', 'yes' if obj['available'] else 'no')
-        if not obj['available']:
-            print('suggestions:')
-            pprint(obj['suggestions'])
-    else:  # metadat is not valid
-        raise ValueError('Invalid metadata file! ' + err_message)
+    print('~ Serv-side Slug Availability? ~')
+    obj = _query_slug_availability(metadat['slug'])
+    if not obj['success']:
+        raise ValueError('cannot read info from server!')
+    print(' ->', 'yes' if obj['available'] else 'no')
+    if not obj['available']:
+        print('suggestions:')
+        pprint(obj['suggestions'])
 
 
 def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
