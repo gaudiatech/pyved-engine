@@ -194,7 +194,7 @@ The __pyv__ engine comes packed with a ton of features:
 8. helper classes for coding card games (Poker, Blackjack, *etc.*)
 9. helper classes for adding artificial opponents/intelligent entities (NPCs) to your game
 
-... It is only the beginning.  More features will be added soon.
+More features will be added in the future.
 
 Also, it can be interesting to notice that the game engine __pyv__
 is linked to an ecosystem of components,
@@ -209,19 +209,61 @@ This platform should the first one that will share games created using __pyv__.
 
 ## 5. Modifying a game bundle
 
+Example of metadata:
+```
+{
+    "vmlib_ver": "24_9a3",
+    "dependencies": {
+        "pyved_engine": [
+            "24_9a3",
+            "pyv"
+        ]
+		},
+    "description": "experimental game",
+    "author": "Thomas",
+    "asset_list": [
+    ],
+    "asset_base_folder": "my_folder",
+    "sound_base_folder": ".",
+    "sound_list": [],
+    "slug": "SuperProj",
+    "title": "Untitled Game",
+    "thumbnail512x384": "thumb_2.png",
+    "thumbnail512x512": "thumb_1.png",
+    "ktg_services": false,
+    "instructions": "not provided",
+    "uses_challenge": false,
+    "has_game_server": false,
+    "ncr_faucet": false,
+    "game_genre": [
+        "Experimental",
+        "Arcade"
+    ],
+    "game_title": "SuperProj",
+    "build_date": "Tue Oct 22 20:11:29 2024",
+    "source_files": [
+        "gamedef.py",
+        "shared.py",
+        "systems.py",
+        "world.py",
+        "__init__.py"
+    ]
+}
+```
 ...TODO...
 
-That part is written yet, but we invite you to refer to our
-[work-in-progress documentation](https://gaudiatech.github.io/pyved-engine/).
+That part needs some more work.
+You can refer to our
+[work-in-progress documentation](https://pyved-solution.github.io/pyved-engine/).
 
 Many game engine features are well described there.
 
 
 #### To go further
 
-[Platformer tutorial](https://gaudiatech.github.io/pyved-engine/GameTutorials/Platformer/)
+[Platformer tutorial](https://pyved-solution.github.io/pyved-engine/GameTutorials/Platformer/)
 
-[The official documentation](https://gaudiatech.github.io/pyved-engine/) (W-i-p)
+[The official documentation](https://pyved-solution.github.io/pyved-engine/) (W-i-p)
 
 [A linktree, to explore related sites](https://linktr.ee/katagames)
 
@@ -235,7 +277,7 @@ contribute to the development of the engine, rather than
 installing the tool through the regular method, you should:
 
 - clone the current repository via a:
-`git clone https://github.com/gaudiatech/pyved-engine.git` command ;<br><br>
+`git clone https://github.com/pyved-solution/pyved-engine.git` command ;<br><br>
 - use the command line to navigate to the newly created folder on your hard drive,
 then install the lib but using the `pip` special mode "editable mode":
 `pip install -e .`<br><br>
