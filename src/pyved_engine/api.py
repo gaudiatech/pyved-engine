@@ -361,18 +361,18 @@ def _screen_param(gfx_mode_code, paintev=None, screen_dim=None):
         _scr_init_flag = True
 
 
-def init(maxfps=None, wcaption=None, mode=None):
+def init(mode, maxfps=None, wcaption=None, forced_size=None):
     global _engine_rdy, _upscaling_var
+    
     if mode is None:
         mode = HIGH_RES_MODE
-
     if not _engine_rdy:
         bootstrap_e(maxfps, wcaption)
     elif wcaption:
         _hub.pygame.display.set_caption(wcaption)
 
     vscreen.cached_pygame_mod = _hub.pygame
-    _screen_param(mode, screen_dim=None)
+    _screen_param(mode, screen_dim=forced_size)
     vars.clock = create_clock()
 
 
