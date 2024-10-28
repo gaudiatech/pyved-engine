@@ -3,25 +3,32 @@ Pyv API := Ecs func/procedures
   + utility func + pygame constants + the 12 func/procedures defined in the current file
 
 """
-
-# ----------------------
-#  enriching the API
-# ----------------------
-from ._utility import *
 import csv
-# ------------------
-
-# does all of this need to be visible from outside? PB: OOP. understanding required
-# TODO reflect if this can be rephrased to let go of OOP. without compromising on feature diversity & quantity
-from .compo import gfx
-from . import pal, state_management  # pal also added so it is includes in the api
-from . import custom_struct as struct
-from .custom_struct import enum, enum_from_n
 import time
-from .core import events
-from .core.events import game_events_enum
+from math import degrees as _degrees
+
+from . import _hub
+from . import custom_struct as struct
 from . import state_management
+from . import vars
+from .compo import gfx
+from .compo import vscreen
+from .compo.vscreen import flip as _oflip
+from .core import events
+from .core.events import EvManager
+from .core.events import game_events_enum
+from .custom_struct import enum, enum_from_n
 from .state_management import declare_game_states
+
+
+__all__ = [
+    'bootstrap_e', 'close_game', 'curr_state', 'declare_begin', 'declare_end', 'declare_game_states',
+    'declare_update', 'draw_circle', 'draw_line', 'draw_polygon', 'draw_rect', 'enum', 'enum_from_n', 'flip',
+    'game_events_enum', 'get_ev_manager', 'get_gs_obj', 'get_pressed_keys', 'get_surface', 'init', 'new_font_obj',
+    'new_rect_obj', 'preload_assets', 'struct', 'run_game',
+    # const
+    'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE'
+]
 
 
 def get_gs_obj(k):
@@ -35,106 +42,6 @@ HIGH_RES_MODE, LOW_RES_MODE, RETRO_MODE = 1, 2, 3
 _engine_rdy = False
 _upscaling_var = None
 _scr_init_flag = False
-
-# -----------------------
-# all imports HERE hav been written only to help us, with the implem of API
-# -----------------------
-from abc import ABCMeta, abstractmethod
-from . import vars
-from math import degrees as _degrees
-# from .classes import Spritesheet as _Spritesheet
-from . import _hub
-import time
-from .compo import vscreen
-from .core.events import EvManager
-from .core_classes import Objectifier
-
-
-# -- enrish with a class
-class GameTpl(metaclass=ABCMeta):
-    """
-    the "no name" game template class. It allows to define your game in a quick way,
-    by redefining one or several methods: enter, update, exit
-    """
-    INFO_STOP_MSG = 'kengi.GameTpl->the loop() call has ended.'
-    ERR_LOCK_MSG = 'kengi.GameTpl.loop called while SAFETY_LOCK is on!'
-    SAFETY_LOCK = False  # can be set to True from outside, if you don't want a game to call .loop()
-
-    def __init__(self):
-        self.gameover = False
-        self.nxt_game = 'niobepolis'
-        self._manager = None
-
-    @abstractmethod
-    def get_video_mode(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def list_game_events(self):
-        """
-        :return: all specific/custom game events. If nothing applies you can return None or []
-        """
-        raise NotImplementedError
-
-    def list_game_states(self):
-        """
-        :return: all specific states(scenes) of the game!
-        None, None should be returned as a signal that game doesnt need to use the state manager!
-        """
-        return None, None
-
-    def enter(self, vms=None):
-        """
-        Careful if you redefine this:
-        one *HAS TO*
-         - init video
-         - set the gameticker
-         - set the _manager attribute (bind the ev manager to self._manager)
-         - call self._manager.setup(...) with args
-        """
-        init(mode=self.get_video_mode())
-        self._manager = EvManager.instance()
-        self._manager.setup(self.list_game_events())
-        self._manager.post(EngineEvTypes.Gamestart)  # pushed to notify that we have really started playing
-
-        gs_enum, mapping = self.list_game_states()
-
-        if gs_enum is not None:
-            declare_game_states(gs_enum, mapping, self)
-
-    def update(self, infot):
-        pyg = _hub.pygame
-        pk = pyg.key.get_pressed()
-        if pk[pyg.K_ESCAPE]:
-            self.gameover = True
-            return 2, self.nxt_game
-
-        self._manager.post(EngineEvTypes.Update, curr_t=infot)
-        self._manager.post(EngineEvTypes.Paint, screen=vars.screen)
-        self._manager.update()
-        flip()
-
-    def exit(self, vms=None):
-        close_game()
-
-    def loop(self):
-        """
-        its forbidden to call .loop() in the web ctx, but its convenient in the local ctx
-        if one wants to test a program without using the Kata VM
-        :return:
-        """
-        # lock mechanism, for extra safety so we never call .loop() in the web ctx
-        if self.SAFETY_LOCK:
-            raise ValueError(self.ERR_LOCK_MSG)
-
-        # use enter, update, exit to handle the global "run game logic"
-        self.enter()
-
-        while not self.gameover:
-            infot = time.time()
-            self.update(infot)
-        self.exit()
-        print(self.INFO_STOP_MSG)
 
 
 # --- exposing draw functions
@@ -184,6 +91,7 @@ def run_game():
     # special case for pygbag or something similar:
     if __import__('sys').platform in ('emscripten', 'wasi'):
         import asyncio
+
         async def async_run_game():
             vars.beginfunc_ref(None)
             while not vars.gameover:
@@ -191,6 +99,7 @@ def run_game():
                 flip()  # commit gfx mem to screen, already contains the .tick
                 await asyncio.sleep(0)
             vars.endfunc_ref(None)
+
         asyncio.run(async_run_game())
         return
 
@@ -208,6 +117,8 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
     """
     expected to find the (mandatory) key 'images',
     also we may find the (optionnal) key 'sounds'
+    :param webhack:
+    :param prefix_sound_folder:
     :param prefix_asset_folder:
     :param adhoc_dict:
     :return:
@@ -290,7 +201,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
         vars.sounds[k] = _hub.pygame.mixer.Sound(filepath)
 
 
-def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=False):
+def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=True):
     global _engine_rdy
     if maxfps is None:
         y = 60
@@ -300,12 +211,13 @@ def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=False):
     # in theory the Pyv backend_name can be hacked prior to a pyv.init() call
     # Now, let's  build a primal backend
     v = vars.ENGINE_VERSION_STR
-    print(f'Booting up pyved-engine {v}...')
+    if print_ver_info:
+        print(f'Booting up pyved-engine {v}...')
+
     from .foundation.pbackends import build_primalbackend
 
     # SIDE-EFFECT: Building the backend also sets kengi_inj.pygame !
     _pyv_backend = build_primalbackend(vars.backend_name)
-
     # if you dont call this line below, the modern event system wont work (program hanging)
     events.EvManager.instance().a_event_source = _pyv_backend
 
@@ -316,18 +228,27 @@ def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=False):
 
 
 # -------------------------------
-#  private function
+#  private functions
 # ------------------------------
-def _screen_param(gfx_mode_code, paintev=None, screen_dim=None):
+def _screen_param(gfx_mode_code, screen_dim, cached_paintev) -> None:
+    """
+    :param gfx_mode_code: either 0 for custom scr_size, or any value in [1, 3] for std scr_size with upscaling
+    :param screen_dim: can be None or a pair of integers
+    :param cached_paintev: can be None or a pyved event that needs to have its .screen attribute set
+    """
     global _scr_init_flag
-    if not (isinstance(gfx_mode_code, int) and -1 < gfx_mode_code <= 3):
-        # error management
-        e_msg = f'graphic mode requested({gfx_mode_code}: {type(gfx_mode_code)}) isnt a valid one! Expected type: int'
-        raise ValueError(e_msg)
 
+    # all the error management tied to the "gfx_mode_code" argument has to be done now
+    is_valid_gfx_mode = isinstance(gfx_mode_code, int) and 0 <= gfx_mode_code <= 3
+    if not is_valid_gfx_mode:
+        info_t = type(gfx_mode_code)
+        err_msg = f'graphic mode-> {gfx_mode_code}: {info_t}, isnt valid one! Expected type: int'
+        raise ValueError(err_msg)
     if gfx_mode_code == 0 and screen_dim is None:
-        ValueError(f'graphic mode 0 required an extra valid screen_dim argument(provided by user: {screen_dim})')
-    # from here, we know that the gfx_mode_code is 100% valid
+        ValueError(f'Error! Graphic mode 0 implies that a valid "screen_dim" argument is provided by the user!')
+
+    # from here and below,
+    # we know the gfx_mode_code is valid 100%
     conventionw, conventionh = vars.disp_size
     if gfx_mode_code != 0:
         adhoc_upscaling = gfx_mode_code
@@ -346,33 +267,33 @@ def _screen_param(gfx_mode_code, paintev=None, screen_dim=None):
             pygame_surf_dessin = _hub.pygame.display.set_mode(taille_surf_dessin)
             vscreen.set_virtual_screen(pygame_surf_dessin)
         else:
-
             pygame_surf_dessin = _hub.pygame.surface.Surface(taille_surf_dessin)
             vscreen.set_virtual_screen(pygame_surf_dessin)
             vscreen.set_upscaling(adhoc_upscaling)
-            if paintev:
-                paintev.screen = pygame_surf_dessin
             if gfx_mode_code:
                 pgscreen = _hub.pygame.display.set_mode(vars.disp_size)
             else:
                 pgscreen = _hub.pygame.display.set_mode(taille_surf_dessin)
             vscreen.set_realpygame_screen(pgscreen)
-        vars.screen = pygame_surf_dessin
+
+        y = pygame_surf_dessin
+        vars.screen = y
+        if cached_paintev:
+            cached_paintev.screen = y
         _scr_init_flag = True
 
 
-def init(mode, maxfps=None, wcaption=None, forced_size=None):
+def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_ev=None):
     global _engine_rdy, _upscaling_var
-    
     if mode is None:
         mode = HIGH_RES_MODE
-    if not _engine_rdy:
+    if _engine_rdy:
+        if wcaption:
+            _hub.pygame.display.set_caption(wcaption)
+    else:
         bootstrap_e(maxfps, wcaption)
-    elif wcaption:
-        _hub.pygame.display.set_caption(wcaption)
-
     vscreen.cached_pygame_mod = _hub.pygame
-    _screen_param(mode, screen_dim=forced_size)
+    _screen_param(mode, forced_size, cached_paint_ev)
     vars.clock = create_clock()
 
 
@@ -386,12 +307,12 @@ def init(mode, maxfps=None, wcaption=None, forced_size=None):
 
 
 def close_game():
+    vars.gameover = False
     _hub.pygame.quit()
     vars.images.clear()
     vars.csvdata.clear()
     vars.sounds.clear()
     vars.spritesheets.clear()
-    vars.gameover = False
 
 
 def create_clock():
@@ -441,11 +362,7 @@ def surface_rotate(img, angle):
 #         vars.realscreen.blit(vars.screen, (0, 0))
 #     _hub.pygame.display.flip()
 #     vars.clock.tick(vars.max_fps)
-
 # --------
-#  restoring an older version of .flip() + proj_to_vscreen
-from .compo.vscreen import flip as _oflip
-from .compo.vscreen import proj_to_vscreen
 
 
 def flip():
@@ -462,9 +379,10 @@ def get_pressed_keys():
     return _hub.pygame.key.get_pressed()
 
 
-def load_spritesheet(filepath, tilesize, ck=None):
-    obj = _Spritesheet(filepath)
-    obj.set_infos(tilesize)
-    if ck:
-        obj.colorkey = ck  # could be (255, 0, 255) for example
-    return obj
+# - deprecated
+# def load_spritesheet(filepath, tilesize, ck=None):
+#     obj = _Spritesheet(filepath)
+#     obj.set_infos(tilesize)
+#     if ck:
+#         obj.colorkey = ck  # could be (255, 0, 255) for example
+#     return obj

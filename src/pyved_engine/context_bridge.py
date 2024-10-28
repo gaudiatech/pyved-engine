@@ -1,14 +1,14 @@
 import importlib as _importlib
-# Let's fetch implementations
-# (...that are INDEPENDANT from context)
-# corresponding to the 2nd part of the Engine public API
-# ------------------------
-from .highlevel_functions import my_enum
-from .api import curr_state, draw_polygon, draw_line, declare_game_states, enum, enum_from_n, game_events_enum,\
-    get_ev_manager, get_surface, get_pressed_keys, close_game, bootstrap_e, declare_begin, declare_update, declare_end,\
-    preload_assets, run_game, init, draw_rect, draw_circle, flip, get_gs_obj, new_font_obj, new_rect_obj
-from ._ecs import all_entities, find_by_components, find_by_archetype, archetype_of, define_archetype, init_entity,\
+
+from . import pal  # link to palette options
+from ._ecs import all_entities, find_by_components, find_by_archetype, archetype_of, define_archetype, init_entity, \
     new_from_archetype, bulk_add_systems, systems_proc, delete_entity, wipe_entities
+from ._utility import *  # dice rolls
+from .api import curr_state, draw_polygon, draw_line, declare_game_states, enum, enum_from_n, game_events_enum, \
+    get_ev_manager, get_surface, get_pressed_keys, bootstrap_e, declare_begin, declare_update, declare_end, \
+    preload_assets, run_game, init, close_game, draw_rect, draw_circle, flip, get_gs_obj, new_font_obj, new_rect_obj
+from .compo.GameTpl import GameTpl  # legacy cls
+from .highlevel_functions import my_enum
 
 
 # - define the full engine API for end users!
@@ -19,8 +19,11 @@ __all__ = [
     # for modern projects
     # But we keep this info as long as required so old game demos(roguelike, Breakout, etc)
     # need to be functional
+    # misc:
+    'pal',
+    'GameTpl',
 
-    # legacy part of the api
+    # part: legacy ECS (that can still be used today)
     'all_entities',
     'archetype_of',
     'bulk_add_systems',
@@ -32,7 +35,17 @@ __all__ = [
     'new_from_archetype',
     'systems_proc',
     'wipe_entities',
-    
+
+    # dice rolls
+    'droll',
+    'droll_4',
+    'droll_8',
+    'droll_10',
+    'droll_12',
+    'droll_20',
+    'droll_100',
+    'custom_droll',
+
     # other
     'get_gs_obj',
 
