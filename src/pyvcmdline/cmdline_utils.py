@@ -33,7 +33,25 @@ EXP_METADAT_KEYS = (
     'game_genre'
 )
 
-template_pyconnector_config_file ="""
+
+class MetadatEntries:
+    """
+    what you find below should match what has been written above,
+    this is used to avoid harmful typos when implementing pyv-cli subcommands...
+    and also to set default values in a clean way
+    """
+    GameTitle = 'title'
+    Slug = 'slug'
+    Genre = 'game_genre'
+    Author = 'author'
+    Date = 'build_date'
+    Libs = 'dependencies'
+
+    # default values
+    DefaultAuthor = 'Unknown'
+
+
+template_pyconnector_config_file = """
 {
   "api_url": "https://services-beta.kata.games",
   "jwt": "ce60ff8ecbeec9d16d7b329be193894d89982abab75bcb02",
@@ -73,9 +91,15 @@ def verify_metadata(mdat_obj) -> str:
     print('Metadata->OK')
 
 
-def read_metadata(bundle_name):
+def read_metadata(bundle_name, specific_dir=None):
     # Check if the folder exists, otherwise we'll throw an error
-    wrapper_bundle = os.path.join(os.getcwd(), bundle_name)
+    if specific_dir is None:
+        wrapper_bundle = os.path.join(os.getcwd(), bundle_name)
+    else:
+        wrapper_bundle = os.path.join(specific_dir, bundle_name)
+        print('reading metadat...')
+        print('looking in:', wrapper_bundle)
+
     if not os.path.exists(wrapper_bundle):
         raise FileNotFoundError(f'ERR! Cant find the specified game bundle ({bundle_name})')
     cartridge_folder = os.path.join(wrapper_bundle, 'cartridge')
@@ -91,8 +115,12 @@ def read_metadata(bundle_name):
     return obj
 
 
-def rewrite_metadata(bundle_name, blob_obj):
-    wrapper_bundle = os.path.join(os.getcwd(), bundle_name)
+def rewrite_metadata(bundle_name, blob_obj, specific_dir=None):
+    if specific_dir is None:
+        tdir = os.getcwd()
+    else:
+        tdir = specific_dir
+    wrapper_bundle = os.path.join(tdir, bundle_name)
     cartridge_folder = os.path.join(wrapper_bundle, 'cartridge')
     what_to_open = os.path.sep.join((cartridge_folder, 'metadat.json'))
     print(f'REWRITING file {what_to_open}...')
@@ -112,7 +140,7 @@ def do_bundle_renaming(source, dest):
     print('OK.')
 
 
-def is_valid_game_identifier(test_identifier):
+def has_right_syntax_for_slug(test_identifier):
     ok_pattern = '^[a-zA-Z0-9_]+$'
     return bool(re.match(ok_pattern, test_identifier))
 

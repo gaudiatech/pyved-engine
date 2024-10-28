@@ -23,15 +23,14 @@ from pyved_engine import vars
 from . import pyvcli_config
 from .cmdline_utils import do_bundle_renaming, safe_open_question, \
     template_pyconnector_config_file, safe_YN_question, read_metadata, rewrite_metadata, verify_metadata, \
-    fetch_remote_game_genres
-from .cmdline_utils import is_valid_game_identifier
+    fetch_remote_game_genres, MetadatEntries
+from .cmdline_utils import has_right_syntax_for_slug
 from .const import *
-from .json_prec import TEMPL_ID_TO_JSON_STR
 from .pyvcli_cogs import LAUNCH_GAME_SCRIPT_BASENAME
-from .pyvcli_cogs import create_folder_and_serialize_dict, recursive_copy
 from .pyvcli_cogs import test_isfile_in_cartridge, proc_autogen_localctx, copy_launcher_script
 from .pyvcli_config import API_HOST_PLAY_DEV, FRUIT_URL_TEMPLATE_DEV, FRUIT_URL_TEMPLATE_BETA
 from .pyvcli_config import VMSTORAGE_URL, API_FACADE_URL_TEMPL, API_SERVICES_URL_TEMPL
+
 
 __version__ = vars.ENGINE_VERSION_STR
 
@@ -400,72 +399,87 @@ def procedure_select_game_genre(mutable_obj):
     mutable_obj['game_genre'] = new_genres_list
 
 
-def init_command(game_identifier) -> None:
+from . import opti_grab_bundle
+
+
+def init_command(chosen_slug: str) -> None:
     """
-    this is the pyv-cli INIT command, it should create a new game bundle, fully operational
-    :param game_identifier: name for your new bundle...
+    this is the pyv-cli INIT command.
+    It creates a new game bundle that is fully operational and based off an existing template.
+
+    :param chosen_slug: a str identifier for your new game
     """
-    print(f" Calling sub-command INIT: with game identifier(slug)={game_identifier}")
+    print(f"Calling sub-command INIT with the game identifier {chosen_slug}")
     print()
-
-    print('  Game templates:')
-    for code, name in POSSIB_TEMPLATES.items():
-        print(f'    {code}:  {name}')
-    template_id = input('select a template: ')
-    while not (template_id.isnumeric() and 0 <= int(template_id) <= MAX_TEMPLATE_ID):
-        print('invalid input!')
-        template_id = input('select a template: ')
-    template_id = int(template_id)
-    print('-' * 60)
-
-    adhoc_json_prec = TEMPL_ID_TO_JSON_STR[template_id]
-    metadata = json.loads(adhoc_json_prec)
+    # -------------------------------first ensure we have a valid identifier
+    while not has_right_syntax_for_slug(chosen_slug):
+        print('*** WARNING: the selected game identifier is rejected. Expected format:')
+        print('Alphanumeric chars: A-Z and a-z, also 0-9 numbers. The underscore _ special character is also allowed')
+        chosen_slug = input('try another game identifier(slug): ')
 
     # TODO: shall we use HERE
     #  the network to test if the name is remotely available?
     #  that feature is already implemented by the 'test' subcommand
 
-    while not is_valid_game_identifier(game_identifier):
-        print('*** WARNING: the selected game identifier is rejected. Expected format:')
-        print(' solely alphanumeric that is A-Z and a-z, plus 0-9 numbers and the underscore _ special character')
-        game_identifier = input('enter another game identifier(slug): ')
+    # ------------------------------ perform the template selection > DL > renaming step
+    # - deprecated!
+    # template_id = ... ce que le mec a choisi
+    # adhoc_json_prec = TEMPL_ID_TO_JSON_STR[template_id]
+    # metadata = json.loads(adhoc_json_prec)
 
-    x = game_identifier
+    # Create a temporary directory
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # D/L files to the temporary directory
+        opti_grab_bundle.localpath_prefix = temp_dir
+        old_name = opti_grab_bundle.select_then_dl()
 
-    metadata['slug'] = x
-    tmp = input('whats the name of the game? [Default: Equal to the bundle name]')
-    metadata['game_title'] = tmp if len(tmp) > 0 else x
+        # read metadata, and update it
+        metadata = read_metadata(old_name, temp_dir)
 
-    tmp = input('whos the author? [Default: Unknown]')
-    metadata['author'] = tmp if len(tmp) > 0 else 'Unknown'
-    metadata['vmlib_ver'] = __version__.replace('.', '_')
-    metadata['build_date'] = gen_build_date_now()
+        # set slug
+        metadata['slug'] = chosen_slug
+        # set title
+        tmp = input('whats the name of the game? [Default: Equal to the bundle name]')
+        metadata[MetadatEntries.GameTitle] = tmp if len(tmp) > 0 else chosen_slug
 
-    # here, we modify the metadata based on what game genres the user wish to set
-    procedure_select_game_genre(metadata)
+        tmp = input('whos the author? [Default: Unknown]')
+        metadata[MetadatEntries.Author] = tmp if len(tmp) > 0 else MetadatEntries.DefaultAuthor
+        metadata['vmlib_ver'] = __version__.replace('.', '_')
+        metadata[MetadatEntries.Date] = gen_build_date_now()
 
-    # ensure to have registered the latest pyved_engine version +use the default alias:
-    metadata['dependencies']['pyved_engine'] = [
-        __version__.replace('.', '_'), 'pyv'
-    ]  # defaut alias for the engine is "pyv"
+        # here, we modify the metadata based on what game genres the user wish to set
+        procedure_select_game_genre(metadata)
 
+        # ensure to have registered the latest pyved_engine version +use the default alias:
+        metadata[MetadatEntries.Libs]['pyved_engine'] = [
+            __version__.replace('.', '_'), 'pyv'
+        ]  # defaut alias for the engine is "pyv"
+        rewrite_metadata(old_name, metadata, temp_dir)
+
+        # Create the new dir, then move modified temp. files to the final destination
+        final_dest = os.path.join(os.getcwd(), chosen_slug)
+        # os.makedirs(final_dest, exist_ok=True)
+        shutil.move(os.path.join(temp_dir, old_name), final_dest)
+
+    print(f"temp dir has been destroyed")
+
+    # -- deprec
     # Get the absolute path of the current script
-    script_directory = os.path.dirname(os.path.abspath(__file__))
-    template_blueprint_folder = os.path.join(script_directory, f'template_{template_id}')
-    target_folder = os.path.join(os.getcwd(), x)
-    recursive_copy(template_blueprint_folder, target_folder)
+    # script_directory = os.path.dirname(os.path.abspath(__file__))
+    # template_blueprint_folder = os.path.join(script_directory, f'template_{template_id}')
+    # target_folder = os.path.join(os.getcwd(), x)
+    # recursive_copy(template_blueprint_folder, target_folder)
     # once we've copied all source files, it is the norm to list all files and update the metadat.json
-    save_list_of_py_files(os.path.join(x, 'cartridge'), metadata)
+    # save_list_of_py_files(os.path.join(x, 'cartridge'), metadata)
 
-    copy_launcher_script(x)
-    create_folder_and_serialize_dict(target_folder, data_dict=metadata)
-    for _ in range(3):
-        print()
+    # copy_launcher_script(x)
+    #create_folder_and_serialize_dict(target_folder, data_dict=metadata)
+    #for _ in range(3):
+    #    print()
 
-    print('GAME BUNDLE=', x)
-    print('Important remark: do not rename the name of the folder! (Game bundle)')
-
-    print(f'--->Succesfully created! Now you can type `pyv-cli play {x}`')
+    print('subcommand init exits properly.', end='\n\n')
+    print('Important remark: do not rename the name of the folder')
+    print(f'-->Game bundle {chosen_slug} succesfully created! Now you can type `pyv-cli play {chosen_slug}`')
     print('Go ahead and have fun ;)')
 
 
