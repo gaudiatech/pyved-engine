@@ -1,5 +1,7 @@
-from katagames_engine.foundation.defs import CircularBuffer
+import pyved_engine as pyv
 
+
+CircularBuffer = pyv.CircularBuffer
 
 cb = CircularBuffer(3)
 print(str(cb))

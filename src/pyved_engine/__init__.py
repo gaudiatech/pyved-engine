@@ -17,8 +17,7 @@ from .context_bridge import *  # api is already packed in this file
 from . import custom_struct as struct
 from .core.events import Emitter, EvListener, EngineEvTypes
 from .core import legacy_evs  # we just copy the event system of pygame
-
-from ._classes import BaseGameState
+from ._classes import *
 from .Singleton import Singleton
 from .compo import gfx
 

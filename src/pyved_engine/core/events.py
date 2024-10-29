@@ -1,9 +1,9 @@
 import re
 import time
-import weakref
 
+from .._classes import CircularBuffer
 from ..foundation.defs import EngineEvTypes, KengiEv, PseudoEnum
-from ..foundation.defs import to_camelcase, to_snakecase, CircularBuffer, Singleton
+from ..foundation.defs import to_camelcase, to_snakecase, Singleton
 
 
 _FIRST_LISTENER_ID = 72931

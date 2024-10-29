@@ -1,9 +1,18 @@
-import katagames_engine as kengi
-from katagames_engine.foundation.event2 import EngineEvTypes, EvManager, EvListener, game_events_enum, PseudoEnum
+"""
+testing the event system rev4
+"""
+import pyved_engine as pyv
+
+EvManager = pyv.events.EvManager
+PseudoEnum = pyv.events.PseudoEnum
+EngineEvTypes = pyv.events.EngineEvTypes
+game_events_enum = pyv.events.game_events_enum
 
 
-# mockup cls
-class SampleListener(EvListener):
+class SampleListener(pyv.EvListener):
+    """
+    mockup class
+    """
     def __init__(self, nom):
         super().__init__()
         self._avname = nom
@@ -33,7 +42,7 @@ class SampleListener(EvListener):
 # -----------------
 #  testing
 # ----------------
-kengi.init()
+pyv.init()
 
 MyEvents = game_events_enum((
     'PlayerMovement',
@@ -82,5 +91,6 @@ my_li.turn_on()
 my_li.turn_off()
 
 # ---for sandbox testing---
-kengi.quit()
+pyv.quit()
 enum_example = PseudoEnum(['KeyUp', 'KeyDown', 'Update'])
+print(enum_example.KeyUp)

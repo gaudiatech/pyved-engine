@@ -105,7 +105,7 @@ kengi_inj = Injector({
     # 'ascii': '.looparts.ascii',
     'console': '.looparts.console',
     'rogue': '.looparts.rogue',
-    # 'rpg': '.looparts.rpg',
+    'rpg': '.looparts.rpg',
     # 'sysconsole': '.looparts.sysconsole',
     'tabletop': '.add_ons.tabletop',
     'terrain': '.looparts.terrain',

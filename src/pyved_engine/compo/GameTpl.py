@@ -1,9 +1,9 @@
 import time
 from abc import ABCMeta, abstractmethod
-
 from .. import _hub
-from ..api import init, declare_game_states, flip, close_game
+from .. import context_bridge as gamedev_api
 from ..core.events import EvManager, EngineEvTypes
+from .. import vars as engine_vars
 
 
 class GameTpl(metaclass=ABCMeta):
@@ -47,13 +47,13 @@ class GameTpl(metaclass=ABCMeta):
          - set the _manager attribute (bind the ev manager to self._manager)
          - call self._manager.setup(...) with args
         """
-        init(mode=self.get_video_mode())
+        gamedev_api.init(mode=self.get_video_mode())
         self._manager = EvManager.instance()
         self._manager.setup(self.list_game_events())
         self._manager.post(EngineEvTypes.Gamestart)  # pushed to notify that we have really started playing
         gs_enum, mapping = self.list_game_states()
         if gs_enum is not None:
-            declare_game_states(gs_enum, mapping, self)
+            gamedev_api.declare_game_states(gs_enum, mapping, self)
 
     def update(self, infot):
         pyg = _hub.pygame
@@ -63,12 +63,12 @@ class GameTpl(metaclass=ABCMeta):
             return 2, self.nxt_game
 
         self._manager.post(EngineEvTypes.Update, curr_t=infot)
-        self._manager.post(EngineEvTypes.Paint, screen=vars.screen)
+        self._manager.post(EngineEvTypes.Paint, screen=engine_vars.screen)
         self._manager.update()
-        flip()
+        gamedev_api.flip()
 
     def exit(self, vms=None):
-        close_game()
+        gamedev_api.close_game()
 
     def loop(self):
         """

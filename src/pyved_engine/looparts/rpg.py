@@ -22,12 +22,32 @@ CODE_FULL_LIFE = -9999
 
 class Character:
     def __init__(self, cname, **kwargs):
-        pass
+        self.__dict__.update(kwargs)
+        self.cname = cname
+        self.cp_infos = kwargs.copy()
+
+    def __str__(self):
+        c = self.cname
+        res = f'[Character:{c}]\n'
+        for k in self.cp_infos.keys():
+            var = getattr(self, k)
+            res += f' {k}:{var}\n'
+        return res
 
 
 class Weapon:
     def __init__(self, cname, **kwargs):
-        pass
+        self.__dict__.update(kwargs)
+        self.cname = cname
+        self.cp_infos = kwargs.copy()
+
+    def __str__(self):
+        c = self.cname
+        res = f'[WEAPON:{c}]\n'
+        for k in self.cp_infos.keys():
+            var = getattr(self, k)
+            res += f' {k}:{var}\n'
+        return res
 
 
 @Singleton

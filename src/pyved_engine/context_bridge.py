@@ -1,27 +1,27 @@
+"""
+goal of this file is to define the full engine API for end users...
+But also specialize the API implementation based on the exec. context
+"""
+
 import importlib as _importlib
 
 from . import pal  # link to palette options
 from ._ecs import all_entities, find_by_components, find_by_archetype, archetype_of, define_archetype, init_entity, \
     new_from_archetype, bulk_add_systems, systems_proc, delete_entity, wipe_entities
 from ._utility import *  # dice rolls
-from .api import curr_state, draw_polygon, draw_line, declare_game_states, enum, enum_from_n, game_events_enum, \
-    get_ev_manager, get_surface, get_pressed_keys, bootstrap_e, declare_begin, declare_update, declare_end, \
-    preload_assets, run_game, init, close_game, draw_rect, draw_circle, flip, get_gs_obj, new_font_obj, new_rect_obj
 from .compo.GameTpl import GameTpl  # legacy cls
-from .highlevel_functions import my_enum
+from .gamedev_api.highlevel import *
 
 
-# - define the full engine API for end users!
 __all__ = [
-    # - API of the Legacy ECS implementation
+    # const
+    'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE',
 
-    # this may be superseded soon by the usage of "esper" as a game bundle dependency
-    # for modern projects
-    # But we keep this info as long as required so old game demos(roguelike, Breakout, etc)
-    # need to be functional
     # misc:
     'pal',
     'GameTpl',
+
+    'engine_activation',
 
     # part: legacy ECS (that can still be used today)
     'all_entities',
@@ -47,6 +47,11 @@ __all__ = [
     'custom_droll',
 
     # other
+    'declare_game_states',
+    'enum',
+    'enum_from_n',
+    'game_events_enum',
+
     'get_gs_obj',
 
     'bootstrap_e',
@@ -55,33 +60,21 @@ __all__ = [
     'curr_state',
     'declare_begin',
     'declare_end',
-    'declare_game_states',
     'declare_update',
-    'define_archetype',
-    'delete_entity',
     'draw_circle',
     'draw_line',
     'draw_polygon',
     'draw_rect',
-
     'new_font_obj',
     'new_rect_obj',
 
-    'engine_activation',
     'engine_init',
-    'enum',
-    'enum_from_n',
-    'find_by_archetype',
-    'find_by_components',
     'flip',
-    'game_events_enum',
     'get_ev_manager',
     'get_pressed_keys',
     'get_surface',
     'init',
     'init_entity',
-    'machin',
-    'my_enum',
     'new_from_archetype',
     'preload_assets',
     'run_game',
@@ -91,7 +84,7 @@ __all__ = [
 
 #  + system +
 # ------------------------
-def _bind_implementation(adhoc_module):
+def _bind_api_implem(adhoc_module):
     globals().update({
         'engine_init': adhoc_module.engine_init,
         'machin': adhoc_module.machin,
@@ -104,18 +97,19 @@ def engine_activation(mode: str, specific_context_implem=None):
         '.local_context', 'pyved_engine'
     )
     # let us bind to a context implementation
-    _bind_implementation(m)
+    _bind_api_implem(m)
+    # for testing purpose only:
+    machin()
     # rest of the procedure
     engine_init(mode)
-    # for testing purpos only:
-    machin()
 
 
-# Declare func signatures for functions that DO DEPEND on the context ;
-# functions corresponding to the 1st part of the Engine public API
+# Here we will declare only **function signatures**
+# for functions that we expect to find in the engine but INDEED DEPEND
+# on the run context...
+# This is the 1st PART of the function list tied to the gamedev API
 # ------------------------
 def engine_init(mode: str):
-    print(mode)
     raise NotImplementedError
 
 

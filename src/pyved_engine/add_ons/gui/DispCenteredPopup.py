@@ -2,8 +2,8 @@ from .DispPopup import DispPopup
 from .Trigger import Trigger
 from ... import _hub
 # from ... import vscreen
-from ... import api
-
+from ... import context_bridge
+from ... import vars
 
 pygame = _hub.pygame
 
@@ -15,7 +15,7 @@ class DispCenteredPopup(DispPopup):
             decoree, (0, 0), titre, txt, ppsize[0], ppsize[1]
         )  # der. => forcer hauteur fenetre
 
-        scrw, scrh = vscreen.screen.get_size()
+        scrw, scrh = vars.screen.get_size()
         self.actualize_position((
             int((scrw / 2) - (self.width / 2)),
             int((scrh / 2) - (self.height / 2))

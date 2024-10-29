@@ -7,18 +7,18 @@ import csv
 import time
 from math import degrees as _degrees
 
-from . import _hub
-from . import custom_struct as struct
-from . import state_management
-from . import vars
-from .compo import gfx
-from .compo import vscreen
-from .compo.vscreen import flip as _oflip
-from .core import events
-from .core.events import EvManager
-from .core.events import game_events_enum
-from .custom_struct import enum, enum_from_n
-from .state_management import declare_game_states
+from .. import _hub
+from .. import custom_struct as struct
+from .. import state_management
+from .. import vars
+from ..compo import gfx
+from ..compo import vscreen
+from ..compo.vscreen import flip as _oflip
+from ..core import events
+from ..core.events import EvManager
+from ..core.events import game_events_enum
+from ..custom_struct import enum, enum_from_n
+from ..state_management import declare_game_states
 
 
 __all__ = [
@@ -214,7 +214,7 @@ def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=True):
     if print_ver_info:
         print(f'Booting up pyved-engine {v}...')
 
-    from .foundation.pbackends import build_primalbackend
+    from ..foundation.pbackends import build_primalbackend
 
     # SIDE-EFFECT: Building the backend also sets kengi_inj.pygame !
     _pyv_backend = build_primalbackend(vars.backend_name)

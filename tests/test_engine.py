@@ -1,16 +1,19 @@
-import pyved_engine as pve
+import pyved_engine as pyv
+
 
 HELP_MSG = 'press ESC to exit, any key to change bg_color...'
 CAPTION = 'my first video game, hi mom!'
 
-pve.init(1, caption=CAPTION)
-pygame = pve.pygame
-screen = pve.get_surface()
+
+pyv.init(1, wcaption=CAPTION)
+pygame = pyv.pygame
+screen = pyv.get_surface()
 color_idx = 0
 allcolors = ('pink', 'yellow', 'purple')
 bg_color = allcolors[0]
 print(HELP_MSG)
 gameover = False
+
 
 while not gameover:  # game loop
     for ev in pygame.event.get():
@@ -23,6 +26,5 @@ while not gameover:  # game loop
     bg_color = allcolors[color_idx]
     # update the display
     screen.fill(bg_color)
-    pve.flip()
-
+    pyv.flip()
 print('done!')

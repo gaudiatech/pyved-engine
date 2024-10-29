@@ -1,4 +1,6 @@
-from katagames_engine.struct import TreeNode
+import pyved_engine as pyv
+
+TreeNode = pyv.struct.TreeNode
 
 
 x = TreeNode('salut xy', None)
