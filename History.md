@@ -46,9 +46,10 @@ After over a year of experimentation, I decided to segment the system into
 multiple parts to enhance efficiency for end-users. Some components required 24/7 hosting
 and data upload capabilities, leading to a subdivision of the project. The segment directly
 utilized by game developers was named `kengi`. Simultaneously, we introduced a major update
-in event processing by adopting a custom event system over the built-in Pygame system.
-This update also included capabilities for coding isometric games, significantly enhancing
-the complexity of games that could be run in browsers.
+in event processing by adopting a new event system that behaves like an overlay 
+over the built-in Pygame system. The engine also included for the first time a few capabilities
+for coding isometric games, significantly enhancing  the complexity of python games that can be
+played in a browser
 
 
 - **June 2022:** <br>
@@ -68,8 +69,51 @@ Foundation during the round #11 of the Stellar Community Fund. See [that link](h
 
 - **April 2023:** <br>
 The idea of a metaverse-like system was set aside as the kengi project evolved
-into the pyved_engine, adopting a modular architecture and a more Pythonic approach
-that relies heavily on the CPython base interpreter for the entire toolbox. Since then,
-the pyved_engine has featured a new command-line interface for easier game prototyping
-and a novel game format (game bundles), which together significantly streamline
-the game-sharing process.
+into the project `pyved-engine`. We adopt a modular architecture and a more Pythonic approach
+that relies heavily on the CPython base interpreter for the entire toolbox.
+Since then, the pyved_engine has featured a new command-line interface for easier game prototyping
+and a novel game format (game bundles), which together can significantly streamline
+the game sharing process.
+
+
+- **May 2023:** <br>
+One month after letting go of the metaverse-like system, a new proof-of-concept is created.
+The name "pyved" comes from *'Python Visual EDitor'*. Indeed, we now dream of a visual editor
+for game developers, that would be easy to use, could take a low-code approach and would feature
+a built-in level editor. Our first proof-of-concept relies on `pygame-ce` and `pygame-gui`.
+That new component we prototyped would act as the GUI for using `pyved-engine` easily.
+
+
+# Maturation period
+
+- **June 2023:** <br>
+We’ve brought the idea of launching game templates from the command line to life. Looking ahead,
+we envision that this command-line tool could evolve significantly, empowering game developers in
+unique and exciting ways to enhance productivity and streamline their workflow.
+
+
+- **July 2023:** <br>
+We're re-evaluating design patterns tied to `pyved-engine` and for a better gamedev API. We're 
+re-considering the need of OOP (see [this commit](https://github.com/pyved-solution/pyved-engine/commit/1363d37572ab0d34905ab5d4fe953259e0da291e) for exmample)
+This API needs a solid pattern to ensure scalability and ease of use. After testing various
+options—such as Mediator, MVC, and a pure OOP approach with methods like `.update()` and `.draw()`.
+We've recently experimented with a custom ECS (Entity Component System) pattern. The ECS
+implementation is functioning well, providing a notable performance boost. However,
+it remains uncertain whether this pattern will be adopted as the primary structure within
+the gamedev API.
+
+
+- **July 2024:** <br>
+We’ve implemented a new network layer to streamline event sharing between client and server,
+making multiplayer interactions more seamless. Using several mediators (one per software instance)
+is feasible but still in an experimental state. After substantial effort, our first experiment
+transpiling multiplayer code to Node.js using Transcrypt has been a success, paving the way
+for more robust cross-platform capabilities in the future.
+
+
+- **October 2024:** <br>
+Repositories associated with our innovative game development solution have all been moved
+to a new GitHub organization named `pyved-solution`. This transition paves the way for ambitious
+future developments. Additionally, an older repository has been repurposed to store all game
+templates, acting as an index. The `pyv-cli tool` now relies on this template index to initialize
+new game prototypes.
