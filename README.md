@@ -9,36 +9,33 @@ Designed to streamline and elevate your game development experience, **pyv** off
 a rich suite of tools tailored for rapid prototyping and smooth game creation.
 
 <p align="center">
-<a href="https://discord.gg/SHdJhcWvQD">
-Consider joining our Discord server<br>
-<img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
+<a target="_blank" href="https://discord.gg/Kwrc5EEe6M">
+<img alt="Our discord" src="https://img.shields.io/discord/1288466587745255485?style=for-the-badge&logo=discord&logoColor=ffffff&logoSize=128&label=Our%20discord&color=7389D8&cacheSeconds=180">
 </a>
 </p>
 
 <p align="center">
-<big>We thank our sponsors</big>
-<table>
-  <tr>
-    <!-- Sponsor 1 -->
-    <td align="center">
-      <img src="https://kata.games/img/sponsor1-logo.jpg" alt="Stellar Development Foundation logo" height="44"><br>
-      <sub>Stellar Development Foundation</sub>
-    </td>
-
-    <!-- Sponsor 2 -->
-    <td align="center">
-      <img src="https://kata.games/img/sponsor2-logo.png" alt="KataGames Startup logo" height="44"><br>
-      <sub>The KataGames Startup</sub>
-    </td>
-
-    <!-- Sponsor 3 (Placeholder) -->
-    <td align="center">
-      <img src="https://kata.games/img/sponsor3-logo.jpg" alt="Sponsor 3 logo" height="44"><br>
-      <sub>Future Sponsor</sub>
-    </td>
-  </tr>
-</table>
+<big>A big Thank You! To our wonderful sponsors</big>
 </p>
+
+<table border="0" align="center">
+<tr>
+<td width="168" align="center">
+<a href="https://stellar.org/foundation">
+<img target="_blank" src="https://kata.games/img/sponsor1-logo.jpg" alt="Stellar Development Foundation logo" width="80" height="80"></a><br>
+<sub>Stellar Development Foundation</sub>
+</td>
+<td width="168" align="center">
+<a target="_blank" href="https://kata.games">
+<img src="https://kata.games/img/sponsor2-logo.png" alt="KataGames Startup logo" width="80" height="80"></a><br>
+<sub>The KataGames Startup</sub>
+</td>
+<td width="168" align="center">
+<img src="https://kata.games/img/sponsor3-logo.jpg" alt="Sponsor 3 logo" width="80" height="80"><br>
+<sub>Future Sponsor</sub>
+</td>
+</tr>
+</table>
 
 ## 0. Is this tool for me?
 Game engines offer valuable time-saving benefits by providing a framework with reusable code.
