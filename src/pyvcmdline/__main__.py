@@ -25,7 +25,6 @@ from .cmdline_utils import do_bundle_renaming, safe_open_question, \
     template_pyconnector_config_file, safe_YN_question, read_metadata, rewrite_metadata, verify_metadata, \
     fetch_remote_game_genres, MetadatEntries
 from .cmdline_utils import has_right_syntax_for_slug
-from .const import *
 from .pyvcli_cogs import LAUNCH_GAME_SCRIPT_BASENAME
 from .pyvcli_cogs import test_isfile_in_cartridge, proc_autogen_localctx, copy_launcher_script
 from .pyvcli_config import API_HOST_PLAY_DEV, FRUIT_URL_TEMPLATE_DEV, FRUIT_URL_TEMPLATE_BETA
@@ -33,6 +32,7 @@ from .pyvcli_config import VMSTORAGE_URL, API_FACADE_URL_TEMPL, API_SERVICES_URL
 
 
 __version__ = vars.ENGINE_VERSION_STR
+VERSION_PRINT_MESSAGE = 'pyved-engine v. %s (c) 2018-2024 the Kata.Games Team, Thomas EDER et al.'
 
 
 # -----------------------------------

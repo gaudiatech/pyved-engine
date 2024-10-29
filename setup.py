@@ -36,20 +36,8 @@ pck_list = [
     #"pyved_engine.looparts.polarbear",
     #"pyved_engine.looparts.tmx",
     "pyvcmdline",
-    "pyvcmdline.emb_demos",
     "pyvcmdline.pyvcli_cogs",
-    "pyvcmdline.spare_parts",
-    # templates
-    "pyvcmdline.template_0",
-    "pyvcmdline.template_0.cartridge",
-    "pyvcmdline.template_1",
-    "pyvcmdline.template_1.cartridge",
-    "pyvcmdline.template_2",
-    "pyvcmdline.template_2.cartridge",
-    "pyvcmdline.template_3",
-    "pyvcmdline.template_3.cartridge",
-    "pyvcmdline.template_4",
-    "pyvcmdline.template_4.cartridge"
+    "pyvcmdline.spare_parts"
 ]
 
 this_directory = Path(__file__).parent

@@ -1,9 +1,9 @@
 pygame-ce>=2.2.1
-mkdocs==1.4.3
-mkdocs-material==9.1.14
-mkdocs-static-i18n==0.56
 tabulate
 pyperclip
 requests
 attrs
 setuptools
+mkdocs==1.4.3
+mkdocs-material==9.1.14
+mkdocs-static-i18n==0.56

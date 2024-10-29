@@ -1,11 +1,10 @@
 import os
-import requests
-import json
 import sys
-import sys
-import csv
-from tabulate import tabulate
 from concurrent.futures import ThreadPoolExecutor
+
+import requests
+from tabulate import tabulate
+
 
 # Base URL template (with placeholders for REPO_ID, tag, template name)
 ROOT_URL_TEMPLATE = "https://raw.githubusercontent.com/pyved-solution/{}/{}/"  # 1st blank->name of the repo
@@ -31,9 +30,16 @@ def get_url_to_root():
     return ROOT_URL_TEMPLATE.format(REPO_ID, specified_tag)
 
 
-# Queue to store download tasks
-download_queue = []
+# Function to download files concurrently from the queue
+def process_download_queue():
+    global download_queue
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        for url, is_binary, save_path in download_queue:
+            executor.submit(download_file, url, save_path, is_binary)
 
+
+# What-to-download functions
+# -----------------------------------
 
 # Function to fetch and parse the metadata file
 def fetch_metadata(template_name):
@@ -51,29 +57,20 @@ def fetch_metadata(template_name):
     return metadata
 
 
-# Function to download files concurrently from the queue
-def process_download_queue():
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        for url, is_binary, save_path in download_queue:
-            executor.submit(download_file, url, save_path, is_binary)
-
-
 # Function to download a single file
 def download_file(url, save_path, binary_data):
     response = requests.get(url)
-    if response.status_code == 200:
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        if binary_data:
-            mode = "wb"
-            with open(save_path, mode) as fptr:
-                fptr.write(response.content)
-        else:
-            mode = "w"
-            with open(save_path, "w", encoding="utf-8") as text_fptr:
-                text_fptr.write(response.text)
-        print(f"{save_path}")
-    else:
+    if response.status_code != 200:
         print(f"Download FAILED! {url} // {response.status_code}")
+        return
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    if binary_data:
+        with open(save_path, "wb") as fptr:
+            fptr.write(response.content)
+    else:
+        with open(save_path, "w", encoding="utf-8") as text_fptr:
+            text_fptr.write(response.text)
+    print(f"{save_path}")
 
 
 # Prepare download tasks for launcher and thumbnails
@@ -146,8 +143,8 @@ def game_template_dl(x):
 
 
 def lookup_templ_index():
-    url = get_url_to_root() + 'chosen_templates.csv'  # that special file contains the mapping template_idx<>template_name
-
+    # fetch a special file containing a mapping: template_idx<>template_name
+    url = get_url_to_root() + 'chosen_templates.csv'
     response = requests.get(url)
     if response.status_code != 200:
         raise Exception("Error when fetching index of templates for Git repo!")
@@ -191,5 +188,5 @@ if __name__ == '__main__':
         # no extra args
         select_then_dl()
     else:
-        templ_name = sys.argv[1]  # Use the first argument as the template name
-        game_template_dl(templ_name)
+        my_templ_name = sys.argv[1]  # Use the first argument as the template name
+        game_template_dl(my_templ_name)
