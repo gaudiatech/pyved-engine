@@ -5,10 +5,18 @@ by Tom (thomas.iw@kata.games)
 
 ## Early period
 
-- **Year 2017:**<br>
-A first draft of a custom game engine written in Python was proposed as early as 2017.
-Early names of the game engine, back when the source code was still rough and experimental,
-have been forgotten.
+- **November 2016:** <br>
+During the development of a small indie game called Tequila Life, several software components were
+rewritten in Python to enhance their reusability, versatility, and customizability. This effort marked
+the creation of an initial framework for writing games using Python.
+
+
+- **February 2017:** <br>
+The first solid draft of a new Python-based game engine was proposed in early 2017. Although early,
+experimental names for the engine have been lost to time, this initial version introduced an
+*object-oriented model for game states and a mechanism for transitioning between them*.
+These foundational features sparked the ambition to evolve this codebase into a large-scale,
+ambitious project.
 
 
 - **August 2018:**<br>

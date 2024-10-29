@@ -2,39 +2,64 @@
   <img src="https://kata.games/pyv-logo.jpg" alt="pyv logo" />
 </p>
 
+Welcome to `pyved-engine`, a Python package bringing you *the most powerful and versatile
+pythonic game engine for 2D games,* namely: **pyv**.
 
-Introducing `pyved-engine`, a python package that provides you with
-the versatile, efficient 2D game engine named __pyv__.
-
-Designed to streamline game development __pyv__ offers a set of
-tools for smooth and rapid game prototyping.  Unlock the full potential of
-your game development thanks to __pyv__!
+Designed to streamline and elevate your game development experience, **pyv** offers
+a rich suite of tools tailored for rapid prototyping and smooth game creation.
 
 <p align="center">
 <a href="https://discord.gg/SHdJhcWvQD">
-To join our Discord community:<br>
+Consider joining our Discord server<br>
 <img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
 </a>
 </p>
 
-Game engines, in general, provide invaluable time-saving benefits by storing a collection
-of useful and reusable code snippets within a precise framework.
+<p align="center">
+<big>We thank our sponsors</big>
+<table>
+  <tr>
+    <!-- Sponsor 1 -->
+    <td align="center">
+      <img src="https://kata.games/img/sponsor1-logo.jpg" alt="Stellar Development Foundation logo" height="44"><br>
+      <sub>Stellar Development Foundation</sub>
+    </td>
 
-Instead of reinventing the wheel and wasting your precious time by re-writing
-generic code for video games, you can leverage the power of the engine.
+    <!-- Sponsor 2 -->
+    <td align="center">
+      <img src="https://kata.games/img/sponsor2-logo.png" alt="KataGames Startup logo" height="44"><br>
+      <sub>The KataGames Startup</sub>
+    </td>
 
-With __pyv__ you will learn how to swiftly implement
-important game functionalities such as pathfinding or spritesheets loading.
+    <!-- Sponsor 3 (Placeholder) -->
+    <td align="center">
+      <img src="https://kata.games/img/sponsor3-logo.jpg" alt="Sponsor 3 logo" height="44"><br>
+      <sub>Future Sponsor</sub>
+    </td>
+  </tr>
+</table>
+</p>
 
-You will  integrate these features into your game, saving precious development time
-and effort!
+## 0. Is this tool for me?
+Game engines offer valuable time-saving benefits by providing a framework with reusable code.
+With pyv, skip the hassle of reinventing the wheel and quickly implement essential
+game features like pathfinding and spritesheet loading.
 
-Our custom game engine empowers you for creating captivating and bug-free applications.
-With an  array of built-in modules for seamless management of game assets, AI integration,
-procedural generation, *etc.* the only limit is your imagination!
+Our custom engine empowers you
+to create captivating, bug-free games, with built-in modules for asset management,
+AI, procedural generation, and more—the only limit is your imagination!
+
+Whether you're crafting your first game
+or refining your latest masterpiece, **pyv** is here to unlock new possibilities,
+turning your ideas into immersive, playable worlds!
+With **pyv**, you gain the productivity-boosting perks of a game engine
+designed for modern 2D game development. No more building from scratch!
+
+**pyv** is a framework packed with reusable and customizable
+code snippets, empowering you to focus on what matters most: **your game's unique vision**.
 
 
-## 1. Installation
+## 1. Getting started
 
 The simplest way to install the toolbox is to type:
 ```shell
@@ -79,7 +104,12 @@ you would need to update your PATH variable by hand! To do so:
 `export PATH=~/.local/bin:$PATH`
 
 
-## 2. Getting started
+## 2. Game templates
+
+The framework that comes with `pyved-engine` relies on ideas such as *game bundles*,
+and *game templates*. Your creation is packed inside a game bundle. And you never
+create a bundle *ex nihilo*/ from nothing. Instead, you select a game template
+(some game templates can be very empty, tho) and you customize it.
 
 #### Create your very first game
 
