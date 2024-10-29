@@ -9,9 +9,8 @@ Designed to streamline and elevate your game development experience, **pyv** off
 a rich suite of tools tailored for rapid prototyping and smooth game creation.
 
 <p align="center">
-<a target="_blank" href="https://discord.gg/SHdJhcWvQD">
-Consider joining our Discord server<br>
-<img alt="join us on Discord" src="https://img.shields.io/discord/876813074894561300.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2">
+<a target="_blank" href="https://discord.gg/Kwrc5EEe6M">
+<img alt="Our discord" src="https://img.shields.io/discord/1288466587745255485?style=for-the-badge&logo=discord&logoColor=ffffff&logoSize=128&label=Our%20discord&color=7389D8&cacheSeconds=180">
 </a>
 </p>
 
