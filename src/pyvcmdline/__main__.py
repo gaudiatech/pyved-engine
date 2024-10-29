@@ -310,10 +310,37 @@ def save_list_of_py_files(directory, metadat_obj):
     metadat_obj['build_date'] = gen_build_date_now()
 
 
+def save_list_of_assets(cartridge_path, metadata):
+    # Get the base folder for assets
+    asset_base_folder = os.path.join(cartridge_path, metadata.get('asset_base_folder'))
+
+    # Recursive function to find asset files
+    def find_asset_files(base_folder, extensions=('.png', '.jpg', '.json')):
+        asset_files = []
+        for root, _, files in os.walk(base_folder):
+            for a_file in files:
+                if a_file.lower().endswith(extensions):
+                    # Include relative path within asset_base_folder
+                    relative_path = os.path.relpath(os.path.join(root, a_file), asset_base_folder)
+                    asset_files.append(relative_path)
+        return asset_files
+
+    # let's update the asset list now
+    metadata['asset_list'] = find_asset_files(asset_base_folder)
+
+
 def refresh_subcommand(bundle_name):
+    """
+    corresponds to the "refresh" operation
+
+    :param bundle_name:
+    :return:
+    """
     print('list of source files has been updated')
     my_metadat = read_metadata(bundle_name)
+
     save_list_of_py_files(os.path.join(bundle_name, 'cartridge'), my_metadat)
+    save_list_of_assets(os.path.join(bundle_name, 'cartridge'), my_metadat)
     rewrite_metadata(bundle_name, my_metadat)
 
 

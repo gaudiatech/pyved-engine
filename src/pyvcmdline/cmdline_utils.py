@@ -13,6 +13,7 @@ EXP_METADAT_KEYS = (
     'asset_list',
     'sound_base_folder',
     'sound_list',
+    "data_files",  # for levels/maps, etc.
 
     'vmlib_ver',
     'author',

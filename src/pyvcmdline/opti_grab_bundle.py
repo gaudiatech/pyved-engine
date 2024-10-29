@@ -9,7 +9,7 @@ from tabulate import tabulate
 # Base URL template (with placeholders for REPO_ID, tag, template name)
 ROOT_URL_TEMPLATE = "https://raw.githubusercontent.com/pyved-solution/{}/{}/"  # 1st blank->name of the repo
 BASE_URL_TEMPLATE = ROOT_URL_TEMPLATE + "{}/"  # blanks 2 and 3-> tag, then template name
-REPO_ID = 'extra-pyv-templates'
+REPO_ID = 'game-templates-index'
 # -----------------------------------
 #  params
 # -----------------------------------
