@@ -18,6 +18,7 @@ __all__ = [
     'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE',
 
     # misc:
+    'new_actor', 'del_actor', 'get_curr_world', 'switch_world', 'post_ev', 'process_events',
     'pal',
     'GameTpl',
 

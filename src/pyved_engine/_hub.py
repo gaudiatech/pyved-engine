@@ -19,6 +19,7 @@ from .core import events
 class _PyModulePromise:
     verbose = 1
     JIT_MSG_LOADING = '*Pyv add-on "{}" is ready! Loading on-the-fly ok*'
+    ref_to_pygame = None
 
     def __init__(self, mod_name: str, pypath: str, pck_arg: str):
         self._ref_module = None
@@ -43,6 +44,20 @@ class _PyModulePromise:
         cls = self.__class__
         if cls.verbose:  # and nam != 'pygame':  # print a debug info.
             print(cls.JIT_MSG_LOADING.format(self.name))
+
+        # Check if the path starts with 'pygame' and strip it for modular navigation
+        string = self._py_path
+        if string.split('.')[0] == 'pygame':
+            # Split the path and discard the 'pygame' part, keeping only the rest
+            path_parts = string.split('.')[1:]
+            # Start with the base pygame reference
+            ref = self.__class__.ref_to_pygame
+            # Iterate through each part to navigate to the target attribute
+            for part in path_parts:
+                print(' getattr called with args::', ref, part)
+                ref = getattr(ref, part)
+            self._ref_module = ref
+            return
         if (pck_arg is not None) and self._py_path[0] == '.':
             self._ref_module = importlib.import_module(self._py_path, pck_arg)
         else:
@@ -75,6 +90,9 @@ class Injector:
             return item in self._listing
 
     def set(self, mname, pymod):
+        if mname == 'pygame':
+            _PyModulePromise.ref_to_pygame = pymod  # auto- bind
+            print('auto bind')
         self._man_set[mname] = pymod
 
     def __getitem__(self, item):
@@ -95,6 +113,12 @@ class Injector:
 
 
 kengi_inj = Injector({
+    # lazy-loading due to the pygame emu mechanism...
+    'Vector2d': 'pygame.math.Vector2',
+
+    # lazy-loading that may solve performance issues
+    # (dont load large modules unless it is necessary):
+
     # 'ai': '.looparts.ai',
     # 'demolib': '.looparts.demolib',
     'gui': '.add_ons.gui',

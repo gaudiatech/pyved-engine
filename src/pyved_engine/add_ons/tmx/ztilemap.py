@@ -47,13 +47,13 @@ class MapObj:
 
 
 class CustomTiledMap:
-    def __init__(self, filename, ts_path): #, filename):
+    def __init__(self, filename, tileset_path): #, filename):
         # tm = pytmx.load_pygame(filename, pixelAlpha=True)  # for transparency
         # LOCAL CtX
-        #mapfile = Path(gpath+'/'+filename)
-        #tm = pytiled_parser.parse_map(mapfile)
+        tm = pytiled_parser.parse_map('cartridge/'+filename)
+
         # WEB
-        tm = pytiled_parser.parse_map(filename)  #'assets/maps/level1.tmj')
+        # tm = pytiled_parser.parse_map(filename)
 
         tilew, tileh = tm.tile_size
         self.tile_size = (tilew, tileh)
@@ -71,7 +71,8 @@ class CustomTiledMap:
         my_tileset = None
         for firstgid, obj in tm.tilesets.items():
             self.firstgid = firstgid
-            new_sprsheet = gfx.Spritesheet(ts_path+obj.image.as_posix())  # gpath+ '/' + obj.image.as_posix() )
+            # print(obj.image.as_posix())
+            new_sprsheet = gfx.Spritesheet(tileset_path+obj.image.as_posix())  # gpath+ '/' + obj.image.as_posix() )
 
             # hot fix suite au massacre de pytiled_parser (retrait brutal attr)
             if not isinstance(obj.spacing, int):
