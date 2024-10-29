@@ -57,6 +57,9 @@ class _Pal:
             omega.remove(exck)
         return self.ctable[_rand.choice(omega)]
 
+    def __getattr__(self, item):
+        return self.ctable[item]
+
     def __getitem__(self, item):
         if isinstance(item, str):
             return self.ctable[item]
@@ -81,15 +84,13 @@ _c64pdef = (
     ('orange', 154, 101, 32),
     ('brown', 101, 69, 0),
     ('lightred', 207, 138, 101),
-    ('darkgrey', 69, 69, 69),
+    ('darkgray', 69, 69, 69),
 
-    ('grey', 138, 138, 138),
+    ('gray', 138, 138, 138),
     ('lightgreen', 170, 239, 138),
     ('lightblue', 160, 162, 255),
-    ('lightgrey', 170, 170, 170),
+    ('lightgray', 170, 170, 170),
 )
-
-c64 = _Pal(_c64pdef)  # Commodore 64
 
 _cyberpunkdef = (
     ('black', 0, 0, 0),
@@ -118,8 +119,6 @@ _cyberpunkdef = (
     ('white', 227, 222, 223)
 )
 
-punk = _Pal(_cyberpunkdef)
-
 _japan = (
     ('black', 0, 0, 0),
     ('navy', 43, 51, 95),
@@ -139,17 +138,21 @@ _japan = (
     ('peach', 237, 199, 176)
 )
 
-japan = _Pal(_japan)
-
 _niobe = (
     ('darkgreen', 11, 24, 11),
 )
 
-niobe = _Pal(_niobe)
+
+def __getattr__(name):
+    return ALL_PALETTES[name]
 
 
+# ---------------------------@@@-------
+#  Palette mapping (the essential part)
+# ---------------------------@@@-------
 ALL_PALETTES = {
-    'c64': c64,
-    'japan': japan,
-    'punk': punk,
+    'c64': _Pal(_c64pdef),  # Commodore 64
+    'japan': _Pal(_japan),
+    'punk': _Pal(_cyberpunkdef),
+    'niobe': _Pal(_niobe)
 }
