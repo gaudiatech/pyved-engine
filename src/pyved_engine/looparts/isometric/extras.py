@@ -1,9 +1,8 @@
-from .. import tmx
 from ...compo import vscreen as core
 from ... import _hub
 
 
-Tilesets = tmx.data.Tilesets
+Tilesets = _hub.tmx.data.Tilesets
 
 
 class IsometricMapCursor:

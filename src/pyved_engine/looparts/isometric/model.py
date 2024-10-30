@@ -7,7 +7,6 @@ from xml.etree import ElementTree
 from zlib import decompress
 
 from .flags import *
-from .. import tmx
 from ... import _hub
 
 
@@ -446,7 +445,7 @@ class IsometricMap:
         self.width = 0
         self.height = 0
         self.layers = list()
-        self.tilesets = tmx.data.Tilesets()
+        self.tilesets = _hub.tmx.data.Tilesets()
         self.objectgroups = dict()
 
         self.wrap_x = False

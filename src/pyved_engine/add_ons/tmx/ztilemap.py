@@ -1,8 +1,6 @@
-
+import os
 from pathlib import Path
-
 from . import pytiled_parser
-# import pyved_engine as katasdk
 from ... import _hub
 from ... import gfx
 
@@ -50,11 +48,18 @@ class CustomTiledMap:
     def __init__(self, filename, tileset_path): #, filename):
         # tm = pytmx.load_pygame(filename, pixelAlpha=True)  # for transparency
         # LOCAL CtX
-        tm = pytiled_parser.parse_map('cartridge/'+filename)
+        outside_bundle = False
+        try:
+            tm_path = os.path.join('cartridge',filename)
+            tm = pytiled_parser.parse_map(tm_path)
+        except FileNotFoundError:
+            outside_bundle = True
+            print(_hub.bundle_name)
+            tm_path = os.path.join(_hub.bundle_name,'cartridge',filename)
+            tm = pytiled_parser.parse_map(tm_path)
 
         # WEB
         # tm = pytiled_parser.parse_map(filename)
-
         tilew, tileh = tm.tile_size
         self.tile_size = (tilew, tileh)
 
@@ -72,7 +77,11 @@ class CustomTiledMap:
         for firstgid, obj in tm.tilesets.items():
             self.firstgid = firstgid
             # print(obj.image.as_posix())
-            new_sprsheet = gfx.Spritesheet(tileset_path+obj.image.as_posix())  # gpath+ '/' + obj.image.as_posix() )
+            if outside_bundle:
+                sheet_path = os.path.join(_hub.bundle_name, 'cartridge', obj.image.as_posix())
+            else:
+                sheet_path = os.path.join('cartridge', obj.image.as_posix())
+            new_sprsheet = gfx.Spritesheet(sheet_path)  # gpath+ '/' + obj.image.as_posix() )
 
             # hot fix suite au massacre de pytiled_parser (retrait brutal attr)
             if not isinstance(obj.spacing, int):
