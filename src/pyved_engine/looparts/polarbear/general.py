@@ -62,7 +62,8 @@ class Border(object):
             scr = vars.screen
 
         # We're gonna draw a decorative border to surround the provided area.
-        if self.border == None:
+        if self.border is None:
+            print(self.border_name)
             self.border = image.Image(self.border_name, self.border_width, self.border_width)
         if self.tex_name and not self.tex:
             self.tex = image.Image(self.tex_name, self.tex_width, self.tex_width)
@@ -96,11 +97,15 @@ class Border(object):
             self.border.render((fdest.x + fdest.width - self.border_width, fdest.y + y * self.border_width), self.r)
         scr.set_clip(None)
 
+# !!! important !!
+# as soon as you load polarbear. it is assumed that
+# you have:sys_defborder.png, sys_defbackground.png pre-loaded by the engine
+# TODO improve this?
 
 # Monkey Type these definitions to fit your game/assets.
-default_border = Border(border_width=8, tex_width=16, border_name="assets/sys_defborder.png", tex_name="assets/sys_defbackground.png",
+default_border = Border(border_width=8, tex_width=16, border_name="sys_defborder", tex_name="sys_defbackground",
                         tl=0, tr=3, bl=4, br=5, t=1, b=1, l=2, r=2)
-notex_border = Border(border_width=8, border_name="assets/sys_defborder.png", padding=4, tl=0, tr=3, bl=4, br=5, t=1, b=1, l=2,
+notex_border = Border(border_width=8, border_name="sys_defborder", padding=4, tl=0, tr=3, bl=4, br=5, t=1, b=1, l=2,
                       r=2)
 # map_border = Border( border_name="sys_mapborder.png", tex_name="sys_maptexture.png", tl=0, tr=1, bl=2, br=3, t=4, b=6, l=7, r=5 )
 # gold_border = Border( border_width=8, tex_width=16, border_name="sys_rixsborder.png", tex_name="sys_rixstexture.png", tl=0, tr=3, bl=4, br=5, t=1, b=1, l=2, r=2 )

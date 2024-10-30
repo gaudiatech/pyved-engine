@@ -99,7 +99,7 @@ class IsometricTileset:
 
     @classmethod
     def fromxml(cls, folders, tag, firstgid=None):
-        print('fromxml (isometrically)')
+        print('[isometric.model] method .fromxml has been called')
         if 'source' in tag.attrib:
             # Instead of a tileset proper, we have been handed an external tileset tag from inside a map file.
             # Load the external tileset and continue on as if nothing had happened.
@@ -108,11 +108,10 @@ class IsometricTileset:
 
             # TODO: Another direct disk access here.
             if srcc.endswith(("tsx", "xml")):
-                with open(os.path.join(os.pathsep.join(folders), srcc)) as f:
-                    print('opened ', srcc)
+                with open(os.path.join(*folders, srcc)) as f:
                     tag = ElementTree.fromstring(f.read())
             elif srcc.endswith(("tsj", "json")):
-                with open(os.path.join(os.pathsep.join(folders), srcc)) as f:
+                with open(os.path.join(*folders, srcc)) as f:
                     jdict = json.load(f)
                 return cls.fromjson(folders, jdict, firstgid)
 
@@ -131,7 +130,8 @@ class IsometricTileset:
             if c.tag == "transformations":
                 tileset.vflip = int(c.attrib.get("vflip", 0)) == 1
                 tileset.hflip = int(c.attrib.get("hflip", 0)) == 1
-                print("Flip values: v={} h={}".format(tileset.vflip, tileset.hflip))
+                # - debug
+                # print("Flip values: v={} h={}".format(tileset.vflip, tileset.hflip))
 
         for c in tag:  # .getchildren():
             # TODO: The tileset can only contain an "image" tag or multiple "tile" tags; it can't combine the two.
@@ -145,7 +145,7 @@ class IsometricTileset:
 
     @classmethod
     def fromjson(cls, folders, jdict, firstgid=None):
-        print('fromjson (isometrically)')
+        print('[isometric.model] method .fromjson has been called')
         if 'source' in jdict:
             firstgid = int(jdict['firstgid'])
             srcc = jdict['source']
@@ -153,7 +153,6 @@ class IsometricTileset:
             # TODO: Another direct disk access here.
             if srcc.endswith(("tsx", "xml")):
                 with open(os.path.join(os.pathsep.join(folders), srcc)) as f:
-                    print('opened ', srcc)
                     tag = ElementTree.fromstring(f.read())
                     return cls.fromxml(folders, tag, firstgid)
             elif srcc.endswith(("tsj", "json")):
@@ -468,7 +467,7 @@ class IsometricMap:
     def load_tmx(cls, folders, filename, object_classes=None):
         # object_classes is a function that can parse a dict describing an object.
         # If None, the only objects that can be loaded are terrain objects.
-        with open(os.path.join(os.pathsep.join(folders), filename)) as f:
+        with open(os.path.join(*folders, filename)) as f:
             tminfo_tree = ElementTree.fromstring(f.read())
 
         # get most general map informations and create a surface
@@ -514,8 +513,7 @@ class IsometricMap:
     def load_json(cls, folders, filename, object_classes=None):
         # object_classes is a function that can parse a dict describing an object.
         # If None, the only objects that can be loaded are terrain objects.
-
-        with open(os.path.join(os.pathsep.join(folders), filename)) as f:
+        with open(os.path.join(*folders, filename)) as f:
             jdict = json.load(f)
         return cls.from_json_dict(folders, jdict, object_classes)
 
@@ -561,12 +559,25 @@ class IsometricMap:
 
     @classmethod
     def load(cls, folders, filename, object_classes=None):
-        if filename.endswith(("tmx", "xml")):
-            mymap = cls.load_tmx(folders, filename, object_classes)
-        elif filename.endswith(("tmj", "json")):
-            mymap = cls.load_json(folders, filename, object_classes)
-        else:
-            raise NotImplementedError("No decoder for {}".format(filename))
+        # - debug
+        # print(_hub.bundle_name, folders)
+        if not(filename.endswith(("tmx", "xml")) or filename.endswith(("tmj", "json"))):
+            raise NotImplementedError(f"isometric.model -> No decoder available for map:{filename}")
+        map_desc_format = 'tmx' if filename.endswith(("tmx", "xml")) else 'tmj'
+
+        try:
+            if 'tmj' == map_desc_format:
+                mymap = cls.load_json(folders, filename, object_classes)
+            else:
+                mymap = cls.load_tmx(folders, filename, object_classes)
+        except FileNotFoundError:
+            # 2nd attempt, assuming we have to enter the bundle first
+            folders.insert(0, _hub.bundle_name)
+            if 'tmj' == map_desc_format:
+                mymap = cls.load_json(folders, filename, object_classes)
+            else:
+                mymap = cls.load_tmx(folders, filename, object_classes)
+
         mymap.seek_floor_and_wall()
         return mymap
 

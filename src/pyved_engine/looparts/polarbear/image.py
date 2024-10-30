@@ -111,7 +111,7 @@ class Image(object):
         if fname:
             self.bitmap = self.get_pre_loaded(fname, transparent)
             if not self.bitmap:
-                self.bitmap = pygame.image.load(fname).convert_alpha()
+                self.bitmap = vars.images[fname]
                 self.bitmap.set_colorkey(color_key, flags)
         else:
             self.bitmap = pygame.Surface((frame_width, frame_height))

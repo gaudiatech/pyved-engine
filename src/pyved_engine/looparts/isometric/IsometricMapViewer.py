@@ -526,11 +526,13 @@ class IsometricMapViewer(EvListener):
                self.mid[1] - relative_y(self._focus_x, self._focus_y)
 
     def set_focused_object(self, fo):
-        if fo:
-            self._focused_object = fo
-            self.focus(fo.x, fo.y)
-        else:
-            self._focused_object = None
+        if fo is None:
+            raise ValueError
+        self._focused_object = fo
+        self.focus(fo.x, fo.y)
+
+    def reset_focused_object(self):
+        self._focused_object = None
 
     def switch_map(self, isometric_map):
         self.force_redraw_flag = True  # obvious that we will have to redraw all!
