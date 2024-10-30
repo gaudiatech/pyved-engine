@@ -32,6 +32,7 @@ fonts = dict()
 spritesheets = dict()
 sounds = dict()
 csvdata = dict()
+data = dict()  # for raw json, most of the time
 
 # 4 vars to handle the game loop conveniently
 gameover = False

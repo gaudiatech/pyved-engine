@@ -80,7 +80,9 @@ def set_virtual_screen(ref_surface):
     screen_rank += 1
 
 
-def proj_to_vscreen(org_screen_pos):
-    # TODO repair
-    # return conv_to_vscreen(*org_screen_pos)
-    return org_screen_pos
+def proj_to_vscreen(xy_pair):
+    global stored_upscaling
+    if stored_upscaling == 1:
+        return xy_pair
+    x, y = xy_pair
+    return x//stored_upscaling, y//stored_upscaling

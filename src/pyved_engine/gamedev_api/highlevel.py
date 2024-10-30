@@ -4,18 +4,20 @@ Pyv API := Ecs func/procedures
 
 """
 import csv
+import json
 import re
 import time
 import uuid
 from enum import Enum
 from math import degrees as _degrees
-from ..compo.MyGameCtrl import MyGameCtrl  # for retro-compatibility
+
 from .. import _hub
 from .. import custom_struct as struct
 from .. import state_management
 from .. import vars
 from ..compo import gfx
 from ..compo import vscreen
+from ..compo.MyGameCtrl import MyGameCtrl  # for retro-compatibility
 from ..compo.vscreen import flip as _oflip
 from ..core import events
 from ..core.events import EvManager
@@ -439,6 +441,46 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
         print('fetching the sound:', k, filepath)
         vars.sounds[k] = _hub.pygame.mixer.Sound(filepath)
 
+    # - load data files
+    # exemple : "cartridge/conversation.json"
+    # TODO ! unification/debug. Right now both assets & data_files can have a .TTF
+    x_ft_size = 13
+    modded_prefix = False
+    prefix = 'cartridge/'
+    for dat_file in adhoc_dict['data_files']:
+        k, ext = dat_file.split('.')
+        try:
+            # fresh filepath
+            filepath = prefix + dat_file
+            if webhack is not None:
+                filepath = webhack + filepath
+            # ---
+            if ext == 'json':
+                with open(filepath, 'r') as fptr:
+                    vars.data[k] = json.load(fptr)
+            elif ext == 'ttf':
+                vars.data[k] = _hub.pygame.Font(filepath, x_ft_size)
+            else:
+                raise NotImplementedError('for now, only data files supported in pyv are .TTF and .JSON')
+
+        except FileNotFoundError:  # TODO refactor to detect case A/B right at the launch script? -->Cleaner code
+            if not modded_prefix:
+                modded_prefix = True
+                prefix = _hub.bundle_name+'/'+prefix
+
+            # try again
+            # fresh filepath
+            filepath = prefix + dat_file
+            if webhack is not None:
+                filepath = webhack + filepath
+            # ---
+
+            if ext == 'json':
+                with open(filepath, 'r') as fptr:
+                    vars.data[k] = json.load(fptr)
+            elif ext == 'ttf':
+                vars.data[k] = _hub.pygame.Font(filepath, x_ft_size)
+
 
 def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=True):
     global _engine_rdy
@@ -549,15 +591,6 @@ def get_game_ctrl():
 
 def get_ready_flag():
     return _ready_flag
-
-
-# def proj_to_vscreen(xy_pair):
-#     global _upscaling_var
-#     if _upscaling_var == 1:
-#         return xy_pair
-#     else:
-#         x, y = xy_pair
-#         return x//_upscaling_var, y//_upscaling_var
 
 
 def close_game():
