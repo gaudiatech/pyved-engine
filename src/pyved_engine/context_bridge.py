@@ -8,6 +8,7 @@ import importlib as _importlib
 from . import pal  # link to palette options
 from ._ecs import all_entities, find_by_components, find_by_archetype, archetype_of, define_archetype, init_entity, \
     new_from_archetype, bulk_add_systems, systems_proc, delete_entity, wipe_entities
+from ._hub import PyModulePromise, Injector
 from ._utility import *  # dice rolls
 from .compo.GameTpl import GameTpl  # legacy cls
 from .gamedev_api.highlevel import *
@@ -18,13 +19,17 @@ __all__ = [
     'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE',
 
     # misc:
+    'PyModulePromise', 'Injector',
     'new_actor', 'del_actor', 'get_curr_world', 'switch_world', 'post_ev', 'process_events',
     'pal',
     'GameTpl',
-
     'engine_activation',
 
-    # part: legacy ECS (that can still be used today)
+    # <legacy> core engine functions
+    'get_game_ctrl',
+    'get_ready_flag',
+
+    # <legacy> ECS, can still be used today but using the 'esper' ECS plugin2.0 is the preferred way
     'all_entities',
     'archetype_of',
     'bulk_add_systems',

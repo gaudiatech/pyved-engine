@@ -79,8 +79,9 @@ class PygameKenBackend(BaseKenBackend):
 
     def __init__(self):
         import pygame as _genuine_pyg
-        _hub.kengi_inj.set('pygame', _genuine_pyg)
-        self._pygame_mod = _hub.kengi_inj['pygame']
+        injector = _hub.get_injector()
+        injector.set('pygame', _genuine_pyg)
+        self._pygame_mod = _hub.pygame
         self.debug_mode = False
         self._ev_storage = list()
         self.pyg_jm = None  # model for joystickS

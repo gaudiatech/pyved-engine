@@ -9,7 +9,7 @@ import time
 import uuid
 from enum import Enum
 from math import degrees as _degrees
-
+from ..compo.MyGameCtrl import MyGameCtrl  # for retro-compatibility
 from .. import _hub
 from .. import custom_struct as struct
 from .. import state_management
@@ -29,6 +29,9 @@ __all__ = [
     'declare_update', 'draw_circle', 'draw_line', 'draw_polygon', 'draw_rect', 'enum', 'enum_from_n', 'flip',
     'game_events_enum', 'get_ev_manager', 'get_gs_obj', 'get_pressed_keys', 'get_surface', 'init', 'new_font_obj',
     'new_rect_obj', 'preload_assets', 'struct', 'run_game',
+
+    # retro-compat,
+    'get_game_ctrl', 'get_ready_flag',
 
     # new (2024-10)
     'new_actor', 'del_actor', 'post_ev', 'get_curr_world', 'switch_world', 'process_events',
@@ -519,8 +522,12 @@ def _screen_param(gfx_mode_code, screen_dim, cached_paintev) -> None:
         _scr_init_flag = True
 
 
+_existing_game_ctrl = None
+_ready_flag = False
+
+
 def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_ev=None):
-    global _engine_rdy, _upscaling_var
+    global _engine_rdy, _upscaling_var, _existing_game_ctrl, _ready_flag
     if mode is None:
         mode = HIGH_RES_MODE
     if _engine_rdy:
@@ -531,6 +538,17 @@ def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_e
     vscreen.cached_pygame_mod = _hub.pygame
     _screen_param(mode, forced_size, cached_paint_ev)
     vars.clock = create_clock()
+    # for retro-compat
+    _existing_game_ctrl = MyGameCtrl()
+    _ready_flag = True
+
+
+def get_game_ctrl():
+    return _existing_game_ctrl
+
+
+def get_ready_flag():
+    return _ready_flag
 
 
 # def proj_to_vscreen(xy_pair):

@@ -10,13 +10,13 @@ in order to refer to other dependencies/sub-modules
 import importlib.util
 
 
-# TODO if this line missing, cant use Add-ons like .gui or .tmx
+bundle_name = None
+# not the best code layout, but if this line missing
+# several add_ons like .tmx or .isometric will break
 from .core import events
-# TODO need to include the API in the hub, not pygame /!\
-# import pygame
 
 
-class _PyModulePromise:
+class PyModulePromise:
     verbose = 1
     JIT_MSG_LOADING = '*Pyv add-on "{}" is ready! Loading on-the-fly ok*'
     ref_to_pygame = None
@@ -74,7 +74,7 @@ class Injector:
     def __init__(self, module_listing, package_arg):
         self._listing = dict()
         for mname, pypath in module_listing.items():
-            obj = _PyModulePromise(mname, pypath, package_arg)
+            obj = PyModulePromise(mname, pypath, package_arg)
             self._listing[obj.name] = obj
         self._man_set = dict()
         self._loading_done = False
@@ -91,7 +91,7 @@ class Injector:
 
     def set(self, mname, pymod):
         if mname == 'pygame':
-            _PyModulePromise.ref_to_pygame = pymod  # auto- bind
+            PyModulePromise.ref_to_pygame = pymod  # auto- bind
             print('auto bind')
         self._man_set[mname] = pymod
 
@@ -109,10 +109,10 @@ class Injector:
     def register(self, sm_name, py_path, pck_arg):
         if self._loading_done:
             print('***warning*** register plugin should be done before using loading elements')
-        self._listing[sm_name] = _PyModulePromise(sm_name, py_path, pck_arg)
+        self._listing[sm_name] = PyModulePromise(sm_name, py_path, pck_arg)
 
 
-kengi_inj = Injector({
+_kengi_inj = Injector({
     # lazy-loading due to the pygame emu mechanism...
     'Vector2d': 'pygame.math.Vector2',
 
@@ -122,8 +122,9 @@ kengi_inj = Injector({
     # 'ai': '.looparts.ai',
     # 'demolib': '.looparts.demolib',
     'gui': '.add_ons.gui',
-    # 'isometric': '.looparts.isometric',
-    # 'polarbear': '.looparts.polarbear',
+
+    'isometric': '.looparts.isometric',  # required to play demo 'isometric0'
+    'polarbear': '.looparts.polarbear',  # used to play demo 'isometric1'
     'tmx': '.add_ons.tmx',
     # 'anim': '.looparts.anim',
     # 'ascii': '.looparts.ascii',
@@ -136,13 +137,13 @@ kengi_inj = Injector({
 }, 'pyved_engine')
 
 
-def get_injector():
-    global kengi_inj
-    return kengi_inj
-
-
 def __getattr__(targ_sm_name):
-    if targ_sm_name in kengi_inj:
-        return kengi_inj[targ_sm_name]
+    if targ_sm_name in _kengi_inj:
+        return _kengi_inj[targ_sm_name]
     else:
         raise AttributeError(f"PYV cannot find any attr./ submodule named {targ_sm_name}")
+
+
+def get_injector():
+    global _kengi_inj
+    return _kengi_inj
