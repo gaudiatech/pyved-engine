@@ -1,5 +1,5 @@
 import operator
-import random
+import random as _random
 from abc import ABCMeta, abstractmethod
 
 
@@ -33,7 +33,7 @@ class StandardCard:
             raise ValueError('draw_card Err: excluded_set is too broad!')
         omega_code0 = set(cls.all_card_codes())
         omega_code = tuple(omega_code0 - excluded_set)
-        return cls(random.choice(omega_code))
+        return cls(_random.choice(omega_code))
 
     @property
     def code(self):
@@ -219,15 +219,15 @@ class PokerHand(BaseHandOfCards):
 
     @staticmethod
     def adhoc_mapping(xx):
-        tmp = {
+        temp_mapping = {
             'T': 10,
             'J': 11,
             'Q': 12,
             'K': 13,
             'A': 14
         }
-        if xx in tmp:
-            rez = str(tmp[xx])
+        if xx in temp_mapping:
+            rez = str(temp_mapping[xx])
         else:
             rez = xx.zfill(2)
         return rez
@@ -398,9 +398,9 @@ class CardDeck:
     > Or for example what if I design a new game where 3 jokers are used?
     """
 
-    def __init__(self):
+    def __init__(self, init_content=None):
         # by default we create a full deck, it contains every single standard card
-        self.content = list()
+        self.content = init_content if init_content else list()
         self.reset()
 
         # if contenu_init is None:
@@ -426,7 +426,7 @@ class CardDeck:
         del self.content[:]
         for c in StandardCard.all_card_codes():
             self.content.append(StandardCard(c))
-        random.shuffle(self.content)
+        _random.shuffle(self.content)
 
     def deal(self, n=1):
         k = self.size
@@ -445,6 +445,10 @@ class CardDeck:
     def size(self):
         return len(self.content)
 
+    # - deprecated
+    def shuffle(self):
+        raise NotImplementedError
+
     # anciennement def returnFromDead(self, deadDeck):
     def recois(self, autre_deck):
         """ Appends the cards from the deadDeck to the deck that is in play. This is called when the main deck
@@ -452,14 +456,13 @@ class CardDeck:
         # équivaut à défausser deadDeck dans le paquet courant
 
         for card in autre_deck.contenu:
-            self.contenu.append(card)
+            self.content.append(card)
         self.shuffle()
-
-        return self.__class__([])
-
+        y = CardDeck(self.content)
+        return y
 
     def get_info_card(self, ind):
-        return self.contenu[ind]
+        return self.content[ind]
 
     def deck_deal(self, dead_deck):
         """
@@ -471,7 +474,7 @@ class CardDeck:
 
         li_dealer_hand, li_player_hand = [], []
         cards_to_deal = 4
-        deck = self.contenu
+        deck = self.content
         while cards_to_deal > 0:
             if len(deck) == 0:
                 dead_deck = self.recois(dead_deck)
@@ -493,15 +496,56 @@ class CardDeck:
         the dead deck (cards that have been played and discarded)
         and shuffles them in. Then if the player is hitting, it gives
         a card to the player, or if the dealer is hitting, gives one to the dealer."""
-
         # if the deck is empty, shuffle in the dead deck
-        deck = self.contenu
+        deck = self.content
         if len(deck) == 0:
             dealt_deck = self.recois(dealt_deck)
 
         hand.contenu.append(deck[0])
         del deck[0]
         return dealt_deck, hand
+
+
+# --------------------------
+#  dice rolling
+# --------------------------
+def droll():
+    return _random.randint(1, 6)
+
+
+def droll_4():
+    return _random.randint(1, 4)
+
+
+def droll_8():
+    return _random.randint(1, 8)
+
+
+def droll_10():
+    return _random.randint(1, 10)
+
+
+def droll_12():
+    return _random.randint(1, 12)
+
+
+def droll_20():
+    return _random.randint(1, 20)
+
+
+def droll_100():
+    return _random.randint(1, 100)
+
+
+def custom_droll(li_dice_types) -> list:
+    """
+    Rolls several dices, based on a list. For example you can provide [6, 6, 20] in order to roll two
+    standard dices plus one 20-sided die
+    :param li_dice_types: for example you can provide [6, 6, 20]
+    :return: a list of values
+    """
+    per_dice_values = [_random.randint(1, nc) for nc in li_dice_types]
+    return per_dice_values
 
 
 if __name__ == '__main__':

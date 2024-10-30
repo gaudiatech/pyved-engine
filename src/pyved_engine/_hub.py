@@ -132,7 +132,7 @@ _kengi_inj = Injector({
     'rogue': '.looparts.rogue',
     'rpg': '.looparts.rpg',
     # 'sysconsole': '.looparts.sysconsole',
-    'tabletop': '.add_ons.tabletop',
+    'tabletop': '.looparts.tabletop',
     'terrain': '.looparts.terrain',
 }, 'pyved_engine')
 

@@ -461,7 +461,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
             elif ext == 'ttf':
                 vars.data[k] = _hub.pygame.Font(filepath, x_ft_size)
             else:
-                raise NotImplementedError('for now, only data files supported in pyv are .TTF and .JSON')
+                print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
 
         except FileNotFoundError:  # TODO refactor to detect case A/B right at the launch script? -->Cleaner code
             if not modded_prefix:

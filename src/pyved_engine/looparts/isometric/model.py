@@ -5,7 +5,7 @@ import struct
 from base64 import b64decode
 from xml.etree import ElementTree
 from zlib import decompress
-
+from ... import vars
 from .flags import *
 from ... import _hub
 
@@ -87,7 +87,8 @@ class IsometricTileset:
 
     def _add_image(self, folders, source, num_tiles):
         # TODO: Make this bit compatible with Kenji.
-        mysurf = _hub.pygame.image.load(os.path.join(os.sep.join(folders), source)).convert_alpha()
+        # mysurf = _hub.pygame.image.load(os.path.join(os.sep.join(folders), source)).convert_alpha()
+        mysurf = vars.images[source.split('.')[0]]
         mysurf.set_colorkey((255, 0, 255))
         myrect = _hub.pygame.Rect(0, 0, self.tile_width, self.tile_height)
         frames_per_row = mysurf.get_width() // self.tile_width
@@ -152,11 +153,11 @@ class IsometricTileset:
 
             # TODO: Another direct disk access here.
             if srcc.endswith(("tsx", "xml")):
-                with open(os.path.join(os.pathsep.join(folders), srcc)) as f:
+                with open(os.path.join(*folders, srcc)) as f:
                     tag = ElementTree.fromstring(f.read())
                     return cls.fromxml(folders, tag, firstgid)
             elif srcc.endswith(("tsj", "json")):
-                with open(os.path.join(os.pathsep.join(folders), srcc)) as f:
+                with open(os.path.join(*folders, srcc)) as f:
                     jdict = json.load(f)
 
         name = jdict['name']

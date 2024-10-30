@@ -2,14 +2,12 @@
 goal of this file is to define the full engine API for end users...
 But also specialize the API implementation based on the exec. context
 """
-
 import importlib as _importlib
 
 from . import pal  # link to palette options
 from ._ecs import all_entities, find_by_components, find_by_archetype, archetype_of, define_archetype, init_entity, \
     new_from_archetype, bulk_add_systems, systems_proc, delete_entity, wipe_entities
 from ._hub import PyModulePromise, Injector
-from ._utility import *  # dice rolls
 from .compo.GameTpl import GameTpl  # legacy cls
 from .gamedev_api.highlevel import *
 
@@ -41,16 +39,6 @@ __all__ = [
     'new_from_archetype',
     'systems_proc',
     'wipe_entities',
-
-    # dice rolls
-    'droll',
-    'droll_4',
-    'droll_8',
-    'droll_10',
-    'droll_12',
-    'droll_20',
-    'droll_100',
-    'custom_droll',
 
     # other
     'declare_game_states',

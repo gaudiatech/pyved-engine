@@ -32,7 +32,7 @@ from .pyvcli_config import VMSTORAGE_URL, API_FACADE_URL_TEMPL, API_SERVICES_URL
 
 
 __version__ = vars.ENGINE_VERSION_STR
-VERSION_PRINT_MESSAGE = 'pyved-engine v. %s (c) 2018-2024 the Kata.Games Team, Thomas EDER et al.'
+VERSION_PRINT_MESSAGE = 'pyved-engine %s | By: moonbak (Thomas I. EDER) and others, Copyright 2017-2024'
 
 
 # -----------------------------------
