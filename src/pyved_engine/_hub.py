@@ -141,7 +141,11 @@ def __getattr__(targ_sm_name):
     if targ_sm_name in _kengi_inj:
         return _kengi_inj[targ_sm_name]
     else:
-        raise AttributeError(f"PYV cannot find any attr./ submodule named {targ_sm_name}")
+        if targ_sm_name == 'pygame':
+            e_msg = "ERR! To use the event system or low-level objects you have to call pyv.bootstrap_e() first!"
+        else:
+            e_msg = f"ERR! Failed to fin requested pyv attribute/submodule, dev requested: {targ_sm_name}"
+        raise AttributeError(e_msg)
 
 
 def get_injector():

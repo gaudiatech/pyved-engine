@@ -358,6 +358,7 @@ def play_subcommand(x, devflag_on):
     if '.' != x and os.path.isdir('cartridge'):
         raise ValueError('launching with a "cartridge" in the current folder, but no parameter "." is forbidden')
 
+    metadata = None
     try:
         with open(os.path.join(x, 'cartridge', 'metadat.json'), 'r') as fptr:
             print(f"game bundle {x} found. Reading metadata...")
@@ -374,12 +375,14 @@ def play_subcommand(x, devflag_on):
             vmsl = importlib.import_module(LAUNCH_GAME_SCRIPT_BASENAME, None)
         else:
             vmsl = importlib.import_module('.' + LAUNCH_GAME_SCRIPT_BASENAME, x)
+
     except FileNotFoundError:
         print(f'Error: cannot find the game bundle you specified: {x}')
         print('  Are you sure it exists in the current folder? Alternatively you can try to')
         print('  change directory (cd) and simply type `pyv-cli play`')
         print('  once you are inside the bundle')
-    vmsl.bootgame(metadata)
+    if metadata:
+        vmsl.bootgame(metadata)
 
 
 def procedure_select_game_genre(mutable_obj):
