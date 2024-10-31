@@ -35,8 +35,10 @@ __all__ = [
     # retro-compat,
     'get_game_ctrl', 'get_ready_flag',
 
-    # new (2024-10)
-    'new_actor', 'del_actor', 'post_ev', 'get_curr_world', 'switch_world', 'process_events',
+    # newest gamedev API (2024-10)
+    'new_actor', 'del_actor', 'actor_state', 'actor_exec',
+    'post_ev', 'process_events',
+    'get_curr_world', 'switch_world',
 
     # const
     'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE'
@@ -186,7 +188,7 @@ def delete_world(name):
         del worlds[name]
 
 
-def new_actor(local_scope):
+def new_actor(actor_type, local_scope):
     """
     Automatically gathers functions in the local scope that follow the `on_X` naming convention
     (where X can be any combination of letters or underscores), and creates an event_handlers
@@ -218,7 +220,7 @@ def new_actor(local_scope):
     # Create a unique identifier for the actor
     actor_id = str(uuid.uuid4())
     actor_data = {
-        "name": local_scope['actor_type'],
+        "name": actor_type,
         "data": packed_data,
         "event_handlers": event_handlers,
         "functions": tempfunc
@@ -230,7 +232,6 @@ def new_actor(local_scope):
     for event, handler in event_handlers.items():
         _mediator.register(f"{event}", handler, actor_id)
     # print('creation actor: ', actor_id)
-
     return actor_id
 
 

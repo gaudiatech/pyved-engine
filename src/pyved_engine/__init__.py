@@ -30,6 +30,7 @@ from .compo import vscreen
 # ive kept it for retro-compatibility with projects that target pyv v23.6a1
 # such as demos/ecs_naif or the very early stage pyved ships-with-GUI editor
 from ._ecs_pattern import entity, component, System, SystemManager, EntityManager
+from . import evsys0
 
 # useful ALIAS! (webctx)
 defs = vars
