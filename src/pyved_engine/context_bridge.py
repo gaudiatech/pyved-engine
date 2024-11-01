@@ -16,10 +16,14 @@ __all__ = [
     # const
     'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE',
 
+    'time',
+
     # newest gamedev API (2024-10)
-    'new_actor', 'del_actor', 'actor_state', 'actor_exec',
+    'setup_evsys6', 'set_debug_flag',
+    'new_actor', 'del_actor', 'id_actor',
+    'peek', 'trigger',
     'post_ev', 'process_events',
-    'get_curr_world', 'switch_world',
+    'get_world', 'set_world', 'ls_worlds',
 
     # misc:
     'PyModulePromise', 'Injector',

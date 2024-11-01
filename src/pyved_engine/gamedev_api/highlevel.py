@@ -6,7 +6,6 @@ Pyv API := Ecs func/procedures
 import csv
 import json
 import re
-import time
 import uuid
 from enum import Enum
 from math import degrees as _degrees
@@ -32,24 +31,56 @@ __all__ = [
     'game_events_enum', 'get_ev_manager', 'get_gs_obj', 'get_pressed_keys', 'get_surface', 'init', 'new_font_obj',
     'new_rect_obj', 'preload_assets', 'struct', 'run_game',
 
+    'time',
+
     # retro-compat,
     'get_game_ctrl', 'get_ready_flag',
 
     # newest gamedev API (2024-10)
-    'new_actor', 'del_actor', 'actor_state', 'actor_exec',
+    'setup_evsys6',
+    'set_debug_flag',
+    'new_actor', 'del_actor', 'id_actor',
+    'peek', 'trigger',
     'post_ev', 'process_events',
-    'get_curr_world', 'switch_world',
+    'get_world', 'set_world', 'ls_worlds',
 
     # const
     'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE'
 ]
 
+import time as _time
+
+
+def time():
+    return _time.time()
+
 
 # -------------- actor-based gamedev API (experimental) -------------------------
+_debug_flag = False
+_basic_events = [
+    'update', 'draw',
+    'mousemotion', 'mouseup', 'mousedown',
+    'keyup', 'keydown', 'gameover'
+]
+omega_events = list(_basic_events)
+
 engine_debug_flag = True
 worlds = {"default": {"actors": {}}}
 _active_world = "default"
 t_last_tick = None
+
+
+def set_debug_flag(v=True):
+    global _debug_flag
+    _debug_flag = v
+
+
+def setup_evsys6(*ev_names):
+    global omega_events
+    del omega_events[:]
+    omega_events.extend(_basic_events)
+    if len(ev_names):
+        omega_events.extend(ev_names)
 
 
 class _Objectifier:
@@ -139,22 +170,27 @@ def process_events():
 
 
 def post_ev(evtype, **ev_raw_data):
+    if _debug_flag:
+        if evtype != 'update' and evtype != 'draw':
+            print('>>>>POST', evtype, ev_raw_data)
+    if evtype not in omega_events:
+        raise ValueError(f'trying to post event {evtype}, but this one hasnt been declared via pyv.setup_evsys6')
     if evtype[0] == 'x' and evtype[1] == '_':  # cross event
         _mediator.post(evtype, ev_raw_data, True)  # keep the raw form if we need to push to antother mediator
     else:
         _mediator.post(evtype, ev_raw_data, False)
 
 
-def list_worlds():
+def ls_worlds():
     """Lists all existing world contexts."""
     return list(worlds.keys())
 
 
-def get_curr_world():
+def get_world():
     return _active_world
 
 
-def switch_world(newworld_name):
+def set_world(newworld_name):
     """
     switches to the specified world context. Creates it if it doesn't exist
     """
@@ -216,6 +252,10 @@ def new_actor(actor_type, local_scope):
         for func_name, func in local_scope.items()
         if callable(func) and pattern.match(func_name)
     }
+    for fname_key in event_handlers:
+        if fname_key not in omega_events:
+            print('__ Have you called pyv.setup_evsys6 with the right parameters? __')
+            raise ValueError(f'unfinished actor {actor_type} tries to bind func to INVALID ev_type:{fname_key}')
 
     # Create a unique identifier for the actor
     actor_id = str(uuid.uuid4())
@@ -235,27 +275,39 @@ def new_actor(actor_type, local_scope):
     return actor_id
 
 
+def id_actor(ptr_data):
+    """
+    reverse: given data, provide the actor_id
+    """
+    for uid, actor_record in worlds[_active_world]["actors"].items():
+        if id(actor_record['data']) == id(ptr_data):
+            return uid
+    raise IndexError('cant find actor specified, provided data:', ptr_data)
+
+
 def del_actor(*args):
     """Unregisters all event handlers and removes the actor from the current world."""
     for actor_id in args:
         if actor_id is None:
             raise ValueError('tried to del_actor, but passed value:None')
-        _mediator.unregister(actor_id)
+
         if actor_id in worlds[_active_world]["actors"]:
             del worlds[_active_world]["actors"][actor_id]
+        _mediator.unregister(actor_id)
         # print('deletion actor: ', actor_id)
 
 
-def actor_state(actor_id):
+def peek(actor_id):
     """Returns the state of the actor with the given ID in the current world."""
     if actor_id is None:
         raise ValueError('passing an actor_id, with value:None')
     if actor_id not in worlds[_active_world]["actors"]:
+        print(f'***Warning! Trying to access actor {actor_id}, not found in the current world')
         return None
     return worlds[_active_world]["actors"].get(actor_id)["data"]
 
 
-def actor_exec(actor_id, func_name, *extra_args):
+def trigger(func_name, actor_id, *extra_args):
     actor_name = worlds[_active_world]["actors"].get(actor_id)["name"]
 
     # func_table = actor_state_res.functions
@@ -265,7 +317,7 @@ def actor_exec(actor_id, func_name, *extra_args):
         raise SyntaxError(f'cannot find function "{func_name}" for actor "{actor_name}" id:{actor_id}')
     else:
         this_arg = worlds[_active_world]["actors"].get(actor_id)["data"]
-        func_table[func_name](this_arg, *extra_args)
+        return func_table[func_name](this_arg, *extra_args)
 
 
 def packing_data(given_data):
@@ -350,7 +402,7 @@ def run_game():
         # it is assumed that the developer calls pyv.flip,
         # once per frame,
         # without the engine having to take care of that
-        vars.updatefunc_ref(time.time())
+        vars.updatefunc_ref(_time.time())
     vars.endfunc_ref(None)
 
 
