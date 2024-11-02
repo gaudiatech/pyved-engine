@@ -19,10 +19,10 @@ __all__ = [
     'time',
 
     # newest gamedev API (2024-10)
-    'setup_evsys6', 'set_debug_flag',
+    'declare_evs', 'set_debug_flag',
     'new_actor', 'del_actor', 'id_actor',
     'peek', 'trigger',
-    'post_ev', 'process_events',
+    'post_ev', 'process_evq',
     'get_world', 'set_world', 'ls_worlds',
 
     # misc:

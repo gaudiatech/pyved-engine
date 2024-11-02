@@ -25,6 +25,14 @@ from ..custom_struct import enum, enum_from_n
 from ..state_management import declare_game_states
 
 
+_BASE_ENGINE_EVS = [
+    'update', 'draw',
+    'mousemotion', 'mouseup', 'mousedown',
+    'keyup', 'keydown', 'gameover',
+    'conv_begins', 'conv_step', 'conv_finish',  # conversations with npcs
+]
+
+
 __all__ = [
     'bootstrap_e', 'close_game', 'curr_state', 'declare_begin', 'declare_end', 'declare_game_states',
     'declare_update', 'draw_circle', 'draw_line', 'draw_polygon', 'draw_rect', 'enum', 'enum_from_n', 'flip',
@@ -37,11 +45,11 @@ __all__ = [
     'get_game_ctrl', 'get_ready_flag',
 
     # newest gamedev API (2024-10)
-    'setup_evsys6',
+    'declare_evs',
     'set_debug_flag',
     'new_actor', 'del_actor', 'id_actor',
     'peek', 'trigger',
-    'post_ev', 'process_events',
+    'post_ev', 'process_evq',
     'get_world', 'set_world', 'ls_worlds',
 
     # const
@@ -57,14 +65,8 @@ def time():
 
 # -------------- actor-based gamedev API (experimental) -------------------------
 _debug_flag = False
-_basic_events = [
-    'update', 'draw',
-    'mousemotion', 'mouseup', 'mousedown',
-    'keyup', 'keydown', 'gameover'
-]
-omega_events = list(_basic_events)
+omega_events = list(_BASE_ENGINE_EVS)
 
-engine_debug_flag = True
 worlds = {"default": {"actors": {}}}
 _active_world = "default"
 t_last_tick = None
@@ -75,10 +77,10 @@ def set_debug_flag(v=True):
     _debug_flag = v
 
 
-def setup_evsys6(*ev_names):
+def declare_evs(*ev_names):
     global omega_events
     del omega_events[:]
-    omega_events.extend(_basic_events)
+    omega_events.extend(_BASE_ENGINE_EVS)
     if len(ev_names):
         omega_events.extend(ev_names)
 
@@ -165,7 +167,7 @@ class Mediator:
 _mediator = Mediator()
 
 
-def process_events():
+def process_evq():
     _mediator.update()
 
 
@@ -205,12 +207,12 @@ def set_world(newworld_name):
         }
     # switch to the world "newworld_name"
     _active_world = newworld_name
-    if engine_debug_flag:
+    if _debug_flag:
         print('new world:', newworld_name)
 
     # Let's register back all actors that do exist in this world
     for actor_id, actor_data in worlds[_active_world]["actors"].items():
-        if engine_debug_flag:
+        if _debug_flag:
             print(f're-bind all event handlers for actor {actor_id}')
         # Re-register the actor's event handlers
         for event_type, handler in actor_data["event_handlers"].items():

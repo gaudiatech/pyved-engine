@@ -8,7 +8,7 @@ from .. import _hub
 from .. import vars as pyv_vars
 from .. import core
 from .. import vscreen
-from ..gamedev_api.highlevel import new_actor, post_ev, new_font_obj, get_surface, new_font_obj
+from ..gamedev_api.highlevel import new_actor, post_ev, get_surface, new_font_obj, peek
 
 pygame = _hub.pygame  # alias to keep on using pygame, easily
 polarbear = _hub.polarbear
@@ -152,10 +152,13 @@ def new_automaton_viewer(*li_automata):
     )
     # declare what actor contains
     data = {
-        # evsys4
-        # 'wrapped_obj': ConversationView(inner_model)
-        'refviewer': conversation_view_actor(ref_automaton, None)
+        'ref_viewer': new_conversation_view_actor(ref_automaton, None)
     }
+
+    # - behavior
+    def on_conv_begins(this, ev):
+        peek(this.ref_viewer).active = True
+
     # evsys4
     # data['wrapped_obj'].turn_on()
     return new_actor('automaton_viewer', locals())
@@ -575,7 +578,7 @@ CONV_MENU_AREA = Frect(-75, 30, 300, 80)
 CONV_PORTRAIT_AREA = Frect(-240, -110, 150, 225)
 
 
-def conversation_view_actor(ref_automaton, font_name=None):
+def new_conversation_view_actor(ref_automaton, font_name=None):
     data = {
         'text': None,  # will received the first msg on the 1st update event
         'automaton': ref_automaton,
@@ -584,7 +587,8 @@ def conversation_view_actor(ref_automaton, font_name=None):
         'up_to_date': False,
         'font': pyv_vars.data[font_name] if font_name else new_font_obj(None, 24),
         'pre_render': None,
-        'ready_to_leave': False
+        'ready_to_leave': False,
+        'active': False
     }
     img_id = data['automaton'].inner_data['portrait']
     data['portrait'] = pyv_vars.images[img_id] if img_id else None
@@ -593,8 +597,11 @@ def conversation_view_actor(ref_automaton, font_name=None):
     def refresh_portrait(this, img_name):
         this.portrait = pyv_vars.images[img_name] if img_name else None
 
+    # --------------
     # - behavior
     def on_conv_step(this, ev):
+        if not this.active:
+            return
         # ~ iterate over the conversation...
         # print('--trait convCchoice', 'passage-->', ev.value)
         this.up_to_date = False
@@ -608,6 +615,8 @@ def conversation_view_actor(ref_automaton, font_name=None):
         # self.curr_offer = ev.value
 
     def on_update(this, ev):
+        if not this.active:
+            return
         if not this.up_to_date:
             this.up_to_date = True
             this.text = ref_automaton.get_current_state().message
@@ -625,6 +634,8 @@ def conversation_view_actor(ref_automaton, font_name=None):
             # this.my_menu.active = True
 
     def on_draw(this, ev):
+        if not this.active:
+            return
         if this.ready_to_leave:
             return
         if this.pre_render:
@@ -641,14 +652,20 @@ def conversation_view_actor(ref_automaton, font_name=None):
 
     # will have to forward 3 mouse events...
     def on_mousemotion(this, ev):
+        if not this.active:
+            return
         if this.my_menu:
             this.my_menu.on_mousemotion(ev)
 
     def on_mouseup(this, ev):
+        if not this.active:
+            return
         if this.my_menu:
             this.my_menu.on_mouseup(ev)
 
     def on_mousedown(this, ev):
+        if not this.active:
+            return
         if this.my_menu:
             this.my_menu.on_mousedown(ev)
 
