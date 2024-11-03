@@ -12,6 +12,7 @@ nav:
   - 'Other Patterns':
     - 'Other patterns/Event based programming.md'
     - 'Other patterns/MVC examples.md'
+    - 'Other patterns/Actor Based.md'
   - 'Game Tutorials':
     - 'GameTutorials/Breakout.md'
     - 'GameTutorials/Platformer.md'
