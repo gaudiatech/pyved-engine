@@ -60,7 +60,7 @@ In the context of `pyv`, you can select one out of three design patterns:
 manager object that will simplify object communication, and you can basically work as you prefer.
 <br><br>
 
-- As of today (november 2024) The [Actor based pattern](<Other patterns\Actor based.md>) is the recommanded gamedev API,
+- As of today (november 2024) The [Actor based pattern](<ActorBasedPattern.md>) is the recommanded gamedev API,
 for newcomers and testers of the **Pyv** solution. 
 
 - ECS : the [Entity Component System](<Entity Component System\A bit of theory.md>) ;
