@@ -261,6 +261,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#select-an-architecturea-pattern-for-your-game" class="md-nav__link">
+    Select an architecture/a pattern for your game
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#engine-features" class="md-nav__link">
     Engine features
   </a>
@@ -268,8 +275,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#an-architecture-for-your-game" class="md-nav__link">
-    An architecture for your game
+  <a href="#results" class="md-nav__link">
+    Results
   </a>
   
 </li>
@@ -411,6 +418,20 @@
     <li class="md-nav__item">
       <a href="Other%20patterns/MVC%20examples/" class="md-nav__link">
         MVC examples
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Other patterns/Actor Based.md" class="md-nav__link">
+        None
       </a>
     </li>
   
@@ -632,6 +653,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#select-an-architecturea-pattern-for-your-game" class="md-nav__link">
+    Select an architecture/a pattern for your game
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#engine-features" class="md-nav__link">
     Engine features
   </a>
@@ -639,8 +667,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#an-architecture-for-your-game" class="md-nav__link">
-    An architecture for your game
+  <a href="#results" class="md-nav__link">
+    Results
   </a>
   
 </li>
@@ -694,12 +722,45 @@ for many individuals.</p>
 </li>
 </ul>
 <p>How to accomplish this?
-By definiing many useful <a href="#Engine features">features</a> as described in the next section.</p>
-<h2 id="engine-features">Engine features</h2>
-<p>The game engine comes packed with a ton of features:</p>
+By definiing many useful <a href="##Engine features">features</a> as described in the next section.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The engine <strong>Pyv</strong> is an ambitious and still experimental project. Do not consider anything you see here
+as production-ready. Instead, we hope to receive some help from the community of open-source fans.
+If you spot bugs please go to our GitHub page and at leaste create an Issue! Explain how to reproduce the bug.
+If you have some spare time, you may fork the project then improve the tool. Pull requests are very welcome!</p>
+</div>
+<h2 id="select-an-architecturea-pattern-for-your-game">Select an architecture/a pattern for your game</h2>
+<p>Design patterns are crucial to be effective in game development.</p>
+<p>In the context of <code>pyv</code>, you can select one out of three design patterns:</p>
 <ul>
-<li><strong>Design pattern</strong> (Such as : <strong>ECS, Mediator and MVC</strong>)</li>
+<li>
+<p><a href="Other patterns\Event based programming.md">Mediator</a> : this solution is the more flexible. It offers centralized event
+manager object that will simplify object communication, and you can basically work as you prefer.
+<br><br></p>
+</li>
+<li>
+<p>As of today (november 2024) The <a href="Other patterns\Actor based.md">Actor based pattern</a> is the recommanded gamedev API,
+for newcomers and testers of the <strong>Pyv</strong> solution. </p>
+</li>
+<li>
+<p>ECS : the <a href="Entity Component System\A bit of theory.md">Entity Component System</a> ;
+if you want to directly review some code examples you can go to
+<a href="Entity%20Component%20System/ECS%20examples/">ECS Examples</a>
+<br><br></p>
+</li>
+<li>
+<p>MVC : the <a href="Other patterns\MVC Examples.md">Model-View-Controller pattern</a> is a more strict
+variant of the Mediator.</p>
+</li>
+</ul>
+<p>Please go to the dedicated page, and start learning  more about the design pattern you plan to use!</p>
+<h2 id="engine-features">Engine features</h2>
+<p>To conclude this overview, 
+we provide you with a list of the ton of features, the game engine <strong>Pyv</strong> comes packed with.</p>
+<ul>
 <li><strong>Event queue</strong> (simplifies the use of patterns such as: Mediator, the MVC pattern)</li>
+<li><strong>Design patterns</strong> (Such as : <strong>Mediator, Actor-based, ECS, and MVC</strong>)</li>
 <li><strong>Gamestate stack</strong>, state management via events</li>
 <li><strong>Simple GUI creation</strong>: buttons, checkboxes, etc.</li>
 <li><strong>Tileset loading</strong>, sprite animation</li>
@@ -709,31 +770,22 @@ By definiing many useful <a href="#Engine features">features</a> as described in
 <li><strong>Helper classes for adding artificial opponents/intelligent entities</strong> (NPCs) to your game</li>
 <li><strong>Isometric 3D game engine</strong> </li>
 <li><strong>Ease of distribution</strong> (Our platform KataGames will help deploy the game and make it playable through a browser in seconds)</li>
+<li><strong>Helper classes to create stories</strong></li>
+<li><strong>Helper classes to generate terrain randomly</strong> (level generation, etc.)</li>
 </ul>
-<p>...And this is only the beginning.</p>
-<p>More features will be available soon.</p>
+<h2 id="results">Results</h2>
+<p>All ideas presented above will allow you to create a great variety of games without too much trouble!</p>
+<p>Below, you can see some screenshots of game created using <strong>Pyv</strong> in a very short period of time.</p>
 <p><img alt="Game examples" src="images/gallery2.png" title="Games" /></p>
-<p><strong>You can checkout other examples of the games we did in the <a href="Showcase/">Showcase page</a></strong>  </p>
-<h2 id="an-architecture-for-your-game">An architecture for your game</h2>
-<p>We mentioned design patterns before. In the context of <code>pyv</code>,
-you can select one out of three design patterns:</p>
-<ul>
-<li>
-<p>ECS : the <a href="Entity Component System\A bit of theory.md">Entity Component System</a> ;
-if you want to directly review some code examples you can go to
-<a href="Entity%20Component%20System/ECS%20examples/">ECS Examples</a>
-<br><br></p>
-</li>
-<li>
-<p><a href="Other patterns\Event based programming.md">Mediator</a> : this solution uses a centralized event manager object that will simplify object communication
-<br><br></p>
-</li>
-<li>
-<p>MVC : the <a href="Other patterns\MVC Examples.md">Model-View-Controller pattern</a> is a more strict
-variant of the Mediator.</p>
-</li>
-</ul>
-<p>Please go to the dedicated page to learn more about the design pattern you plan to use.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>There are numerous examples of games that you can see in the <a href="Showcase/">Showcase page</a> !
+To inspect source-code of many sample/experimental games, you may visit: <a href="https://github.com/pyved-solution/game-templates-index">https://github.com/pyved-solution/game-templates-index</a> this is an amazing
+and rich source of information for any new developer to <strong>Pyv</strong></p>
+</div>
+<p><em>This is only the beginning!</em></p>
+<p>More features will be available before 2025, and many more games are expected to appear early in 2025.
+Maybe the next fantastic <strong>Pyv</strong>-based game will be created by you?!</p>
 
 
 
