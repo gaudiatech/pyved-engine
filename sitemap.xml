@@ -9,6 +9,14 @@
          
     </url>
     <url>
+         <loc>https://pyved-solution.github.io/pyved-engine/ActorBasedPattern/</loc>
+         <lastmod>2024-11-03</lastmod>
+         <changefreq>daily</changefreq>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/ActorBasedPattern/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/ActorBasedPattern/"/>
+         
+    </url>
+    <url>
          <loc>https://pyved-solution.github.io/pyved-engine/ShareYourGames/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
@@ -62,14 +70,6 @@
          <changefreq>daily</changefreq>
          <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/GameTutorials/Roguelike/"/>
          <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/GameTutorials/Roguelike/"/>
-         
-    </url>
-    <url>
-         <loc>https://pyved-solution.github.io/pyved-engine/Other%20patterns/Actor%20based/</loc>
-         <lastmod>2024-11-03</lastmod>
-         <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/Other%20patterns/Actor%20based/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/Other%20patterns/Actor%20based/"/>
          
     </url>
     <url>

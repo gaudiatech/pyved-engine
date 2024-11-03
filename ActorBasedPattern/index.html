@@ -8,11 +8,15 @@
       
       
       
-        <link rel="canonical" href="https://pyved-solution.github.io/pyved-engine/Other%20patterns/Actor%20based/">
+        <link rel="canonical" href="https://pyved-solution.github.io/pyved-engine/ActorBasedPattern/">
       
       
+        <link rel="prev" href="../Showcase/">
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      
+        <link rel="next" href="../Entity%20Component%20System/A%20bit%20of%20theory/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.1.14">
     
     
@@ -21,7 +25,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.85bb2934.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.85bb2934.min.css">
       
       
 
@@ -31,7 +35,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -69,7 +73,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="PYV game engine: the official docs" class="md-header__button md-logo" aria-label="PYV game engine: the official docs" data-md-component="logo">
+    <a href=".." title="PYV game engine: the official docs" class="md-header__button md-logo" aria-label="PYV game engine: the official docs" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 6H5V4h2v2m10 0h2V4h-2v2m6 6v6h-2v-4h-2v4h-2v-2H7v2H5v-4H3v4H1v-6h2v-2h2V8h2V6h2v2h6V6h2v2h2v2h2v2h2m-8-2v2h2v-2h-2m-8 2h2v-2H7v2m4 6H7v2h4v-2m6 0h-4v2h4v-2Z"/></svg>
@@ -167,7 +171,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="PYV game engine: the official docs" class="md-nav__button md-logo" aria-label="PYV game engine: the official docs" data-md-component="logo">
+    <a href=".." title="PYV game engine: the official docs" class="md-nav__button md-logo" aria-label="PYV game engine: the official docs" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7 6H5V4h2v2m10 0h2V4h-2v2m6 6v6h-2v-4h-2v4h-2v-2H7v2H5v-4H3v4H1v-6h2v-2h2V8h2V6h2v2h6V6h2v2h2v2h2v2h2m-8-2v2h2v-2h-2m-8 2h2v-2H7v2m4 6H7v2h4v-2m6 0h-4v2h4v-2Z"/></svg>
@@ -198,7 +202,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         Introduction
       </a>
     </li>
@@ -213,7 +217,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../Showcase/" class="md-nav__link">
+      <a href="../Showcase/" class="md-nav__link">
         Showcase
       </a>
     </li>
@@ -226,59 +230,66 @@
 
   
   
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Actor-Based pattern: a short introduction
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Actor-Based pattern: a short introduction
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
-      
-      
-      
-      
-      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
-      
-      
-      
-        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
-          Entity Component System
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-        <label class="md-nav__title" for="__nav_3">
-          <span class="md-nav__icon md-icon"></span>
-          Entity Component System
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
-          
-            
-              
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-les-core-functions" class="md-nav__link">
+    1/ les "core functions"
+  </a>
   
-    <li class="md-nav__item">
-      <a href="../../Entity%20Component%20System/A%20bit%20of%20theory/" class="md-nav__link">
-        A bit of theory
-      </a>
-    </li>
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-les-pattern-specific-functions" class="md-nav__link">
+    2/ les "pattern-specific functions"
+  </a>
   
-
-            
-          
-            
-              
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-la-categorie-des-engine-utility-functions" class="md-nav__link">
+    3/ la catégorie des "engine utility functions"
+  </a>
   
+</li>
+      
+    </ul>
   
-  
-    <li class="md-nav__item">
-      <a href="../../Entity%20Component%20System/ECS%20examples/" class="md-nav__link">
-        ECS in code
-      </a>
-    </li>
-  
-
-            
-          
-        </ul>
-      </nav>
+</nav>
+      
     </li>
   
 
@@ -301,14 +312,14 @@
       
       
         <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
-          Other Patterns
+          Entity Component System
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_4">
           <span class="md-nav__icon md-icon"></span>
-          Other Patterns
+          Entity Component System
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -318,8 +329,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../Event%20based%20programming/" class="md-nav__link">
-        Event based programming
+      <a href="../Entity%20Component%20System/A%20bit%20of%20theory/" class="md-nav__link">
+        A bit of theory
       </a>
     </li>
   
@@ -332,22 +343,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../MVC%20examples/" class="md-nav__link">
-        MVC examples
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../Other patterns/Actor Based.md" class="md-nav__link">
-        None
+      <a href="../Entity%20Component%20System/ECS%20examples/" class="md-nav__link">
+        ECS in code
       </a>
     </li>
   
@@ -378,14 +375,14 @@
       
       
         <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
-          Game Tutorials
+          Other Patterns
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_5">
           <span class="md-nav__icon md-icon"></span>
-          Game Tutorials
+          Other Patterns
         </label>
         <ul class="md-nav__list" data-md-scrollfix>
           
@@ -395,8 +392,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../GameTutorials/Breakout/" class="md-nav__link">
-        Breakout clone
+      <a href="../Other%20patterns/Event%20based%20programming/" class="md-nav__link">
+        Event based programming
       </a>
     </li>
   
@@ -409,22 +406,8 @@
   
   
     <li class="md-nav__item">
-      <a href="../../GameTutorials/Platformer/" class="md-nav__link">
-        Platformer
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../GameTutorials/Roguelike/" class="md-nav__link">
-        Grid-based 2d Roguelike
+      <a href="../Other%20patterns/MVC%20examples/" class="md-nav__link">
+        MVC examples
       </a>
     </li>
   
@@ -455,12 +438,89 @@
       
       
         <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-          Reference
+          Game Tutorials
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Game Tutorials
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../GameTutorials/Breakout/" class="md-nav__link">
+        Breakout clone
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../GameTutorials/Platformer/" class="md-nav__link">
+        Platformer
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../GameTutorials/Roguelike/" class="md-nav__link">
+        Grid-based 2d Roguelike
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+          Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_7">
           <span class="md-nav__icon md-icon"></span>
           Reference
         </label>
@@ -472,7 +532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../Reference/Using%20sprites/" class="md-nav__link">
+      <a href="../Reference/Using%20sprites/" class="md-nav__link">
         Using sprites
       </a>
     </li>
@@ -486,7 +546,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../Reference/Gamestates/" class="md-nav__link">
+      <a href="../Reference/Gamestates/" class="md-nav__link">
         Gamestates
       </a>
     </li>
@@ -508,7 +568,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ShareYourGames/" class="md-nav__link">
+      <a href="../ShareYourGames/" class="md-nav__link">
         Share your games
       </a>
     </li>
@@ -700,10 +760,10 @@ voir le fichier de définition pour un listing complet des couleurs disponibles:
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.b4d07000.min.js"></script>
+      <script src="../assets/javascripts/bundle.b4d07000.min.js"></script>
       
     
   </body>
