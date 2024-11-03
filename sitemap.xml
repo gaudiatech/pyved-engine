@@ -1,107 +1,107 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/ShareYourGames/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/ShareYourGames/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/ShareYourGames/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/ShareYourGames/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/ShareYourGames/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/ShareYourGames/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/Showcase/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/Showcase/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Showcase/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Showcase/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/Showcase/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/Showcase/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/Entity%20Component%20System/A%20bit%20of%20theory/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/Entity%20Component%20System/A%20bit%20of%20theory/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Entity%20Component%20System/A%20bit%20of%20theory/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Entity%20Component%20System/A%20bit%20of%20theory/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/Entity%20Component%20System/A%20bit%20of%20theory/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/Entity%20Component%20System/A%20bit%20of%20theory/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/Entity%20Component%20System/ECS%20examples/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/Entity%20Component%20System/ECS%20examples/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Entity%20Component%20System/ECS%20examples/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Entity%20Component%20System/ECS%20examples/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/Entity%20Component%20System/ECS%20examples/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/Entity%20Component%20System/ECS%20examples/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/GameTutorials/Breakout/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/GameTutorials/Breakout/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/GameTutorials/Breakout/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/GameTutorials/Breakout/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/GameTutorials/Breakout/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/GameTutorials/Breakout/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/GameTutorials/Platformer/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/GameTutorials/Platformer/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/GameTutorials/Platformer/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/GameTutorials/Platformer/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/GameTutorials/Platformer/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/GameTutorials/Platformer/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/GameTutorials/Roguelike/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/GameTutorials/Roguelike/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/GameTutorials/Roguelike/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/GameTutorials/Roguelike/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/GameTutorials/Roguelike/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/GameTutorials/Roguelike/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/Other%20patterns/Actor%20based/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/Other%20patterns/Actor%20based/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Other%20patterns/Actor%20based/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Other%20patterns/Actor%20based/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/Other%20patterns/Actor%20based/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/Other%20patterns/Actor%20based/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/Other%20patterns/Event%20based%20programming/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/Other%20patterns/Event%20based%20programming/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Other%20patterns/Event%20based%20programming/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Other%20patterns/Event%20based%20programming/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/Other%20patterns/Event%20based%20programming/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/Other%20patterns/Event%20based%20programming/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/Other%20patterns/MVC%20examples/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/Other%20patterns/MVC%20examples/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Other%20patterns/MVC%20examples/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Other%20patterns/MVC%20examples/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/Other%20patterns/MVC%20examples/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/Other%20patterns/MVC%20examples/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/Reference/Gamestates/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/Reference/Gamestates/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Reference/Gamestates/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Reference/Gamestates/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/Reference/Gamestates/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/Reference/Gamestates/"/>
          
     </url>
     <url>
-         <loc>https://gaudiatech.github.io/pyved-engine/Reference/Using%20sprites/</loc>
+         <loc>https://pyved-solution.github.io/pyved-engine/Reference/Using%20sprites/</loc>
          <lastmod>2024-11-03</lastmod>
          <changefreq>daily</changefreq>
-         <xhtml:link rel="alternate" hreflang="en" href="https://gaudiatech.github.io/pyved-engine/en/Reference/Using%20sprites/"/>
-         <xhtml:link rel="alternate" hreflang="fr" href="https://gaudiatech.github.io/pyved-engine/fr/Reference/Using%20sprites/"/>
+         <xhtml:link rel="alternate" hreflang="en" href="https://pyved-solution.github.io/pyved-engine/en/Reference/Using%20sprites/"/>
+         <xhtml:link rel="alternate" hreflang="fr" href="https://pyved-solution.github.io/pyved-engine/fr/Reference/Using%20sprites/"/>
          
     </url>
 </urlset>
