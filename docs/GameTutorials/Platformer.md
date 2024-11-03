@@ -9,7 +9,7 @@ Indeed, we'll use the `pyv-cli` command to initialize the project. That command
 is installed when you install `pyved-engine`.
 
 If you need further help for installing PYV, please refer to the
-[Documentation Homepage](https://gaudiatech.github.io/pyved-engine/).
+[Documentation Homepage](https://pyved-solution.github.io/pyved-engine/).
 
 Before the end of this tutorial, you will need to use a few game assets. You
 can retrieve game assets now by right-clicking them, and downloading these to your

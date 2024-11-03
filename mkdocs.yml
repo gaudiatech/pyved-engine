@@ -1,6 +1,6 @@
 site_name: "PYV game engine: the official docs"
-site_url: https://gaudiatech.github.io/pyved-engine/
-repo_url: https://github.com/gaudiatech/pyved-engine
+site_url: https://pyved-solution.github.io/pyved-engine/
+repo_url: https://github.com/pyved-solution/pyved-engine
 
 
 nav:
@@ -33,7 +33,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/gaudiatech/pyved-engine
+      link: https://github.com/pyved-solution/pyved-engine
       name: Pyved-engine on Github
 
 

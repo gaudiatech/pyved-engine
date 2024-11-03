@@ -9,7 +9,7 @@ Note that the game in its final state is already available in the `pyved-engine`
 
 If you need further help for using PYV,
 you can always refer to the
-[**pyved-engine full docs homepage**](https://gaudiatech.github.io/pyved-engine/).
+[**pyved-engine full docs homepage**](https://pyved-solution.github.io/pyved-engine/).
 
 
 ## Step 0. Getting Started
