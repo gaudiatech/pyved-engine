@@ -23,7 +23,8 @@ __all__ = [
     'new_actor', 'del_actor', 'id_actor',
     'peek', 'trigger',
     'post_ev', 'process_evq',
-    'get_world', 'set_world', 'ls_worlds',
+    'get_scene', 'set_scene', 'ls_scenes',
+    'DEFAULT_SCENE',
 
     # misc:
     'PyModulePromise', 'Injector',

@@ -50,7 +50,8 @@ __all__ = [
     'new_actor', 'del_actor', 'id_actor',
     'peek', 'trigger',
     'post_ev', 'process_evq',
-    'get_world', 'set_world', 'ls_worlds',
+    'get_scene', 'set_scene', 'ls_scenes',
+    'DEFAULT_SCENE',
 
     # const
     'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE'
@@ -67,8 +68,9 @@ def time():
 _debug_flag = False
 omega_events = list(_BASE_ENGINE_EVS)
 
-worlds = {"default": {"actors": {}}}
-_active_world = "default"
+DEFAULT_SCENE = 'default'
+worlds = {DEFAULT_SCENE: {"actors": {}}}
+_active_world = DEFAULT_SCENE
 t_last_tick = None
 
 
@@ -183,16 +185,16 @@ def post_ev(evtype, **ev_raw_data):
         _mediator.post(evtype, ev_raw_data, False)
 
 
-def ls_worlds():
-    """Lists all existing world contexts."""
+def ls_scenes():
+    """Lists all existing scenes."""
     return list(worlds.keys())
 
 
-def get_world():
+def get_scene():
     return _active_world
 
 
-def set_world(newworld_name):
+def set_scene(newworld_name):
     """
     switches to the specified world context. Creates it if it doesn't exist
     """
@@ -514,7 +516,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                 with open(filepath, 'r') as fptr:
                     vars.data[k] = json.load(fptr)
             elif ext == 'ttf':
-                vars.data[k] = _hub.pygame.Font(filepath, x_ft_size)
+                vars.data[k] = _hub.pygame.font.Font(filepath, x_ft_size)
             else:
                 print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
 
@@ -534,7 +536,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                 with open(filepath, 'r') as fptr:
                     vars.data[k] = json.load(fptr)
             elif ext == 'ttf':
-                vars.data[k] = _hub.pygame.Font(filepath, x_ft_size)
+                vars.data[k] = _hub.pygame.font.Font(filepath, x_ft_size)
 
 
 def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=True):
