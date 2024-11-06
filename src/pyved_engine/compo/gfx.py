@@ -376,3 +376,94 @@ class Spritesheet:
         tw, th = rect[2], rect[3]
         tups = [(rect[0] + x * tw, rect[1], tw, th) for x in range(image_count)]
         return self.images_at(tups, colorkey)
+
+
+# - modern version (2024)
+class AnimatedSprite:
+    FRAMES_ENTRY_IDSTRUCT = 'set'  # IDSTRUCT->In Data STRUCTure
+    DELAY_ENTRY_IDSTRUCT = 'delay'
+
+    def __init__(self, gpos, spr_sheet, animation_data):
+        """
+        Load animations from the provided animation data structure.
+        The animation_data format should match the JSON structure like:
+        {
+            "idle": {"set": "0-5", "delay": 100},
+            "attack": {"set": [6,7,8,9,10,11], "delay": 250}
+        }
+        """
+        # super().__init__()
+        self._future_pos = [
+            gpos[0], gpos[1]
+        ]
+        # Using JsonBasedSprSheet object as the source for images
+        self.spr_sheet = spr_sheet
+        self._animations = {}  # the default anim always has the name "idle"
+        self.rect = None
+
+        # Animation-specific attributes
+        self._curr_anim_name = None
+        self._curr_img_list = None
+        self._curr_nb_frames = 0
+        self.k = 0
+        self.delay_per_frame = 100 / 1000  # default to 100ms
+        self.stack_time = 0
+        self._image = None
+
+        # Load animations from provided animation data
+        self._load_anims(animation_data)
+
+    def _ensure_list(self, obj):
+        if isinstance(obj, str):
+            start, end = map(int, obj.split('-'))
+            return list(range(start, end + 1))
+        else:
+            return obj
+
+    def _load_anims(self, animation_data):
+        self._animations.clear()
+        for anim_name, data in animation_data.items():
+            frames = []
+            all_names = data[self.FRAMES_ENTRY_IDSTRUCT]
+            for sprite_name in all_names:  # assumes naming is like "chip02.png"
+                if sprite_name not in self.spr_sheet.all_names:
+                    raise ValueError(f"No sprite named {sprite_name} in the sprite sheet!")
+                frames.append(self.spr_sheet[sprite_name])
+            self._animations[anim_name] = (frames, data[self.DELAY_ENTRY_IDSTRUCT])
+
+    def play(self, anim_name):
+        self._curr_anim_name = anim_name
+        self._curr_img_list, self.delay_per_frame = self._animations[anim_name]
+        self._curr_nb_frames = len(self._curr_img_list)
+        self._image = self._curr_img_list[0]
+        if self.rect is None:
+            self.rect = self.image.get_rect()
+            self.rect.topleft = (
+                self._future_pos[0], self._future_pos[1]
+            )
+        self.k = 0
+        self.stack_time = 0
+
+    def update(self, dt):
+        self.stack_time += 1000*dt
+        if self.stack_time > self.delay_per_frame:
+            self.stack_time -= self.delay_per_frame
+            self.k = (self.k + 1) % self._curr_nb_frames
+            self._image = self._curr_img_list[self.k]
+
+    @property
+    def image(self):
+        if self._curr_anim_name is None:
+            raise ValueError('cant draw an animation that hasnt started')
+        return self._image
+
+    @property
+    def pos(self):
+        return self.rect.topleft
+
+    @pos.setter
+    def pos(self, np):
+        self.rect.topleft = (np[0], np[1])
+
+    # def draw(self, screenref):
+    #    screenref.blit(self.image, self.rect.topleft)

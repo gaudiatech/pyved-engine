@@ -39,6 +39,7 @@ __all__ = [
     'game_events_enum', 'get_ev_manager', 'get_gs_obj', 'get_pressed_keys', 'get_surface', 'init', 'new_font_obj',
     'new_rect_obj', 'preload_assets', 'struct', 'run_game',
 
+    'play_sound',
     'time',
 
     # retro-compat,
@@ -62,6 +63,10 @@ import time as _time
 
 def time():
     return _time.time()
+
+
+def play_sound(sound_key, repeat=0):
+    vars.sounds[sound_key].play(repeat)
 
 
 # -------------- actor-based gamedev API (experimental) -------------------------
@@ -641,6 +646,7 @@ def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_e
     _existing_game_ctrl = MyGameCtrl()
     _ready_flag = True
 
+    _hub.pygame.mixer.init()  # we always enable sounds
 
 def get_game_ctrl():
     return _existing_game_ctrl
@@ -652,7 +658,9 @@ def get_ready_flag():
 
 def close_game():
     vars.gameover = False
+    _hub.pygame.mixer.quit()
     _hub.pygame.quit()
+
     vars.images.clear()
     vars.csvdata.clear()
     vars.sounds.clear()
