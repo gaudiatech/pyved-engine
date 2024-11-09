@@ -1,10 +1,11 @@
 import json
 import os
 import re
+import shutil
+import time
 
-import requests
-
-from . import pyvcli_config
+from . import bundle_ops
+from . import server_ops as _netw
 
 
 EXP_METADAT_KEYS = (
@@ -52,21 +53,60 @@ class MetadatEntries:
     DefaultAuthor = 'Unknown'
 
 
-template_pyconnector_config_file = """
-{
-  "api_url": "https://services-beta.kata.games",
-  "jwt": "ce60ff8ecbeec9d16d7b329be193894d89982abab75bcb02",
-  "username": "badmojo",
-  "user_id": 6
-}
-"""
+# private constants
+BASIC_LAUNCH_GAME_SCRIPT_LOC = ('spare_parts', 'launch_game0.py')
+NETW_LAUNCH_GAME_SCRIPT_LOC = ('spare_parts', 'launch_game1.py')
+
+# private alias
+fpath_join = os.path.join
 
 
-def fetch_remote_game_genres():
-    url = pyvcli_config.get_game_genres_url(False)  # TODO support <dev> and <testnet> modes
-    r = requests.get(url)
-    li_game_genres = json.loads(r.text)
-    return li_game_genres
+def copy_launcher_script(bundlename, basic_bundle=True):
+    """
+    sélectionne le bon script & le copie vers le bundle identifié par bundlename
+    """
+    # prepare the launch_game.py script
+    root_pyvcli = os.path.dirname(os.path.abspath(__file__))
+    ylist = BASIC_LAUNCH_GAME_SCRIPT_LOC if basic_bundle else NETW_LAUNCH_GAME_SCRIPT_LOC
+    src_file = fpath_join(os.path.join(root_pyvcli, *ylist))
+
+    filename = f"{bundle_ops.RUNGAME_SCRIPT_NAME}.py"
+    dest_file = fpath_join(os.getcwd(), bundlename, filename)
+
+    # Nota Bene:
+    # shutil.copy2 preserves the original metadata, copy doesnt
+    # here, i can use copy, as launch_game.py metadata doesnt matter
+    shutil.copy(src_file, dest_file)
+
+
+def create_folder_and_serialize_dict(folder0_name, data_dict):
+    # Check if the folder exists, create it if not
+    folder1_name = fpath_join(folder0_name, 'cartridge')
+    if not os.path.exists(folder1_name):
+        os.makedirs(folder1_name)
+    # Serialize the dictionary using JSON and create a JSON file
+    json_file_path = fpath_join(folder1_name, 'metadat.json')
+    with open(json_file_path, 'w') as json_file:
+        json.dump(data_dict, json_file, indent=4)
+
+
+def recursive_copy(source_folder, destination_folder):
+    if not os.path.exists(destination_folder):
+        os.makedirs(destination_folder)
+    for item in os.listdir(source_folder):
+        source_item = fpath_join(source_folder, item)
+        destination_item = fpath_join(destination_folder, item)
+        if os.path.isdir(source_item):
+            recursive_copy(source_item, destination_item)
+        else:
+            shutil.copy2(source_item, destination_item)
+
+
+def test_isfile_in_cartridge(filename, bundle_name) -> bool:
+    wrapper_folder = fpath_join(os.getcwd(), bundle_name)
+    cartridge_folder = fpath_join(wrapper_folder, 'cartridge')
+    targ = os.path.sep.join((cartridge_folder, filename))
+    return os.path.isfile(targ)
 
 
 def verify_metadata(mdat_obj) -> str:
@@ -85,7 +125,7 @@ def verify_metadata(mdat_obj) -> str:
     # we also need to test whether Y or N, categories specified are still recognized within the CMS!
     if (not isinstance(mdat_obj['game_genre'], list)) or (len(mdat_obj['game_genre']) == 0):
         return 'Invalid metadat format: value tied to "game_genre" has to be a list with non-zero length'
-    ok_game_genres = fetch_remote_game_genres()
+    ok_game_genres = _netw.fetch_remote_game_genres()
     for elt in mdat_obj['game_genre']:
         if elt not in ok_game_genres:
             return f'Game genre "{elt}" rejected by the Kata.Games system, please contact an Admin, or replace value'
@@ -163,3 +203,46 @@ def safe_open_question(prompt, default_answer):
     if len(res) == 0:
         res = default_answer
     return res
+
+
+def gen_build_date_now():
+    return time.ctime(time.time())
+
+
+def save_list_of_py_files(directory, metadat_obj):
+    """
+    Recursively find *.py files récursivement tous les fichiers avec une extension .py dans un dossier donné.
+    """
+    python_files = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.py'):
+                # Ajoute le chemin relatif à partir du dossier de base
+                python_files.append(
+                    os.path.relpath(os.path.join(root, file), directory).replace('\\', '/')
+                )
+
+    # Mise à jour de la clé "source_files"
+    metadat_obj['source_files'] = python_files
+
+    # Update date de construction
+    metadat_obj['build_date'] = gen_build_date_now()
+
+
+def save_list_of_assets(cartridge_path, metadata):
+    # Get the base folder for assets
+    asset_base_folder = os.path.join(cartridge_path, metadata.get('asset_base_folder'))
+
+    # Recursive function to find asset files
+    def find_asset_files(base_folder, extensions=('.png', '.jpg', '.json')):
+        asset_files = []
+        for root, _, files in os.walk(base_folder):
+            for a_file in files:
+                if a_file.lower().endswith(extensions):
+                    # Include relative path within asset_base_folder
+                    relative_path = os.path.relpath(os.path.join(root, a_file), asset_base_folder)
+                    asset_files.append(relative_path)
+        return asset_files
+
+    # let's update the asset list now
+    metadata['asset_list'] = find_asset_files(asset_base_folder)

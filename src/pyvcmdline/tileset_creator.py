@@ -2,7 +2,8 @@ import copy
 import json
 from PIL import Image
 
-def create_json_for_tileset(file_name, img_dim, tile_size):
+
+def json_for_tileset(file_name, img_dim, tile_size):
     width, height = img_dim
     tile_width, tile_height = tile_size
 
@@ -98,19 +99,3 @@ def suggest_tile_sizes(minsize, image_path, spacing):
     else:
         print("No suitable tile sizes found with the given spacing.")
     return (width, height), candidates
-
-
-def start_creation(image_path):
-    minsize_given = int(input("Enter the minimal value (in pixels) you believe a tile can have: "))
-    spacing = int(input("Enter spacing value please (in pixels): "))
-    
-    img_size, tsize_candidates = suggest_tile_sizes(minsize_given, image_path, spacing)
-    print()
-    print('-'*32)
-    print('Possible values for tile sizes are:')
-    for k, val in enumerate(tsize_candidates):
-        print(f'{k} --> {val}')
-    chosen_k = int(input('Look at the image, then select the right tile_size candidate.Index? '))
-    tsize = tsize_candidates[chosen_k]
-    create_json_for_tileset(image_path.split('.')[0], img_size, tsize)
-    print('JSON file created successfully!')
