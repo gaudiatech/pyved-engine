@@ -29,10 +29,11 @@ from .pyvcli_cogs import LAUNCH_GAME_SCRIPT_BASENAME
 from .pyvcli_cogs import test_isfile_in_cartridge, proc_autogen_localctx, copy_launcher_script
 from .pyvcli_config import API_HOST_PLAY_DEV, FRUIT_URL_TEMPLATE_DEV, FRUIT_URL_TEMPLATE_BETA
 from .pyvcli_config import VMSTORAGE_URL, API_FACADE_URL_TEMPL, API_SERVICES_URL_TEMPL
+from .tileset_creator import start_creation
 
 
 __version__ = vars.ENGINE_VERSION_STR
-VERSION_PRINT_MESSAGE = 'pyved-engine %s | By: moonbak (Thomas I. EDER) and others, Copyright 2017-2024'
+VER_DISP_MSG = 'Pyved-engine %s  |  github.com/pyved-solution\nAuthors: Thomas I. EDER and others (c) 2018-2024'
 
 
 # -----------------------------------
@@ -592,7 +593,51 @@ def ensure_correct_slug(givenslug):
     return True, None
 
 
-def test_subcommand(bundle_name):
+def subcommand_share(bundle_name, dev_flag_on):
+    # TODO in the future,
+    #  we may want to create a 'pack' subcommand that would only produce the .zip, not send it elsewhere
+    # that pack subcommand would pack and send it to the cwd, whereas the classic pack uses the tempfile/tempdir logic
+
+    # - refresh list of files
+    metadat = read_metadata(bundle_name)
+    save_list_of_py_files(os.path.join(bundle_name, 'cartridge'), metadat)
+    rewrite_metadata(bundle_name, metadat)
+
+    slug = metadat['slug']
+    if dev_flag_on:  # in devmode, all tests on metadata are skipped
+        zipfile_path = pack_game_cartridge(slug)
+        print(f'file:{zipfile_path} packed, uploading it now...')
+        upload_my_zip_file(zipfile_path, slug, True)
+        return
+
+    err_msg_lines = [
+        'ERROR: the "share" is impossible yet, invalid metadat.json detected.',
+        'Please use "pyv-cli test BundleName"',
+        'in order to get more information and fix the problem'
+    ]
+    # if we're in prod mode, we HAVE TO pass all tests (slug is valid & available, etc.)
+    # before uploading
+    if verify_metadata(metadat) is None:
+        slug_correctness = ensure_correct_slug(slug)
+        while not slug_correctness[0]:
+            tmp = input('what alternative do you choose (please select a number: 0 to 3)? ')
+            if not (tmp.isnumeric() and (-1 < int(tmp) < 4)):
+                print('invalid input, please retry.')
+            else:
+                choice = int(tmp)
+                slug = slug_correctness[1][choice]
+                slug_correctness = ensure_correct_slug(slug)
+                # when renaming, both the metadata and the folder name need to be changed
+                do_bundle_renaming(bundle_name, slug)
+                bundle_name = slug
+        zipfile_path = pack_game_cartridge(bundle_name)
+        upload_my_zip_file(zipfile_path, slug, False)
+    else:
+        for msg_line in err_msg_lines:  # printing a multi-line error message
+            print(msg_line)
+
+
+def subcommand_test(bundle_name):
     print(f"Folder targetted to inspect game bundle: {bundle_name}")
     metadat = read_metadata(bundle_name)
     err_message = verify_metadata(metadat)
@@ -637,6 +682,10 @@ def test_subcommand(bundle_name):
     if not obj['available']:
         print('suggestions:')
         pprint(obj['suggestions'])
+
+
+def subcommand_ts_creation(img_name):
+    start_creation(img_name)
 
 
 def upload_my_zip_file(zip_file_path: str, gslug, debugmode: bool) -> None:
@@ -727,50 +776,6 @@ def pack_game_cartridge(bundl_name, using_temp_dir=True) -> str:
     return _inner_func(zip_precise_target)
 
 
-def share_subcommand(bundle_name, dev_flag_on):
-    # TODO in the future,
-    #  we may want to create a 'pack' subcommand that would only produce the .zip, not send it elsewhere
-    # that pack subcommand would pack and send it to the cwd, whereas the classic pack uses the tempfile/tempdir logic
-
-    # - refresh list of files
-    metadat = read_metadata(bundle_name)
-    save_list_of_py_files(os.path.join(bundle_name, 'cartridge'), metadat)
-    rewrite_metadata(bundle_name, metadat)
-
-    slug = metadat['slug']
-    if dev_flag_on:  # in devmode, all tests on metadata are skipped
-        zipfile_path = pack_game_cartridge(slug)
-        print(f'file:{zipfile_path} packed, uploading it now...')
-        upload_my_zip_file(zipfile_path, slug, True)
-        return
-
-    err_msg_lines = [
-        'ERROR: the "share" is impossible yet, invalid metadat.json detected.',
-        'Please use "pyv-cli test BundleName"',
-        'in order to get more information and fix the problem'
-    ]
-    # if we're in prod mode, we HAVE TO pass all tests (slug is valid & available, etc.)
-    # before uploading
-    if verify_metadata(metadat) is None:
-        slug_correctness = ensure_correct_slug(slug)
-        while not slug_correctness[0]:
-            tmp = input('what alternative do you choose (please select a number: 0 to 3)? ')
-            if not (tmp.isnumeric() and (-1 < int(tmp) < 4)):
-                print('invalid input, please retry.')
-            else:
-                choice = int(tmp)
-                slug = slug_correctness[1][choice]
-                slug_correctness = ensure_correct_slug(slug)
-                # when renaming, both the metadata and the folder name need to be changed
-                do_bundle_renaming(bundle_name, slug)
-                bundle_name = slug
-        zipfile_path = pack_game_cartridge(bundle_name)
-        upload_my_zip_file(zipfile_path, slug, False)
-    else:
-        for msg_line in err_msg_lines:  # printing a multi-line error message
-            print(msg_line)
-
-
 def upgrade_subcmd(bundlename):
     """
     ordre dans lequel l'algo procèdera, idéalement:
@@ -859,10 +864,11 @@ def main_inner(parser, argns):
     # definitions
     subcommand_mapping = {
         'init': init_command,
-        'test': test_subcommand,
         'upgrade': upgrade_subcmd,
         'play': play_subcommand,
-        'share': share_subcommand,
+        'share': subcommand_share,
+        'test': subcommand_test,
+        'ts-creation': subcommand_ts_creation,
         'pub': None,
         'bump': bump_subcommand,
         'refresh': refresh_subcommand,
@@ -875,7 +881,7 @@ def main_inner(parser, argns):
     ope_name = argns.subcommand
 
     if argns.version:
-        print(VERSION_PRINT_MESSAGE % __version__)
+        print(VER_DISP_MSG % __version__)
         return 0
     if argns.help:
         parser.print_help()
@@ -890,6 +896,10 @@ def main_inner(parser, argns):
     if ope_name in no_arg_subcommands:
         # a few subcommands do not take an argument
         adhoc_subcommand_func()
+
+    elif ope_name == 'ts-creation':
+        adhoc_subcommand_func(argns.image_path)
+
     else:
         xarg = _remove_junk_from_bundle_name(argns.bundle_name)
         if ope_name not in extra_flags_subcommands:
@@ -897,6 +907,7 @@ def main_inner(parser, argns):
         else:
             # a few subcommands require the the dev mode flag!
             adhoc_subcommand_func(xarg, argns.dev)
+
     return 0
 
     # handle ``pygmentize -L``
@@ -1295,15 +1306,6 @@ def do_parse_args():
     play_parser.add_argument(
         "bundle_name", type=str, help="Specified bundle"
     )
-
-    # ——————————————————————————————————
-    # +++ TEST subcommand
-    play_parser = subparsers.add_parser(
-        "test", help="can be used to test if the specified game bundle is valid or not"
-    )
-    play_parser.add_argument(
-        "bundle_name", type=str
-    )
     # ——————————————————————————————————
     # +++ REFRESH subcommand
     play_parser = subparsers.add_parser(
@@ -1329,7 +1331,22 @@ def do_parse_args():
     share_parser.add_argument(
         "bundle_name", type=str, nargs="?", default=".", help="Specified bundle (default: current folder)"
     )
-
+    # ——————————————————————————————————
+    # +++ TEST subcommand
+    play_parser = subparsers.add_parser(
+        "test", help="can be used to test if the specified game bundle is valid or not"
+    )
+    play_parser.add_argument(
+        "bundle_name", type=str
+    )
+    # ——————————————————————————————————
+    # +++ TS-CREATION subcommand
+    tsc_parser = subparsers.add_parser(
+        "ts-creation", help="can be used to create the JSON file that matches a tileset"
+    )
+    tsc_parser.add_argument(
+        "image_path", type=str
+    )
     # ——————————————————————————————————
     # +++ PUB subcommand {
     pubpp = subparsers.add_parser(
