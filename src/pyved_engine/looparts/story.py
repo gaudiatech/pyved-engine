@@ -32,6 +32,7 @@ ANCHOR_UPPERLEFT = pbear_frects_mod.ANCHOR_UPPERLEFT
 
 MENU_ITEM_COLOR = (150, 145, 130)
 MENU_SELECT_COLOR = (128, 250, 230)
+FONT_SIZE = 12
 
 # - aliases
 # frects = pyv.polarbear.frects
@@ -145,14 +146,14 @@ class Automaton:
 
 
 # - fct qui encapsule tout pour donner une interface plus simple (actor-based)
-def new_automaton_viewer(*li_automata):
+def new_automaton_viewer(fontname, *li_automata):
     # we have to pass args differently...
     ref_automaton = Automaton(
         *[(automaton_name, pyv_vars.data[automaton_name]) for automaton_name in li_automata]
     )
     # declare what actor contains
     data = {
-        'ref_viewer': new_conversation_view_actor(ref_automaton, None)
+        'ref_viewer': new_conversation_view_actor(ref_automaton, fontname)
     }
 
     # - behavior
@@ -252,9 +253,10 @@ class Menu(EvListener, Frect):  # N.B (tom) it would be better to inherit from E
         self.menuselect = menuselect
         self.border = border
         if font:
-            self.font = font  # pyv.vars.data['DejaVuSansCondensed-Bold']  # via engine
+            self.font = font
         else:
-            self.font = new_font_obj(None, 24)
+            self.font = new_font_obj(None, FONT_SIZE)
+
         self.more_image = self.font.render("+", True, menuselect)
         self.padding = padding
         self.item_class = item_class
@@ -578,14 +580,14 @@ CONV_MENU_AREA = Frect(-75, 30, 300, 80)
 CONV_PORTRAIT_AREA = Frect(-240, -110, 150, 225)
 
 
-def new_conversation_view_actor(ref_automaton, font_name=None):
+def new_conversation_view_actor(ref_automaton, font_name):
     data = {
         'text': None,  # will received the first msg on the 1st update event
         'automaton': ref_automaton,
         'portrait': None,
         'my_menu': None,  # to store possible answers
         'up_to_date': False,
-        'font': pyv_vars.data[font_name] if font_name else new_font_obj(None, 24),
+        'font': pyv_vars.data[font_name] if font_name else new_font_obj(None, FONT_SIZE),
         'pre_render': None,
         'ready_to_leave': False,
         'active': False
@@ -622,7 +624,7 @@ def new_conversation_view_actor(ref_automaton, font_name=None):
             this.text = ref_automaton.get_current_state().message
             this.my_menu = Menu(
                 CONV_MENU_AREA.dx, CONV_MENU_AREA.dy, CONV_MENU_AREA.w, CONV_MENU_AREA.h,
-                border=None, predraw=None
+                border=None, predraw=None, font=this.font
             )
             # populate menu
             for rep in this.automaton.get_current_state().transitions:
@@ -687,7 +689,7 @@ class ConversationView(EvListener):
         self._refresh_portrait(ref_automaton.inner_data['portrait'])
 
         self.pre_render = pre_render
-        self.font = pyv_vars.data[font_name] if font_name else new_font_obj(None, 24)  # using pre-load via engine
+        self.font = pyv_vars.data[font_name] if font_name else new_font_obj(None, FONT_SIZE)  # using pre-load via engine
 
         # cela equivaut à curr_state
         # self.curr_offer = root_offer

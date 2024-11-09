@@ -12,43 +12,89 @@ pygame = _hub.pygame
 pre_loaded_images = weakref.WeakValueDictionary()
 
 
-def truncline(text, font, maxwidth):
-    real = len(text)
-    stext = text
-    l = font.size(text)[0]
-    cut = 0
-    a = 0
-    done = 1
-    old = None
-    while l > maxwidth:
-        a = a + 1
-        n = text.rsplit(None, a)[0]
-        if stext == n:
-            cut += 1
-            stext = n[:-cut]
-        else:
-            stext = n
-        l = font.size(stext)[0]
-        real = len(stext)
-        done = 0
-    return real, done, stext
-
-
-def wrapline(text, font, maxwidth):
-    done = 0
-    wrapped = []
-    while not done:
-        nl, done, stext = truncline(text, font, maxwidth)
-        wrapped.append(stext.strip())
-        text = text[nl:]
-    return wrapped
-
-
-def wrap_multi_line(text, font, maxwidth):
-    """ returns text taking new lines into account.
+def truncline(text, font, max_width):
     """
-    lines = chain(*(wrapline(line, font, maxwidth) for line in text.splitlines()))
-    return list(lines)
+    Truncates a line of text to fit within a specified width without breaking words.
+
+    Parameters:
+    text (str): The original text to be truncated.
+    font (object): A font object that provides a size method to measure text width.
+    max_width (int): The maximum allowable width for the text.
+
+    Returns:
+    tuple: (real, done, truncated_text)
+        - real (int): The length of the truncated text.
+        - done (bool): A flag indicating if the entire text fits (True) or was truncated (False).
+        - truncated_text (str): The resulting truncated text that fits within max_width.
+    """
+    if font.size(text)[0] <= max_width:
+        return len(text), True, text
+    words = text.split()
+    truncated_text = ""
+    for word in words:
+        if font.size(truncated_text + word)[0] <= max_width:
+            truncated_text += word + " "
+        else:
+            break
+
+    truncated_text = truncated_text.rstrip()  # Remove trailing space
+    return len(truncated_text), False, truncated_text
+
+
+def wrap_line(text, font, max_width):
+    """
+    Wraps a line of text so that it fits within the specified width.
+
+    Parameters:
+    text (str): The original text to be wrapped.
+    font (object): A font object that provides a size method to measure text width.
+    max_width (int): The maximum allowable width for the text.
+
+    Returns:
+    list: A list of wrapped lines.
+    """
+    wrapped_lines = []
+    while text:
+        length, done, truncated_text = truncline(text, font, max_width)
+        wrapped_lines.append(truncated_text)
+        text = text[length:].lstrip()  # Remove leading space for the next line
+    return wrapped_lines
+
+
+def wrap_multi_line(text, font, max_width):
+    """
+    Wraps multiple lines of text, taking new lines into account.
+
+    Parameters:
+    text (str): The original text to be wrapped.
+    font (object): A font object that provides a size method to measure text width.
+    max_width (int): The maximum allowable width for the text.
+
+    Returns:
+    list: A list of wrapped lines, considering original line breaks.
+    """
+    lines = text.splitlines()
+    wrapped_text = []
+    for line in lines:
+        wrapped_text.extend(wrap_line(line, font, max_width))
+    return wrapped_text
+
+
+# def wrapline(text, font, maxwidth):
+    # done = 0
+    # wrapped = []
+    # while not done:
+        # nl, done, stext = truncline(text, font, maxwidth)
+        # wrapped.append(stext.strip())
+        # text = text[nl:]
+    # return wrapped
+
+
+# def wrap_multi_line(text, font, maxwidth):
+    # """ returns text taking new lines into account.
+    # """
+    # lines = chain(*(wrapline(line, font, maxwidth) for line in text.splitlines()))
+    # return list(lines)
 
 
 def render_text(font, text, width, color=TEXT_COLOR, justify=-1, antialias=True, dsuu=None, moff=None):
