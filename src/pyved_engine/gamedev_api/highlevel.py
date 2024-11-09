@@ -9,7 +9,7 @@ import re
 import uuid
 from enum import Enum
 from math import degrees as _degrees
-
+import os
 from .. import _hub
 from .. import custom_struct as struct
 from .. import state_management
@@ -429,7 +429,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
     from io import StringIO
 
     print('*' * 50)
-    print(' CALL to preload assets')
+    print(f' CALL to preload assets [whack? {webhack}]')
     print('*' * 50)
     print()
     for asset_desc in adhoc_dict['asset_list']:
@@ -509,14 +509,26 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
     x_ft_size = 13
     modded_prefix = False
     prefix = 'cartridge/'
+    if webhack:
+        for dat_file in adhoc_dict['data_files']:
+            fp = os.path.join(webhack, dat_file)
+            k, ext = dat_file.split('.')
+            if ext == 'json':  # not spritesheets! TODO control "data_hint?"
+                with open(fp, 'r') as fptr:
+                    vars.data[k] = json.load(fptr)
+            elif ext == 'ttf':
+                vars.data[k] = _hub.pygame.font.Font(fp, x_ft_size)
+            else:
+                print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
+
+        return  # end special case
+
     for dat_file in adhoc_dict['data_files']:
         k, ext = dat_file.split('.')
         try:
             # fresh filepath
             filepath = prefix + dat_file
-            if webhack is not None:
-                filepath = webhack + filepath
-            # ---
+
             if ext == 'json':
                 with open(filepath, 'r') as fptr:
                     vars.data[k] = json.load(fptr)
@@ -528,7 +540,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
         except FileNotFoundError:  # TODO refactor to detect case A/B right at the launch script? -->Cleaner code
             if not modded_prefix:
                 modded_prefix = True
-                prefix = _hub.bundle_name+'/'+prefix
+                prefix = os.path.join(_hub.bundle_name, prefix)
 
             # try again
             # fresh filepath

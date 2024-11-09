@@ -189,7 +189,7 @@ def build_primalbackend(pbe_identifier, libbundle_ver=None):
         # => (module==web_pbackend.py & cls==WebPbackend)
         # for example
         modulename = 'web_pbackend'
-        BackendAdhocClass = getattr(_hub.kengi_inj[modulename], to_camelcase(modulename))
+        BackendAdhocClass = getattr(_hub.get_injector()[modulename], to_camelcase(modulename))
         print('   *inside build_primalbackend*  adhoc class is ', BackendAdhocClass)
         return BackendAdhocClass(adhoc_ver)  # web backends need to ver. info. in great details!
     else:
