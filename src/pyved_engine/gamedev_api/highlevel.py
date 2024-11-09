@@ -472,9 +472,8 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                             map_data.append(list(map(int, row)))
                     vars.csvdata[kk[0]] = map_data
 
-            elif kk[1] == 'ttf':  # a TTF font
+            elif kk[1] == 'ttf':  # a >single< TTF font
                 key = "custom_ft"
-                ft_size = 22
                 ft_filename = asset_desc
 
                 if webhack:
@@ -484,7 +483,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                 print('fetching font:', key, ft_filename, f'[{y}]')
                 vars.fonts[key] = _hub.pygame.font.Font(
                     y,
-                    ft_size
+                    vars.DATA_FT_SIZE
                 )
 
             else:  # necessarily an image
@@ -506,7 +505,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
     # - load data files
     # exemple : "cartridge/conversation.json"
     # TODO ! unification/debug. Right now both assets & data_files can have a .TTF
-    x_ft_size = 13
+
     modded_prefix = False
     prefix = 'cartridge/'
     if webhack:
@@ -517,7 +516,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                 with open(fp, 'r') as fptr:
                     vars.data[k] = json.load(fptr)
             elif ext == 'ttf':
-                vars.data[k] = _hub.pygame.font.Font(fp, x_ft_size)
+                vars.data[k] = _hub.pygame.font.Font(fp, vars.DATA_FT_SIZE)
             else:
                 print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
 
@@ -533,7 +532,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                 with open(filepath, 'r') as fptr:
                     vars.data[k] = json.load(fptr)
             elif ext == 'ttf':
-                vars.data[k] = _hub.pygame.font.Font(filepath, x_ft_size)
+                vars.data[k] = _hub.pygame.font.Font(filepath, vars.DATA_FT_SIZE)
             else:
                 print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
 
@@ -553,7 +552,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                 with open(filepath, 'r') as fptr:
                     vars.data[k] = json.load(fptr)
             elif ext == 'ttf':
-                vars.data[k] = _hub.pygame.font.Font(filepath, x_ft_size)
+                vars.data[k] = _hub.pygame.font.Font(filepath, vars.DATA_FT_SIZE)
 
 
 def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=True):
