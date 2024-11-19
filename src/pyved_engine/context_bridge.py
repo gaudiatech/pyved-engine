@@ -17,7 +17,7 @@ __all__ = [
     'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE',
 
     'time',
-    'play_sound',
+    'play_sound', 'stop_sound',
 
     # newest gamedev API (2024-10)
     'declare_evs', 'set_debug_flag',

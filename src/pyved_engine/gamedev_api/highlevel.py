@@ -40,6 +40,7 @@ __all__ = [
     'new_rect_obj', 'preload_assets', 'struct', 'run_game',
 
     'play_sound',
+    'stop_sound',
     'time',
 
     # retro-compat,
@@ -67,6 +68,10 @@ def time():
 
 def play_sound(sound_key, repeat=0):
     vars.sounds[sound_key].play(repeat)
+
+
+def stop_sound(sound_key):
+    vars.sounds[sound_key].stop()
 
 
 # -------------- actor-based gamedev API (experimental) -------------------------
