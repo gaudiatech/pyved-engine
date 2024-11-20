@@ -3,6 +3,7 @@ tabulate
 pyperclip
 requests
 attrs
+pillow>=11.0.0
 setuptools
 mkdocs==1.4.3
 mkdocs-material==9.1.14
