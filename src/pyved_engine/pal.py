@@ -57,6 +57,11 @@ class _Pal:
             omega.remove(exck)
         return self.ctable[_rand.choice(omega)]
 
+    def next_colorname(self, cname):  # handy for cycling through all the palette
+        curr_k = self.names.index(cname)
+        k = (curr_k+1) % len(self.names)
+        return self.names[k]
+
     def __getattr__(self, item):
         return self.ctable[item]
 
@@ -142,6 +147,41 @@ _niobe = (
     ('darkgreen', 11, 24, 11),
 )
 
+_yudef = (
+    ('black', 0, 0, 0),
+    ('bright_orange', 254, 112, 0),
+    ('brown', 138, 96, 66),
+    ('cherry_red', 224, 60, 50),
+    ('crimson', 209, 15, 76),
+    ('dark_burgundy', 76, 0, 0),
+    ('dark_crimson', 153, 21, 21),
+    ('dark_green', 0, 61, 16),
+    ('dark_sky_blue', 68, 48, 186),
+    ('green', 0, 132, 86),
+    ('lavender', 204, 104, 228),
+    ('leaf_green', 99, 179, 29),
+    ('light_gray', 200, 200, 200),
+    ('lime_green', 164, 240, 34),
+    ('mauve', 120, 52, 80),
+    ('medium_gray', 112, 112, 112),
+    ('midnight_purple', 52, 0, 88),
+    ('mint_green', 88, 245, 177),
+    ('navy_blue', 32, 32, 64),
+    ('ocean_blue', 0, 106, 180),
+    ('olive_yellow', 163, 163, 36),
+    ('royal_purple', 150, 0, 220),
+    ('rust_orange', 202, 74, 0),
+    ('salmon_pink', 254, 98, 110),
+    ('sky_blue', 39, 186, 219),
+    ('soft_orange', 254, 184, 84),
+    ('soil', 164, 128, 128),
+    ('sunshine_yellow', 232, 234, 74),
+    ('teal_gray', 100, 164, 164),
+    ('vibrant_pink', 254, 72, 222),
+    ('white', 255, 255, 255),
+    ('wine_red', 134, 22, 80)
+)
+
 
 def __getattr__(name):
     return ALL_PALETTES[name]
@@ -154,5 +194,6 @@ ALL_PALETTES = {
     'c64': _Pal(_c64pdef),  # Commodore 64
     'japan': _Pal(_japan),
     'punk': _Pal(_cyberpunkdef),
-    'niobe': _Pal(_niobe)
+    'niobe': _Pal(_niobe),
+    'yu': _Pal(_yudef)
 }
