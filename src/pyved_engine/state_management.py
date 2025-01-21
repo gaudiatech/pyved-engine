@@ -1,7 +1,10 @@
-from ._hub import events
-from .custom_struct import Stack, StContainer
-from .core.events import EngineEvTypes
+import time
+
 from . import vars
+from .compo import vscreen
+from ._hub import events
+from .core.events import EngineEvTypes  # latest version of event sys
+from .custom_struct import Stack, StContainer
 
 
 multistate_flag = False
@@ -19,6 +22,8 @@ class StateStackCtrl(events.EvListener):
         self._st_container = StContainer()
         self._st_container.setup(all_gs, stmapping, None)
         self.__state_stack = Stack()
+
+        self.gameover = False
 
     def get_state_by_code(self, k):
         return self._st_container.retrieve(k)
@@ -69,6 +74,10 @@ class StateStackCtrl(events.EvListener):
     def on_gamestart(self, ev):
         self.__state_stack.push(self.first_state_id)
         self._st_container.retrieve(self.first_state_id).enter()
+        print('>>>pushin a state on the stack')
+
+    def on_gameover(self, ev):
+        self.gameover = True
 
     def on_state_change(self, ev):
         state_obj = self._st_container.retrieve(ev.state_ident)
@@ -80,6 +89,39 @@ class StateStackCtrl(events.EvListener):
 
     def on_state_pop(self, ev):
         self._pop_state()
+
+    # --- helper func ----
+    # deprecated
+    def loop(self):
+        """
+        its forbidden to call .loop() in the web ctx, but its convenient in the local ctx
+        if one wants to test a program without using the Kata VM
+        :return:
+        """
+        # evsys3.create_manager()
+
+        # lock mechanism, for extra safety so we never call .loop() in the web ctx
+        print('*warning: never use .loop in the web ctx*')
+        # use enter, update, exit to handle the global "run game logic"
+        # self.enter()
+
+        # notice: this class is "dirty" as it uses both the evsys4 and the evsys3
+        # TODO cleanup
+        # in evsys3 we had EngineEvTypes.GAMEBEGINS
+        self.pev(events.EngineEvTypes.Gamestart)
+
+        while not self.gameover:
+            infot = time.time()
+            self.pev(EngineEvTypes.Update, curr_t=infot)
+            self.pev(EngineEvTypes.Paint, screen=vars.screen)
+
+            self._manager.update()
+            vscreen.flip()
+            vars.clock.tick(vars.max_fps)
+            # self.update(infot)
+        # self.exit()
+        # print(self.INFO_STOP_MSG)
+        print('going out of the loop (StateStackCtrl)')
 
 
 def declare_game_states(gs_enum, assoc_gscode_gscls):

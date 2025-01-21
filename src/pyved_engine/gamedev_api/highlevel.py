@@ -650,19 +650,22 @@ def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_e
     global _engine_rdy, _upscaling_var, _existing_game_ctrl, _ready_flag
     if mode is None:
         mode = HIGH_RES_MODE
-    if _engine_rdy:
-        if wcaption:
-            _hub.pygame.display.set_caption(wcaption)
-    else:
+
+    if not _engine_rdy:
         bootstrap_e(maxfps, wcaption)
+    if wcaption:
+        _hub.pygame.display.set_caption(wcaption)
+    vars.max_fps = maxfps
+    vars.clock = create_clock()
+
     vscreen.cached_pygame_mod = _hub.pygame
     _screen_param(mode, forced_size, cached_paint_ev)
-    vars.clock = create_clock()
+
     # for retro-compat
     _existing_game_ctrl = MyGameCtrl()
     _ready_flag = True
-
     _hub.pygame.mixer.init()  # we always enable sounds
+
 
 def get_game_ctrl():
     return _existing_game_ctrl

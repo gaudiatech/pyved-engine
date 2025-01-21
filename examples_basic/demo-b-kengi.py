@@ -1,15 +1,16 @@
 """
-shows how one would implement multi-state games:
-with kengi vs in pygame
-see demo-b-pygame for comparison.
-"""
+exhibits how one would implement multi-state games with pyved,
 
-import katagames_engine as kengi
-kengi.init(2)
-pygame = kengi.pygame
-StackBasedGameCtrl = kengi.event.StackBasedGameCtrl
-EngineEvTypes = kengi.event.EngineEvTypes
-ReceiverObj = kengi.event.EventReceiver
+based on event sys 4
+"""
+import pyved_engine as pyv
+
+
+pyv.bootstrap_e()
+pygame = pyv.pygame
+StackBasedGameCtrl = pyv.state_management.StateStackCtrl
+EngineEvTypes = pyv.events.EngineEvTypes
+ReceiverObj = pyv.events.EvListener
 
 # constants
 BG_COLOR_ROOM1 = 'salmon'
@@ -18,7 +19,7 @@ PL_COLOR = (105, 184, 251)
 INIT_PL_POS = (240, 135)
 
 # gamestates declaration
-GameStates = kengi.struct.enum(
+GameStates = pyv.struct.enum(
     'Room1',
     'Room2'
 )
@@ -30,31 +31,31 @@ class Room1Manager(ReceiverObj):
         self.pl_pos = [44, 77]
         self.fresh_st = True
         self.av_pos = list(INIT_PL_POS)
-        self.scr_size = kengi.get_surface().get_size()
+        self.scr_size = pyv.get_surface().get_size()
 
-    def proc_event(self, ev, source):
-        if ev.type == EngineEvTypes.LOGICUPDATE:
+    def on_event(self, ev):  # source):
+        if ev.type == EngineEvTypes.Update:
             self.av_pos[0] = (self.av_pos[0] - 2) % self.scr_size[0]
             self.av_pos[1] = (self.av_pos[1] + 1) % self.scr_size[1]
 
-        elif ev.type == EngineEvTypes.PAINT:
+        elif ev.type == EngineEvTypes.Paint:
             ev.screen.fill(BG_COLOR_ROOM1)
             pygame.draw.circle(
                 ev.screen, PL_COLOR, self.av_pos, 15, 0
             )
-            kengi.flip()
 
-        elif ev.type == pygame.KEYDOWN:
-            if ev.key == pygame.K_RIGHT:
+        elif ev.type == EngineEvTypes.Keydown:
+            print('KKK')
+            if ev.key == pygame.K_SPACE:
                 self.fresh_st = False
-                self.pev(EngineEvTypes.PUSHSTATE, state_ident=GameStates.Room2)
+                self.pev(EngineEvTypes.StatePush, state_ident=GameStates.Room2)
             elif ev.key == pygame.K_RETURN and not self.fresh_st:
-                self.pev(EngineEvTypes.PUSHSTATE, state_ident=GameStates.Room2)
+                self.pev(EngineEvTypes.StatePush, state_ident=GameStates.Room2)
             elif ev.key == pygame.K_ESCAPE:
-                self.pev(EngineEvTypes.GAMEENDS)
+                self.pev(EngineEvTypes.Gameover)
 
 
-class Room1(kengi.BaseGameState):
+class Room1(pyv.BaseGameState):
     def __init__(self, stid):
         super().__init__(stid)
         self.saved_pos = [None, None]
@@ -80,29 +81,28 @@ class Room2Manager(ReceiverObj):
     def __init__(self):
         super().__init__()
         self.av_pos = list(INIT_PL_POS)
-        self.scr_size = kengi.get_surface().get_size()
+        self.scr_size = pyv.get_surface().get_size()
 
-    def proc_event(self, ev, source):
-        if ev.type == EngineEvTypes.LOGICUPDATE:
+    def on_event(self, ev):  #, source):
+        if ev.type == EngineEvTypes.Update:
             self.av_pos[0] = (self.av_pos[0] + 3) % self.scr_size[0]
             self.av_pos[1] = (self.av_pos[1] - 1) % self.scr_size[1]
 
-        elif ev.type == EngineEvTypes.PAINT:
+        elif ev.type == EngineEvTypes.Paint:
             ev.screen.fill(BG_COLOR_ROOM2)
             pygame.draw.circle(
                 ev.screen, (PL_COLOR[2], PL_COLOR[0], PL_COLOR[1]), self.av_pos, 37, 0
             )
-            kengi.flip()
 
-        elif ev.type == pygame.KEYDOWN:
-            if ev.key == pygame.K_LEFT or ev.key == pygame.K_RETURN:
+        elif ev.type == EngineEvTypes.Keydown:
+            if ev.key == pygame.K_BACKSPACE:
                 print('pop state')
-                self.pev(EngineEvTypes.POPSTATE)
+                self.pev(EngineEvTypes.StatePop)
             elif ev.key == pygame.K_ESCAPE:
-                self.pev(EngineEvTypes.GAMEENDS)
+                self.pev(EngineEvTypes.Gameover)
 
 
-class Room2(kengi.BaseGameState):
+class Room2(pyv.BaseGameState):
     def __init__(self, stid):
         super().__init__(stid)
         self.saved_pos = [None, None]
@@ -116,11 +116,22 @@ class Room2(kengi.BaseGameState):
         self.ctrl.turn_off()
 
 
-def play_game():
+if __name__ == '__main__':
+    print(" pyv implem of ~~~ Demo B | controls:")
+    print(" - RIGHT/LEFT arrow (change state)\n - ENTER (go back)\n - ESCAPE")
+    print()
+    print('press right first')
+
+    pyv.init(pyv.LOW_RES_MODE, maxfps=40, wcaption='states demo with pyved')
+    # IMPORTANT: setup events so the engine knows what can be triggered
+    # pyv.declare_evs() ->this would work if we use the actor-based logic,
+    # however, we are not, so we need to call the LEGACY function on the classic pyved event manager
+    pyv.get_ev_manager().setup()
+
+    # run the game loop
     game_ctrl = StackBasedGameCtrl(
-        kengi.get_game_ctrl(),
         GameStates,
-        None,  # glvars
+        # None,  # glvars
         {
             GameStates.Room1: Room1,
             GameStates.Room2: Room2
@@ -129,14 +140,5 @@ def play_game():
     game_ctrl.turn_on()
     game_ctrl.loop()
 
-
-if __name__ == '__main__':
-    print(" KENGI implem of ~~~ Demo B | controls:")
-    print(" - RIGHT/LEFT arrow (change state)\n - ENTER (go back)\n - ESCAPE")
-    print()
-    print('press right first')
-    pygame.init()
-    pygame.display.set_caption('demo-b uses pygame only')
-    play_game()
-    pygame.quit()
+    pyv.quit()
     print('bye.')
