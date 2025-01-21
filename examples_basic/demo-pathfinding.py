@@ -29,7 +29,7 @@ class PfDemoModel:
         self.end_pos = list(MAP_DIM)
         self.end_pos[0] -= 1
         self.end_pos[1] -= 1
-        self.the_map = pyv.e_struct.BoolMatrix(MAP_DIM)
+        self.the_map = pyv.struct.BoolMatrix(MAP_DIM)
         self.the_map.set_all(False)  # False means non-blocking
         self.curr_color_code = 0
         self.last_res = None

@@ -1,18 +1,24 @@
-import katagames_engine as kengi
+"""
+this file can help to convert TTF-based fonts to image-based fonts,
+can be handy for various projects when attempting to port the game
+so it runs nicely in the web context
+"""
+import pyved_engine as pyv
 
 
-kengi.init(2)
-pygame = kengi.pygame
-screen = kengi.get_surface()
+pyv.init(pyv.RETRO_MODE)
+pygame = pyv.pygame
+screen = pyv.get_surface()
 width, height = screen.get_size()
 FT_PATH = 'alphbeta.ttf'
 pyg_font = pygame.font.Font(FT_PATH, 12)
 
-block = kengi.gui.TextBlock(
+block = pyv.gui.TextBlock(
     pyg_font, 'no text', (255, 0, 0)  # pick either pyg_font or custom_ft
 )
+block.text_align = 0  # here, 0 means: left aligned text
 
-block.rect.center = (width // 2, height // 2)  # lets center the text block
+block.rect.center = (width // 2, height // 2)  # center the text block relatively to the screen
 print('*~*~*\npress and hold the space bar ; press ENTER to change alignment')
 can_exit = False
 
@@ -36,6 +42,6 @@ while not can_exit:
                 block.text = INIT_TXT
     screen.fill(GL_BG_COLOR)
     block.draw(screen)
-    kengi.flip()
+    pyv.flip()
 
-kengi.quit()
+pyv.quit()

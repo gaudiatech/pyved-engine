@@ -144,7 +144,12 @@ _japan = (
 )
 
 _niobe = (
-    ('darkgreen', 11, 24, 11),
+    ('superdarkgreen', 11, 24, 11),
+    ('matrixgreen', 0, 143, 17),
+    ('peach', 247, 181, 140),
+    ('purplegray', 132, 115, 156),
+    ('neonpurple', 167, 69, 255),
+    ('neongreen', 44, 255, 8)
 )
 
 _yudef = (
