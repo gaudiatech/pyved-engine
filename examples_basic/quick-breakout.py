@@ -1,7 +1,8 @@
 import math
-
 import pyved_engine as pyv
-pyv.bootstrap_e()  # so we can use pyv.pygame even before the GamEngin init call!
+
+
+pyv.bootstrap_e()  # important because we use pyv.Sprite and other things based off pygame
 
 
 # CONSTS:
@@ -31,9 +32,9 @@ player = None
 allsprites = font = balls = background = ball = None
 
 
-class Block(pyv.pygame.sprite.Sprite):
+class Block(pyv.Sprite):
     """This class represents each block that will get knocked out by the ball
-    It derives from the "Sprite" class in Pygame """
+    It derives from the "Sprite" class"""
 
     def __init__(self, color, x, y):
         """ Constructor. Pass in the color of the block,
@@ -58,9 +59,9 @@ class Block(pyv.pygame.sprite.Sprite):
         self.rect.y = y
 
 
-class Ball(pyv.pygame.sprite.Sprite):
+class Ball(pyv.Sprite):
     """ This class represents the ball
-        It derives from the "Sprite" class in Pygame """
+        It derives from the "Sprite" class"""
 
     # Speed in pixels per cycle
     speed = 10.0
@@ -131,7 +132,7 @@ class Ball(pyv.pygame.sprite.Sprite):
         return False
 
 
-class Player(pyv.pygame.sprite.Sprite):
+class Player(pyv.Sprite):
     """ This class represents the bar at the bottom that the
     player controls. """
 
@@ -155,7 +156,7 @@ class Player(pyv.pygame.sprite.Sprite):
     def update(self):
         """ Update the player position. """
         # Get where the mouse is
-        pos = pyv.pygame.mouse.get_pos()
+        pos = pyv.get_mouse_coords()
         # Set the left side of the player bar to the mouse position
         self.rect.x = pos[0]
         # Make sure we don't push the player paddle
@@ -167,22 +168,19 @@ class Player(pyv.pygame.sprite.Sprite):
 @pyv.declare_begin
 def init_game(vmst=None):
     global player_lost, screen, clock, blocks, player, allsprites, font, balls, background, ball
-    pyv.init(wcaption='Breakout')  # name the game-> window caption
-
+    pyv.init(wcaption='Breakout', maxfps=25)  # name the game-> window caption
     screen = pyv.get_surface()
-    # Enable this to make the mouse disappear when over our window
-    # pygame.mouse.set_visible(0)
 
     # This is a font we use to draw text on the screen (size 36)
-    font = pyv.pygame.font.Font(None, 36)
+    font = pyv.new_font_obj(None, 36)
 
     # Create a surface we can draw on
     background = pyv.surface_create(screen.get_size())
 
     # Create sprite lists
-    blocks = pyv.pygame.sprite.Group()
-    balls = pyv.pygame.sprite.Group()
-    allsprites = pyv.pygame.sprite.Group()
+    blocks = pyv.SpriteGroup()
+    balls = pyv.SpriteGroup()
+    allsprites = pyv.SpriteGroup()
 
     # Create the player paddle object
     player = Player()
@@ -224,10 +222,9 @@ def upd(time_info=None):
     global player_lost, clock, blocks, player, allsprites, font, ball
 
     # Main program loop
-
     # Process the events in the game
-    for event in pyv.pygame.event.get():
-        if event.type == pyv.pygame.QUIT:
+    for event in pyv.evsys0.get():
+        if event.type == pyv.evsys0.QUIT:
             pyv.vars.gameover = True
 
     # Update the ball and player position as long
@@ -238,7 +235,7 @@ def upd(time_info=None):
         player_lost = ball.update()
 
     # See if the ball hits the player paddle
-    if pyv.pygame.sprite.spritecollide(player, balls, False):
+    if pyv.sprite_collision(player, balls, False):
         # The 'diff' lets you try to bounce the ball left or right
         # depending where on the paddle you hit it
         diff = (player.rect.x + player.width / 2) - (ball.rect.x + ball.width / 2)
@@ -249,7 +246,7 @@ def upd(time_info=None):
         ball.bounce(diff)
 
     # Check for collisions between the ball and the blocks
-    deadblocks = pyv.pygame.sprite.spritecollide(ball, blocks, True)
+    deadblocks = pyv.sprite_collision(ball, blocks, True)
 
     # If we actually hit a block, bounce the ball
     if len(deadblocks) > 0:
@@ -274,7 +271,6 @@ def upd(time_info=None):
 
     # Flip the screen and show what we've drawn
     pyv.flip()
-    clock.tick(30)
 
 
 @pyv.declare_end

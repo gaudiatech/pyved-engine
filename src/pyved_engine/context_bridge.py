@@ -83,7 +83,11 @@ __all__ = [
     'preload_assets',
     'run_game',
     'systems_proc',
-    'get_mouse_coords'
+    'get_mouse_coords',
+
+    'surface_create',
+    'surface_rotate',
+    'create_clock'
 ]
 
 

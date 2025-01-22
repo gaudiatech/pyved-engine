@@ -1,29 +1,29 @@
-import katagames_engine as kengi
-from katagames_engine.foundation.pbackends import build_primalbackend
-ev2 = kengi.event2
-MyEvents = ev2.game_events_enum((
+"""
+showcasing the "dummy game" but we make use of the MVC pattern here.
+This file will help you in understanding how the pattern should be applied to
+your particular game idea
+"""
+import pyved_engine as pyv
+
+
+pyv.bootstrap_e()
+# from katagames_engine.foundation.pbackends import build_primalbackend
+# ev2 = pyv.event2
+MyEvents = pyv.game_events_enum((
     'PlayerMovement',  # contains attributes x, y
     'ColorChange',  # contains color_code
 ))
-kengi.bootstrap_e()
 
-# kengi.init(2, caption='demo-a uses kengi / events+mvc variant')
-pygame = kengi.pygame
-
-
-EngineEvTypes = ev2.EngineEvTypes
-gameover = False
-
-
-# declaring custom game events that are compatible with the kengi event-system:
-
+# here we wish to showcase "demo using events+the mvc pattern"
+pygame = pyv.pygame
+EngineEvTypes = pyv.events.EngineEvTypes
 
 
 # ------------------
-#  this software variant produces the same result as any demo-a,
+#  this software variant produces the same result as any dummy-pattern-none,
 #  but it uses the M.V.C. pattern cf. the 3 classes below
 # -----------------
-class GameState(ev2.Emitter):
+class GameState(pyv.events.Emitter):
     # As a rule of thumb: all classes that model some aspect of your software should inherit from CogObj
     """
     the model
@@ -33,7 +33,7 @@ class GameState(ev2.Emitter):
         self.av_pos = [240, 135]
         self.av_y_speed = 0
         self.curr_color_code = 0
-        self.bounds = kengi.get_surface().get_size()
+        self.bounds = pyv.get_surface().get_size()
 
     def refresh_avatar_pos(self):
         self.av_pos[1] = (self.av_pos[1] + self.av_y_speed) % self.bounds[1]
@@ -45,7 +45,7 @@ class GameState(ev2.Emitter):
         self.pev(MyEvents.ColorChange, color_code=self.curr_color_code)
 
 
-class GameView(ev2.EvListener):
+class GameView(pyv.events.EvListener):
     """
     the view
     """
@@ -67,12 +67,12 @@ class GameView(ev2.EvListener):
         self.pl_color = self._col_palette[ev.color_code]
 
     def on_paint(self, ev):
-        screen = kengi.get_surface()
+        screen = pyv.get_surface()
         screen.fill(self.BG_COLOR)
         pygame.draw.circle(ev.screen, self.pl_color, self.pl_screen_pos, 15, 0)
 
 
-class DemoCtrl(ev2.EvListener):
+class DemoCtrl(pyv.events.EvListener):
     """
     the controller
     """
@@ -87,8 +87,7 @@ class DemoCtrl(ev2.EvListener):
         self.state.refresh_avatar_pos()
 
     def on_quit(self, ev):
-        global gameover
-        gameover = True
+        pyv.vars.gameover = True
 
     def on_keyup(self, ev):
         prkeys = pygame.key.get_pressed()
@@ -96,9 +95,8 @@ class DemoCtrl(ev2.EvListener):
             self.state.av_y_speed = 0
 
     def on_keydown(self, ev):
-        global gameover
         if ev.key == pygame.K_ESCAPE:
-            gameover = True
+            pyv.vars.gameover = True
         elif ev.key == pygame.K_SPACE:
             self.state.switch_avatar_color()
         elif ev.key == pygame.K_UP:
@@ -111,14 +109,15 @@ def play_game():
     """
     using the built-in event manager + game controller to execute the game
     """
-    kengi.init(2, 'he', MyEvents)
+    pyv.init(pyv.LOW_RES_MODE, wcaption='hello')
+    pyv.get_ev_manager().setup(MyEvents)
 
     game_st = GameState()
-    game_ctrl = kengi.get_game_ctrl()
+    game_ctrl = pyv.get_game_ctrl()
     receivers = [game_ctrl, DemoCtrl(game_st), GameView(game_st)]
 
     # MANDATORY: setup the new event system!
-    ev2.EvManager.instance().setup(MyEvents)
+    pyv.events.EvManager.instance().setup(MyEvents)
 
     # verbose needed?
     # ev2.EvManager.instance().debug_mode = True
@@ -126,11 +125,11 @@ def play_game():
     for r in receivers:
         r.turn_on()  # listen to incoming events
     game_ctrl.loop()  # standard game loop
-    kengi.quit()
+    pyv.quit()
 
 
 if __name__ == '__main__':
-    print("~~~ KENGI events+mvc variant of Demo A~~~")
+    print("~~~ pyv events+mvc variant of Demo A~~~")
     print(" Controls: UP/DOWN arrow, SPACE, ESCAPE")
     print('~~~ ~~~')
     play_game()

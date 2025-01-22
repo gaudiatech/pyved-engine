@@ -37,6 +37,8 @@ while not can_exit:
         elif ev.type == pygame.KEYDOWN:
             if ev.key == pygame.K_RETURN:
                 block.text_align = (block.text_align + 1) % 2  # switch text align
+            elif ev.key == pygame.K_ESCAPE:
+                can_exit = True
         elif ev.type == pygame.KEYUP:
             if not pygame.key.get_pressed()[pygame.K_SPACE]:
                 block.text = INIT_TXT

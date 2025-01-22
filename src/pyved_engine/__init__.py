@@ -56,4 +56,11 @@ def set_webbackend_type(xval):
 def __getattr__(attr_name):
     if attr_name in ('ver', 'vernum'):
         return get_version()
+    elif attr_name == 'Sprite':
+        return _hub.pygame.sprite.Sprite
+    elif attr_name == 'SpriteGroup':
+        return _hub.pygame.sprite.Group
+    elif attr_name == 'sprite_collision':
+        return _hub.pygame.sprite.spritecollide
+
     return getattr(_hub, attr_name)

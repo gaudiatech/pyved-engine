@@ -39,6 +39,8 @@ __all__ = [
     'game_events_enum', 'get_ev_manager', 'get_gs_obj', 'get_pressed_keys', 'get_surface', 'init', 'new_font_obj',
     'new_rect_obj', 'preload_assets', 'struct', 'run_game',
 
+    'surface_create', 'surface_rotate', 'create_clock',
+
     'play_sound',
     'stop_sound',
     'time',
@@ -655,7 +657,15 @@ def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_e
         bootstrap_e(maxfps, wcaption)
     if wcaption:
         _hub.pygame.display.set_caption(wcaption)
-    vars.max_fps = maxfps
+
+    if maxfps is None:  # here, we may replace the existing value of maxfps in the engine
+        if vars.max_fps:
+            pass
+        else:
+            vars.max_fps = 60
+    else:
+        vars.max_fps = maxfps
+
     vars.clock = create_clock()
 
     vscreen.cached_pygame_mod = _hub.pygame

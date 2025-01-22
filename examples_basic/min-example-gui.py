@@ -33,6 +33,8 @@ while not ended:
                 block.text_align = (block.text_align + 1) % 2  # switch text align
             elif ev.key == pygame.K_SPACE:
                 block.text = ALT_TXT
+            elif ev.key == pygame.K_ESCAPE:
+                ended = True
         elif ev.type == pygame.KEYUP:
             if not pygame.key.get_pressed()[pygame.K_SPACE]:
                 block.text = INIT_TXT
