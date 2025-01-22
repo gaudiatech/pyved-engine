@@ -10,7 +10,7 @@ Instead use functions like pyv.preload_assets(...) or init(max_fps=..., ...) etc
 
 # below is a read-only value,
 # to retrieve this value from outside you can call pyv.get_version()
-ENGINE_VERSION_STR = '24.11a1'
+ENGINE_VERSION_STR = '25.1a1'
 
 DATA_FT_SIZE = 16
 
