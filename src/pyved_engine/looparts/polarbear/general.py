@@ -6,7 +6,6 @@ from . import image
 from .image import TEXT_COLOR, truncline, render_text
 from ... import _hub
 from ... import vars
-from ...compo import vscreen
 
 
 pygame = _hub.pygame

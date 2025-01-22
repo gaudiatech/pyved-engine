@@ -1,42 +1,36 @@
+"""
+this file is mostly "glue code" to hold together the modern gamedev API (actor-based)
+ along with legacy parts of the code that are contained within the "polarbear" pyv sub-module
+"""
 import collections
 import glob
 import json
 import random
 import re
-from ..core.events import EvListener, EngineEvTypes
+
 from .. import _hub
-from .. import vars as pyv_vars
 from .. import core
+from .. import vars as pyv_vars
 from .. import vscreen
+from ..core.events import EvListener, EngineEvTypes
 from ..gamedev_api.highlevel import new_actor, post_ev, get_surface, new_font_obj, peek
 
+
+# - aliases
 pygame = _hub.pygame  # alias to keep on using pygame, easily
 polarbear = _hub.polarbear
-
-# linking to (legacy) polarbear
-
 pbear_frects_mod = polarbear.frects
 Frect = pbear_frects_mod.Frect
 default_border = polarbear.default_border
-draw_text = polarbear.draw_text
+p_draw_text = polarbear.draw_text
 render_text = polarbear.render_text
 
+# - constants
 ANCHOR_CENTER = pbear_frects_mod.ANCHOR_CENTER
 ANCHOR_UPPERLEFT = pbear_frects_mod.ANCHOR_UPPERLEFT
-
-# draw_text = pyv.polarbear.draw_text
-# wait_event = pyv.polarbear.wait_event
-# TIMEREVENT = pyv.polarbear.TIMEREVENT
-# INFO_GREEN = pyv.polarbear.INFO_GREEN
-# DEFAULT_FONT_SIZE = 11
-
 MENU_ITEM_COLOR = (150, 145, 130)
 MENU_SELECT_COLOR = (128, 250, 230)
-FONT_SIZE = 12
-
-# - aliases
-# frects = pyv.polarbear.frects
-# default_border = pyv.polarbear.default_border
+DEFAULT_FONT_SIZE_CONV_MENU = 24
 
 
 class Transition:
@@ -146,7 +140,7 @@ class Automaton:
 
 
 # - fct qui encapsule tout pour donner une interface plus simple (actor-based)
-def new_automaton_viewer(fontname, *li_automata):
+def new_automaton_viewer(li_automata, fontname=None):
     # we have to pass args differently...
     ref_automaton = Automaton(
         *[(automaton_name, pyv_vars.data[automaton_name]) for automaton_name in li_automata]
@@ -180,18 +174,28 @@ class MenuItem(object):
         self.item_image = None
         self.select_image = None
         self.height = 0
-        self.msg = msg
 
-    def _get_msg(self):
+        self._msg = None
+        self.cached_antialias_status = None
+        self.set_msg(msg)
+
+    @property
+    def msg(self):
         return self._msg
 
-    def _set_msg(self, msg):
+    def set_msg(self, msg, antialias_val=True):
         self._msg = msg
-        self.item_image = render_text(self.font, self._msg, self.width, justify=self.justify, color=self.menuitem)
-        self.select_image = render_text(self.font, self._msg, self.width, justify=self.justify, color=self.menuselect)
+        # by default, it uses antialias
+        self.item_image = render_text(
+            self.font, self._msg, self.width, justify=self.justify, color=self.menuitem, antialias=antialias_val
+        )
+        self.select_image = render_text(
+            self.font, self._msg, self.width, justify=self.justify, color=self.menuselect, antialias=antialias_val
+        )
+        self.cached_antialias_status = antialias_val
         self.height = self.select_image.get_height()
 
-    msg = property(_get_msg, _set_msg)
+    # msg = property(_get_msg, _set_msg)
 
     SORT_LAYER = 0
 
@@ -200,12 +204,16 @@ class MenuItem(object):
 
     def __lt__(self, other):
         """ Comparison of menu items done by sort order, as defined above """
-        return (self.sort_order() < other.sort_order())
+        return self.sort_order() < other.sort_order()
 
     def __str__(self):
         return self._msg
 
-    def render(self, screen, dest, selected=False):
+    def render(self, screen, dest, w_antialias, selected=False):
+        if w_antialias != self.cached_antialias_status:
+            # need to redraw labels
+            self.set_msg(self._msg, antialias_val=w_antialias)
+
         if selected:
             screen.blit(self.select_image, dest)
         else:
@@ -242,9 +250,9 @@ class MenuItem(object):
 
 class Menu(EvListener, Frect):  # N.B (tom) it would be better to inherit from EventReceiver +have a Frect attribute
 
-    def __init__(self, dx, dy, w=300, h=100, anchor=ANCHOR_CENTER, menuitem=MENU_ITEM_COLOR,
-                 menuselect=MENU_SELECT_COLOR, border=default_border, predraw=None, font=None, padding=0,
-                 item_class=MenuItem):
+    def __init__(self, dx, dy, font, w=300, h=100, anchor=ANCHOR_CENTER, menuitem=MENU_ITEM_COLOR,
+                 menuselect=MENU_SELECT_COLOR, border=default_border, predraw=None, padding=0,
+                 item_class=MenuItem, antialias=False):
         # lets use multiple inheritance
         EvListener.__init__(self)
         Frect.__init__(self, dx, dy, w, h, anchor)
@@ -255,9 +263,10 @@ class Menu(EvListener, Frect):  # N.B (tom) it would be better to inherit from E
         if font:
             self.font = font
         else:
-            self.font = new_font_obj(None, FONT_SIZE)
+            self.font = new_font_obj(None, DEFAULT_FONT_SIZE_CONV_MENU)
+        self.antialias_flag = antialias
 
-        self.more_image = self.font.render("+", True, menuselect)
+        self.more_image = self.font.render("+", self.antialias_flag, menuselect)
         self.padding = padding
         self.item_class = item_class
 
@@ -316,7 +325,7 @@ class Menu(EvListener, Frect):  # N.B (tom) it would be better to inherit from E
             item_num -= 1
             y -= self.padding
 
-    def render(self, do_extras=True):
+    def render_whole_menu(self, antialias, do_extras=True):
         mydest = self.get_rect()
         if do_extras:
             if self.predraw:
@@ -327,8 +336,9 @@ class Menu(EvListener, Frect):  # N.B (tom) it would be better to inherit from E
         self.screen.set_clip(mydest)
         self.arrange()
         for item_num, area in list(self._item_rects.items()):
-            self.items[item_num].render(self.screen, area, (item_num == self.selected_item) and do_extras)
-
+            self.items[item_num].render(
+                self.screen, area, antialias, (item_num == self.selected_item) and do_extras
+            )
         self.screen.set_clip(None)
 
         if self.descobj:
@@ -434,7 +444,7 @@ class Menu(EvListener, Frect):  # N.B (tom) it would be better to inherit from E
         # Adds a quick key for every item currently in the menu.
         key_num = 0
         for item in self.items:
-            item.msg = self.alpha_key_sequence[key_num] + ') ' + item.msg
+            item.set_msg(self.alpha_key_sequence[key_num] + ') ' + item.msg)
             self.quick_keys[self.alpha_key_sequence[key_num]] = item.value
             key_num += 1
             if key_num >= len(self.alpha_key_sequence):
@@ -515,7 +525,7 @@ class AlertMenu(Menu):
 
     def pre(self):
         default_border.render(self.FULL_RECT.get_rect())
-        draw_text(self.font, self.desc, self.TEXT_RECT.get_rect(), justify=0)
+        p_draw_text(self.font, self.desc, self.TEXT_RECT.get_rect(), justify=0, antialias=self.antialias_flag)
 
 
 # -------------------------------
@@ -581,13 +591,21 @@ CONV_PORTRAIT_AREA = Frect(-240, -110, 150, 225)
 
 
 def new_conversation_view_actor(ref_automaton, font_name):
+    """
+    nota bene: font_name can be None, if it's the case we should use a default font
+
+    this conversation view only shows what the NPC is saying, not what the player can say
+    """
+
+    print('creation new conversation view actor with font_name=', font_name)
     data = {
         'text': None,  # will received the first msg on the 1st update event
         'automaton': ref_automaton,
         'portrait': None,
         'my_menu': None,  # to store possible answers
         'up_to_date': False,
-        'font': pyv_vars.data[font_name] if font_name else new_font_obj(None, FONT_SIZE),
+        'antialias': False,
+        'font': new_font_obj(None, DEFAULT_FONT_SIZE_CONV_MENU) if font_name is None else pyv_vars.data[font_name],
         'pre_render': None,
         'ready_to_leave': False,
         'active': False
@@ -623,8 +641,9 @@ def new_conversation_view_actor(ref_automaton, font_name):
             this.up_to_date = True
             this.text = ref_automaton.get_current_state().message
             this.my_menu = Menu(
-                CONV_MENU_AREA.dx, CONV_MENU_AREA.dy, CONV_MENU_AREA.w, CONV_MENU_AREA.h,
-                border=None, predraw=None, font=this.font
+                CONV_MENU_AREA.dx, CONV_MENU_AREA.dy, this.font,
+                w=CONV_MENU_AREA.w, h=CONV_MENU_AREA.h,
+                border=None, predraw=None, antialias=False
             )
             # populate menu
             for rep in this.automaton.get_current_state().transitions:
@@ -636,19 +655,17 @@ def new_conversation_view_actor(ref_automaton, font_name):
             # this.my_menu.active = True
 
     def on_draw(this, ev):
-        if not this.active:
-            return
-        if this.ready_to_leave:
+        if not this.active or this.ready_to_leave:
             return
         if this.pre_render:
             this.pre_render()
         text_rect = CONV_TEXT_AREA.get_rect()
         default_border.render(text_rect)
-        draw_text(this.font, this.text, text_rect)
+        p_draw_text(this.font, this.text, text_rect, antialias=this.antialias)
         default_border.render(CONV_MENU_AREA.get_rect())
         # menu
         if this.my_menu:
-            this.my_menu.render()
+            this.my_menu.render_whole_menu(this.antialias)
         if this.portrait:
             ev.screen.blit(this.portrait, CONV_PORTRAIT_AREA.get_rect())
 
@@ -674,14 +691,15 @@ def new_conversation_view_actor(ref_automaton, font_name):
     return new_actor('conversation_view', locals())
 
 
-class ConversationView(EvListener):
+# - deprecated!
+class deprecConversationView(EvListener):
     # The visualizer is a class used by the conversation when conversing.
     # It has a "text" property and "render", "get_menu" methods.
 
     def _refresh_portrait(self, x):
         self.portrait = pyv_vars.images[x] if x else None
 
-    def __init__(self, ref_automaton, font_name=None, pre_render=None):
+    def __init__(self, ref_automaton, font_name=None, antialias=False, pre_render=None):
         super().__init__()
         self.text = ''
         self.root_offer = ref_automaton
@@ -689,12 +707,13 @@ class ConversationView(EvListener):
         self._refresh_portrait(ref_automaton.inner_data['portrait'])
 
         self.pre_render = pre_render
-        self.font = pyv_vars.data[font_name] if font_name else new_font_obj(None, FONT_SIZE)  # using pre-load via engine
+        self.font = pyv_vars.data[font_name] if font_name else new_font_obj(None, DEFAULT_FONT_SIZE_CONV_MENU)  # using pre-load via engine
 
         # cela equivaut à curr_state
         # self.curr_offer = root_offer
         self.dialog_upto_date = False
         self.existing_menu = None
+        self.antialias_flag = antialias
         self.screen = get_surface()
         self.ready_to_leave = False
 
@@ -761,7 +780,7 @@ class ConversationView(EvListener):
             self.pre_render()
         text_rect = self.TEXT_AREA.get_rect()
         default_border.render(text_rect)
-        draw_text(self.font, self.text, text_rect)
+        p_draw_text(self.font, self.text, text_rect, antialias=self.antialias_flag)
         default_border.render(self.MENU_AREA.get_rect())
         if self.portrait:
             self.screen.blit(self.portrait, self.PORTRAIT_AREA.get_rect())
