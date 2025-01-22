@@ -5,11 +5,13 @@ Pyv API := Ecs func/procedures
 """
 import csv
 import json
+import os
 import re
 import uuid
 from enum import Enum
+from io import StringIO
 from math import degrees as _degrees
-import os
+
 from .. import _hub
 from .. import custom_struct as struct
 from .. import state_management
@@ -422,6 +424,26 @@ def run_game():
     vars.endfunc_ref(None)
 
 
+def _preload_ncsv_file(filename_no_ext, file_prefix, webhack_info=None):
+    print('## attempts to load NCSV; args are:', filename_no_ext, file_prefix, webhack_info, '###')
+
+    # filepath = prefix_asset_folder + asset_desc if prefix_asset_folder else asset_desc
+    csv_filename = filename_no_ext + '.' + 'ncsv'
+    y = file_prefix + csv_filename
+    if webhack_info:
+        y = webhack_info + y
+    print('>>>tryin to find data file:', y)
+    with open(y, 'r') as file:
+        str_csv = file.read()
+        f = StringIO(str_csv)
+        map_data = list()
+        reader = csv.reader(f, delimiter=',')
+        for row in reader:
+            if len(row) > 0:
+                map_data.append(list(map(int, row)))
+        vars.csvdata[filename_no_ext] = map_data
+
+
 # --- rest of functions ---
 def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, webhack=None):
     """
@@ -433,21 +455,17 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
     :param adhoc_dict:
     :return:
     """
-    from io import StringIO
-
     print('*' * 50)
     print(f' CALL to preload assets [whack? {webhack}]')
     print('*' * 50)
     print()
     for asset_desc in adhoc_dict['asset_list']:
-
         if isinstance(asset_desc, str):  # either sprsheet or image
             kk = asset_desc.split('.')
             # print('>>>>>charge file:', kk[0], kk[1])
             # print('prefix_asset_folder?', prefix_asset_folder)
 
             if kk[1] == 'json':
-
                 y = prefix_asset_folder
                 if webhack:
                     y = webhack + prefix_asset_folder
@@ -460,24 +478,6 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                 vars.spritesheets[kk[0]] = gfx.JsonBasedSprSheet(
                     kk[0], pathinfo=y, is_webhack=adhocv
                 )
-
-            elif kk[1] == 'ncsv':
-                # filepath = prefix_asset_folder + asset_desc if prefix_asset_folder else asset_desc
-                csv_filename = kk[0] + '.' + 'ncsv'
-                if webhack:
-                    y = webhack + csv_filename
-                else:
-                    y = prefix_asset_folder + csv_filename
-                with open(y, 'r') as file:
-                    # csvreader = csv.reader(file)
-                    str_csv = file.read()
-                    f = StringIO(str_csv)
-                    map_data = list()
-                    reader = csv.reader(f, delimiter=',')
-                    for row in reader:
-                        if len(row) > 0:
-                            map_data.append(list(map(int, row)))
-                    vars.csvdata[kk[0]] = map_data
 
             elif kk[1] == 'ttf':  # a >single< TTF font
                 key = "custom_ft"
@@ -501,6 +501,9 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                 print('fetching image:', kk[0], filepath)
                 vars.images[kk[0]] = _hub.pygame.image.load(filepath)
 
+    # -------------------------
+    # loading sfx files
+    # -------------------------
     for snd_elt in adhoc_dict['sound_list']:
         k = snd_elt.split('.')[0]
         filepath = prefix_sound_folder + snd_elt
@@ -509,12 +512,17 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
         print('fetching the sound:', k, filepath)
         vars.sounds[k] = _hub.pygame.mixer.Sound(filepath)
 
-    # - load data files
-    # exemple : "cartridge/conversation.json"
-    # TODO ! unification/debug. Right now both assets & data_files can have a .TTF
+    # -------------------------
+    # loading data files
+    # -------------------------
+    # For example:
+    # - cartridge/conversation.json, or
+    # -  my_map.ncsv
 
-    modded_prefix = False
+    # TODO ! unification/debug.
+    #  Right now both assets & data_files can have a .TTF
     prefix = 'cartridge/'
+
     if webhack:
         for dat_file in adhoc_dict['data_files']:
             fp = os.path.join(webhack, dat_file)
@@ -524,10 +532,12 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                     vars.data[k] = json.load(fptr)
             elif ext == 'ttf':
                 vars.data[k] = _hub.pygame.font.Font(fp, vars.DATA_FT_SIZE)
+
+            elif ext == 'ncsv':
+                _preload_ncsv_file(k, prefix, webhack_info=webhack)
             else:
                 print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
-
-        return  # end special case
+        return  # end special case implies we end processing, right there
 
     for dat_file in adhoc_dict['data_files']:
         k, ext = dat_file.split('.')
@@ -540,17 +550,20 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                     vars.data[k] = json.load(fptr)
             elif ext == 'ttf':
                 vars.data[k] = _hub.pygame.font.Font(filepath, vars.DATA_FT_SIZE)
+
+            elif ext == 'ncsv':
+                _preload_ncsv_file(k, prefix)
+
             else:
                 print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
 
         except FileNotFoundError:  # TODO refactor to detect case A/B right at the launch script? -->Cleaner code
-            if not modded_prefix:
-                modded_prefix = True
-                prefix = os.path.join(_hub.bundle_name, prefix)
+            new_prefix = os.path.join(_hub.bundle_name, prefix)
+            print('we modd the prefix -->', new_prefix)
 
             # try again
             # fresh filepath
-            filepath = prefix + dat_file
+            filepath = new_prefix + dat_file
             if webhack is not None:
                 filepath = webhack + filepath
             # ---
@@ -560,6 +573,8 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
                     vars.data[k] = json.load(fptr)
             elif ext == 'ttf':
                 vars.data[k] = _hub.pygame.font.Font(filepath, vars.DATA_FT_SIZE)
+            elif ext == 'ncsv':
+                _preload_ncsv_file(k, new_prefix)
 
 
 def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=True):
