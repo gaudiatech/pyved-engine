@@ -23,7 +23,7 @@ EngineEvTypes = pyv.events.EngineEvTypes
 #  this software variant produces the same result as any dummy-pattern-none,
 #  but it uses the M.V.C. pattern cf. the 3 classes below
 # -----------------
-class GameState(pyv.events.Emitter):
+class GameState(pyv.Emitter):
     # As a rule of thumb: all classes that model some aspect of your software should inherit from CogObj
     """
     the model
@@ -45,7 +45,7 @@ class GameState(pyv.events.Emitter):
         self.pev(MyEvents.ColorChange, color_code=self.curr_color_code)
 
 
-class GameView(pyv.events.EvListener):
+class GameView(pyv.EvListener):
     """
     the view
     """
@@ -72,7 +72,7 @@ class GameView(pyv.events.EvListener):
         pygame.draw.circle(ev.screen, self.pl_color, self.pl_screen_pos, 15, 0)
 
 
-class DemoCtrl(pyv.events.EvListener):
+class DemoCtrl(pyv.EvListener):
     """
     the controller
     """
@@ -97,6 +97,7 @@ class DemoCtrl(pyv.events.EvListener):
     def on_keydown(self, ev):
         if ev.key == pygame.K_ESCAPE:
             pyv.vars.gameover = True
+            print('dummy good bye')
         elif ev.key == pygame.K_SPACE:
             self.state.switch_avatar_color()
         elif ev.key == pygame.K_UP:
@@ -113,18 +114,21 @@ def play_game():
     pyv.get_ev_manager().setup(MyEvents)
 
     game_st = GameState()
+    # unified
     game_ctrl = pyv.get_game_ctrl()
-    receivers = [game_ctrl, DemoCtrl(game_st), GameView(game_st)]
+
+    receivers = [DemoCtrl(game_st), GameView(game_st)]
 
     # MANDATORY: setup the new event system!
-    pyv.events.EvManager.instance().setup(MyEvents)
-
-    # verbose needed?
-    # ev2.EvManager.instance().debug_mode = True
+    ev_m = pyv.get_ev_manager()
+    ev_m.setup(MyEvents)
+    # in case you need debug infos:
+    ev_m.debug_mode = True
 
     for r in receivers:
         r.turn_on()  # listen to incoming events
-    game_ctrl.loop()  # standard game loop
+    game_ctrl.loop()  # will automatically call .turn_on() on the game_ctrl,
+    # then run a standard game loop
     pyv.quit()
 
 

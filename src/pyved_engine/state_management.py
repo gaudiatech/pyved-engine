@@ -4,23 +4,53 @@ from . import vars
 from .compo import vscreen
 from ._hub import events
 from .core.events import EngineEvTypes  # latest version of event sys
-from .custom_struct import Stack, StContainer
-
+from .custom_struct import Stack, StContainer, enum
+from ._classes import BaseGameState
 
 multistate_flag = False
 stack_based_ctrl = None
 state_stack = None
 
 
+_DefaultGsList = enum(
+    'Room1',
+)
+
+
+class _DefaultRoomClass(BaseGameState):
+    def __init__(self, stid):
+        super().__init__(stid)
+
+    def enter(self):
+        pass
+
+    def release(self):
+        pass
+
+
+_default_st_mapping = {  # bind identifier to class
+    _DefaultGsList.Room1: _DefaultRoomClass
+}
+
+
 class StateStackCtrl(events.EvListener):
-    def __init__(self, all_gs, stmapping):
+    """
+    used to manage the game state but also provide the very basic game_loop
+    """
+    INFO_STOP_LOOP_MSG = 'we leave the game loop now (StateStackCtrl class)'
+
+    def __init__(self, all_gs=None, st_to_cls_mapping=None):
         super().__init__()
-        self._gs_omega = all_gs
+        self._clock = vars.clock
+
+        self._gs_omega = _DefaultGsList if all_gs is None else all_gs
+        adhoc_mapping = _default_st_mapping if all_gs is None else st_to_cls_mapping
+
         self._stack = Stack()
         # CONVENTION: the first of the enum <=> the init gamestate id !
-        self.first_state_id = all_gs.all_codes[0]
+        self.first_state_id = self._gs_omega.all_codes[0]
         self._st_container = StContainer()
-        self._st_container.setup(all_gs, stmapping, None)
+        self._st_container.setup(self._gs_omega, adhoc_mapping, None)
         self.__state_stack = Stack()
 
         self.gameover = False
@@ -90,38 +120,26 @@ class StateStackCtrl(events.EvListener):
     def on_state_pop(self, ev):
         self._pop_state()
 
-    # --- helper func ----
-    # deprecated
-    def loop(self):
+    # - helper function -
+    def loop(self) -> None:
         """
         its forbidden to call .loop() in the web ctx, but its convenient in the local ctx
-        if one wants to test a program without using the Kata VM
-        :return:
+        if one wants to test a program without harnessing the whole pyVM
         """
-        # evsys3.create_manager()
+        print('*Warning! Never use .loop in the web Ctx*')
+        self.turn_on()
 
-        # lock mechanism, for extra safety so we never call .loop() in the web ctx
-        print('*warning: never use .loop in the web ctx*')
-        # use enter, update, exit to handle the global "run game logic"
-        # self.enter()
-
-        # notice: this class is "dirty" as it uses both the evsys4 and the evsys3
-        # TODO cleanup
-        # in evsys3 we had EngineEvTypes.GAMEBEGINS
-        self.pev(events.EngineEvTypes.Gamestart)
-
-        while not self.gameover:
+        self.pev(events.EngineEvTypes.Gamestart)  # ensure we will call .enten() on the initial/eden state
+        while not (self.gameover or vars.gameover):
             infot = time.time()
             self.pev(EngineEvTypes.Update, curr_t=infot)
             self.pev(EngineEvTypes.Paint, screen=vars.screen)
-
             self._manager.update()
             vscreen.flip()
-            vars.clock.tick(vars.max_fps)
-            # self.update(infot)
-        # self.exit()
-        # print(self.INFO_STOP_MSG)
-        print('going out of the loop (StateStackCtrl)')
+            self._clock.tick(vars.max_fps)
+        # TODO shall we ensure we have pop'ed every single state?
+        # self.proper_exit()
+        print(self.__class__.INFO_STOP_LOOP_MSG)
 
 
 def declare_game_states(gs_enum, assoc_gscode_gscls):

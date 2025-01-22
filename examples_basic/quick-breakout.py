@@ -1,3 +1,11 @@
+"""
+Just a demo to showcase how one would program the popular "Breakout" game using pyved.
+
+Remark:
+that examples uses the non-atomic game loop, ensuring its compatibility with web ctx.
+Using c=pyv.get_game_ctrl() then c.loop()
+is very handy but it becomes tricky when sharing games online
+"""
 import math
 import pyved_engine as pyv
 

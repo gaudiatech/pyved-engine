@@ -5,7 +5,6 @@ based on event sys 4
 """
 import pyved_engine as pyv
 
-
 pyv.bootstrap_e()
 pygame = pyv.pygame
 StackBasedGameCtrl = pyv.state_management.StateStackCtrl
@@ -83,23 +82,25 @@ class Room2Manager(ReceiverObj):
         self.av_pos = list(INIT_PL_POS)
         self.scr_size = pyv.get_surface().get_size()
 
-    def on_event(self, ev):  #, source):
-        if ev.type == EngineEvTypes.Update:
-            self.av_pos[0] = (self.av_pos[0] + 3) % self.scr_size[0]
-            self.av_pos[1] = (self.av_pos[1] - 1) % self.scr_size[1]
+    def on_update(self, ev):
+        self.av_pos[0] = (self.av_pos[0] + 3) % self.scr_size[0]
+        self.av_pos[1] = (self.av_pos[1] - 1) % self.scr_size[1]
 
-        elif ev.type == EngineEvTypes.Paint:
-            ev.screen.fill(BG_COLOR_ROOM2)
-            pygame.draw.circle(
-                ev.screen, (PL_COLOR[2], PL_COLOR[0], PL_COLOR[1]), self.av_pos, 37, 0
-            )
+    def on_keydown(self, ev):
+        if ev.key == pygame.K_BACKSPACE:
+            print('pop state')
+            self.pev(EngineEvTypes.StatePop)
+        elif ev.key == pygame.K_ESCAPE:
+            self.pev(EngineEvTypes.Gameover)
 
-        elif ev.type == EngineEvTypes.Keydown:
-            if ev.key == pygame.K_BACKSPACE:
-                print('pop state')
-                self.pev(EngineEvTypes.StatePop)
-            elif ev.key == pygame.K_ESCAPE:
-                self.pev(EngineEvTypes.Gameover)
+    def on_paint(self, ev):
+        ev.screen.fill(BG_COLOR_ROOM2)
+        pygame.draw.circle(
+            ev.screen, (PL_COLOR[2], PL_COLOR[0], PL_COLOR[1]), self.av_pos, 37, 0
+        )
+
+    def on_quit(self, ev):
+        pyv.vars.gameover = True
 
 
 class Room2(pyv.BaseGameState):
@@ -122,23 +123,19 @@ if __name__ == '__main__':
     print()
     print('press right first')
 
-    pyv.init(pyv.LOW_RES_MODE, maxfps=40, wcaption='states demo with pyved')
+    my_stt_infos = (
+        GameStates, {
+            GameStates.Room1: Room1,
+            GameStates.Room2: Room2
+        }
+    )
+    pyv.init(pyv.LOW_RES_MODE, maxfps=40, wcaption='states demo with pyved', multistate_info=my_stt_infos)
     # IMPORTANT: setup events so the engine knows what can be triggered
     # pyv.declare_evs() ->this would work if we use the actor-based logic,
     # however, we are not, so we need to call the LEGACY function on the classic pyved event manager
     pyv.get_ev_manager().setup()
 
-    # run the game loop
-    game_ctrl = StackBasedGameCtrl(
-        GameStates,
-        # None,  # glvars
-        {
-            GameStates.Room1: Room1,
-            GameStates.Room2: Room2
-        }
-    )
-    game_ctrl.turn_on()
+    # let us run the game loop
+    game_ctrl = pyv.get_game_ctrl()
     game_ctrl.loop()
-
     pyv.quit()
-    print('bye.')

@@ -16,7 +16,7 @@ from .. import state_management
 from .. import vars
 from ..compo import gfx
 from ..compo import vscreen
-from ..compo.MyGameCtrl import MyGameCtrl  # for retro-compatibility
+# from ..compo.MyGameCtrl import MyGameCtrl  # for retro-compatibility
 from ..compo.vscreen import flip as _oflip
 from ..core import events
 from ..core.events import EvManager
@@ -648,7 +648,7 @@ _existing_game_ctrl = None
 _ready_flag = False
 
 
-def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_ev=None):
+def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_ev=None, multistate_info=None):
     global _engine_rdy, _upscaling_var, _existing_game_ctrl, _ready_flag
     if mode is None:
         mode = HIGH_RES_MODE
@@ -672,7 +672,12 @@ def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_e
     _screen_param(mode, forced_size, cached_paint_ev)
 
     # for retro-compat
-    _existing_game_ctrl = MyGameCtrl()
+    if multistate_info:
+        _existing_game_ctrl = state_management.StateStackCtrl(*multistate_info)
+    else:
+        _existing_game_ctrl = state_management.StateStackCtrl()
+    # the lines above have replaced class named: MyGameCtrl()
+
     _ready_flag = True
     _hub.pygame.mixer.init()  # we always enable sounds
 
