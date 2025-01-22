@@ -10,7 +10,7 @@ pyv.init(pyv.RETRO_MODE)
 pygame = pyv.pygame
 screen = pyv.get_surface()
 width, height = screen.get_size()
-FT_PATH = 'alphbeta.ttf'
+FT_PATH = 'mixed_assets/alphbeta.ttf'
 pyg_font = pygame.font.Font(FT_PATH, 12)
 
 block = pyv.gui.TextBlock(

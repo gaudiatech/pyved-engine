@@ -12,10 +12,10 @@ USING_IMGBASED_FT = True
 if USING_IMGBASED_FT:
     ft_obj = pyv.gui.ImgBasedFont(
         (15, 130, 243),  # we specify: the color that should be viewed as transparent
-        img=pygame.image.load('niobe_font.png')
+        img=pygame.image.load('mixed_assets/niobe_font.png')
     )  # special font format
 else:
-    FT_PATH = 'alphbeta.ttf'
+    FT_PATH = 'mixed_assets/alphbeta.ttf'
     ft_obj = pygame.font.Font(FT_PATH, 16)
 
 
