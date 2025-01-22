@@ -1,7 +1,8 @@
 from .. import _hub
 from .. import struct
-from ..compo import vscreen
+from ..import vars
 from ..foundation import defs
+
 
 # - constants
 # character set that allows to draw a box with single line around it
@@ -35,10 +36,45 @@ _EMB_TILEMAPS_PNGF = {
 _lastcol = _lastrow = None
 _sm_ready = False
 
+_char_size = None
+_curr_spritesheet = None
+_screen = _matrix = None
+
+# variable _alphabet is defined at init
+_alphabet = None
+
 
 # -------------------------------------------------
 #  PUBLIC module-level functions
 # -------------------------------------------------
+def init(chosen_char_size=None):
+    global _screen, _matrix, _sm_ready, _lastcol, _lastrow, _char_size, _alphabet
+    if chosen_char_size is None:
+        _char_size = 12  # default
+    else:
+        omega_sizes = _EMB_TILEMAPS_PNGF.keys()
+        if chosen_char_size not in omega_sizes:
+            raise NotImplementedError(
+                'The size specified for the .ascii submodule isnt supported, valid values are:', omega_sizes
+            )
+        _char_size = chosen_char_size
+
+    _sm_ready = True
+    _screen = vars.screen
+    scrw, scrh = _screen.get_size()
+    adhocw = scrw // _char_size
+    adhoch = scrh // _char_size
+    if adhocw != scrw / _char_size:
+        raise ValueError('div tombe pas juste pour calculer w')
+    if adhoch != scrh / _char_size:
+        raise ValueError('div tombe pas juste pour calculer h')
+    _matrix = struct.IntegerMatrix((adhocw, adhoch))
+    _lastcol = -1 + adhocw
+    _lastrow = -1 + adhoch
+
+    _alphabet = _KFont()
+
+
 def cpos_to_screen(cpos):
     i, j = cpos
     return i * _char_size, j * _char_size
@@ -55,20 +91,7 @@ def increm_char_size():
     set_char_size(loop[pos])
 
 
-def init(upscaling_int):
-    global _screen, _matrix, _sm_ready, _lastcol, _lastrow
-    _sm_ready = True
-    _screen = vscreen.get_screen()
-    scrw, scrh = _screen.get_size()
-    adhocw = scrw // _char_size
-    adhoch = scrh // _char_size
-    if adhocw != scrw / _char_size:
-        raise ValueError('div tombe pas juste pour calculer w')
-    if adhoch != scrh / _char_size:
-        raise ValueError('div tombe pas juste pour calculer h')
-    _matrix = struct.IntegerMatrix((adhocw, adhoch))
-    _lastcol = -1 + adhocw
-    _lastrow = -1 + adhoch
+
 
 
 def is_ready():
@@ -237,7 +260,3 @@ class _KFont:
         return r
 
 
-_char_size = 12  # default
-_curr_spritesheet = None
-_alphabet = _KFont()
-_screen = _matrix = None

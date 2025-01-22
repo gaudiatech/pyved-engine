@@ -1,87 +1,102 @@
-import katagames_engine as kengi
-kengi.bootstrap_e()
+import pyved_engine as pyv
 
+
+pyv.bootstrap_e()
 
 # - const
-CAR_SIZE = 20  # 20, 16, 12, 10, 8 fonctionnent tous!
+CAR_SIZE = 12  # 20, 16, 12, 10, 8 vont fonctionner si c'est le mode HD de pyv qui est actif
+
 IDX_CURSOR = 254
 MAXFPS = 50
-PAL = kengi.pal.c64
-
+Y_PAL_POS = 15
+PAL = pyv.pal.c64
 
 # - variables
-pygame = kengi.pygame
+pygame = pyv.pygame
 ajouts = dict()
-asc_canvas = kengi.ascii
-canv_bsupx, canv_bsupy = asc_canvas.get_bounds()
-clock = pygame.time.Clock()
+asc_canvas = canv_bsupx = canv_bsupy = None
+
 gameover = False
 text_pos = None
 tpos = [0, 0]
 
+_scr = None
 
-# -- main program
-kengi.init()
-_scr = kengi.core.get_screen()
-asc_canvas.init()
 
-while not gameover:
-    for ev in pygame.event.get():
-        if ev.type == pygame.QUIT or (ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE):
-            gameover = True
-        elif ev.type == pygame.MOUSEBUTTONDOWN:
-            text_pos = list(kengi.ascii.screen_to_cpos(ev.pos))
-        elif ev.type == pygame.KEYDOWN:
+# -- before starting the main program
+def init_game():
+    global _scr, asc_canvas, canv_bsupx, canv_bsupy
+    pyv.init()  # pyv.LOW_RES_MODE)
+    asc_canvas = pyv.ascii
+    asc_canvas.init(CAR_SIZE)
+    canv_bsupx, canv_bsupy = asc_canvas.get_bounds()
+    _scr = pyv.get_surface()
 
-            if ev.key == pygame.K_BACKSPACE:
-                kengi.ascii.increm_char_size()
-                text_pos = None
 
-            elif (text_pos is not None) and ev.key != pygame.K_RETURN:
-                cle = tuple(text_pos)
-                if cle not in ajouts:
-                    ajouts[cle] = list()
-                if len(ev.unicode) == 1:
-                    ajouts[cle].append(ev.unicode)
+def game_loop():
+    global asc_canvas
+    while not pyv.vars.gameover:
+        for ev in pyv.evsys0.get():
+            if ev.type == pygame.QUIT or (ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE):
+                pyv.vars.gameover = True
+            elif ev.type == pygame.MOUSEBUTTONDOWN:
+                text_pos = list(pyv.ascii.screen_to_cpos(ev.pos))
+            elif ev.type == pygame.KEYDOWN:
 
-    _scr.fill(PAL['blue'])
-    pp = pygame.mouse.get_pos()
-    p = list(asc_canvas.screen_to_cpos(pp))
+                if ev.key == pygame.K_BACKSPACE:
+                    pyv.ascii.increm_char_size()
+                    text_pos = None
 
-    # draw the tileset
-    for i in range(ord('0'), ord('Z')):
-        tpos[0] = (i % 16)
-        tpos[1] = (i // 16)
-        asc_canvas.put_char(chr(i), tpos, PAL['lightblue'])
+                elif text_pos is not None and ev.key != pygame.K_RETURN:
+                    cle = tuple(text_pos)
+                    if cle not in ajouts:
+                        ajouts[cle] = list()
+                    if len(ev.unicode) == 1:
+                        ajouts[cle].append(ev.unicode)
 
-    # draw palette
-    cf = kengi.ascii.CODE_FILL
-    for i in range(16):
-        asc_canvas.put_char(cf, (i, 32), PAL[i])
-        asc_canvas.put_char(cf, (i, 33), PAL[i])
-        asc_canvas.put_char(cf, (i, 34), PAL[i])
+        _scr.fill(PAL['blue'])
+        # pp = vscreen pygame.mouse.get_pos()
+        pp = pyv.get_mouse_coords()
+        p = list(asc_canvas.screen_to_cpos(pp))
 
-    for adhoc_tpos, aj in ajouts.items():
-        if len(aj):
-            tmp_pos = list(adhoc_tpos)
-            for e in list(aj):  # letter one by one
-                tmp = asc_canvas.put_char(e, tmp_pos, PAL[3], PAL['darkgrey'])
-                tmp_pos[0] += 1
+        # draw the tileset
+        for i in range(ord('0'), ord('Z')):
+            tpos[0] = (i % 16)
+            tpos[1] = (i // 16)
+            asc_canvas.put_char(chr(i), tpos, PAL['lightblue'])
 
-    # draw the cursor
-    gvpos = [
-        (p[0] - 1, p[1] - 1),
-        (p[0] + 1, p[1] - 1),
-        (p[0] - 1, p[1] + 1),
-        (p[0] + 1, p[1] + 1),
-    ]
-    for elt in ((True, gvpos[0]), (True, gvpos[-1]), (False, gvpos[1]), (False, gvpos[2])):
-        flag, popo = elt
-        car = '\\' if flag else '/'
-        if asc_canvas.is_inside(popo):
-            asc_canvas.put_char(car, popo, (250, 11, 33))
+        # draw palette
+        cf = pyv.ascii.CODE_FILL
+        for i in range(16):
+            asc_canvas.put_char(cf, (i, Y_PAL_POS), PAL[i])
+            asc_canvas.put_char(cf, (i, Y_PAL_POS+1), PAL[i])
+            asc_canvas.put_char(cf, (i, Y_PAL_POS+2), PAL[i])
 
-    kengi.flip()
-    clock.tick(MAXFPS)
+        for adhoc_tpos, aj in ajouts.items():
+            if len(aj):
+                tmp_pos = list(adhoc_tpos)
+                for e in list(aj):  # letter one by one
+                    tmp = asc_canvas.put_char(e, tmp_pos, PAL[3], PAL['darkgrey'])
+                    tmp_pos[0] += 1
 
-kengi.quit()
+        # draw the cursor
+        gvpos = [
+            (p[0] - 1, p[1] - 1),
+            (p[0] + 1, p[1] - 1),
+            (p[0] - 1, p[1] + 1),
+            (p[0] + 1, p[1] + 1),
+        ]
+        for elt in ((True, gvpos[0]), (True, gvpos[-1]), (False, gvpos[1]), (False, gvpos[2])):
+            flag, popo = elt
+            car = '\\' if flag else '/'
+            if asc_canvas.is_inside(popo):
+                asc_canvas.put_char(car, popo, (250, 11, 33))
+
+        pyv.flip()  # already using the .tick to cap the framerate
+
+
+if __name__ == '__main__':
+    print('running tests (pyv.ascii)')
+    init_game()
+    game_loop()
+    pyv.quit()

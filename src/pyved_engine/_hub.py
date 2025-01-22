@@ -127,7 +127,7 @@ _kengi_inj = Injector({
     'polarbear': '.looparts.polarbear',  # used to play demo 'isometric1'
     'tmx': '.add_ons.tmx',
     # 'anim': '.looparts.anim',
-    # 'ascii': '.looparts.ascii',
+    'ascii': '.looparts.ascii',
     'console': '.looparts.console',
     'rogue': '.looparts.rogue',
     'rpg': '.looparts.rpg',
@@ -135,6 +135,9 @@ _kengi_inj = Injector({
     'story': '.looparts.story',
     'tabletop': '.looparts.tabletop',
     'terrain': '.looparts.terrain',
+
+    'vscreen': '.compo.vscreen'
+
 }, 'pyved_engine')
 
 

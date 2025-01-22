@@ -7,7 +7,7 @@ import importlib as _importlib
 from . import pal  # link to palette options
 from ._ecs import all_entities, find_by_components, find_by_archetype, archetype_of, define_archetype, init_entity, \
     new_from_archetype, bulk_add_systems, systems_proc, delete_entity, wipe_entities
-from ._hub import PyModulePromise, Injector
+from ._hub import PyModulePromise, Injector, _kengi_inj
 from .compo.GameTpl import GameTpl  # legacy cls
 from .gamedev_api.highlevel import *
 
@@ -82,8 +82,15 @@ __all__ = [
     'new_from_archetype',
     'preload_assets',
     'run_game',
-    'systems_proc'
+    'systems_proc',
+    'get_mouse_coords'
 ]
+
+
+def get_mouse_coords():
+    pygm = _kengi_inj['pygame']
+    mpos = pygm.mouse.get_pos()
+    return _kengi_inj['vscreen'].proj_to_vscreen(mpos)
 
 
 #  + system +
