@@ -445,7 +445,7 @@ def _preload_ncsv_file(filename_no_ext, file_prefix, webhack_info=None):
 
 
 # --- rest of functions ---
-def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, webhack=None):
+def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, debug_mode=False, webhack=None):
     """
     expected to find the (mandatory) key 'images',
     also we may find the (optionnal) key 'sounds'
@@ -455,10 +455,12 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, w
     :param adhoc_dict:
     :return:
     """
-    print('*' * 50)
-    print(f' CALL to preload assets [whack? {webhack}]')
-    print('*' * 50)
-    print()
+    if debug_mode:
+        print('*' * 50)
+        print(f' CALL to preload assets [webhack value:{webhack}]')
+        print('*' * 50)
+        print()
+
     for asset_desc in adhoc_dict['asset_list']:
         if isinstance(asset_desc, str):  # either sprsheet or image
             kk = asset_desc.split('.')
@@ -670,6 +672,10 @@ def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_e
 
     if not _engine_rdy:
         bootstrap_e(maxfps, wcaption)
+        print('pyv.init called, but engine hasnt bootstraped yet')
+    else:
+        print('previous bootstrap_e call detected.')
+
     if wcaption:
         _hub.pygame.display.set_caption(wcaption)
 
@@ -684,6 +690,7 @@ def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_e
     vars.clock = create_clock()
 
     vscreen.cached_pygame_mod = _hub.pygame
+    print('setting screen params...')
     _screen_param(mode, forced_size, cached_paint_ev)
 
     # for retro-compat
