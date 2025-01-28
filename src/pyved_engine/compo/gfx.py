@@ -1,93 +1,11 @@
 import base64
 import io
-import json
 from abc import abstractmethod
 from collections import defaultdict
 
 from . import packed_capello_ft
+from .SpriteSheet import SpriteSheet as JsonBasedSprSheet
 from .. import _hub
-
-
-class JsonBasedSprSheet:
-    def __init__(self, filename_noext_nopath, pathinfo=None, ck=None, is_webhack=None):
-        """
-        warning:
-        the current source-code looks stupid, but it has written that way in order to
-        avoid several bugs that exist in the pyVM component.
-        (scaling images, and use .subsurface on these images for cutting sub images)
-        As long as the pyVM has not bee toroughly debugged and tested,
-        I recommend not modifying the following code, unless you want to take risks
-        """
-
-        print('create SpriteSheet based on json:', filename_noext_nopath)
-        if is_webhack is not None:
-            p = is_webhack
-        elif pathinfo is None:
-            p = ''
-        else:
-            p = pathinfo
-
-        open_img= f'{p}{filename_noext_nopath}.png'
-        print('open img->', open_img)
-        self.sheet_surf = _hub.pygame.image.load(open_img)
-        if pathinfo and pathinfo != './':
-            p = pathinfo
-        json_def_file = open(f'{p}{filename_noext_nopath}.json', 'r')
-        jsondata = json.load(json_def_file)
-
-        chosen_scale = "1"
-        meta = jsondata.get("meta", "")
-        if meta:
-            chosen_scale = meta.get("scale", chosen_scale)
-            print('[JsonBasedSprSheet] image scale after reading meta field:', chosen_scale)
-        else:
-            print('[JsonBasedSprSheet] no meta field has been found in the json file')
-
-        try:
-            chosen_scale_f = float(chosen_scale)
-        except ValueError:
-            e_msg = f"[JsonBasedSprSheet:] WARNING! Cannot convert scale '{chosen_scale}' to float, using default val."
-            print(e_msg)
-            chosen_scale_f = 1.0
-
-        #if chosen_scale_f != 1.0:
-        #    w, h = self.sheet_surf.get_size()
-        #    self.sheet_surf = _hub.pygame.transform.scale(
-        #        self.sheet_surf, (chosen_scale_f * w, chosen_scale_f * h)
-        #    )
-        if ck:
-            self.sheet_surf.set_colorkey(ck)
-
-        assoc_tmp = dict()
-        self.all_names = set()
-        y = chosen_scale_f
-        chosen_scale_f = 1.0
-        if isinstance(jsondata['frames'], list):  # we support 2 formats of json desc
-            for infos in jsondata['frames']:
-                gname = infos['filename']
-                self.all_names.add(gname)
-                args = (infos['frame']['x'] * chosen_scale_f, infos['frame']['y'] * chosen_scale_f,
-                        infos['frame']['w'] * chosen_scale_f, infos['frame']['h'] * chosen_scale_f)
-                tempp = self.sheet_surf.subsurface(_hub.pygame.Rect(*args)).copy()
-                lw, lh = tempp.get_size()
-                assoc_tmp[gname] = _hub.pygame.transform.scale(
-                    tempp, (y*lw, y*lh)
-                )
-        else:
-            for sprname, infos in jsondata['frames'].items():
-                self.all_names.add(sprname)
-                args = (infos['frame']['x'] * chosen_scale_f, infos['frame']['y'] * chosen_scale_f,
-                        infos['frame']['w'] * chosen_scale_f, infos['frame']['h'] * chosen_scale_f)
-                tempp = self.sheet_surf.subsurface(_hub.pygame.Rect(*args)).copy()
-                lw, lh = tempp.get_size()
-                assoc_tmp[sprname] = _hub.pygame.transform.scale(
-                    tempp, (y*lw, y*lh)
-                )
-
-        self.assoc_name_spr = assoc_tmp
-
-    def __getitem__(self, item):
-        return self.assoc_name_spr[item]
 
 
 class BaseCfont:
