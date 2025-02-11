@@ -429,9 +429,11 @@ def _preload_ncsv_file(filename_no_ext, file_prefix, webhack_info=None):
 
     # filepath = prefix_asset_folder + asset_desc if prefix_asset_folder else asset_desc
     csv_filename = filename_no_ext + '.' + 'ncsv'
-    y = file_prefix + csv_filename
+
     if webhack_info:
-        y = webhack_info + y
+        y = webhack_info + csv_filename
+    else:
+        y = file_prefix + csv_filename
     print('>>>tryin to find data file:', y)
     with open(y, 'r') as file:
         str_csv = file.read()
@@ -536,6 +538,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, d
                 vars.data[k] = _hub.pygame.font.Font(fp, vars.DATA_FT_SIZE)
 
             elif ext == 'ncsv':
+                print('»ncsv webhack:',webhack)
                 _preload_ncsv_file(k, prefix, webhack_info=webhack)
             else:
                 print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
