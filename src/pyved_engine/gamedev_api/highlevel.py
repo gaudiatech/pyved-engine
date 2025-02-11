@@ -635,16 +635,13 @@ def _screen_param(gfx_mode_code, screen_dim, cached_paintev) -> None:
         adhoc_upscaling = 1
         taille_surf_dessin = screen_dim
         print(adhoc_upscaling, taille_surf_dessin)
+
     # ---------------------------------
     #  legacy code, not modified in july22. It's complex but
     # it works so dont modify unless you really know what you're doing ;)
     # ---------------------------------
     if not _scr_init_flag:
-        if vscreen.stored_upscaling is None:  # stored_upscaling isnt relevant <= webctx
-            _active_state = True
-            pygame_surf_dessin = _hub.pygame.display.set_mode(taille_surf_dessin)
-            vscreen.set_virtual_screen(pygame_surf_dessin)
-        else:
+        if vscreen.stored_upscaling is not None:
             pygame_surf_dessin = _hub.pygame.surface.Surface(taille_surf_dessin)
             vscreen.set_virtual_screen(pygame_surf_dessin)
             vscreen.set_upscaling(adhoc_upscaling)
@@ -653,6 +650,13 @@ def _screen_param(gfx_mode_code, screen_dim, cached_paintev) -> None:
             else:
                 pgscreen = _hub.pygame.display.set_mode(taille_surf_dessin)
             vscreen.set_realpygame_screen(pgscreen)
+
+        else:  # stored_upscaling wasnt relevant so far =>we usin webctx
+            _active_state = True
+            pygame_surf_dessin = _hub.pygame.display.set_mode(taille_surf_dessin)
+            vscreen.set_virtual_screen(pygame_surf_dessin)
+            # this line is useful for enabling mouse_pos computations even in webCtx
+            vscreen.stored_upscaling = float(adhoc_upscaling)
 
         y = pygame_surf_dessin
         vars.screen = y

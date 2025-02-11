@@ -141,6 +141,9 @@ class Automaton:
 
 # - fct qui encapsule tout pour donner une interface plus simple (actor-based)
 def new_automaton_viewer(li_automata, fontname=None):
+    if not (isinstance(li_automata, list) or isinstance(li_automata, tuple)):
+        raise ValueError('Error type, in new_automaton_viewer: expected type for li_automata-> list/tuple')
+
     # we have to pass args differently...
     ref_automaton = Automaton(
         *[(automaton_name, pyv_vars.data[automaton_name]) for automaton_name in li_automata]
