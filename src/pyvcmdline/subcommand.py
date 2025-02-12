@@ -95,16 +95,22 @@ def _query_slug_availability(x):
     #  test for slug availability!
     # ---------------------------------------
     CAN_UPLOAD_SCRIPT = 'can_upload.php'
+    good_url = _netw.VMSTORAGE_URL + '/' + CAN_UPLOAD_SCRIPT
     slug_avail_serv_truth = requests.get(
-        _netw.VMSTORAGE_URL + '/' + CAN_UPLOAD_SCRIPT,
+        good_url,
         {'slug': x}
     )
-    # error handling after ping the VMstorage remote service
-    if slug_avail_serv_truth.status_code != 200:
-        raise Exception('[netw error] cannot reach the VMstorage service! Contact developers to report that bug please')
-    obj_serv_truth = slug_avail_serv_truth.json()
-    if ('success' not in obj_serv_truth) or not obj_serv_truth['success']:
-        raise Exception('[protocol error] unexpected result after communication with VMstorage service. Contact devs')
+    try:
+        # error handling after ping the VMstorage remote service
+        if slug_avail_serv_truth.status_code != 200:
+            raise Exception('[netw error] cannot reach the VMstorage service! Contact developers to report that bug please')
+        obj_serv_truth = slug_avail_serv_truth.json()
+        if ('success' not in obj_serv_truth) or not obj_serv_truth['success']:
+            raise Exception('[protocol error] unexpected result after communication with VMstorage service. Contact devs')
+    except json.decoder.JSONDecodeError:
+        print('Error! Cant decode reply from server...')
+        print('url=', good_url)
+        print(slug_avail_serv_truth.text)
     return obj_serv_truth
 
 
