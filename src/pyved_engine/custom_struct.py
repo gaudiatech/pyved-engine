@@ -1,6 +1,6 @@
 import abc
 
-from .util import underscore_format
+from .utils.func import underscore_format
 
 
 def enum_builder_generic(to_upper, starting_index, *sequential, **extra_manset_codes):

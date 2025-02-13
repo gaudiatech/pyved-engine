@@ -1,9 +1,9 @@
 from .Trigger import Trigger
 
-from ... import _hub as inj
+from ... import dep_linking
 
 
-pygame = inj.pygame
+pygame = dep_linking.pygame
 
 
 class SpriteBo:

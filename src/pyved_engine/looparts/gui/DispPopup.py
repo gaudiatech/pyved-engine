@@ -1,13 +1,13 @@
 from abc import ABCMeta, abstractmethod
 from .Trigger import Trigger
-from ... import _hub
+from ... import dep_linking
 
 
 TRIG_POPUP_GENERIC_NOP = 4
 TRIG_POPUP_GENERIC_CLOSE = 5
 
 
-pygame = _hub.pygame
+pygame = dep_linking.pygame
 
 
 class BaseGui(metaclass=ABCMeta):

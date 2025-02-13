@@ -1,10 +1,10 @@
 import math
 
 from .BaseGuiElement import BaseGuiElement
-from ... import _hub
+from ... import dep_linking
 
 
-pygame = _hub.pygame
+pygame = dep_linking.pygame
 
 
 class WidgetContainer(BaseGuiElement):

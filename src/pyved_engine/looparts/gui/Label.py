@@ -1,7 +1,10 @@
-from ... import _hub
-from .BaseGuiElement import BaseGuiElement
+import random
 
-pygame = _hub.pygame
+from .BaseGuiElement import BaseGuiElement
+from ... import dep_linking
+
+
+pygame = dep_linking.pygame
 
 
 class Label(BaseGuiElement):

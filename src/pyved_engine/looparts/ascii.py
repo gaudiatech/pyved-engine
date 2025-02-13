@@ -1,7 +1,7 @@
-from .. import _hub
-from .. import struct
-from ..import vars
+from .. import dep_linking
+from ..custom_struct import IntegerMatrix
 from ..foundation import defs
+from ..utils import vars
 
 
 # - constants
@@ -68,7 +68,7 @@ def init(chosen_char_size=None):
         raise ValueError('div tombe pas juste pour calculer w')
     if adhoch != scrh / _char_size:
         raise ValueError('div tombe pas juste pour calculer h')
-    _matrix = struct.IntegerMatrix((adhocw, adhoch))
+    _matrix = IntegerMatrix((adhocw, adhoch))
     _lastcol = -1 + adhocw
     _lastrow = -1 + adhoch
 
@@ -182,7 +182,7 @@ def set_char_size(v):
 
     decoded = base64.b64decode(_EMB_TILEMAPS_PNGF[_char_size])
     filelike_bdata = io.BytesIO(decoded)
-    _curr_spritesheet = _hub.pygame.image.load(filelike_bdata)
+    _curr_spritesheet = dep_linking.pygame.image.load(filelike_bdata)
     _curr_spritesheet.set_colorkey('black')
 
     if _KFont.inst:
@@ -219,7 +219,7 @@ class _KFont:
             inp = list(karray_or_txt)
         else:
             inp = karray_or_txt
-        rez = _hub.pygame.surface.Surface((_char_size * len(inp), _char_size))
+        rez = dep_linking.pygame.surface.Surface((_char_size * len(inp), _char_size))
         rez.fill((0, 0, 0))
         char_destpos = [0, 0]
         for elt in inp:
@@ -227,15 +227,15 @@ class _KFont:
             rez.blit(s, char_destpos)
             char_destpos[0] += _char_size
         # replace fg color
-        fres = _hub.pygame.surface.Surface((_char_size * len(inp), _char_size))
+        fres = dep_linking.pygame.surface.Surface((_char_size * len(inp), _char_size))
         if bg_color is None:
             fres.fill((255, 0, 255))
             fres.set_colorkey((255, 0, 255))
         else:
             fres.fill(bg_color)
 
-        _hub.pygame.transform.threshold(
-            fres, rez, (255, 255, 255), (0, 0, 0), _hub.pygame.Color(fg_color), inverse_set=True
+        dep_linking.pygame.transform.threshold(
+            fres, rez, (255, 255, 255), (0, 0, 0), dep_linking.pygame.Color(fg_color), inverse_set=True
         )
         return fres
 
@@ -250,7 +250,7 @@ class _KFont:
         if k in self.cached_letters:
             r = self.cached_letters[k]
         else:
-            r = _hub.pygame.surface.Surface((_char_size, _char_size)).convert()
+            r = dep_linking.pygame.surface.Surface((_char_size, _char_size)).convert()
             r.fill((255, 0, 255))
             r.blit(
                 self.surf, (0, 0), (_char_size * (k % nbparcol), _char_size * (k // nbparcol), _char_size, _char_size)
@@ -258,5 +258,3 @@ class _KFont:
             r.set_colorkey((255, 0, 255))
             self.cached_letters[k] = r
         return r
-
-

@@ -1,11 +1,11 @@
 from .BaseGuiElement import BaseGuiElement, ANCHOR_LEFT, ANCHOR_RIGHT, ANCHOR_CENTER
-from ... import _hub
+from ... import dep_linking
 from ...compo import vscreen
+from ...foundation import events
 
 
-pygame = _hub.pygame
-EngineEvTypes = _hub.events.EngineEvTypes
-
+pygame = dep_linking.pygame
+EngineEvTypes = events.EngineEvTypes
 # pose pb en web context , parce que pygame used
 # SPATIAL_INFO = Union[pygame.math.Vector2, Tuple[int, int], Tuple[float, float]]
 

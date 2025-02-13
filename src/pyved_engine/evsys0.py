@@ -1,21 +1,21 @@
 """
 replica of the pygame legacy event sys
 """
-from . import _hub
+from . import dep_linking
 
 
 def get():
-    return _hub.pygame.event.get()
+    return dep_linking.pygame.event.get()
 
 
 def pressed_keys():
-    return _hub.pygame.key.get_pressed()
+    return dep_linking.pygame.key.get_pressed()
 
 
 def __getattr__(name):  # expose(->like forwarding) all pygame key codes & pygame constants
     if name == 'QUIT':
-        return _hub.pygame.QUIT
+        return dep_linking.pygame.QUIT
     try:
-        return getattr(_hub.pygame.key, name)
+        return getattr(dep_linking.pygame.key, name)
     except AttributeError:
-        return getattr(_hub.pygame, name)
+        return getattr(dep_linking.pygame, name)

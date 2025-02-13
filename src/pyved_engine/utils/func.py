@@ -1,5 +1,5 @@
 import re
-from . import _hub
+from .. import dep_linking
 from pathlib import Path
 
 
@@ -7,7 +7,7 @@ FONT = 'consolas'
 
 
 def _font(size):
-    return _hub.kengi_inj['pygame'].font.SysFont(FONT, size)
+    return dep_linking.pygame.font.SysFont(FONT, size)
 
 
 def camel_case_format(string_ac_underscores):

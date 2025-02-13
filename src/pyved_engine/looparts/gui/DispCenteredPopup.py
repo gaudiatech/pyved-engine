@@ -1,11 +1,10 @@
 from .DispPopup import DispPopup
 from .Trigger import Trigger
-from ... import _hub
-# from ... import vscreen
-from ... import context_bridge
-from ... import vars
+from ... import dep_linking
+from ...utils import vars
 
-pygame = _hub.pygame
+
+pygame = dep_linking.pygame
 
 
 class DispCenteredPopup(DispPopup):

@@ -13,7 +13,25 @@ import importlib.util
 bundle_name = None
 # not the best code layout, but if this line missing
 # several add_ons like .tmx or .isometric will break
-from .core import events
+
+# lien direct a garder
+from .foundation import events
+# TODO
+
+vscreen = ascii = terrain = gui = None
+
+
+# lien direct qui sont là temporairement pr améliorer la structure(code layout) du moteur
+def modules_activation():
+    global vscreen, ascii, terrain, gui
+    from .compo import vscreen as _vscreen
+    vscreen = _vscreen
+    from .looparts import ascii as _ascii
+    ascii = _ascii
+    from .looparts import terrain as _terrain
+    terrain = _terrain
+    from .looparts import gui as _gui
+    gui = _gui
 
 
 class PyModulePromise:
@@ -112,7 +130,8 @@ class Injector:
         self._listing[sm_name] = PyModulePromise(sm_name, py_path, pck_arg)
 
 
-_kengi_inj = Injector({
+_kengi_inj = {  #Injector(
+
     # lazy-loading due to the pygame emu mechanism...
     'Vector2d': 'pygame.math.Vector2',
 
@@ -138,20 +157,20 @@ _kengi_inj = Injector({
 
     'vscreen': '.compo.vscreen'
 
-}, 'pyved_engine')
+} #, 'pyved_engine')
 
 
-def __getattr__(targ_sm_name):
-    if targ_sm_name in _kengi_inj:
-        return _kengi_inj[targ_sm_name]
-    else:
-        if targ_sm_name == 'pygame':
-            e_msg = "ERR! To use the event system or low-level objects you have to call pyv.bootstrap_e() first!"
-        else:
-            e_msg = f"ERR! Failed to fin requested pyv attribute/submodule, dev requested: {targ_sm_name}"
-        raise AttributeError(e_msg)
-
-
-def get_injector():
-    global _kengi_inj
-    return _kengi_inj
+# def __getattr__(targ_sm_name):
+#     if targ_sm_name in _kengi_inj:
+#         return _kengi_inj[targ_sm_name]
+#     else:
+#         if targ_sm_name == 'pygame':
+#             e_msg = "ERR! To use the event system or low-level objects you have to call pyv.bootstrap_e() first!"
+#         else:
+#             e_msg = f"ERR! Failed to fin requested pyv attribute/submodule, dev requested: {targ_sm_name}"
+#         raise AttributeError(e_msg)
+#
+#
+# def get_injector():
+#     global _kengi_inj
+#     return _kengi_inj

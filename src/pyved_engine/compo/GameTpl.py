@@ -1,9 +1,10 @@
 import time
 from abc import ABCMeta, abstractmethod
-from .. import _hub
+
+from .. import evsys0
 from .. import context_bridge as gamedev_api
-from ..core.events import EvManager, EngineEvTypes
-from .. import vars as engine_vars
+from ..utils import vars as engine_vars
+from ..foundation.events import EvManager, EngineEvTypes
 
 
 class GameTpl(metaclass=ABCMeta):
@@ -15,10 +16,11 @@ class GameTpl(metaclass=ABCMeta):
     ERR_LOCK_MSG = 'kengi.GameTpl.loop called while SAFETY_LOCK is on!'
     SAFETY_LOCK = False  # can be set to True from outside, if you don't want a game to call .loop()
 
-    def __init__(self):
+    def __init__(self, engine_inst):
         self.gameover = False
         self.nxt_game = 'niobepolis'
         self._manager = None
+        self.engine = engine_inst
 
     @abstractmethod
     def get_video_mode(self):
@@ -47,28 +49,26 @@ class GameTpl(metaclass=ABCMeta):
          - set the _manager attribute (bind the ev manager to self._manager)
          - call self._manager.setup(...) with args
         """
-        gamedev_api.init(mode=self.get_video_mode())
+        self.engine.init(self.get_video_mode())
         self._manager = EvManager.instance()
         self._manager.setup(self.list_game_events())
         self._manager.post(EngineEvTypes.Gamestart)  # pushed to notify that we have really started playing
         gs_enum, mapping = self.list_game_states()
         if gs_enum is not None:
-            gamedev_api.declare_game_states(gs_enum, mapping, self)
+            self.engine.declare_game_states(gs_enum, mapping, self)
 
     def update(self, infot):
-        pyg = _hub.pygame
-        pk = pyg.key.get_pressed()
-        if pk[pyg.K_ESCAPE]:
+        pk = evsys0.pressed_keys()
+        if pk[evsys0.K_ESCAPE]:
             self.gameover = True
             return 2, self.nxt_game
-
         self._manager.post(EngineEvTypes.Update, curr_t=infot)
         self._manager.post(EngineEvTypes.Paint, screen=engine_vars.screen)
         self._manager.update()
-        gamedev_api.flip()
+        self.engine.flip()
 
     def exit(self, vms=None):
-        gamedev_api.close_game()
+        self.engine.quit()
 
     def loop(self):
         """
@@ -82,7 +82,6 @@ class GameTpl(metaclass=ABCMeta):
 
         # use enter, update, exit to handle the global "run game logic"
         self.enter()
-
         while not self.gameover:
             infot = time.time()
             self.update(infot)

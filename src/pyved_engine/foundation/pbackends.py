@@ -1,36 +1,12 @@
 from .defs import EngineEvTypes, to_camelcase
 from .interfaces import BaseKenBackend
 from .. import _hub
-from .. import vars
+from ..utils import vars
+from .. import dep_linking
 
 
 class PygameKenBackend(BaseKenBackend):
-    """
-    Important architecture change:
-    instead of:
 
-                   /-->pygame_API(full)- -+---->pygameSDL
-                 /                       /
-               /                       /
-    kengiCore +----> pygame_API(subset) -----> pygameEm
-
-
-    Tom has chosen:                     /----> web pbackend -----> pygameEm+JS
-                                       /
-    pygame_API(subset) ---> kengiCore +
-                                       \
-                                        \\--> default pbackend ----> pygameSDL
-
-    Main benefits are:
-
-     * expliciting the subset
-     * no more flawed emulation-related errors, if smth runs in local (Imagine that Bob is calling kengi.pygame.*)
-       it should never crash in web ctx
-     * from now on, our own low-level API can differ a lot from pygame's API. Our low-level API is freely defined
-       in the abstract backend/ backend interface
-     * less code coupling. If we ever drop the pygame support/if pygame_API receives heavy patches,
-     it won't become a disaster
-    """
     static_mapping = {
         256: EngineEvTypes.Quit,  # pygame.QUIT is 256
         32787: EngineEvTypes.Quit,  # for pygame2.0.1+ we also have 32787 -> pygame.WINDOWCLOSE
@@ -79,9 +55,13 @@ class PygameKenBackend(BaseKenBackend):
 
     def __init__(self):
         import pygame as _genuine_pyg
-        injector = _hub.get_injector()
-        injector.set('pygame', _genuine_pyg)
-        self._pygame_mod = _hub.pygame
+
+        # TODO fix code temporaire qui est là pr améliorer (code layout) du moteur
+        # injector = _hub.get_injector()
+        # injector.set('pygame', _genuine_pyg)
+        dep_linking.pygame = _genuine_pyg
+
+        self._pygame_mod = _genuine_pyg  #_hub.pygame
         self.debug_mode = False
         self._ev_storage = list()
         self.pyg_jm = None  # model for joystickS

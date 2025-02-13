@@ -12,10 +12,10 @@ from .WidgetContainer import WidgetContainer
 from .base import ANCHOR_CENTER, ANCHOR_RIGHT, ANCHOR_LEFT  # bring codes here
 from .base import AugmentedSprite
 from .text import ImgBasedFont
-from ... import _hub
+from ... import dep_linking
 
 
-pygame = _hub.pygame
+pygame = dep_linking.pygame
 
 
 class Etiquette:

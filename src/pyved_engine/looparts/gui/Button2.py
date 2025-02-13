@@ -1,11 +1,11 @@
 from .BaseGuiElement import BaseGuiElement
-from ... import _hub
+from ... import dep_linking
 from ...compo.vscreen import proj_to_vscreen
+from ...foundation import events
 
-
-pygame = _hub.pygame
-EvListener = _hub.events.EvListener
-EvManager = _hub.events.EvManager
+pygame = dep_linking.pygame
+EvListener = events.EvListener
+EvManager = events.EvManager
 
 
 class Button2(EvListener, BaseGuiElement):

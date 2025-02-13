@@ -1,35 +1,12 @@
-from ... import _hub
-# from ... import event
+# from ... import _hub
+from ... import dep_linking
 
+# TODO
+# use the dynamically imported sublayer again...
+# pygame = _hub.pygame
 
-pygame = _hub.pygame
-
-# event = _hub.events
-
-# EventReceiver = event.EventReceiver
-
-
-# class ButtonPanel(EventReceiver):
-#
-#     def __init__(self, button_list=None, callbacks=None):
-#         super().__init__()
-#         self._lb = list()
-#         if button_list:
-#             self._lb.extend(button_list)
-#
-#         if callbacks:
-#             self._callbacks = callbacks
-#         else:
-#             self._callbacks = dict()
-#
-#     def proc_event(self, ev, source):
-#         if ev.type == pygame.MOUSEBUTTONDOWN:
-#             for bobj in self._lb:
-#                 if bobj.rect.collidepoint(ev.pos):
-#                     try:
-#                         self._callbacks[bobj.ident]()
-#                     except KeyError:
-#                         self.pev(kataen.EngineEvTypes.BTCLICK, bt_ident=bobj.ident)
+# ...meanwhile, i replace with this:
+pygame = dep_linking.pygame
 
 
 class Button(pygame.sprite.Sprite):

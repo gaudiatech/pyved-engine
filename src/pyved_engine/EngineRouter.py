@@ -7,24 +7,23 @@ import csv
 import json
 import os
 import re
+import time as _time
 import uuid
 from enum import Enum
 from io import StringIO
 from math import degrees as _degrees
 
-from .. import _hub
-from .. import custom_struct as struct
-from .. import state_management
-from .. import vars
-from ..compo import gfx
-from ..compo import vscreen
-# from ..compo.MyGameCtrl import MyGameCtrl  # for retro-compatibility
-from ..compo.vscreen import flip as _oflip
-from ..core import events
-from ..core.events import EvManager
-from ..core.events import game_events_enum
-from ..custom_struct import enum, enum_from_n
-from ..state_management import declare_game_states
+from . import custom_struct as struct
+from . import dep_linking, _hub
+from . import state_management
+from .compo import gfx
+from .compo import vscreen
+from .compo.vscreen import flip as _oflip
+from .custom_struct import enum, enum_from_n
+from .foundation import events
+from .foundation.events import game_events_enum
+from .state_management import declare_game_states
+from .utils import vars
 
 
 _BASE_ENGINE_EVS = [
@@ -37,16 +36,18 @@ _BASE_ENGINE_EVS = [
 
 __all__ = [
     'bootstrap_e', 'close_game', 'curr_state', 'declare_begin', 'declare_end', 'declare_game_states',
-    'declare_update', 'draw_circle', 'draw_line', 'draw_polygon', 'draw_rect', 'enum', 'enum_from_n', 'flip',
-    'game_events_enum', 'get_ev_manager', 'get_gs_obj', 'get_pressed_keys', 'get_surface', 'init', 'new_font_obj',
-    'new_rect_obj', 'preload_assets', 'struct', 'run_game',
+    'declare_update', 'draw_circle', 'draw_line', 'draw_polygon', 'draw_rect', 'enum', 'enum_from_n',
+    'game_events_enum', 'get_gs_obj', 'get_pressed_keys',
+    # 'get_surface', 'init', 'get_ev_manager', 'create_clock','run_game','flip',
+    #
+    'new_font_obj',
+    'new_rect_obj', 'preload_assets', 'struct',
 
-    'surface_create', 'surface_rotate', 'create_clock',
+    'surface_create', 'surface_rotate',
 
     'play_sound',
     'stop_sound',
     'time',
-
     # retro-compat,
     'get_game_ctrl', 'get_ready_flag',
 
@@ -60,10 +61,11 @@ __all__ = [
     'DEFAULT_SCENE',
 
     # const
-    'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE'
-]
+    'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE',
 
-import time as _time
+    #new
+    'EngineRouter'
+]
 
 
 def time():
@@ -104,6 +106,145 @@ def declare_evs(*ev_names):
 class _Objectifier:
     def __init__(self, data):
         self.__dict__.update(data)
+
+
+# Step 3: Inject the dependency
+from pyved_engine.sublayer_implem import GameEngineSublayer
+from .foundation import events
+from .compo import GameTpl
+from . import custom_struct
+from . import evsys0
+from .looparts import terrain as _terrain
+from .utils import pal
+from .utils import vars as _vars
+from .looparts import ascii as _ascii
+
+
+class EngineRouter:
+    """this is basicaly a container to expose the high-level API for the game dev,
+    it will be initialized at runtime, before loading a game cartridge so the game dev
+    hasn't to worry about that step"""
+    def __init__(self, sublayer_compo: GameEngineSublayer):
+        self.low_level_service = sublayer_compo
+
+        self._hub = {
+            'EvListener': events.EvListener,
+            'EngineEvTypes': events.EngineEvTypes,
+            'GameTpl': GameTpl.GameTpl,
+            'struct': custom_struct,
+            'evsys0': evsys0,
+            'terrain': _terrain,
+            'pal': pal,
+            'ascii': _ascii,
+            'vars': _vars
+        }
+
+    @staticmethod
+    def get_version():
+        return _vars.ENGINE_VERSION_STR
+
+    def init(self, engine_mode_id: int, maxfps=None, wcaption=None, forced_size=None, cached_paint_ev=None, multistate_info=None) -> None:
+        rez = self.low_level_service.fire_up_backend(engine_mode_id)
+
+        self.mediator = Mediator()
+
+        global _engine_rdy, _upscaling_var, _existing_game_ctrl, _ready_flag
+        if engine_mode_id is None:
+            mode = HIGH_RES_MODE
+
+        if not _engine_rdy:
+            bootstrap_e(maxfps, wcaption)
+            print('pyv.init called, but engine hasnt bootstraped yet')
+        else:
+            print('previous bootstrap_e call detected.')
+
+        _hub.modules_activation()  # bootstrap done so... all good to fire-up pyv modules
+        if wcaption:
+            dep_linking.pygame.display.set_caption(wcaption)
+
+        if maxfps is None:  # here, we may replace the existing value of maxfps in the engine
+            if vars.max_fps:
+                pass
+            else:
+                vars.max_fps = 60
+        else:
+            vars.max_fps = maxfps
+
+        vars.clock = self.create_clock()
+
+        vscreen.cached_pygame_mod = dep_linking.pygame
+        print('setting screen params...')
+        _screen_param(engine_mode_id, forced_size, cached_paint_ev)
+
+        # for retro-compat
+        if multistate_info:
+            _existing_game_ctrl = state_management.StateStackCtrl(*multistate_info)
+        else:
+            _existing_game_ctrl = state_management.StateStackCtrl()
+        # the lines above have replaced class named: MyGameCtrl()
+        _ready_flag = True
+        dep_linking.pygame.mixer.init()  # we always enable sounds
+
+    def draw_circle(self, surface, color_arg, position2d, radius, width=0):
+        self.low_level_service.draw_circle(surface, color_arg, position2d, radius, width)
+
+    def draw_rect(self, surface, color, rect4, width, **kwargs):
+        self.low_level_service.draw_rect(surface, color, rect4, width)
+
+    # --- legit pyved functions
+    def bootstrap_e(self):
+        self.low_level_service.fire_up_backend(0)  # TODO
+
+        # >>> EXPLICIT
+        # from pyved_engine.sublayer_implem import PygameWrapper
+        # from pyved_engine import dep_linking
+
+        # deprec -
+        # dep_linking.pygame = concr_sublayer_component  # that is: the game-engine sublayer
+
+    def process_evq(self):
+        self.mediator.update()
+
+    def post_ev(self, evtype, **ev_raw_data):
+        if _debug_flag:
+            if evtype != 'update' and evtype != 'draw':
+                print('>>>>POST', evtype, ev_raw_data)
+        if evtype not in omega_events:
+            raise ValueError(f'trying to post event {evtype}, but this one hasnt been declared via pyv.setup_evsys6')
+        if evtype[0] == 'x' and evtype[1] == '_':  # cross event
+            self.mediator.post(evtype, ev_raw_data, True)  # keep the raw form if we need to push to antother mediator
+        else:
+            self.mediator.post(evtype, ev_raw_data, False)
+
+    def get_mouse_coords(self):
+        # pygm = _kengi_inj['pygame']
+        pygm = dep_linking.pygame
+        mpos = pygm.mouse.get_pos()
+        # return _kengi_inj['vscreen'].proj_to_vscreen(mpos)
+        return _hub.vscreen.proj_to_vscreen(mpos)
+
+    def get_surface(self):
+        if vars.screen is None:
+            raise LookupError('Cannot provide user with a screen ref, since the engine was not initialized!')
+        return vars.screen
+
+    def create_clock(self):
+        return dep_linking.pygame.time.Clock()
+
+    def get_ev_manager(self):
+        return events.EvManager.instance()
+
+    def flip(self):
+        _oflip()
+        if vars.max_fps:
+            vars.clock.tick(vars.max_fps)
+
+    def quit(self):
+        dep_linking.pygame.quit()
+
+    # --- trick to use the hub
+    def __getattr__(self, item):
+        return self._hub[item]
 
 
 # event system 6
@@ -169,7 +310,7 @@ class Mediator:
         if self.previous_world is not None:
             # unregister actors of the current world
             for actor_id in worlds[self.previous_world]["actors"].keys():
-                _mediator.unregister(actor_id)
+                self.unregister(actor_id)
             self.previous_world = None
 
     # ---------- networking ----------------
@@ -178,25 +319,6 @@ class Mediator:
             raise RuntimeError('cannot bind another network layer, one has already be set')
         self.network_layer = ref
         ref.register_mediator(self)
-
-
-_mediator = Mediator()
-
-
-def process_evq():
-    _mediator.update()
-
-
-def post_ev(evtype, **ev_raw_data):
-    if _debug_flag:
-        if evtype != 'update' and evtype != 'draw':
-            print('>>>>POST', evtype, ev_raw_data)
-    if evtype not in omega_events:
-        raise ValueError(f'trying to post event {evtype}, but this one hasnt been declared via pyv.setup_evsys6')
-    if evtype[0] == 'x' and evtype[1] == '_':  # cross event
-        _mediator.post(evtype, ev_raw_data, True)  # keep the raw form if we need to push to antother mediator
-    else:
-        _mediator.post(evtype, ev_raw_data, False)
 
 
 def ls_scenes():
@@ -358,27 +480,27 @@ _scr_init_flag = False
 
 # --- exposing draw functions
 def draw_line(*args, **kwargs):
-    _hub.pygame.draw.line(*args, **kwargs)
+    dep_linking.pygame.draw.line(*args, **kwargs)
 
 
 def draw_rect(*args, **kwargs):
-    _hub.pygame.draw.rect(*args, **kwargs)
+    dep_linking.pygame.draw.rect(*args, **kwargs)
 
 
 def draw_polygon(*args, **kwargs):
-    _hub.pygame.draw.polygon(*args, **kwargs)
+    dep_linking.pygame.draw.polygon(*args, **kwargs)
 
 
 def draw_circle(surface, color_arg, position2d, radius, width=0):
-    _hub.pygame.draw.circle(surface, color_arg, position2d, radius, width)
+    dep_linking.pygame.draw.circle(surface, color_arg, position2d, radius, width)
 
 
 def new_font_obj(font_src, font_size: int):  # src can be None!
-    return _hub.pygame.font.Font(font_src, font_size)
+    return dep_linking.pygame.font.Font(font_src, font_size)
 
 
 def new_rect_obj(*args):  # probably: x, y, w, h
-    return _hub.pygame.Rect(*args)
+    return dep_linking.pygame.Rect(*args)
 
 
 # --------------
@@ -399,29 +521,28 @@ def declare_end(gfunc):  # decorator!
     return gfunc
 
 
-def run_game():
-    # special case for pygbag or something similar:
-    if __import__('sys').platform in ('emscripten', 'wasi'):
-        import asyncio
-
-        async def async_run_game():
-            vars.beginfunc_ref(None)
-            while not vars.gameover:
-                vars.updatefunc_ref(time.time())
-                flip()  # commit gfx mem to screen, already contains the .tick
-                await asyncio.sleep(0)
-            vars.endfunc_ref(None)
-
-        asyncio.run(async_run_game())
-        return
-
-    vars.beginfunc_ref(None)
-    while not vars.gameover:
-        # it is assumed that the developer calls pyv.flip,
-        # once per frame,
-        # without the engine having to take care of that
-        vars.updatefunc_ref(_time.time())
-    vars.endfunc_ref(None)
+"""
+experimental for wasm, etc.
+"""
+# def run_game():
+#     if __import__('sys').platform in ('emscripten', 'wasi'):
+#         import asyncio
+#         async def async_run_game():
+#             vars.beginfunc_ref(None)
+#             while not vars.gameover:
+#                 vars.updatefunc_ref(time.time())
+#                 flip()  # commit gfx mem to screen, already contains the .tick
+#                 await asyncio.sleep(0)
+#             vars.endfunc_ref(None)
+#         asyncio.run(async_run_game())
+#         return
+#
+#     vars.beginfunc_ref(None)
+#     while not vars.gameover:
+#         # it's assumed that the developer calls pyv.flip, once per frame,
+#         # without the engine having to take care of that
+#         vars.updatefunc_ref(_time.time())
+#     vars.endfunc_ref(None)
 
 
 def _preload_ncsv_file(filename_no_ext, file_prefix, webhack_info=None):
@@ -492,7 +613,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, d
                 else:
                     y = prefix_asset_folder + ft_filename
                 print('fetching font:', key, ft_filename, f'[{y}]')
-                vars.fonts[key] = _hub.pygame.font.Font(
+                vars.fonts[key] = dep_linking.pygame.font.Font(
                     y,
                     vars.DATA_FT_SIZE
                 )
@@ -503,7 +624,7 @@ def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, d
                 else:
                     filepath = prefix_asset_folder + asset_desc
                 print('fetching image:', kk[0], filepath)
-                vars.images[kk[0]] = _hub.pygame.image.load(filepath)
+                vars.images[kk[0]] = dep_linking.pygame.image.load(filepath)
 
     # -------------------------
     # loading sfx files
@@ -595,16 +716,16 @@ def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=True):
     if print_ver_info:
         print(f'Booting up pyved-engine {v}...')
 
-    from ..foundation.pbackends import build_primalbackend
+    from .foundation.pbackends import build_primalbackend
 
     # SIDE-EFFECT: Building the backend also sets kengi_inj.pygame !
     _pyv_backend = build_primalbackend(vars.backend_name)
     # if you dont call this line below, the modern event system wont work (program hanging)
     events.EvManager.instance().a_event_source = _pyv_backend
 
-    _hub.pygame.init()
+    dep_linking.pygame.init()
     if wcaption:
-        _hub.pygame.display.set_caption(wcaption)
+        dep_linking.pygame.display.set_caption(wcaption)
     _engine_rdy = True
 
 
@@ -617,6 +738,8 @@ def _screen_param(gfx_mode_code, screen_dim, cached_paintev) -> None:
     :param screen_dim: can be None or a pair of integers
     :param cached_paintev: can be None or a pyved event that needs to have its .screen attribute set
     """
+    print('---dans screen_params -->')
+    print('args:', gfx_mode_code, screen_dim, cached_paintev)
     global _scr_init_flag
 
     # all the error management tied to the "gfx_mode_code" argument has to be done now
@@ -645,18 +768,18 @@ def _screen_param(gfx_mode_code, screen_dim, cached_paintev) -> None:
     # ---------------------------------
     if not _scr_init_flag:
         if vscreen.stored_upscaling is not None:
-            pygame_surf_dessin = _hub.pygame.surface.Surface(taille_surf_dessin)
+            pygame_surf_dessin = dep_linking.pygame.surface.Surface(taille_surf_dessin)
             vscreen.set_virtual_screen(pygame_surf_dessin)
             vscreen.set_upscaling(adhoc_upscaling)
             if gfx_mode_code:
-                pgscreen = _hub.pygame.display.set_mode(vars.disp_size)
+                pgscreen = dep_linking.pygame.display.set_mode(vars.disp_size)
             else:
-                pgscreen = _hub.pygame.display.set_mode(taille_surf_dessin)
+                pgscreen = dep_linking.pygame.display.set_mode(taille_surf_dessin)
             vscreen.set_realpygame_screen(pgscreen)
 
         else:  # stored_upscaling wasnt relevant so far =>we usin webctx
             _active_state = True
-            pygame_surf_dessin = _hub.pygame.display.set_mode(taille_surf_dessin)
+            pygame_surf_dessin = dep_linking.pygame.display.set_mode(taille_surf_dessin)
             vscreen.set_virtual_screen(pygame_surf_dessin)
             # this line is useful for enabling mouse_pos computations even in webCtx
             vscreen.stored_upscaling = float(adhoc_upscaling)
@@ -672,45 +795,6 @@ _existing_game_ctrl = None
 _ready_flag = False
 
 
-def init(mode=None, maxfps=None, wcaption=None, forced_size=None, cached_paint_ev=None, multistate_info=None):
-    global _engine_rdy, _upscaling_var, _existing_game_ctrl, _ready_flag
-    if mode is None:
-        mode = HIGH_RES_MODE
-
-    if not _engine_rdy:
-        bootstrap_e(maxfps, wcaption)
-        print('pyv.init called, but engine hasnt bootstraped yet')
-    else:
-        print('previous bootstrap_e call detected.')
-
-    if wcaption:
-        _hub.pygame.display.set_caption(wcaption)
-
-    if maxfps is None:  # here, we may replace the existing value of maxfps in the engine
-        if vars.max_fps:
-            pass
-        else:
-            vars.max_fps = 60
-    else:
-        vars.max_fps = maxfps
-
-    vars.clock = create_clock()
-
-    vscreen.cached_pygame_mod = _hub.pygame
-    print('setting screen params...')
-    _screen_param(mode, forced_size, cached_paint_ev)
-
-    # for retro-compat
-    if multistate_info:
-        _existing_game_ctrl = state_management.StateStackCtrl(*multistate_info)
-    else:
-        _existing_game_ctrl = state_management.StateStackCtrl()
-    # the lines above have replaced class named: MyGameCtrl()
-
-    _ready_flag = True
-    _hub.pygame.mixer.init()  # we always enable sounds
-
-
 def get_game_ctrl():
     return _existing_game_ctrl
 
@@ -721,8 +805,8 @@ def get_ready_flag():
 
 def close_game():
     vars.gameover = False
-    _hub.pygame.mixer.quit()
-    _hub.pygame.quit()
+    dep_linking.pygame.mixer.quit()
+    dep_linking.pygame.quit()
 
     vars.images.clear()
     vars.csvdata.clear()
@@ -730,12 +814,7 @@ def close_game():
     vars.spritesheets.clear()
 
 
-def create_clock():
-    return _hub.pygame.time.Clock()
 
-
-def get_ev_manager():
-    return EvManager.instance()
 
 
 def curr_state() -> int:
@@ -751,18 +830,12 @@ def curr_statename() -> str:
     )
 
 
-def get_surface():
-    if vars.screen is None:
-        raise LookupError('Cannot provide user with a screen ref, since the engine was not initialized!')
-    return vars.screen
-
-
 def surface_create(size):
-    return _hub.pygame.surface.Surface(size)
+    return dep_linking.pygame.surface.Surface(size)
 
 
 def surface_rotate(img, angle):
-    return _hub.pygame.transform.rotate(img, _degrees(-1 * angle))
+    return dep_linking.pygame.transform.rotate(img, _degrees(-1 * angle))
 
 
 # -------
@@ -778,14 +851,6 @@ def surface_rotate(img, angle):
 #     _hub.pygame.display.flip()
 #     vars.clock.tick(vars.max_fps)
 # --------
-
-
-def flip():
-    _oflip()
-    if vars.max_fps:
-        vars.clock.tick(vars.max_fps)
-
-
 def fetch_events():
     return _hub.pygame.event.get()
 

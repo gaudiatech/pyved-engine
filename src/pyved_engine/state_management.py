@@ -1,17 +1,16 @@
 import time
 
-from . import vars
-from .compo import vscreen
-from ._hub import events
-from .core.events import EngineEvTypes  # latest version of event sys
-from .custom_struct import Stack, StContainer, enum
 from ._classes import BaseGameState
+from ._hub import events
+from .compo import vscreen
+from .custom_struct import Stack, StContainer, enum
+from .foundation.events import EngineEvTypes  # latest version of event sys
+from .utils import vars
+
 
 multistate_flag = False
 stack_based_ctrl = None
 state_stack = None
-
-
 _DefaultGsList = enum(
     'Room1',
 )

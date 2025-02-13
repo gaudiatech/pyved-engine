@@ -6,44 +6,31 @@
 | https://github.com/gaudiatech/pyved-engine         |
 | an open-source project started by GAUDIA TECH INC. |
 |                                                    |
-| Main author is Thomas EDER a.k.a. moonbak       |
-| (github.com/wkta) - Contact thomas.iw@kata.games   |
+| Main author is: Thomas I. EDER / moonbak           |
+| (github.com/wkta) - Contact thomas@katagames.io    |
 +----------------------------------------------------+
 """
 from . import _hub
-hub = _hub
-
-from .context_bridge import *  # api is already packed in this file
-from . import custom_struct as struct
-from .core.events import Emitter, EvListener, EngineEvTypes
-from .core import legacy_evs  # we just copy the event system of pygame
-from ._classes import *
 from .Singleton import Singleton
+from ._classes import *
 from .compo import gfx
+from .compo import vscreen  # deprecated
+from .compo.GameTpl import GameTpl  # legacy cls
+from .foundation import legacy_evs  # we just copy the event system of pygame
+from .foundation.events import Emitter, EvListener, EngineEvTypes
+from .utils import vars as defs
+from .EngineRouter import EngineRouter
 
-from . import vars
-
-# deprecated
-from .compo import vscreen
 
 # TODO remove this when we can
 # ive kept it for retro-compatibility with projects that target pyv v23.6a1
 # such as demos/ecs_naif or the very early stage pyved ships-with-GUI editor
-from ._ecs_pattern import entity, component, System, SystemManager, EntityManager
+from .utils._ecs_pattern import entity, component, System, SystemManager, EntityManager
 from . import evsys0
-
-# useful ALIAS! (webctx)
-defs = vars
-
-
-def get_version():
-    return vars.ENGINE_VERSION_STR
 
 
 _stored_kbackend = None
-# deprec.
-vars.weblib_sig = _backend_name = ''
-quit = close_game
+defs.weblib_sig = _backend_name = ''  # deprec.
 
 
 def set_webbackend_type(xval):
@@ -52,15 +39,14 @@ def set_webbackend_type(xval):
     vars.backend_name = 'web'
 
 
-# the basic API is expanded via our special "hub" component
-def __getattr__(attr_name):
-    if attr_name in ('ver', 'vernum'):
-        return get_version()
-    elif attr_name == 'Sprite':
-        return _hub.pygame.sprite.Sprite
-    elif attr_name == 'SpriteGroup':
-        return _hub.pygame.sprite.Group
-    elif attr_name == 'sprite_collision':
-        return _hub.pygame.sprite.spritecollide
-
-    return getattr(_hub, attr_name)
+# the basic API used to be expanded via our special "hub" component
+# def __getattr__(attr_name):
+#     if attr_name in ('ver', 'vernum'):
+#         return get_version()
+#     elif attr_name == 'Sprite':
+#         return dep_linking.pygame.sprite.Sprite
+#     elif attr_name == 'SpriteGroup':
+#         return dep_linking.pygame.sprite.Group
+#     elif attr_name == 'sprite_collision':
+#         return dep_linking.pygame.sprite.spritecollide
+#     return getattr(_hub, attr_name)

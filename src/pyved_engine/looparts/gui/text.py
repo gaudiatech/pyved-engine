@@ -1,6 +1,7 @@
-from ... import _hub
+from ... import dep_linking
 
-pygame = _hub.pygame
+
+pygame = dep_linking.pygame
 
 
 def clip(surf, x, y, x_size, y_size):
