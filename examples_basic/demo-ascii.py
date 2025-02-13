@@ -12,7 +12,6 @@ Y_PAL_POS = 15
 PAL = pyv.pal.c64
 
 # - variables
-pygame = pyv.pygame
 ajouts = dict()
 asc_canvas = canv_bsupx = canv_bsupy = None
 
@@ -37,17 +36,17 @@ def game_loop():
     global asc_canvas
     while not pyv.vars.gameover:
         for ev in pyv.evsys0.get():
-            if ev.type == pygame.QUIT or (ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE):
+            if ev.type == pyv.evsys0.QUIT or (ev.type == pyv.evsys0.KEYDOWN and ev.key == pyv.evsys0.K_ESCAPE):
                 pyv.vars.gameover = True
-            elif ev.type == pygame.MOUSEBUTTONDOWN:
+            elif ev.type == pyv.evsys0.MOUSEBUTTONDOWN:
                 text_pos = list(pyv.ascii.screen_to_cpos(ev.pos))
-            elif ev.type == pygame.KEYDOWN:
+            elif ev.type == pyv.evsys0.KEYDOWN:
 
-                if ev.key == pygame.K_BACKSPACE:
+                if ev.key == pyv.evsys0.K_BACKSPACE:
                     pyv.ascii.increm_char_size()
                     text_pos = None
 
-                elif text_pos is not None and ev.key != pygame.K_RETURN:
+                elif text_pos is not None and ev.key != pyv.evsys0.K_RETURN:
                     cle = tuple(text_pos)
                     if cle not in ajouts:
                         ajouts[cle] = list()
@@ -76,7 +75,7 @@ def game_loop():
             if len(aj):
                 tmp_pos = list(adhoc_tpos)
                 for e in list(aj):  # letter one by one
-                    tmp = asc_canvas.put_char(e, tmp_pos, PAL[3], PAL['darkgrey'])
+                    tmp = asc_canvas.put_char(e, tmp_pos, PAL[3], PAL['darkgray'])
                     tmp_pos[0] += 1
 
         # draw the cursor

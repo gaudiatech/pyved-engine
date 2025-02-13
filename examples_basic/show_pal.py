@@ -9,16 +9,14 @@ START_POS = (16, 32)
 BAR_LENGTH = 300
 TILE_HEIGHT = 48
 
-pygame = pyv.pygame
-
 
 # - init
 pyv.init(pyv.LOW_RES_MODE, wcaption='kengi.palettes showcase')
 
 gameover = False
-cl = pygame.time.Clock()
+cl = pyv.vars.clock
 rounding_type = round_func = lambda x: x
-ft = pygame.font.Font(None, 25)
+ft = pyv.new_font_obj(None, 25)
 
 pos2tile = dict()
 pos2label = dict()
@@ -37,7 +35,7 @@ for name, pal in pyv.pal.ALL_PALETTES.items():
         t -= tile_size
 
         last_keyy = keyy = (d + START_POS[0] + curr_offset_x, START_POS[1] + curr_offset_y)
-        tile_obj = pygame.Surface((tile_size, 8))
+        tile_obj = pyv.surface_create((tile_size, 8))
         tile_obj.fill(col)
         pos2tile[keyy] = tile_obj
 
@@ -74,11 +72,11 @@ def run_game():
     scr = pyv.get_surface()
 
     while not gameover:
-        for ev in pygame.event.get():
-            if ev.type == pygame.QUIT:
+        for ev in pyv.evsys0.event.get():
+            if ev.type == pyv.evsys0.QUIT:
                 gameover = True
-            elif ev.type == pygame.KEYDOWN:
-                if ev.key == pygame.K_ESCAPE:
+            elif ev.type == pyv.evsys0.KEYDOWN:
+                if ev.key == pyv.evsys0.K_ESCAPE:
                     gameover = True
         # display
         scr.fill((0, 0, 255))

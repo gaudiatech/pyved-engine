@@ -1,6 +1,17 @@
-import pyved_engine as pyv
+
+from pyved_engine.sublayer_implem import PygameWrapper
+import pyved_engine
+
+# Step 4: Usage
+# Injecting the dependency explicitly:
+engine_depc = PygameWrapper()
+pyv = pyved_engine.EngineRouter(
+    engine_depc
+)
+
 
 pyv.bootstrap_e()
+
 
 # All constants
 BG_COLOR = 'antiquewhite2'
@@ -84,6 +95,7 @@ class PfDemoCtrl(pyv.EvListener):
                 self._m.cursor_pos[0] += 1
 
     def on_quit(self, ev):
+        print('eee')
         self.pev(pyv.EngineEvTypes.Gameover)
 
     def on_keydown(self, ev):
@@ -138,6 +150,6 @@ class DemoPathfinding(pyv.GameTpl):
         return None
 
 
-if __name__ == '__main__':
-    gobj = DemoPathfinding()
-    gobj.loop()
+# program per se
+gobj = DemoPathfinding()
+gobj.loop()
