@@ -1,5 +1,5 @@
 from ..foundation import defs
-from ..utils import vars as engine_vars
+from .. import pe_vars as engine_vars
 
 
 _vsurface = None

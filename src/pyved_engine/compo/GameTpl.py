@@ -2,9 +2,8 @@ import time
 from abc import ABCMeta, abstractmethod
 
 from .. import evsys0
-from .. import context_bridge as gamedev_api
-from ..utils import vars as engine_vars
 from ..foundation.events import EvManager, EngineEvTypes
+from .. import pe_vars as engine_vars
 
 
 class GameTpl(metaclass=ABCMeta):
@@ -68,7 +67,7 @@ class GameTpl(metaclass=ABCMeta):
         self.engine.flip()
 
     def exit(self, vms=None):
-        self.engine.quit()
+        self.engine.close_game()
 
     def loop(self):
         """

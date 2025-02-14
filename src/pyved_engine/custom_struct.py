@@ -3,6 +3,11 @@ import abc
 from .utils.func import underscore_format
 
 
+class Objectifier:
+    def __init__(self, data):
+        self.__dict__.update(data)
+
+
 def enum_builder_generic(to_upper, starting_index, *sequential, **extra_manset_codes):
     domaine = range(starting_index, len(sequential) + starting_index)
     enums = dict(zip(sequential, domaine))

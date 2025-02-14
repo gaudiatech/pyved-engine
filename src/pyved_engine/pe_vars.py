@@ -17,8 +17,22 @@ DATA_FT_SIZE = 16
 # deprecated but mandatory for web ctx
 STD_SCR_SIZE = [960, 720]
 
+BASE_ENGINE_EVS = [
+    'update', 'draw',
+    'mousemotion', 'mouseup', 'mousedown',
+    'keyup', 'keydown', 'gameover',
+    'conv_begins', 'conv_step', 'conv_finish',  # conversations with npcs
+]
+
+bundle_name = None  # set by launcher script
+
+omega_events = list(BASE_ENGINE_EVS)
+
 # - engine related
+mediator = None
 disp_size = [960, 720]
+engine = None  # to store a reference to the ngine itself. Useful when writing pyv submodules!
+
 
 backend_name = ''  # type str, and the default value is '' but it could be modified from elsewhere
 weblib_sig = None

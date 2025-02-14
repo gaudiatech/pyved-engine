@@ -1,11 +1,11 @@
 import time
 
-from . import _hub
-from . import util
-from .compo import vscreen
+from .. import _hub
+from ..compo import vscreen
+from ..utils import func
 
 
-text = util.drawtext
+text = func.drawtext
 
 
 class Button:

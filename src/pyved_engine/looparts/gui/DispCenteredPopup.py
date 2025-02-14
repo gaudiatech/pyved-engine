@@ -1,7 +1,7 @@
 from .DispPopup import DispPopup
 from .Trigger import Trigger
 from ... import dep_linking
-from ...utils import vars
+from ... import pe_vars
 
 
 pygame = dep_linking.pygame

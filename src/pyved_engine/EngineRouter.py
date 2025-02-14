@@ -6,151 +6,186 @@ Pyv API := Ecs func/procedures
 import csv
 import json
 import os
-import re
-import time as _time
-import uuid
-from enum import Enum
+import time
 from io import StringIO
 from math import degrees as _degrees
 
-from . import custom_struct as struct
+from pyved_engine.sublayer_implem import GameEngineSublayer  # Step 3: Inject the dependency
 from . import dep_linking, _hub
+from . import pe_vars
 from . import state_management
+from .actors_pattern import Mediator
 from .compo import gfx
 from .compo import vscreen
 from .compo.vscreen import flip as _oflip
-from .custom_struct import enum, enum_from_n
 from .foundation import events
-from .foundation.events import game_events_enum
-from .state_management import declare_game_states
-from .utils import vars
-
-
-_BASE_ENGINE_EVS = [
-    'update', 'draw',
-    'mousemotion', 'mouseup', 'mousedown',
-    'keyup', 'keydown', 'gameover',
-    'conv_begins', 'conv_step', 'conv_finish',  # conversations with npcs
-]
-
-
-__all__ = [
-    'bootstrap_e', 'close_game', 'curr_state', 'declare_begin', 'declare_end', 'declare_game_states',
-    'declare_update', 'draw_circle', 'draw_line', 'draw_polygon', 'draw_rect', 'enum', 'enum_from_n',
-    'game_events_enum', 'get_gs_obj', 'get_pressed_keys',
-    # 'get_surface', 'init', 'get_ev_manager', 'create_clock','run_game','flip',
-    #
-    'new_font_obj',
-    'new_rect_obj', 'preload_assets', 'struct',
-
-    'surface_create', 'surface_rotate',
-
-    'play_sound',
-    'stop_sound',
-    'time',
-    # retro-compat,
-    'get_game_ctrl', 'get_ready_flag',
-
-    # newest gamedev API (2024-10)
-    'declare_evs',
-    'set_debug_flag',
-    'new_actor', 'del_actor', 'id_actor',
-    'peek', 'trigger',
-    'post_ev', 'process_evq',
-    'get_scene', 'set_scene', 'ls_scenes',
-    'DEFAULT_SCENE',
-
-    # const
-    'HIGH_RES_MODE', 'LOW_RES_MODE', 'RETRO_MODE',
-
-    #new
-    'EngineRouter'
-]
-
-
-def time():
-    return _time.time()
-
-
-def play_sound(sound_key, repeat=0):
-    vars.sounds[sound_key].play(repeat)
-
-
-def stop_sound(sound_key):
-    vars.sounds[sound_key].stop()
-
-
-# -------------- actor-based gamedev API (experimental) -------------------------
-_debug_flag = False
-omega_events = list(_BASE_ENGINE_EVS)
-
-DEFAULT_SCENE = 'default'
-worlds = {DEFAULT_SCENE: {"actors": {}}}
-_active_world = DEFAULT_SCENE
-t_last_tick = None
-
-
-def set_debug_flag(v=True):
-    global _debug_flag
-    _debug_flag = v
-
-
-def declare_evs(*ev_names):
-    global omega_events
-    del omega_events[:]
-    omega_events.extend(_BASE_ENGINE_EVS)
-    if len(ev_names):
-        omega_events.extend(ev_names)
-
-
-class _Objectifier:
-    def __init__(self, data):
-        self.__dict__.update(data)
-
-
-# Step 3: Inject the dependency
-from pyved_engine.sublayer_implem import GameEngineSublayer
-from .foundation import events
-from .compo import GameTpl
-from . import custom_struct
-from . import evsys0
-from .looparts import terrain as _terrain
-from .utils import pal
-from .utils import vars as _vars
-from .looparts import ascii as _ascii
 
 
 class EngineRouter:
     """this is basicaly a container to expose the high-level API for the game dev,
     it will be initialized at runtime, before loading a game cartridge so the game dev
     hasn't to worry about that step"""
-    def __init__(self, sublayer_compo: GameEngineSublayer):
-        self.low_level_service = sublayer_compo
 
+    # constants that help with engine initialization
+    HIGH_RES_MODE, LOW_RES_MODE, RETRO_MODE = 1, 2, 3
+
+    def __init__(self, sublayer_compo: GameEngineSublayer):
+        self.debug_mode = False
+        self.low_level_service = sublayer_compo
+        self.ready_flag = False
+        # immediate bind
         self._hub = {
-            'EvListener': events.EvListener,
-            'EngineEvTypes': events.EngineEvTypes,
-            'GameTpl': GameTpl.GameTpl,
-            'struct': custom_struct,
-            'evsys0': evsys0,
-            'terrain': _terrain,
-            'pal': pal,
-            'ascii': _ascii,
-            'vars': _vars
+            'SpriteGroup': self.low_level_service.sprite.Group,
+            'Sprite': self.low_level_service.sprite.Sprite,
+            'sprite_collision': self.low_level_service.sprite.spritecollide
         }
+        pe_vars.engine = self
+
+    @staticmethod
+    def get_game_ctrl():
+        return _existing_game_ctrl
+
+    def preload_assets(self, adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder,
+                       debug_mode=False, webhack=None) -> None:
+        """
+        expected to find the (mandatory) key 'images',
+        also we may find the (optionnal) key 'sounds'
+        """
+        if debug_mode:
+            print('*' * 50)
+            print(f' CALL to preload assets [webhack value:{webhack}]')
+            print('*' * 50)
+            print()
+
+        for asset_desc in adhoc_dict['asset_list']:
+            if isinstance(asset_desc, str):  # either sprsheet or image
+                kk = asset_desc.split('.')
+                # print('>>>>>charge file:', kk[0], kk[1])
+                # print('prefix_asset_folder?', prefix_asset_folder)
+
+                if kk[1] == 'json':
+                    y = prefix_asset_folder
+                    if webhack:
+                        y = webhack + prefix_asset_folder
+                    adhocv = None
+                    if webhack:
+                        if prefix_asset_folder == './':
+                            adhocv = ''
+                        else:
+                            adhocv = prefix_asset_folder
+                    pe_vars.spritesheets[kk[0]] = gfx.JsonBasedSprSheet(
+                        kk[0], pathinfo=y, is_webhack=adhocv
+                    )
+
+                elif kk[1] == 'ttf':  # a >single< TTF font
+                    key = "custom_ft"
+                    ft_filename = asset_desc
+
+                    if webhack:
+                        y = webhack + ft_filename
+                    else:
+                        y = prefix_asset_folder + ft_filename
+                    print('fetching font:', key, ft_filename, f'[{y}]')
+                    pe_vars.fonts[key] = self.low_level_service.new_font_obj(
+                        y,
+                        pe_vars.DATA_FT_SIZE
+                    )
+
+                else:  # necessarily an image
+                    if prefix_asset_folder == './':
+                        filepath = asset_desc
+                    else:
+                        filepath = prefix_asset_folder + asset_desc
+                    print('fetching image:', kk[0], filepath)
+                    pe_vars.images[kk[0]] = self.low_level_service.image_load(filepath)
+
+        # -------------------------
+        # loading sfx files
+        # -------------------------
+        for snd_elt in adhoc_dict['sound_list']:
+            k = snd_elt.split('.')[0]
+            filepath = prefix_sound_folder + snd_elt
+            if webhack is not None:
+                filepath = webhack + filepath
+            print('fetching the sound:', k, filepath)
+            pe_vars.sounds[k] = dep_linking.pygame.mixer.Sound(filepath)
+
+        # -------------------------
+        # loading data files
+        # -------------------------
+        # For example:
+        # - cartridge/conversation.json, or
+        # -  my_map.ncsv
+
+        # TODO ! unification/debug.
+        #  Right now both assets & data_files can have a .TTF
+        prefix = 'cartridge/'
+
+        if webhack:
+            for dat_file in adhoc_dict['data_files']:
+                fp = os.path.join(webhack, dat_file)
+                k, ext = dat_file.split('.')
+                if ext == 'json':  # not spritesheets! TODO control "data_hint?"
+                    with open(fp, 'r') as fptr:
+                        pe_vars.data[k] = json.load(fptr)
+                elif ext == 'ttf':
+                    pe_vars.data[k] = self.low_level_service.new_font_obj(fp, pe_vars.DATA_FT_SIZE)
+
+                elif ext == 'ncsv':
+                    print('»ncsv webhack:', webhack)
+                    _preload_ncsv_file(k, prefix, webhack_info=webhack)
+                else:
+                    print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
+            return  # end special case implies we end processing, right there
+
+        for dat_file in adhoc_dict['data_files']:
+            k, ext = dat_file.split('.')
+            try:
+                # fresh filepath
+                filepath = prefix + dat_file
+
+                if ext == 'json':
+                    with open(filepath, 'r') as fptr:
+                        pe_vars.data[k] = json.load(fptr)
+                elif ext == 'ttf':
+                    pe_vars.data[k] = self.low_level_service.new_font_obj(filepath, pe_vars.DATA_FT_SIZE)
+
+                elif ext == 'ncsv':
+                    _preload_ncsv_file(k, prefix)
+
+                else:
+                    print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
+
+            except FileNotFoundError:  # TODO refactor to detect case A/B right at the launch script? -->Cleaner code
+                new_prefix = os.path.join(_hub.bundle_name, prefix)
+                print('we modd the prefix -->', new_prefix)
+
+                # try again
+                # fresh filepath
+                filepath = new_prefix + dat_file
+                if webhack is not None:
+                    filepath = webhack + filepath
+                # ---
+
+                if ext == 'json':
+                    with open(filepath, 'r') as fptr:
+                        pe_vars.data[k] = json.load(fptr)
+                elif ext == 'ttf':
+                    pe_vars.data[k] = self.low_level_service.new_font_obj(filepath, pe_vars.DATA_FT_SIZE)
+                elif ext == 'ncsv':
+                    _preload_ncsv_file(k, new_prefix)
 
     @staticmethod
     def get_version():
-        return _vars.ENGINE_VERSION_STR
+        return pe_vars.ENGINE_VERSION_STR
 
     def init(self, engine_mode_id: int, maxfps=None, wcaption=None, forced_size=None, cached_paint_ev=None, multistate_info=None) -> None:
         rez = self.low_level_service.fire_up_backend(engine_mode_id)
-
         self.mediator = Mediator()
 
-        global _engine_rdy, _upscaling_var, _existing_game_ctrl, _ready_flag
+        global _engine_rdy, _upscaling_var, _existing_game_ctrl
         if engine_mode_id is None:
-            mode = HIGH_RES_MODE
+            mode = self.HIGH_RES_MODE
 
         if not _engine_rdy:
             bootstrap_e(maxfps, wcaption)
@@ -158,19 +193,20 @@ class EngineRouter:
         else:
             print('previous bootstrap_e call detected.')
 
-        _hub.modules_activation()  # bootstrap done so... all good to fire-up pyv modules
+        # back to times when we used the _hub file
+        # _hub.modules_activation()  # bootstrap done so... all good to fire-up pyv modules
         if wcaption:
             dep_linking.pygame.display.set_caption(wcaption)
 
         if maxfps is None:  # here, we may replace the existing value of maxfps in the engine
-            if vars.max_fps:
+            if pe_vars.max_fps:
                 pass
             else:
-                vars.max_fps = 60
+                pe_vars.max_fps = 60
         else:
-            vars.max_fps = maxfps
+            pe_vars.max_fps = maxfps
 
-        vars.clock = self.create_clock()
+        pe_vars.clock = self.create_clock()
 
         vscreen.cached_pygame_mod = dep_linking.pygame
         print('setting screen params...')
@@ -182,7 +218,7 @@ class EngineRouter:
         else:
             _existing_game_ctrl = state_management.StateStackCtrl()
         # the lines above have replaced class named: MyGameCtrl()
-        _ready_flag = True
+        self.ready_flag = True
         dep_linking.pygame.mixer.init()  # we always enable sounds
 
     def draw_circle(self, surface, color_arg, position2d, radius, width=0):
@@ -190,6 +226,12 @@ class EngineRouter:
 
     def draw_rect(self, surface, color, rect4, width, **kwargs):
         self.low_level_service.draw_rect(surface, color, rect4, width)
+
+    def draw_line(self, *args, **kwargs):
+        self.low_level_service.draw_line(*args, **kwargs)
+
+    def draw_polygon(self, *args, **kwargs):
+        self.low_level_service.draw_polygon(*args, **kwargs)
 
     # --- legit pyved functions
     def bootstrap_e(self):
@@ -199,34 +241,69 @@ class EngineRouter:
         # from pyved_engine.sublayer_implem import PygameWrapper
         # from pyved_engine import dep_linking
 
-        # deprec -
-        # dep_linking.pygame = concr_sublayer_component  # that is: the game-engine sublayer
+        # a line required so pyv submodules have a direct access to the sublayer, as well
+        dep_linking.pygame = self.low_level_service
+
+        # all this should be dynamically loaded?
+        from .compo import GameTpl
+        from . import custom_struct
+        from . import evsys0
+        from .looparts import terrain as _terrain
+        from .utils import pal
+        from . import pe_vars as _vars
+        from .foundation.events import game_events_enum
+        from . import actors_pattern
+        self._hub.update({
+            'actors': actors_pattern,
+            'game_events_enum': game_events_enum,
+            'EvListener': events.EvListener,
+            'Emitter': events.Emitter,
+            'EngineEvTypes': events.EngineEvTypes,
+            'GameTpl': GameTpl.GameTpl,
+            'struct': custom_struct,
+            'evsys0': evsys0,
+            'terrain': _terrain,
+            'pal': pal,
+            'vars': _vars
+        })
+        from .looparts import polarbear
+        self._hub.update({
+            'polarbear': polarbear
+        })
+        from .looparts import story
+        from .looparts import ascii as _ascii
+        from .looparts import gui as _gui
+        self._hub.update({
+            'ascii': _ascii,
+            'gui': _gui,
+            'story': story,
+        })
 
     def process_evq(self):
-        self.mediator.update()
+        pe_vars.mediator.update()
 
     def post_ev(self, evtype, **ev_raw_data):
-        if _debug_flag:
+        if self.debug_mode:
             if evtype != 'update' and evtype != 'draw':
                 print('>>>>POST', evtype, ev_raw_data)
-        if evtype not in omega_events:
+        if evtype not in pe_vars.omega_events:
             raise ValueError(f'trying to post event {evtype}, but this one hasnt been declared via pyv.setup_evsys6')
         if evtype[0] == 'x' and evtype[1] == '_':  # cross event
-            self.mediator.post(evtype, ev_raw_data, True)  # keep the raw form if we need to push to antother mediator
+            pe_vars.mediator.post(evtype, ev_raw_data, True)  # keep the raw form if we need to push to antother mediator
         else:
-            self.mediator.post(evtype, ev_raw_data, False)
+            pe_vars.mediator.post(evtype, ev_raw_data, False)
 
     def get_mouse_coords(self):
         # pygm = _kengi_inj['pygame']
         pygm = dep_linking.pygame
         mpos = pygm.mouse.get_pos()
         # return _kengi_inj['vscreen'].proj_to_vscreen(mpos)
-        return _hub.vscreen.proj_to_vscreen(mpos)
+        return vscreen.proj_to_vscreen(mpos)
 
     def get_surface(self):
-        if vars.screen is None:
+        if pe_vars.screen is None:
             raise LookupError('Cannot provide user with a screen ref, since the engine was not initialized!')
-        return vars.screen
+        return pe_vars.screen
 
     def create_clock(self):
         return dep_linking.pygame.time.Clock()
@@ -236,232 +313,53 @@ class EngineRouter:
 
     def flip(self):
         _oflip()
-        if vars.max_fps:
-            vars.clock.tick(vars.max_fps)
+        if pe_vars.max_fps:
+            pe_vars.clock.tick(pe_vars.max_fps)
 
-    def quit(self):
+    def new_font_obj(self, font_src, font_size: int):  # src can be None!
+        return dep_linking.pygame.font.Font(font_src, font_size)
+
+    def new_rect_obj(self, *args):  # probably: x, y, w, h
+        return dep_linking.pygame.Rect(*args)
+
+    def close_game(self):
         dep_linking.pygame.quit()
 
-    # --- trick to use the hub
+    def surface_create(self, size):
+        return dep_linking.pygame.surface.Surface(size)
+
+    def surface_rotate(self, img, angle):
+        return dep_linking.pygame.transform.rotate(img, _degrees(-1 * angle))
+
+    # - deprecated -----------------------------------
+    def run_game(self, initfunc, updatefunc, endfunc):
+        # TODO this should be deleted
+        #  as it wont work in Track- #1 + web
+        experimental_webpy = __import__('sys').platform in ('emscripten', 'wasi')
+        if not experimental_webpy:  # Track- #1 : the regular execution
+            initfunc(None)
+            while not pe_vars.gameover:
+                # it's assumed that the developer calls pyv.flip, once per frame,
+                # without the engine having to take care of that
+                updatefunc(time.time())
+            endfunc(None)
+        else:  # experimental part: for wasm, etc
+            import asyncio
+            async def async_run_game():
+                initfunc(None)
+                while not pe_vars.gameover:
+                    updatefunc(time.time())
+                    self.flip()  # commit gfx mem to screen, already contains the .tick
+                    await asyncio.sleep(0)
+                endfunc(None)
+            asyncio.run(async_run_game())
+
+    # --- trick to use either the hub or the sublayer
     def __getattr__(self, item):
-        return self._hub[item]
-
-
-# event system 6
-class EventType(Enum):
-    LOCAL = "local"
-    TO_SERVER = "to_server"
-    BROADCAST = "broadcast"
-
-
-class Mediator:
-    def __init__(self, network_layer=None, is_server=False):
-        self.listeners = {}  # Dictionary to store listeners for each event type
-        self.event_queue = []  # List to store pending events
-        self.network_layer = network_layer  # Network layer for server communication
-        self.is_server = is_server  # Indicates if this mediator is a server instance
-        self.previous_world = None
-
-    def register(self, event_type, listener, actor_id):
-        """Registers a listener (callback function) for a specific event type."""
-        if event_type not in self.listeners:
-            self.listeners[event_type] = {}
-        self.listeners[event_type][actor_id] = listener
-
-    def unregister(self, actor_id):
-        """Unregisters all listeners for a specific actor."""
-        for event_type in list(self.listeners.keys()):
-            if actor_id in self.listeners[event_type]:
-                del self.listeners[event_type][actor_id]
-            if not self.listeners[event_type]:
-                del self.listeners[event_type]
-
-    def post(self, event_type, event, cross_type):
-        """Posts an event to the event queue, with cross-event type (local, to_server, broadcast)."""
-        if not self.network_layer or not cross_type:
-            self.event_queue.append((event_type, _Objectifier(event)))  # handle locally
-            return
-
-        if not self.is_server:
-            # Send the event to the server
-            # ??? self.network_layer.send_event(event_type, event)
-            self.network_layer.broadcast(event_type, event)
+        if item in self._hub:
+            return self._hub[item]
         else:
-            # Broadcast to all clients (assuming we have a list of client mediators)
-            for client in self.network_layer.get_connected_clients():
-                client.post(event_type, event)
-
-    def update(self):
-        """Processes the event queue by notifying listeners for each event."""
-        cpt = len(self.event_queue)
-        while cpt > 0:
-            event_type, event = self.event_queue.pop(0)  # Get the next event, the FIFO way
-            cpt -= 1
-            if event_type not in self.listeners:
-                continue
-
-            mapping = self.listeners[event_type].copy()
-            for to_whom, callback in mapping.items():
-                if to_whom not in worlds[_active_world]['actors']:
-                    continue  # world has changed
-                adhoc_data = worlds[_active_world]['actors'][to_whom]['data']
-                callback(adhoc_data, event)
-
-        if self.previous_world is not None:
-            # unregister actors of the current world
-            for actor_id in worlds[self.previous_world]["actors"].keys():
-                self.unregister(actor_id)
-            self.previous_world = None
-
-    # ---------- networking ----------------
-    def set_network_layer(self, ref):
-        if self.network_layer is not None:
-            raise RuntimeError('cannot bind another network layer, one has already be set')
-        self.network_layer = ref
-        ref.register_mediator(self)
-
-
-def ls_scenes():
-    """Lists all existing scenes."""
-    return list(worlds.keys())
-
-
-def get_scene():
-    return _active_world
-
-
-def set_scene(newworld_name):
-    """
-    switches to the specified world context. Creates it if it doesn't exist
-    """
-    global _active_world
-    # we do this, to allow the mediator to unregister all actors from previous world, when appropriate
-    _mediator.previous_world = _active_world
-
-    # Creating a new world if it doesnt exist
-    if newworld_name not in worlds:
-        worlds[newworld_name] = {
-            "actors": {}
-        }
-    # switch to the world "newworld_name"
-    _active_world = newworld_name
-    if _debug_flag:
-        print('new world:', newworld_name)
-
-    # Let's register back all actors that do exist in this world
-    for actor_id, actor_data in worlds[_active_world]["actors"].items():
-        if _debug_flag:
-            print(f're-bind all event handlers for actor {actor_id}')
-        # Re-register the actor's event handlers
-        for event_type, handler in actor_data["event_handlers"].items():
-            _mediator.register(event_type, handler, actor_id)
-
-
-def delete_world(name):
-    """Deletes the specified world context if it is not the currently active one."""
-    global _active_world
-    if name != _active_world and name in worlds:
-        del worlds[name]
-
-
-def new_actor(actor_type, local_scope):
-    """
-    Automatically gathers functions in the local scope that follow the `on_X` naming convention
-    (where X can be any combination of letters or underscores), and creates an event_handlers
-    dictionary mapping the event types to the functions.
-
-    When calling the function,
-    need to provide the local scope via "locals()"
-    """
-    # Define a regex pattern to match function names starting with 'on_'
-    pattern = re.compile(r"on_[A-Za-z_]+")
-
-    # upgrade the data from actor
-    packed_data = packing_data(local_scope['data'])
-
-    # setattr(packed_data, 'functions',
-    tempfunc = {
-        func_name: func
-        for func_name, func in local_scope.items()
-        if callable(func) and not pattern.match(func_name)
-    }
-
-    # Create the event_handlers dictionary by filtering functions that match the pattern
-    event_handlers = {
-        func_name.replace("on_", ""): func
-        for func_name, func in local_scope.items()
-        if callable(func) and pattern.match(func_name)
-    }
-    for fname_key in event_handlers:
-        if fname_key not in omega_events:
-            print('__ Have you called pyv.setup_evsys6 with the right parameters? __')
-            raise ValueError(f'unfinished actor {actor_type} tries to bind func to INVALID ev_type:{fname_key}')
-
-    # Create a unique identifier for the actor
-    actor_id = str(uuid.uuid4())
-    actor_data = {
-        "name": actor_type,
-        "data": packed_data,
-        "event_handlers": event_handlers,
-        "functions": tempfunc
-    }
-    worlds[_active_world]["actors"][actor_id] = actor_data
-
-    # Register the event handlers
-    # TODO need fix?
-    for event, handler in event_handlers.items():
-        _mediator.register(f"{event}", handler, actor_id)
-    # print('creation actor: ', actor_id)
-    return actor_id
-
-
-def id_actor(ptr_data):
-    """
-    reverse: given data, provide the actor_id
-    """
-    for uid, actor_record in worlds[_active_world]["actors"].items():
-        if id(actor_record['data']) == id(ptr_data):
-            return uid
-    raise IndexError('cant find actor specified, provided data:', ptr_data)
-
-
-def del_actor(*args):
-    """Unregisters all event handlers and removes the actor from the current world."""
-    for actor_id in args:
-        if actor_id is None:
-            raise ValueError('tried to del_actor, but passed value:None')
-
-        if actor_id in worlds[_active_world]["actors"]:
-            del worlds[_active_world]["actors"][actor_id]
-        _mediator.unregister(actor_id)
-        # print('deletion actor: ', actor_id)
-
-
-def peek(actor_id):
-    """Returns the state of the actor with the given ID in the current world."""
-    if actor_id is None:
-        raise ValueError('passing an actor_id, with value:None')
-    if actor_id not in worlds[_active_world]["actors"]:
-        print(f'***Warning! Trying to access actor {actor_id}, not found in the current world')
-        return None
-    return worlds[_active_world]["actors"].get(actor_id)["data"]
-
-
-def trigger(func_name, actor_id, *extra_args):
-    actor_name = worlds[_active_world]["actors"].get(actor_id)["name"]
-
-    # func_table = actor_state_res.functions
-    func_table = worlds[_active_world]["actors"].get(actor_id)["functions"]
-    # the effective call
-    if func_name not in func_table:
-        raise SyntaxError(f'cannot find function "{func_name}" for actor "{actor_name}" id:{actor_id}')
-    else:
-        this_arg = worlds[_active_world]["actors"].get(actor_id)["data"]
-        return func_table[func_name](this_arg, *extra_args)
-
-
-def packing_data(given_data):
-    return _Objectifier(given_data)
+            return getattr(self.low_level_service, item)
 
 
 # ------------------------------------------------------------+------------------
@@ -469,80 +367,10 @@ def get_gs_obj(k):
     return state_management.stack_based_ctrl.get_state_by_code(k)
 
 
-# const. for init
-HIGH_RES_MODE, LOW_RES_MODE, RETRO_MODE = 1, 2, 3
-
 # vars
 _engine_rdy = False
 _upscaling_var = None
 _scr_init_flag = False
-
-
-# --- exposing draw functions
-def draw_line(*args, **kwargs):
-    dep_linking.pygame.draw.line(*args, **kwargs)
-
-
-def draw_rect(*args, **kwargs):
-    dep_linking.pygame.draw.rect(*args, **kwargs)
-
-
-def draw_polygon(*args, **kwargs):
-    dep_linking.pygame.draw.polygon(*args, **kwargs)
-
-
-def draw_circle(surface, color_arg, position2d, radius, width=0):
-    dep_linking.pygame.draw.circle(surface, color_arg, position2d, radius, width)
-
-
-def new_font_obj(font_src, font_size: int):  # src can be None!
-    return dep_linking.pygame.font.Font(font_src, font_size)
-
-
-def new_rect_obj(*args):  # probably: x, y, w, h
-    return dep_linking.pygame.Rect(*args)
-
-
-# --------------
-#  3 decorators + the game_exec func to make gameloops standardized
-# --------------
-def declare_begin(gfunc):  # decorator!
-    vars.beginfunc_ref = gfunc
-    return gfunc
-
-
-def declare_update(gfunc):  # decorator!
-    vars.updatefunc_ref = gfunc
-    return gfunc
-
-
-def declare_end(gfunc):  # decorator!
-    vars.endfunc_ref = gfunc
-    return gfunc
-
-
-"""
-experimental for wasm, etc.
-"""
-# def run_game():
-#     if __import__('sys').platform in ('emscripten', 'wasi'):
-#         import asyncio
-#         async def async_run_game():
-#             vars.beginfunc_ref(None)
-#             while not vars.gameover:
-#                 vars.updatefunc_ref(time.time())
-#                 flip()  # commit gfx mem to screen, already contains the .tick
-#                 await asyncio.sleep(0)
-#             vars.endfunc_ref(None)
-#         asyncio.run(async_run_game())
-#         return
-#
-#     vars.beginfunc_ref(None)
-#     while not vars.gameover:
-#         # it's assumed that the developer calls pyv.flip, once per frame,
-#         # without the engine having to take care of that
-#         vars.updatefunc_ref(_time.time())
-#     vars.endfunc_ref(None)
 
 
 def _preload_ncsv_file(filename_no_ext, file_prefix, webhack_info=None):
@@ -564,162 +392,29 @@ def _preload_ncsv_file(filename_no_ext, file_prefix, webhack_info=None):
         for row in reader:
             if len(row) > 0:
                 map_data.append(list(map(int, row)))
-        vars.csvdata[filename_no_ext] = map_data
+        pe_vars.csvdata[filename_no_ext] = map_data
 
 
 # --- rest of functions ---
-def preload_assets(adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, debug_mode=False, webhack=None):
-    """
-    expected to find the (mandatory) key 'images',
-    also we may find the (optionnal) key 'sounds'
-    :param webhack:
-    :param prefix_sound_folder:
-    :param prefix_asset_folder:
-    :param adhoc_dict:
-    :return:
-    """
-    if debug_mode:
-        print('*' * 50)
-        print(f' CALL to preload assets [webhack value:{webhack}]')
-        print('*' * 50)
-        print()
-
-    for asset_desc in adhoc_dict['asset_list']:
-        if isinstance(asset_desc, str):  # either sprsheet or image
-            kk = asset_desc.split('.')
-            # print('>>>>>charge file:', kk[0], kk[1])
-            # print('prefix_asset_folder?', prefix_asset_folder)
-
-            if kk[1] == 'json':
-                y = prefix_asset_folder
-                if webhack:
-                    y = webhack + prefix_asset_folder
-                adhocv = None
-                if webhack:
-                    if prefix_asset_folder == './':
-                        adhocv = ''
-                    else:
-                        adhocv = prefix_asset_folder
-                vars.spritesheets[kk[0]] = gfx.JsonBasedSprSheet(
-                    kk[0], pathinfo=y, is_webhack=adhocv
-                )
-
-            elif kk[1] == 'ttf':  # a >single< TTF font
-                key = "custom_ft"
-                ft_filename = asset_desc
-
-                if webhack:
-                    y = webhack + ft_filename
-                else:
-                    y = prefix_asset_folder + ft_filename
-                print('fetching font:', key, ft_filename, f'[{y}]')
-                vars.fonts[key] = dep_linking.pygame.font.Font(
-                    y,
-                    vars.DATA_FT_SIZE
-                )
-
-            else:  # necessarily an image
-                if prefix_asset_folder == './':
-                    filepath = asset_desc
-                else:
-                    filepath = prefix_asset_folder + asset_desc
-                print('fetching image:', kk[0], filepath)
-                vars.images[kk[0]] = dep_linking.pygame.image.load(filepath)
-
-    # -------------------------
-    # loading sfx files
-    # -------------------------
-    for snd_elt in adhoc_dict['sound_list']:
-        k = snd_elt.split('.')[0]
-        filepath = prefix_sound_folder + snd_elt
-        if webhack is not None:
-            filepath = webhack + filepath
-        print('fetching the sound:', k, filepath)
-        vars.sounds[k] = _hub.pygame.mixer.Sound(filepath)
-
-    # -------------------------
-    # loading data files
-    # -------------------------
-    # For example:
-    # - cartridge/conversation.json, or
-    # -  my_map.ncsv
-
-    # TODO ! unification/debug.
-    #  Right now both assets & data_files can have a .TTF
-    prefix = 'cartridge/'
-
-    if webhack:
-        for dat_file in adhoc_dict['data_files']:
-            fp = os.path.join(webhack, dat_file)
-            k, ext = dat_file.split('.')
-            if ext == 'json':  # not spritesheets! TODO control "data_hint?"
-                with open(fp, 'r') as fptr:
-                    vars.data[k] = json.load(fptr)
-            elif ext == 'ttf':
-                vars.data[k] = _hub.pygame.font.Font(fp, vars.DATA_FT_SIZE)
-
-            elif ext == 'ncsv':
-                print('»ncsv webhack:',webhack)
-                _preload_ncsv_file(k, prefix, webhack_info=webhack)
-            else:
-                print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
-        return  # end special case implies we end processing, right there
-
-    for dat_file in adhoc_dict['data_files']:
-        k, ext = dat_file.split('.')
-        try:
-            # fresh filepath
-            filepath = prefix + dat_file
-
-            if ext == 'json':
-                with open(filepath, 'r') as fptr:
-                    vars.data[k] = json.load(fptr)
-            elif ext == 'ttf':
-                vars.data[k] = _hub.pygame.font.Font(filepath, vars.DATA_FT_SIZE)
-
-            elif ext == 'ncsv':
-                _preload_ncsv_file(k, prefix)
-
-            else:
-                print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
-
-        except FileNotFoundError:  # TODO refactor to detect case A/B right at the launch script? -->Cleaner code
-            new_prefix = os.path.join(_hub.bundle_name, prefix)
-            print('we modd the prefix -->', new_prefix)
-
-            # try again
-            # fresh filepath
-            filepath = new_prefix + dat_file
-            if webhack is not None:
-                filepath = webhack + filepath
-            # ---
-
-            if ext == 'json':
-                with open(filepath, 'r') as fptr:
-                    vars.data[k] = json.load(fptr)
-            elif ext == 'ttf':
-                vars.data[k] = _hub.pygame.font.Font(filepath, vars.DATA_FT_SIZE)
-            elif ext == 'ncsv':
-                _preload_ncsv_file(k, new_prefix)
-
-
 def bootstrap_e(maxfps=None, wcaption=None, print_ver_info=True):
     global _engine_rdy
+    pe_vars.mediator = Mediator()
+
     if maxfps is None:
         y = 60
     else:
         y = maxfps
-    vars.max_fps = y
+    pe_vars.max_fps = y
     # in theory the Pyv backend_name can be hacked prior to a pyv.init() call
     # Now, let's  build a primal backend
-    v = vars.ENGINE_VERSION_STR
+    v = pe_vars.ENGINE_VERSION_STR
     if print_ver_info:
         print(f'Booting up pyved-engine {v}...')
 
     from .foundation.pbackends import build_primalbackend
 
     # SIDE-EFFECT: Building the backend also sets kengi_inj.pygame !
-    _pyv_backend = build_primalbackend(vars.backend_name)
+    _pyv_backend = build_primalbackend(pe_vars.backend_name)
     # if you dont call this line below, the modern event system wont work (program hanging)
     events.EvManager.instance().a_event_source = _pyv_backend
 
@@ -753,7 +448,7 @@ def _screen_param(gfx_mode_code, screen_dim, cached_paintev) -> None:
 
     # from here and below,
     # we know the gfx_mode_code is valid 100%
-    conventionw, conventionh = vars.disp_size
+    conventionw, conventionh = pe_vars.disp_size
     if gfx_mode_code != 0:
         adhoc_upscaling = gfx_mode_code
         taille_surf_dessin = int(conventionw / gfx_mode_code), int(conventionh / gfx_mode_code)
@@ -772,7 +467,7 @@ def _screen_param(gfx_mode_code, screen_dim, cached_paintev) -> None:
             vscreen.set_virtual_screen(pygame_surf_dessin)
             vscreen.set_upscaling(adhoc_upscaling)
             if gfx_mode_code:
-                pgscreen = dep_linking.pygame.display.set_mode(vars.disp_size)
+                pgscreen = dep_linking.pygame.display.set_mode(pe_vars.disp_size)
             else:
                 pgscreen = dep_linking.pygame.display.set_mode(taille_surf_dessin)
             vscreen.set_realpygame_screen(pgscreen)
@@ -785,33 +480,23 @@ def _screen_param(gfx_mode_code, screen_dim, cached_paintev) -> None:
             vscreen.stored_upscaling = float(adhoc_upscaling)
 
         y = pygame_surf_dessin
-        vars.screen = y
+        pe_vars.screen = y
         if cached_paintev:
             cached_paintev.screen = y
         _scr_init_flag = True
 
 
 _existing_game_ctrl = None
-_ready_flag = False
-
-
-def get_game_ctrl():
-    return _existing_game_ctrl
-
-
-def get_ready_flag():
-    return _ready_flag
-
 
 def close_game():
-    vars.gameover = False
+    pe_vars.gameover = False
     dep_linking.pygame.mixer.quit()
     dep_linking.pygame.quit()
 
-    vars.images.clear()
-    vars.csvdata.clear()
-    vars.sounds.clear()
-    vars.spritesheets.clear()
+    pe_vars.images.clear()
+    pe_vars.csvdata.clear()
+    pe_vars.sounds.clear()
+    pe_vars.spritesheets.clear()
 
 
 
@@ -830,26 +515,18 @@ def curr_statename() -> str:
     )
 
 
-def surface_create(size):
-    return dep_linking.pygame.surface.Surface(size)
-
-
-def surface_rotate(img, angle):
-    return dep_linking.pygame.transform.rotate(img, _degrees(-1 * angle))
-
-
 # -------
 #  september 23 version. It did break upscalin in web ctx
 # def flip():
 #     global _upscaling_var
 #     if _upscaling_var == 2:
-#         _hub.pygame.transform.scale(vars.screen, vars.STD_SCR_SIZE, vars.realscreen)
+#         _hub.pygame.transform.scale(pe_vars.screen, pe_vars.STD_SCR_SIZE, pe_vars.realscreen)
 #     elif _upscaling_var == 3:
-#         _hub.pygame.transform.scale(vars.screen, vars.STD_SCR_SIZE, vars.realscreen)
+#         _hub.pygame.transform.scale(pe_vars.screen, pe_vars.STD_SCR_SIZE, pe_vars.realscreen)
 #     else:
-#         vars.realscreen.blit(vars.screen, (0, 0))
+#         pe_vars.realscreen.blit(pe_vars.screen, (0, 0))
 #     _hub.pygame.display.flip()
-#     vars.clock.tick(vars.max_fps)
+#     pe_vars.clock.tick(pe_vars.max_fps)
 # --------
 def fetch_events():
     return _hub.pygame.event.get()

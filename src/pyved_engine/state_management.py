@@ -1,12 +1,13 @@
 import time
 
 from ._classes import BaseGameState
-from ._hub import events
 from .compo import vscreen
 from .custom_struct import Stack, StContainer, enum
+from .foundation import events
 from .foundation.events import EngineEvTypes  # latest version of event sys
-from .utils import vars
+from . import pe_vars
 
+print(pe_vars)
 
 multistate_flag = False
 stack_based_ctrl = None
@@ -40,7 +41,7 @@ class StateStackCtrl(events.EvListener):
 
     def __init__(self, all_gs=None, st_to_cls_mapping=None):
         super().__init__()
-        self._clock = vars.clock
+        self._clock = pe_vars.clock
 
         self._gs_omega = _DefaultGsList if all_gs is None else all_gs
         adhoc_mapping = _default_st_mapping if all_gs is None else st_to_cls_mapping
@@ -95,7 +96,7 @@ class StateStackCtrl(events.EvListener):
             state_obj = self._st_container.retrieve(tmp)
             state_obj.resume()
         else:
-            vars.gameover = True
+            pe_vars.gameover = True
 
     # --------------------
     #  CALLBACKS
@@ -129,13 +130,13 @@ class StateStackCtrl(events.EvListener):
         self.turn_on()
 
         self.pev(events.EngineEvTypes.Gamestart)  # ensure we will call .enten() on the initial/eden state
-        while not (self.gameover or vars.gameover):
+        while not (self.gameover or pe_vars.gameover):
             infot = time.time()
             self.pev(EngineEvTypes.Update, curr_t=infot)
-            self.pev(EngineEvTypes.Paint, screen=vars.screen)
+            self.pev(EngineEvTypes.Paint, screen=pe_vars.screen)
             self._manager.update()
             vscreen.flip()
-            self._clock.tick(vars.max_fps)
+            self._clock.tick(pe_vars.max_fps)
         # TODO shall we ensure we have pop'ed every single state?
         # self.proper_exit()
         print(self.__class__.INFO_STOP_LOOP_MSG)

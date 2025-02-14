@@ -4,9 +4,9 @@ heavily inspired by other projects authored by:
  - Vladimir Kaukin [KaukinVK@ya.ru]
  - Rik Cross [rik@raspberrypi.org]
 """
+import collections
 # from typing import Iterable, Iterator, Any
 import dataclasses
-import collections
 import functools
 
 

@@ -3,7 +3,6 @@ ECS (Entity-Component-System) is an architectural pattern commonly used in game 
 to structure the organization and behavior of entities within a game. It provides
 a flexible and scalable approach to handle complex game systems and interactions.
 """
-
 # -------------
 #  kept for retro-compatibility and not breaking
 #  the platformer video tutorial

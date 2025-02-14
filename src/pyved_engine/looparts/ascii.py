@@ -1,7 +1,7 @@
 from .. import dep_linking
 from ..custom_struct import IntegerMatrix
 from ..foundation import defs
-from ..utils import vars
+from .. import pe_vars
 
 
 # - constants

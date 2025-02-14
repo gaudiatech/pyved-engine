@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from ...utils import vars
+from ... import pe_vars
 
 
 ANCHOR_LEFT, ANCHOR_RIGHT, ANCHOR_CENTER = range(34151, 34151+3)
