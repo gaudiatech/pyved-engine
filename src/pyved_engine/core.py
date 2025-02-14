@@ -11,9 +11,12 @@ The current file gets imported by any "shard"/ element of .looparts
 
 _ref_sublayer = None
 _engine = None
-_hub = {}  # in order to register pyv submodules as they're lazy-loaded. This idea is useful because submodules may
-# also create dependencies between them, but we do not want the engine dev to think about the loading/import order
-# whenever he/she is writing a new pyv submodule
+_hub = {}  # in order to register pyv submodules as they're lazy-loaded. This idea is useful because
+# submodules MAY CREATE dependencies between them,
+# and we do not want neither the engineDev nor the gameDev to think about the order that works well
+# when loading/importing submodules
+
+# Whenever he/she is writing a new pyv submodule, the dev has to feel free
 
 
 def set_sublayer(x):

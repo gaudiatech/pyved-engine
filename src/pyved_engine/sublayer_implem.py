@@ -62,75 +62,79 @@ class GameEngineSublayer(ABC):
 # Step 2: Implement the interface in a concrete class
 class PygameWrapper(GameEngineSublayer):
     def __init__(self):
-        import pygame as pygame_mod
-        self.pygame = pygame_mod
+        import pygame
 
-        self.sprite = Objectifier({
-            'Sprite': self.pygame.sprite.Sprite,
-            'Group': self.pygame.sprite.Group,
-            'spritecollide': self.pygame.sprite.spritecollide
-        })
-        self.event = self.pygame.event
-        self.display = self.pygame.display
-        self.mixer = self.pygame.mixer
-        self.time = self.pygame.time
-        self.Surface = self.pygame.Surface
-        self.transform = self.pygame.transform
-        self.image = self.pygame.image
-        self.key = self.pygame.key
-        self.mouse = self.pygame.mouse
+        # let's avoid AT ALL COSTS to make this public, otherwise using the wrapper has no meaning
+        self._pygame = pygame
+
+        self.PixelArray = self._pygame.PixelArray  # required by jetpack carverns
+        self.sprite = self._pygame.sprite
+        # Objectifier({
+        #     'Sprite': self._pygame.sprite.Sprite,
+        #     'Group': self._pygame.sprite.Group,
+        #     'spritecollide': self._pygame.sprite.spritecollide
+        # })
+        self.event = self._pygame.event
+        self.display = self._pygame.display
+        self.mixer = self._pygame.mixer
+        self.time = self._pygame.time
+        self.Surface = self._pygame.Surface
+        self.transform = self._pygame.transform
+        self.image = self._pygame.image
+        self.key = self._pygame.key
+        self.mouse = self._pygame.mouse
 
         # key codes
-        self.K_ESCAPE = self.pygame.K_ESCAPE
-        self.K_BACKSPACE = self.pygame.K_BACKSPACE
-        self.K_RETURN = self.pygame.K_RETURN
-        self.K_SPACE = self.pygame.K_SPACE
-        self.K_UP = self.pygame.K_UP
-        self.K_LEFT = self.pygame.K_LEFT
-        self.K_DOWN = self.pygame.K_DOWN
-        self.K_RIGHT = self.pygame.K_RIGHT
+        self.K_ESCAPE = self._pygame.K_ESCAPE
+        self.K_BACKSPACE = self._pygame.K_BACKSPACE
+        self.K_RETURN = self._pygame.K_RETURN
+        self.K_SPACE = self._pygame.K_SPACE
+        self.K_UP = self._pygame.K_UP
+        self.K_LEFT = self._pygame.K_LEFT
+        self.K_DOWN = self._pygame.K_DOWN
+        self.K_RIGHT = self._pygame.K_RIGHT
 
         # pygame constants
-        self.SRCALPHA = self.pygame.SRCALPHA
-        self.RLEACCEL = self.pygame.RLEACCEL
-        self.QUIT = self.pygame.QUIT
-        self.KEYDOWN = self.pygame.KEYDOWN
-        self.KEYUP = self.pygame.KEYUP
-        self.MOUSEBUTTONDOWN = self.pygame.MOUSEBUTTONDOWN
-        self.MOUSEBUTTONUP = self.pygame.MOUSEBUTTONUP
+        self.SRCALPHA = self._pygame.SRCALPHA
+        self.RLEACCEL = self._pygame.RLEACCEL
+        self.QUIT = self._pygame.QUIT
+        self.KEYDOWN = self._pygame.KEYDOWN
+        self.KEYUP = self._pygame.KEYUP
+        self.MOUSEBUTTONDOWN = self._pygame.MOUSEBUTTONDOWN
+        self.MOUSEBUTTONUP = self._pygame.MOUSEBUTTONUP
 
     def init(self):
-        self.pygame.init()
+        self._pygame.init()
 
     def quit(self):
-        self.pygame.quit()
+        self._pygame.quit()
 
     def image_load(self, fileobj_or_path, *args):
         if len(args) > 0:
-            return self.pygame.image.load(fileobj_or_path, namehint=args[0])
-        return self.pygame.image.load(fileobj_or_path)
+            return self._pygame.image.load(fileobj_or_path, namehint=args[0])
+        return self._pygame.image.load(fileobj_or_path)
 
     def draw_circle(self, surface, color_arg, position2d, radius, width):
-        self.pygame.draw.circle(surface, color_arg, position2d, radius, width)
+        self._pygame.draw.circle(surface, color_arg, position2d, radius, width)
 
     def fire_up_backend(self, user_id: int) -> dict:
         # Example: Fetch data from a REST API
         return {"user_id": user_id, "name": "Bob", "role": "User"}
 
     def draw_line(self, *args, **kwargs):
-        self.pygame.draw.line(*args, **kwargs)
+        self._pygame.draw.line(*args, **kwargs)
 
     def draw_rect(self, *args, **kwargs):
-        self.pygame.draw.rect(*args, **kwargs)
+        self._pygame.draw.rect(*args, **kwargs)
 
     def draw_polygon(self, *args, **kwargs):
-        self.pygame.draw.polygon(*args, **kwargs)
+        self._pygame.draw.polygon(*args, **kwargs)
 
     def new_font_obj(self, font_src, font_size: int):  # src can be None!
-        return self.pygame.font.Font(font_src, font_size)
+        return self._pygame.font.Font(font_src, font_size)
 
     def new_rect_obj(self, *args):  # probably: x, y, w, h
-        return self.pygame.Rect(*args)
+        return self._pygame.Rect(*args)
 
 
 class WebGlBackendBridge(GameEngineSublayer):
