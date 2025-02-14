@@ -1,8 +1,14 @@
-import pyved_engine as pyv
+
 import math
-
-
+from pyved_engine.sublayer_implem import PygameWrapper
+import pyved_engine
+# Step 4: (usage) Injecting the dependency explicitly:
+engine_depc = PygameWrapper()
+pyv = pyved_engine.EngineRouter(
+    engine_depc
+)
 pyv.bootstrap_e()
+
 
 # const
 START_POS = (16, 32)
@@ -11,7 +17,7 @@ TILE_HEIGHT = 48
 
 
 # - init
-pyv.init(pyv.LOW_RES_MODE, wcaption='kengi.palettes showcase')
+pyv.init(2, wcaption='kengi.palettes showcase')
 
 gameover = False
 cl = pyv.vars.clock

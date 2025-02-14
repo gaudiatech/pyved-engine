@@ -1,7 +1,15 @@
-import pyved_engine as pyv
-
-
+"""
+testing the .ascii pyv submodule
+"""
+from pyved_engine.sublayer_implem import PygameWrapper
+import pyved_engine
+# Step 4: (usage) Injecting the dependency explicitly:
+engine_depc = PygameWrapper()
+pyv = pyved_engine.EngineRouter(
+    engine_depc
+)
 pyv.bootstrap_e()
+
 
 # - const
 CAR_SIZE = 12  # 20, 16, 12, 10, 8 vont fonctionner si c'est le mode HD de pyv qui est actif
@@ -25,7 +33,7 @@ _scr = None
 # -- before starting the main program
 def init_game():
     global _scr, asc_canvas, canv_bsupx, canv_bsupy
-    pyv.init()  # pyv.LOW_RES_MODE)
+    pyv.init(1)  # pyv.LOW_RES_MODE)
     asc_canvas = pyv.ascii
     asc_canvas.init(CAR_SIZE)
     canv_bsupx, canv_bsupy = asc_canvas.get_bounds()
@@ -33,7 +41,8 @@ def init_game():
 
 
 def game_loop():
-    global asc_canvas
+    global asc_canvas, text_pos
+
     while not pyv.vars.gameover:
         for ev in pyv.evsys0.get():
             if ev.type == pyv.evsys0.QUIT or (ev.type == pyv.evsys0.KEYDOWN and ev.key == pyv.evsys0.K_ESCAPE):
@@ -98,4 +107,4 @@ if __name__ == '__main__':
     print('running tests (pyv.ascii)')
     init_game()
     game_loop()
-    pyv.quit()
+    pyv.close_game()

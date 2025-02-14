@@ -1,15 +1,11 @@
 
 from pyved_engine.sublayer_implem import PygameWrapper
 import pyved_engine
-
-# Step 4: Usage
-# Injecting the dependency explicitly:
+# Step 4: (usage) Injecting the dependency explicitly:
 engine_depc = PygameWrapper()
 pyv = pyved_engine.EngineRouter(
     engine_depc
 )
-
-
 pyv.bootstrap_e()
 
 
@@ -151,5 +147,5 @@ class DemoPathfinding(pyv.GameTpl):
 
 
 # program per se
-gobj = DemoPathfinding()
+gobj = DemoPathfinding(pyv)
 gobj.loop()

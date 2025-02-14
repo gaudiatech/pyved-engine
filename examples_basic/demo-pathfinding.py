@@ -1,6 +1,12 @@
-import pyved_engine as pyv
-
+from pyved_engine.sublayer_implem import PygameWrapper
+import pyved_engine
+# Step 4: (usage) Injecting the dependency explicitly:
+engine_depc = PygameWrapper()
+pyv = pyved_engine.EngineRouter(
+    engine_depc
+)
 pyv.bootstrap_e()
+
 
 # All constants
 BG_COLOR = 'antiquewhite2'
@@ -139,5 +145,5 @@ class DemoPathfinding(pyv.GameTpl):
 
 
 if __name__ == '__main__':
-    gobj = DemoPathfinding()
+    gobj = DemoPathfinding(pyv)
     gobj.loop()

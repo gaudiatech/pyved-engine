@@ -3,10 +3,16 @@ showcasing the "dummy game" but we make use of the MVC pattern here.
 This file will help you in understanding how the pattern should be applied to
 your particular game idea
 """
-import pyved_engine as pyv
-
-
+from pyved_engine.sublayer_implem import PygameWrapper
+import pyved_engine
+# Step 4: (usage) Injecting the dependency explicitly:
+engine_depc = PygameWrapper()
+pyv = pyved_engine.EngineRouter(
+    engine_depc
+)
 pyv.bootstrap_e()
+
+
 # from katagames_engine.foundation.pbackends import build_primalbackend
 # ev2 = pyv.event2
 MyEvents = pyv.game_events_enum((
@@ -15,7 +21,7 @@ MyEvents = pyv.game_events_enum((
 ))
 
 # here we wish to showcase "demo using events+the mvc pattern"
-EngineEvTypes = pyv.events.EngineEvTypes
+EngineEvTypes = pyv.EngineEvTypes
 
 
 # ------------------
@@ -128,7 +134,7 @@ def play_game():
         r.turn_on()  # listen to incoming events
     game_ctrl.loop()  # will automatically call .turn_on() on the game_ctrl,
     # then run a standard game loop
-    pyv.quit()
+    pyv.close_game()
 
 
 if __name__ == '__main__':

@@ -1,7 +1,14 @@
-import pyved_engine as pyv
+from pyved_engine.sublayer_implem import PygameWrapper
+import pyved_engine
+# Step 4: (usage) Injecting the dependency explicitly:
+engine_depc = PygameWrapper()
+pyv = pyved_engine.EngineRouter(
+    engine_depc
+)
+pyv.bootstrap_e()
 
+pyv.init(pyv.LOW_RES_MODE)
 
-pyv.init(2)
 
 screen = pyv.get_surface()
 width, height = screen.get_size()
