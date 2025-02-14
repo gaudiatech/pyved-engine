@@ -69,9 +69,16 @@ class PygameWrapper(GameEngineSublayer):
             'Group': self.pygame.sprite.Group,
             'spritecollide': self.pygame.sprite.spritecollide
         })
+        self.display = self.pygame.display
+        self.mixer = self.pygame.mixer
+        self.time = self.pygame.time
         self.Surface = self.pygame.Surface
+        self.transform = self.pygame.transform
+
+        self.K_ESCAPE = self.pygame.K_ESCAPE
         self.SRCALPHA = self.pygame.SRCALPHA
         self.RLEACCEL = self.pygame.RLEACCEL
+        self.key = self.pygame.key
 
     def image_load(self, fileobj_or_path, *args):
         if len(args) > 0:

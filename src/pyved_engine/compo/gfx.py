@@ -5,6 +5,7 @@ from collections import defaultdict
 
 from . import packed_capello_ft
 from .SpriteSheet import SpriteSheet as JsonBasedSprSheet
+# from .. import _hub
 
 
 class BaseCfont:

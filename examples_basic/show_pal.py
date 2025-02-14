@@ -97,7 +97,7 @@ def run_game():
         pyv.flip()
         cl.tick(60)
 
-    pyv.quit()
+    pyv.close_game()
     print('bye')
 
 
