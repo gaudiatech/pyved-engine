@@ -58,9 +58,9 @@ def enum(*sequential, **named):
 class abstractclassmethod(classmethod):
     __isabstractmethod__ = True
 
-    def __init__(self, callable):
-        callable.__isabstractmethod__ = True
-        super(abstractclassmethod, self).__init__(callable)
+    def __init__(self, fcallable):
+        fcallable.__isabstractmethod__ = True
+        super(abstractclassmethod, self).__init__(fcallable)
 
 
 # ------------------------------- matrices -------------------------------
