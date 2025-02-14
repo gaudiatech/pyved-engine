@@ -6,29 +6,28 @@ from io import StringIO
 from . import pe_vars
 
 
-def _preload_ncsv_file(filename_no_ext, file_prefix, webhack_info=None):
-    print('## attempts to load NCSV; args are:', filename_no_ext, file_prefix, webhack_info, '###')
-
-    # filepath = prefix_asset_folder + asset_desc if prefix_asset_folder else asset_desc
-    csv_filename = filename_no_ext + '.' + 'ncsv'
-
-    if webhack_info:
-        y = webhack_info + csv_filename
-    else:
-        y = file_prefix + csv_filename
-    print('>>>tryin to find data file:', y)
-    with open(y, 'r') as file:
-        str_csv = file.read()
-        f = StringIO(str_csv)
-        map_data = list()
-        reader = csv.reader(f, delimiter=',')
-        for row in reader:
-            if len(row) > 0:
-                map_data.append(list(map(int, row)))
-        pe_vars.csvdata[filename_no_ext] = map_data
-
-
 class AssetsStorage:
+    def _preload_ncsv_file(self, filename_no_ext, file_prefix, webhack_info=None):
+        print('## attempts to load NCSV; args are:', filename_no_ext, file_prefix, webhack_info, '###')
+
+        # filepath = prefix_asset_folder + asset_desc if prefix_asset_folder else asset_desc
+        csv_filename = filename_no_ext + '.' + 'ncsv'
+
+        if webhack_info:
+            y = webhack_info + csv_filename
+        else:
+            y = file_prefix + csv_filename
+        print('>>>tryin to find data file:', y)
+        with open(y, 'r') as file:
+            str_csv = file.read()
+            f = StringIO(str_csv)
+            map_data = list()
+            reader = csv.reader(f, delimiter=',')
+            for row in reader:
+                if len(row) > 0:
+                    map_data.append(list(map(int, row)))
+            self.csvdata[filename_no_ext] = map_data
+
     def __init__(self, lowlevel_service, gfx, adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, debug_mode=False, webhack=None):
         """
         expected to find the (mandatory) key 'images',
@@ -37,8 +36,9 @@ class AssetsStorage:
         self.gfx = gfx
 
         self.images = dict()
-        self.csvdata = dict()
+        self.data = dict()
         self.sounds = dict()
+        self.fonts = dict()
         self.spritesheets = dict()
 
         if debug_mode:
@@ -63,7 +63,7 @@ class AssetsStorage:
                             adhocv = ''
                         else:
                             adhocv = prefix_asset_folder
-                    pe_vars.spritesheets[kk[0]] = gfx.JsonBasedSprSheet(
+                    self.spritesheets[kk[0]] = gfx.JsonBasedSprSheet(
                         kk[0], pathinfo=y, is_webhack=adhocv
                     )
 
@@ -76,7 +76,7 @@ class AssetsStorage:
                     else:
                         y = prefix_asset_folder + ft_filename
                     print('fetching font:', key, ft_filename, f'[{y}]')
-                    pe_vars.fonts[key] = pe_vars.engine.new_font_obj(
+                    self.fonts[key] = lowlevel_service.new_font_obj(
                         y,
                         pe_vars.DATA_FT_SIZE
                     )
@@ -87,7 +87,7 @@ class AssetsStorage:
                     else:
                         filepath = prefix_asset_folder + asset_desc
                     print('fetching image:', kk[0], filepath)
-                    pe_vars.images[kk[0]] = lowlevel_service.image_load(filepath)  # TODO most important instr!
+                    self.images[kk[0]] = lowlevel_service.image_load(filepath)  # TODO most important instr!
 
         # -------------------------
         # loading sfx files
@@ -98,7 +98,7 @@ class AssetsStorage:
             if webhack is not None:
                 filepath = webhack + filepath
             print('fetching the sound:', k, filepath)
-            pe_vars.sounds[k] = pe_vars.engine.mixer.Sound(filepath)
+            self.sounds[k] = lowlevel_service.mixer.Sound(filepath)
 
         # -------------------------
         # loading data files
@@ -117,13 +117,13 @@ class AssetsStorage:
                 k, ext = dat_file.split('.')
                 if ext == 'json':  # not spritesheets! TODO control "data_hint?"
                     with open(fp, 'r') as fptr:
-                        pe_vars.data[k] = json.load(fptr)
+                        self.data[k] = json.load(fptr)
                 elif ext == 'ttf':
-                    pe_vars.data[k] = lowlevel_service.new_font_obj(fp, pe_vars.DATA_FT_SIZE)
+                    self.data[k] = lowlevel_service.new_font_obj(fp, pe_vars.DATA_FT_SIZE)
 
                 elif ext == 'ncsv':
                     print('»ncsv webhack:', webhack)
-                    _preload_ncsv_file(k, prefix, webhack_info=webhack)
+                    self._preload_ncsv_file(k, prefix, webhack_info=webhack)
                 else:
                     print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
             return  # end special case implies we end processing, right there
@@ -136,12 +136,12 @@ class AssetsStorage:
 
                 if ext == 'json':
                     with open(filepath, 'r') as fptr:
-                        pe_vars.data[k] = json.load(fptr)
+                        self.data[k] = json.load(fptr)
                 elif ext == 'ttf':
-                    pe_vars.data[k] = pe_vars.engine.low_level_service.new_font_obj(filepath, pe_vars.DATA_FT_SIZE)
+                    self.data[k] = lowlevel_service.new_font_obj(filepath, pe_vars.DATA_FT_SIZE)
 
                 elif ext == 'ncsv':
-                    _preload_ncsv_file(k, prefix)
+                    self._preload_ncsv_file(k, prefix)
 
                 else:
                     print(f'*Warning!* Skipping data_files entry "{k}" | For now, only .TTF and .JSON can be preloaded')
@@ -159,8 +159,8 @@ class AssetsStorage:
 
                 if ext == 'json':
                     with open(filepath, 'r') as fptr:
-                        pe_vars.data[k] = json.load(fptr)
+                        self.data[k] = json.load(fptr)
                 elif ext == 'ttf':
-                    pe_vars.data[k] = pe_vars.engine.new_font_obj(filepath, pe_vars.DATA_FT_SIZE)
+                    self.data[k] = lowlevel_service.new_font_obj(filepath, pe_vars.DATA_FT_SIZE)
                 elif ext == 'ncsv':
-                    _preload_ncsv_file(k, new_prefix)
+                    self._preload_ncsv_file(k, new_prefix)

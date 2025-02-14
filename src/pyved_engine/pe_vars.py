@@ -31,7 +31,8 @@ omega_events = list(BASE_ENGINE_EVS)
 # - engine related
 mediator = None
 disp_size = [960, 720]
-engine = None  # to store a reference to the ngine itself. Useful when writing pyv submodules!
+
+# engine = None  # to store a reference to the ngine itself. Useful when writing pyv submodules!
 
 
 backend_name = ''  # type str, and the default value is '' but it could be modified from elsewhere
@@ -43,12 +44,12 @@ screen = None
 
 # - game related (universal behavior)
 # 4 vars in order to handle all game assets
-images = dict()
-fonts = dict()
-spritesheets = dict()
-sounds = dict()
-csvdata = dict()
-data = dict()  # for raw json, most of the time
+# images = dict()
+# fonts = dict()
+# spritesheets = dict()
+# sounds = dict()
+# csvdata = dict()
+# data = dict()  # for raw json, most of the time
 
 # 4 vars to handle the game loop conveniently
 gameover = False

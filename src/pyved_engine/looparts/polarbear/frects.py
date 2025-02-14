@@ -1,6 +1,7 @@
-from ... import pe_vars as _vars
+from ... import core
 
-pyv = _vars.engine
+
+pyv = core.ref_engine()
 
 ANCHOR_UPPERLEFT = (0, 0)
 ANCHOR_UPPERRIGHT = (2, 0)
@@ -29,7 +30,7 @@ class Frect(object):
             x0 = prect.left + (prect.w // 2) * self.anchor[0]
             y0 = prect.top + (prect.h // 2) * self.anchor[1]
         else:
-            sw, sh = _vars.screen.get_size()
+            sw, sh = pyv.get_surface().get_size()
             x0 = (sw // 2) * self.anchor[0]
             y0 = (sh // 2) * self.anchor[1]
         return pyv.new_rect_obj(self.dx + x0, self.dy + y0, self.w, self.h)

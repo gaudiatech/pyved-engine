@@ -3,10 +3,10 @@ import weakref
 from . import frects
 from . import image
 from .image import TEXT_COLOR, truncline, render_text
-from ... import pe_vars as _vars
+from ... import core
 
 
-pyv = _vars.engine
+pyv = core.ref_engine()
 
 
 class KeyObject(object):
@@ -56,7 +56,7 @@ class Border(object):
     def render(self, dest, scr=None):
         """Draw this decorative border at dest on screen."""
         if scr is None:
-            scr = _vars.screen
+            scr = pyv.get_surface()
 
         # We're gonna draw a decorative border to surround the provided area.
         if self.border is None:
@@ -229,7 +229,7 @@ POSTERS = list()
 
 my_state = GameState()
 # fix: add ref to screen
-my_state.screen = _vars.screen
+# my_state.screen = _vars.screen
 
 # The FPS the rules runs at.
 FPS = 30

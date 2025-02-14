@@ -31,7 +31,7 @@ class EngineRouter:
         self.low_level_service = sublayer_compo
 
         self.assets_loaded = False
-        self.storage = None  # will be instantiated once we call preload_assets
+        self._storage = None  # will be instantiated once we call preload_assets
         self.debug_mode = False
         self.ready_flag = False
         # immediate bind
@@ -42,11 +42,17 @@ class EngineRouter:
         }
 
     def preload_assets(self, metadat_dict, prefix_asset_folder=None, prefix_sound_folder=None):
-        self.assets_loaded = AssetsStorage(
+        self._storage = AssetsStorage(
             self.low_level_service, self.gfx,
             metadat_dict, prefix_asset_folder, prefix_sound_folder
         )
         print('engine status: assets are now available')
+        # late bind
+        self._hub.update({
+            'images': self._storage.images,
+            'data': self._storage.data,
+            'sounds': self._storage.sounds
+        })
 
     @staticmethod
     def get_game_ctrl():
@@ -151,13 +157,15 @@ class EngineRouter:
         self._hub.update({
             'polarbear': polarbear
         })
-        # from .looparts import story
+        print('---hub in EngineRouter ok')
+
         from .looparts import ascii as _ascii
         from .looparts import gui as _gui
+        from .looparts import story
         self._hub.update({
             'ascii': _ascii,
             'gui': _gui,
-        #    'story': story,
+            'story': story,
         })
 
     def process_evq(self):
@@ -239,8 +247,8 @@ class EngineRouter:
     def __getattr__(self, item):
         if item in self._hub:
             return self._hub[item]
-        else:
-            return getattr(self.low_level_service, item)
+
+        return getattr(self.low_level_service, item)
 
 
 # ------------------------------------------------------------+------------------

@@ -1,9 +1,9 @@
 import weakref
 from itertools import chain
-from ... import pe_vars as _vars
+from ... import core
 
 
-pyv = _vars.engine
+pyv = core.ref_engine()
 
 DEFAULT_COLOR_KEY = (255, 0, 255)
 TEXT_COLOR = (240, 240, 50)
@@ -132,7 +132,7 @@ def draw_text(font, text, rect, color=TEXT_COLOR, justify=-1, antialias=True, de
     if dest_surface:
         dsu = dest_surface
     else:
-        dsu = _vars.screen
+        dsu = pyv.get_surface()
 
     # myimage = render. ...
     render_text(font, text, rect.width, color, justify, antialias, dsuu=dsu, moff=rect.topleft)
@@ -155,14 +155,14 @@ class Image(object):
         if fname:
             self.bitmap = self.get_pre_loaded(fname, transparent)
             if not self.bitmap:
-                self.bitmap = _vars.images[fname]
+                self.bitmap = pyv.images[fname]
                 self.bitmap.set_colorkey(color_key, flags)
         else:
             self.bitmap = pyv.surface_create((frame_width, frame_height))
             self.bitmap.fill(color_key)
             self.bitmap.set_colorkey(color_key, flags)
 
-        self.scrref = _vars.screen
+        self.scrref = pyv.get_surface()
 
         self.fname = fname
         self.flags = flags
@@ -219,7 +219,7 @@ class Image(object):
 
         dest_c = self.get_rect(frame)
         dest_c.center = dest
-        dest_surface = dest_surface or _vars.screen  # new way to retrieve the surface used for display
+        dest_surface = dest_surface or pyv.get_surface()  # new way to retrieve the surface used for display
 
         dest_surface.blit(self.bitmap, dest_c, area)
 

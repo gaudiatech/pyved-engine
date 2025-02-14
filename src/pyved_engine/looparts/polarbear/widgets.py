@@ -1,12 +1,12 @@
 from . import frects
 from . import image
-from ... import pe_vars as _vars
+from ... import core
 
 from .general import my_state, TEXT_COLOR, Border, default_border, wrap_with_records
 from .image import wrap_multi_line, draw_text
 
 
-pyv = _vars.engine
+pyv = core.ref_engine()
 
 # respond_event: Receives an event.
 #   If the widget has a method corresponding to the event,
