@@ -219,7 +219,7 @@ class _KFont:
             inp = list(karray_or_txt)
         else:
             inp = karray_or_txt
-        rez = dep_linking.pygame.surface.Surface((_char_size * len(inp), _char_size))
+        rez = dep_linking.pygame.Surface((_char_size * len(inp), _char_size))
         rez.fill((0, 0, 0))
         char_destpos = [0, 0]
         for elt in inp:
@@ -227,7 +227,7 @@ class _KFont:
             rez.blit(s, char_destpos)
             char_destpos[0] += _char_size
         # replace fg color
-        fres = dep_linking.pygame.surface.Surface((_char_size * len(inp), _char_size))
+        fres = dep_linking.pygame.Surface((_char_size * len(inp), _char_size))
         if bg_color is None:
             fres.fill((255, 0, 255))
             fres.set_colorkey((255, 0, 255))
@@ -235,7 +235,7 @@ class _KFont:
             fres.fill(bg_color)
 
         dep_linking.pygame.transform.threshold(
-            fres, rez, (255, 255, 255), (0, 0, 0), dep_linking.pygame.Color(fg_color), inverse_set=True
+            fres, rez, (255, 255, 255), (0, 0, 0), fg_color, inverse_set=True
         )
         return fres
 
@@ -250,7 +250,7 @@ class _KFont:
         if k in self.cached_letters:
             r = self.cached_letters[k]
         else:
-            r = dep_linking.pygame.surface.Surface((_char_size, _char_size)).convert()
+            r = dep_linking.pygame.Surface((_char_size, _char_size)).convert()
             r.fill((255, 0, 255))
             r.blit(
                 self.surf, (0, 0), (_char_size * (k % nbparcol), _char_size * (k // nbparcol), _char_size, _char_size)

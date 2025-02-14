@@ -29,18 +29,18 @@ def _preload_ncsv_file(filename_no_ext, file_prefix, webhack_info=None):
 
 
 class AssetsStorage:
-    def __init__(self):
+    def __init__(self, lowlevel_service, gfx, adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder, debug_mode=False, webhack=None):
+        """
+        expected to find the (mandatory) key 'images',
+        also we may find the (optionnal) key 'sounds'
+        """
+        self.gfx = gfx
+
         self.images = dict()
         self.csvdata = dict()
         self.sounds = dict()
         self.spritesheets = dict()
 
-    def preload_assets(self, adhoc_dict: dict, prefix_asset_folder, prefix_sound_folder,
-                       debug_mode=False, webhack=None) -> None:
-        """
-        expected to find the (mandatory) key 'images',
-        also we may find the (optionnal) key 'sounds'
-        """
         if debug_mode:
             print('*' * 50)
             print(f' CALL to preload assets [webhack value:{webhack}]')
@@ -87,7 +87,7 @@ class AssetsStorage:
                     else:
                         filepath = prefix_asset_folder + asset_desc
                     print('fetching image:', kk[0], filepath)
-                    pe_vars.images[kk[0]] = self.low_level_service.image_load(filepath)  # TODO most important instr!
+                    pe_vars.images[kk[0]] = lowlevel_service.image_load(filepath)  # TODO most important instr!
 
         # -------------------------
         # loading sfx files
@@ -119,7 +119,7 @@ class AssetsStorage:
                     with open(fp, 'r') as fptr:
                         pe_vars.data[k] = json.load(fptr)
                 elif ext == 'ttf':
-                    pe_vars.data[k] = self.low_level_service.new_font_obj(fp, pe_vars.DATA_FT_SIZE)
+                    pe_vars.data[k] = lowlevel_service.new_font_obj(fp, pe_vars.DATA_FT_SIZE)
 
                 elif ext == 'ncsv':
                     print('»ncsv webhack:', webhack)

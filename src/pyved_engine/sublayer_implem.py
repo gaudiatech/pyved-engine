@@ -64,21 +64,38 @@ class PygameWrapper(GameEngineSublayer):
     def __init__(self):
         import pygame as pygame_mod
         self.pygame = pygame_mod
+
         self.sprite = Objectifier({
             'Sprite': self.pygame.sprite.Sprite,
             'Group': self.pygame.sprite.Group,
             'spritecollide': self.pygame.sprite.spritecollide
         })
+        self.event = self.pygame.event
         self.display = self.pygame.display
         self.mixer = self.pygame.mixer
         self.time = self.pygame.time
         self.Surface = self.pygame.Surface
         self.transform = self.pygame.transform
+        self.image = self.pygame.image
+        self.key = self.pygame.key
+        self.mouse = self.pygame.mouse
 
+        # key codes
         self.K_ESCAPE = self.pygame.K_ESCAPE
+        self.K_BACKSPACE = self.pygame.K_BACKSPACE
+        self.K_RETURN = self.pygame.K_RETURN
+
+        # pygame constants
         self.SRCALPHA = self.pygame.SRCALPHA
         self.RLEACCEL = self.pygame.RLEACCEL
-        self.key = self.pygame.key
+        self.QUIT = self.pygame.QUIT
+        self.KEYDOWN = self.pygame.KEYDOWN
+        self.KEYUP = self.pygame.KEYUP
+        self.MOUSEBUTTONDOWN = self.pygame.MOUSEBUTTONDOWN
+        self.MOUSEBUTTONUP = self.pygame.MOUSEBUTTONUP
+
+    def quit(self):
+        self.pygame.quit()
 
     def image_load(self, fileobj_or_path, *args):
         if len(args) > 0:
