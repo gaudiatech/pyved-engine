@@ -1,5 +1,6 @@
 from ..foundation import defs
 from .. import pe_vars as engine_vars
+from .. import core
 
 
 _vsurface = None
@@ -31,15 +32,14 @@ def flip():
     if _vsurface_required:
         # TODO
         pass
-
+    sl = core.get_sublayer()
     if not special_flip:  # flag can be off if the extra blit/transform has to disabled (web ctx)
-        realscreen = cached_pygame_mod.display.get_surface()
+        realscreen = sl.display.get_surface()
         if 1 == stored_upscaling:
             realscreen.blit(engine_vars.screen, (0, 0))
         else:
-            cached_pygame_mod.transform.scale(engine_vars.screen, defs.STD_SCR_SIZE, realscreen)
-
-    cached_pygame_mod.display.update()
+            sl.transform.scale(engine_vars.screen, defs.STD_SCR_SIZE, realscreen)
+    sl.display.update()
 
 
 # ------------------------------------

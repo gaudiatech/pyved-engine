@@ -3,20 +3,15 @@ Pyv API := Ecs func/procedures
   + utility func + pygame constants + the 12 func/procedures defined in the current file
 
 """
-import csv
-import json
-import os
 import time
-from io import StringIO
 from math import degrees as _degrees
 
 from pyved_engine.sublayer_implem import GameEngineSublayer  # Step 3: Inject the dependency
-from . import dep_linking
+from . import dep_linking, core
 from . import pe_vars
 from . import state_management
 from .AssetsStorage import AssetsStorage
 from .actors_pattern import Mediator
-from .compo import gfx
 from .compo import vscreen
 from .compo.vscreen import flip as _oflip
 from .foundation import events
@@ -31,11 +26,13 @@ class EngineRouter:
     HIGH_RES_MODE, LOW_RES_MODE, RETRO_MODE = 1, 2, 3
 
     def __init__(self, sublayer_compo: GameEngineSublayer):
+        core.set_sublayer(sublayer_compo)
+        core.save_engine_ref(self)
+        self.low_level_service = sublayer_compo
+
         self.assets_loaded = False
         self.storage = None  # will be instantiated once we call preload_assets
-
         self.debug_mode = False
-        self.low_level_service = sublayer_compo
         self.ready_flag = False
         # immediate bind
         self._hub = {
@@ -43,7 +40,6 @@ class EngineRouter:
             'Sprite': self.low_level_service.sprite.Sprite,
             'sprite_collision': self.low_level_service.sprite.spritecollide
         }
-        pe_vars.engine = self
 
     def preload_assets(self, metadat_dict, prefix_asset_folder=None, prefix_sound_folder=None):
         self.assets_loaded = AssetsStorage(
@@ -126,7 +122,7 @@ class EngineRouter:
         dep_linking.pygame = self.low_level_service
 
         # all this should be dynamically loaded?
-        from . import gfx
+        from .compo import gfx
         from .compo import GameTpl
         from . import custom_struct
         from . import evsys0
@@ -135,7 +131,9 @@ class EngineRouter:
         from . import pe_vars as _vars
         from .foundation.events import game_events_enum
         from . import actors_pattern
+        from .foundation import defs
         self._hub.update({
+            'defs': defs,
             'gfx': gfx,
             'actors': actors_pattern,
             'game_events_enum': game_events_enum,
@@ -153,13 +151,13 @@ class EngineRouter:
         self._hub.update({
             'polarbear': polarbear
         })
-        from .looparts import story
+        # from .looparts import story
         from .looparts import ascii as _ascii
         from .looparts import gui as _gui
         self._hub.update({
             'ascii': _ascii,
             'gui': _gui,
-            'story': story,
+        #    'story': story,
         })
 
     def process_evq(self):
@@ -200,16 +198,16 @@ class EngineRouter:
             pe_vars.clock.tick(pe_vars.max_fps)
 
     def new_font_obj(self, font_src, font_size: int):  # src can be None!
-        return dep_linking.pygame.font.Font(font_src, font_size)
+        return self.low_level_service.new_font_obj(font_src, font_size)
 
     def new_rect_obj(self, *args):  # probably: x, y, w, h
-        return dep_linking.pygame.Rect(*args)
+        return self.low_level_service.new_rect_obj(*args)
 
     def close_game(self):
-        dep_linking.pygame.quit()
+        self.low_level_service.quit()
 
     def surface_create(self, size):
-        return dep_linking.pygame.surface.Surface(size)
+        return dep_linking.pygame.Surface(size)
 
     def surface_rotate(self, img, angle):
         return dep_linking.pygame.transform.rotate(img, _degrees(-1 * angle))
@@ -324,7 +322,7 @@ def _screen_param(gfx_mode_code, screen_dim, cached_paintev) -> None:
     # ---------------------------------
     if not _scr_init_flag:
         if vscreen.stored_upscaling is not None:
-            pygame_surf_dessin = dep_linking.pygame.surface.Surface(taille_surf_dessin)
+            pygame_surf_dessin = dep_linking.pygame.Surface(taille_surf_dessin)
             vscreen.set_virtual_screen(pygame_surf_dessin)
             vscreen.set_upscaling(adhoc_upscaling)
             if gfx_mode_code:
@@ -389,12 +387,14 @@ def curr_statename() -> str:
 #     _hub.pygame.display.flip()
 #     pe_vars.clock.tick(pe_vars.max_fps)
 # --------
-def fetch_events():
-    return _hub.pygame.event.get()
 
-
-def get_pressed_keys():
-    return _hub.pygame.key.get_pressed()
+# very deprec
+# def fetch_events():
+#     return _hub.pygame.event.get()
+#
+#
+# def get_pressed_keys():
+#     return _hub.pygame.key.get_pressed()
 
 
 # - deprecated

@@ -84,6 +84,11 @@ class PygameWrapper(GameEngineSublayer):
         self.K_ESCAPE = self.pygame.K_ESCAPE
         self.K_BACKSPACE = self.pygame.K_BACKSPACE
         self.K_RETURN = self.pygame.K_RETURN
+        self.K_SPACE = self.pygame.K_SPACE
+        self.K_UP = self.pygame.K_UP
+        self.K_LEFT = self.pygame.K_LEFT
+        self.K_DOWN = self.pygame.K_DOWN
+        self.K_RIGHT = self.pygame.K_RIGHT
 
         # pygame constants
         self.SRCALPHA = self.pygame.SRCALPHA
@@ -93,6 +98,9 @@ class PygameWrapper(GameEngineSublayer):
         self.KEYUP = self.pygame.KEYUP
         self.MOUSEBUTTONDOWN = self.pygame.MOUSEBUTTONDOWN
         self.MOUSEBUTTONUP = self.pygame.MOUSEBUTTONUP
+
+    def init(self):
+        self.pygame.init()
 
     def quit(self):
         self.pygame.quit()

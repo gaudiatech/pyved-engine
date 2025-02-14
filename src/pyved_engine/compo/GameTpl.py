@@ -50,6 +50,7 @@ class GameTpl(metaclass=ABCMeta):
         """
         self.engine.init(self.get_video_mode())
         self._manager = EvManager.instance()
+        print('manager:', self._manager)
         self._manager.setup(self.list_game_events())
         self._manager.post(EngineEvTypes.Gamestart)  # pushed to notify that we have really started playing
         gs_enum, mapping = self.list_game_states()
