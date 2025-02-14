@@ -60,7 +60,7 @@ def init(chosen_char_size=None):
         _char_size = chosen_char_size
 
     _sm_ready = True
-    _screen = vars.screen
+    _screen = pe_vars.screen
     scrw, scrh = _screen.get_size()
     adhocw = scrw // _char_size
     adhoch = scrh // _char_size
