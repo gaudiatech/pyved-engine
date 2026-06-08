@@ -1,0 +1,9 @@
+Si on ne fait pas du passage d'arg via la command-line(pyv-cli play TheGrid --localhost host --port 883 )
+
+On peut passer ce qu'il faut via le fichier de metadonnées:
+
+  "kwargs": {"player":1,"host":"localhost","port":12881},
+  "fkkwargs": {"player":1,"host":"pyv-thegrid.kata.games/wss","port":80}
+
+si la cartouche s'exécute en contexte web,
+ le mode sera NÉCÉSSAIREMENT et automatiquement set à la valeur websocket ...

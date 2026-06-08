@@ -73,9 +73,11 @@ def recursive_copy(source_folder, destination_folder):
 
 def test_isfile_in_cartridge(filename, bundle_name) -> bool:
     wrapper_folder = fpath_join(os.getcwd(), bundle_name)
-    # TODO support for frozen bundles needs to be added here
-    # cartridge_folder = fpath_join(wrapper_folder, 'cartridge')
-    adhoc_folder = wrapper_folder
+    cartridge_folder = fpath_join(wrapper_folder, 'cartridge')
+    if os.path.isdir(cartridge_folder):
+        adhoc_folder = cartridge_folder
+    else:
+        adhoc_folder = wrapper_folder
     targ = os.path.sep.join((adhoc_folder, filename))
     return os.path.isfile(targ)
 

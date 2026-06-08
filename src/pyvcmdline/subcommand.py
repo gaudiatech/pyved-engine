@@ -28,6 +28,63 @@ SCRIPT_WITH_SERV_CODE = 'run_server.py'
 SERV_CODE_START_FUNC = 'exec'
 
 
+def _bundle_root_dir(bundle_name: str) -> str:
+    if bundle_name in ('.', '', None):
+        return os.getcwd()
+    return os.path.join(os.getcwd(), bundle_name)
+
+
+def _copy_dir_contents(src_dir: str, dst_dir: str) -> None:
+    if not os.path.isdir(src_dir):
+        return
+    os.makedirs(dst_dir, exist_ok=True)
+    for entry in os.listdir(src_dir):
+        src_path = os.path.join(src_dir, entry)
+        dst_path = os.path.join(dst_dir, entry)
+        if os.path.isdir(src_path):
+            shutil.copytree(src_path, dst_path)
+        else:
+            shutil.copy2(src_path, dst_path)
+
+
+def _write_text_file(target_path: str, content: str) -> None:
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+    with open(target_path, 'w', encoding='utf-8') as fptr:
+        fptr.write(content)
+
+
+def _generate_detached_server_main(bundle_name: str, is_multiplayer: bool) -> str:
+    mode_line = "'ws'" if is_multiplayer else "'socket'"
+    return f'''# Automatically generated, do not edit!
+# detached server scaffold for the bundle "{bundle_name}"
+# TODO: wire host/port from metadata or environment variables.
+# TODO: decide whether this should stay a generated file or become a template hook.
+
+import pyved_engine
+from netcode.shared_code import glvars
+from netcode import run_server
+
+glvars.pyv = pyved_engine.get_engine_router()
+glvars.pyv.server_flag = True
+glvars.pyv.bootstrap_e()
+
+PORTINFO = 12881  # TODO replace with a real deployment value
+HOSTINFO = 'localhost'  # TODO replace with a real deployment value
+print('starting game server,', PORTINFO, ';', HOSTINFO)
+run_server.exec(**{{'port': PORTINFO, 'host': HOSTINFO, 'mode': {mode_line}}})
+'''
+
+
+def _copy_pyved_engine_tree(target_root: str) -> None:
+    import pyved_engine
+
+    engine_src = os.path.dirname(os.path.abspath(pyved_engine.__file__))
+    engine_dst = os.path.join(target_root, 'pyved_engine')
+    if os.path.exists(engine_dst):
+        raise FileExistsError(f'cannot create detached server scaffold, {engine_dst} already exists')
+    shutil.copytree(engine_src, engine_dst)
+
+
 # -------------------------
 #  private func
 # -------------------------
@@ -174,6 +231,21 @@ def bump(bundle_name):
         _utils.rewrite_metadata(bundle_name, my_metadat)
 
 
+def pub(bundle_name):
+    """
+    Publication flow intentionally disabled for now.
+
+    The old implementation used to push a sandboxed bundle slug to the cloud CMS.
+    We keep the historical intent visible here, but the command itself is frozen out.
+    """
+    # legacy sketch kept for reference:
+    # metadat = _utils.read_metadata(bundle_name)
+    # slug = metadat['slug']
+    # zipfile_path = pack_game_cartridge(bundle_name)
+    # _netw.upload_my_zip_file(zipfile_path, slug, dev_flag=False)
+    raise NotImplementedError('pyv-cli pub has been intentionally disabled; use freeze/share instead')
+
+
 def init(chosen_slug: str) -> None:
     """
     this is the pyv-cli INIT command.
@@ -243,7 +315,78 @@ def init(chosen_slug: str) -> None:
     print('Go ahead and have fun ;)')
 
 
-def play(bundle_name, **kwargs):
+def freeze(bundle_name):
+    """
+    Create a frozen copy of a hot bundle.
+
+    The frozen output is intentionally a new folder so the original bundle can
+    keep being used during local development.
+    """
+    metadata = _utils.read_metadata(bundle_name)
+    source_root = _bundle_root_dir(bundle_name)
+    frozen_slug = f"{metadata['slug']}_frozen"
+    target_root = os.path.join(os.getcwd(), frozen_slug)
+
+    if os.path.exists(target_root):
+        raise FileExistsError(f'freeze destination already exists: {target_root}')
+
+    print(f'freezing bundle {bundle_name} -> {frozen_slug}')
+    os.makedirs(target_root)
+
+    source_cartridge = os.path.join(source_root, 'cartridge')
+    target_cartridge = os.path.join(target_root, 'cartridge')
+    payload_root = source_cartridge if os.path.isdir(source_cartridge) else source_root
+    shutil.copytree(payload_root, target_cartridge)
+
+    frozen_metadata = dict(metadata)
+    frozen_metadata['slug'] = frozen_slug
+    frozen_metadata['frozen'] = True
+    frozen_metadata['build_date'] = _utils.gen_build_date_now()
+    _utils.rewrite_metadata(frozen_slug, frozen_metadata)
+
+    source_launcher = os.path.join(source_root, 'launch_game.py')
+    if os.path.isfile(source_launcher):
+        shutil.copy2(source_launcher, os.path.join(target_root, 'launch_game.py'))
+    else:
+        # Keep the command usable even if the source bundle never had a launcher.
+        _utils.copy_launcher_script(frozen_slug, basic_bundle=True)
+        # TODO if the source bundle needs a custom launcher, copy it here instead of the default template.
+
+    if os.path.isdir(source_cartridge):
+        for candidate in ('netcode', 'network'):
+            candidate_path = os.path.join(source_root, candidate)
+            if os.path.isdir(candidate_path):
+                shutil.copytree(candidate_path, os.path.join(target_root, candidate))
+                break
+
+    # Multiplayer bundles need a detached-server scaffold too.
+    if metadata.get('multiplayer', False):
+        detached_root = os.path.join(target_root, 'detached_server')
+        os.makedirs(detached_root, exist_ok=True)
+
+        source_netcode = None
+        for candidate in ('netcode', 'network'):
+            candidate_path = os.path.join(source_root, candidate)
+            if os.path.isdir(candidate_path):
+                source_netcode = candidate_path
+                break
+
+        if source_netcode is not None:
+            shutil.copytree(source_netcode, os.path.join(detached_root, os.path.basename(source_netcode)))
+        # TODO copy any server-specific glue code and normalize the detached-server import layout.
+        _copy_pyved_engine_tree(detached_root)
+        _write_text_file(
+            os.path.join(detached_root, 'main.py'),
+            _generate_detached_server_main(frozen_slug, True)
+        )
+
+    print(f'freeze completed: {target_root}')
+
+
+def play(bundle_name, extra_args=None, **kwargs):
+    extra_args = list(extra_args or [])
+    if extra_args:
+        sys.argv = [sys.argv[0], *extra_args]
     devflag_on = kwargs['dev']
     print('dans la cmd', kwargs)
     if '.' != bundle_name and os.path.isdir('cartridge'):
@@ -297,7 +440,10 @@ def refresh(bundle_name):
     _utils.rewrite_metadata(bundle_name, my_metadat)
 
 
-def serve(bundle_name, **kwargs) -> None:
+def serve(bundle_name, extra_args=None, **kwargs) -> None:
+    extra_args = list(extra_args or [])
+    if extra_args:
+        sys.argv = [sys.argv[0], *extra_args]
     # Print the bundle name for debugging purposes.
     print('>in serve sub-command...')
     print('arg0:', bundle_name)

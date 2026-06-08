@@ -1,0 +1,55 @@
+{
+  "dependencies": [
+    [
+      "pyved_engine",
+      "25_4a1",
+      "pyv"
+    ]
+  ],
+  "frozen": false,
+  "description": "Basic template for a roguelike/dungeon-crawling game",
+  "author": "Unknown",
+  "asset_base_folder": ".",
+  "asset_list": [],
+  "sound_base_folder": ".",
+  "sound_list": [],
+  "data_files": [
+    "assets-License.txt"
+  ],
+  "slug": "TheGrid",
+  "title": "TheGrid",
+  "build_date": "Mon Jun  2 08:32:07 2025",
+  "thumbnail512x512": "thumbnailSQ.png",
+  "thumbnail512x384": "thumbnailR.png",
+  "ktg_services": false,
+  "instructions": "no instructions provided",
+  "uses_challenge": false,
+  "has_game_server": false,
+  "ncr_faucet": false,
+  "multiplayer": true,
+
+  "game_genre": [
+    "Roguelike",
+    "Experimental"
+  ],
+  "source_files": [
+	"extra_vars.py",
+	"GameClientPlusGUI.py",
+	"gamedef.py",
+	"glvars.py",
+	"netcode/Server.py",
+	"netcode/run_server.py",
+	"netcode/__init__.py",
+	"netcode/shared_code/__init__.py",
+	"netcode/shared_code/ChasersModel.py",
+	"netcode/shared_code/glvars.py",
+	"netcode/shared_code/NetwReadyModel.py",
+	"actors/__init__.py",
+	"actors/maze.py",
+	"actors/misc.py",
+	"actors/monsters.py",
+	"actors/player.py",
+	"actors/visibility_mger.py"
+  ],
+  "kwargs": {"player":1,"host":"localhost","port":12881,"mode": "ws"}
+}

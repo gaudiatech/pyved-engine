@@ -1,0 +1,28 @@
+DEFINITION
+----------
+
+The DETACHED SERVER format allows for quick and easy
+ >game server DEPLOYment <
+
+Using a detached server,
+allows your server-side game logic to be hosted just like a website.
+
+
+TUTORIAL: creating your new detached server
+--------
+
+freezing a bundle, then:
+ [1]..... copying the source-code that corresponds to the "netcode" 
+ [2]..... copying the source-code of PYV (the engine) 
+in the current folder, 
+
+will produce a DETACHED SERVER.
+
+STRUCTURE
+---------
+
+ Inside such a folder you'll always find:
+- main.py
+- the "netcode" folder
+- the "pyved_engine" folder
+

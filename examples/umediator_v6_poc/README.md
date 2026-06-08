@@ -22,7 +22,7 @@ For multiplayer, `--transport auto` is the default and follows the engine's own 
 By default, the engine resolves `auto` to the native socket transport.
 
 ```bash
-python examples/umediator_v6_poc/main.py
+python examples/umediator_v6_poc/game.py
 ```
 
 Multiplayer mode uses the same game code, but attaches a socket transport.
@@ -32,24 +32,26 @@ If you pass `--force-ws`, the demo sets `FORCE_WS_TRANSPORT` in the engine facto
 Start the server first:
 
 ```bash
-python examples/umediator_v6_poc/main.py --mode server --host 127.0.0.1 --port 5005
-python examples/umediator_v6_poc/main.py --mode server --transport ws --host 127.0.0.1 --port 5005
-python examples/umediator_v6_poc/main.py --mode server --transport auto --host 127.0.0.1 --port 5005
-python examples/umediator_v6_poc/main.py --mode server --force-ws --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/server.py --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/server.py --transport ws --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/server.py --transport auto --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/server.py --force-ws --host 127.0.0.1 --port 5005
 ```
 
 Then start one client per human player:
 
 ```bash
-python examples/umediator_v6_poc/main.py --mode client --player black --host 127.0.0.1 --port 5005
-python examples/umediator_v6_poc/main.py --mode client --player white --host 127.0.0.1 --port 5005
-python examples/umediator_v6_poc/main.py --mode client --transport ws --player black --host 127.0.0.1 --port 5005
-python examples/umediator_v6_poc/main.py --mode client --transport ws --player white --host 127.0.0.1 --port 5005
-python examples/umediator_v6_poc/main.py --mode client --transport auto --player black --host 127.0.0.1 --port 5005
-python examples/umediator_v6_poc/main.py --mode client --transport auto --player white --host 127.0.0.1 --port 5005
-python examples/umediator_v6_poc/main.py --mode client --force-ws --player black --host 127.0.0.1 --port 5005
-python examples/umediator_v6_poc/main.py --mode client --force-ws --player white --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/game.py --mode client --player black --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/game.py --mode client --player white --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/game.py --mode client --transport ws --player black --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/game.py --mode client --transport ws --player white --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/game.py --mode client --transport auto --player black --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/game.py --mode client --transport auto --player white --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/game.py --mode client --force-ws --player black --host 127.0.0.1 --port 5005
+python examples/umediator_v6_poc/game.py --mode client --force-ws --player white --host 127.0.0.1 --port 5005
 ```
+
+If you prefer one launcher, `main.py` dispatches to `game.py` or `server.py`.
 
 ## Controls
 
