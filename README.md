@@ -223,6 +223,17 @@ The __pyv__ engine comes packed with a ton of features:
 
 More features will be added in the future.
 
+### One event system, two modes
+
+The new mediator event system is designed to work in two ways, with the same mental model for the game developer:
+
+- Solo or serverless mode: you create a mediator and use it as a local event hub. Events stay inside the game process.
+- Multiplayer mode: you attach a network layer and then decide which events should go to the server or be broadcast by the server.
+
+The important part is that the basic ideas do not change. You still create events, post them, and listen to them. The only extra thing multiplayer games need is to tell the mediator which events are local and which ones must travel over the network.
+
+In other words, if you do nothing special, the system behaves like a regular solo event engine. If you want multiplayer, you opt in by adding the networking pieces.
+
 Also, it can be interesting to notice that the game engine __pyv__
 is linked to an ecosystem of components,
 that act in concert in order to make your life as a Game Dev more pleasant.

@@ -14,4 +14,5 @@ extra resources (like time or memory) needed to manage or execute a process beyo
 """
 from .UMediator import UMediator
 from .helpers import EventReadyCls
+from .protocol import Delivery, EventEnvelope
 from .netlayer_factory import *  # imports the specific .build(a1, a2) function. Also contains the Objectifier cls

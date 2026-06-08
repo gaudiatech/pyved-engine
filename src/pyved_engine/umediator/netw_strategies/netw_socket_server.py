@@ -1,142 +1,120 @@
-"""
-on expose
----------
-
-- get_server_flag() -> int
-
-- start_comms(host_info, port_info)
-
-- broadcast(evtype, evcontent) -> None
-
-- register_mediator( obj ) où obj est un objet respectant l'interface de UMediator. CAR on call mediator.post( x, y, z)
-
-"""
 import json
 import socket
 import threading
 import time
 
+from ..protocol import ensure_envelope
 
-mediators = list()
-inbound_connections = list()
-ref_threads = list()
-socket_ref = None
-shutdown_flag = False
 
-__all__ = [
-    'get_server_flag',
-    'start_comms',
-    'broadcast',
-    'register_mediator'
-]
+_mediator = None
+_inbound_connections = []
+_ref_threads = []
+_socket_ref = None
+_shutdown_flag = False
 
 
 def get_server_flag():
     return 1
 
 
-def partie_reception(raw_txt):
-    print(f'reception:{raw_txt}')
-    # unpack event & transmit to mediators
-    parts = raw_txt.split('#')
-    evtype = parts[0]
-    content = json.loads(parts[1])
-    print('handle client fait le passage a un/des mediator(s) count:', len(mediators))
-    for m in mediators:
-        m.post(evtype, content, False)
+def _receive_message(raw_txt):
+    envelope = ensure_envelope(json.loads(raw_txt))
+    if _mediator is None:
+        print("No mediator registered on socket server")
+        return
+    _mediator.ingest_remote_envelope(envelope)
 
 
 def start_comms(host_info, port_info):
-    global ref_threads, socket_ref, shutdown_flag
+    global _ref_threads, _socket_ref, _shutdown_flag
+    _shutdown_flag = False
+    _inbound_connections.clear()
+    _ref_threads.clear()
 
     def handle_client(socklisten):
-        global inbound_connections, mediators
+        global _inbound_connections
 
-        while not shutdown_flag:
+        while not _shutdown_flag:
             try:
-                conn, addr = socklisten.accept()  # blocking call, but can be interrupted by timeout
-                inbound_connections.append(conn)
-                print(f'Connection added, source:{addr}')
+                conn, addr = socklisten.accept()
+                _inbound_connections.append(conn)
+                print(f"Connection added, source:{addr}")
                 with conn:
-                    while not shutdown_flag:
-                        data = conn.recv(1024)
+                    while not _shutdown_flag:
+                        data = conn.recv(4096)
                         if not data:
-                            print('error receiving data')
                             break
-                        txt_info = data.decode()
-                        partie_reception(txt_info)
+                        _receive_message(data.decode())
             except socket.timeout:
-                # Timeout triggered, just check if shutdown is needed
-                time.sleep(0.1)  # Add a small delay to prevent 100% CPU usage
-            except Exception as e:
-                print(f"Error handling client: {e}")
+                time.sleep(0.1)
+            except Exception as exc:
+                print(f"Error handling client: {exc}")
                 break
 
-    given_socket_config = host_info, port_info
-    socket_ref = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socket_ref.bind(given_socket_config)
-    print('start to listen on:', host_info, port_info)
-    socket_ref.listen()
+    _socket_ref = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    _socket_ref.bind((host_info, port_info))
+    print("start to listen on:", host_info, port_info)
+    _socket_ref.listen()
+    _socket_ref.settimeout(1)
 
-    # Set timeout for accept() so we can handle shutdown properly
-    socket_ref.settimeout(1)  # Timeout set to 1 second
-
-    # start 2 threads no matter what,
-    # and keep a ref/ptr for later use
     for _ in range(2):
-        nt = threading.Thread(target=handle_client, args=(socket_ref,))
+        nt = threading.Thread(target=handle_client, args=(_socket_ref,))
         nt.start()
-        ref_threads.append(nt)
+        _ref_threads.append(nt)
 
 
-def broadcast(event_type, event_content):
-    global inbound_connections
-    # emit to clientS
-    data = f'{event_type}#{event_content}'
-    broken_c = set()
-    for client in inbound_connections:
-        try:  # to avoid server crashing if one connection is down -> other clients still play
-            client.sendall(data.encode())
+def send_to_server(envelope):
+    raise RuntimeError("server transport cannot send events to a server")
+
+
+def broadcast_to_clients(envelope):
+    if _mediator is None:
+        print("No mediator registered on socket server")
+        return
+
+    message = ensure_envelope(envelope).to_json()
+    broken_connections = set()
+    for client in list(_inbound_connections):
+        try:
+            client.sendall(message.encode())
         except Exception as err:
-            print('!!connection err!!', err)
-            broken_c.add(client)
+            print("!!connection err!!", err)
+            broken_connections.add(client)
 
-    for c in broken_c:
-        inbound_connections.remove(c)
-        print(' A connexion has just dropped')
+    for conn in broken_connections:
+        try:
+            _inbound_connections.remove(conn)
+        except ValueError:
+            pass
 
 
-def register_mediator(x):
-    global mediators
-    mediators.append(x)
+def register_mediator(mediator):
+    global _mediator
+    _mediator = mediator
 
 
 def shutdown_comms():
-    global inbound_connections, ref_threads
+    global _inbound_connections, _ref_threads, _shutdown_flag, _socket_ref
 
-    global shutdown_flag
-    shutdown_flag = True  # Set shutdown flag to true
+    _shutdown_flag = True
 
-    # Step 1: Close all inbound connections
-    for conn in inbound_connections:
+    for conn in list(_inbound_connections):
         try:
             conn.close()
-            print(f'Closed connection: {conn}')
         except Exception as err:
-            print(f'Error closing connection {conn}: {err}')
-    inbound_connections.clear()
-    print('connections gone ok')
+            print(f"Error closing connection {conn}: {err}")
+    _inbound_connections.clear()
 
-    # Step 2: Exit all threads
-    for thread in ref_threads:
+    for thread in list(_ref_threads):
         try:
-            thread.join()  # Ensures the thread has finished before proceeding
-            print(f'Thread {thread} has been joined')
+            thread.join()
         except Exception as err:
-            print(f'Error stopping thread {thread}: {err}')
-    ref_threads.clear()
-    print('threads cleared ok')
+            print(f"Error stopping thread {thread}: {err}")
+    _ref_threads.clear()
 
-    # Step 3: don't listen anymore that is: closing socket
-    socket_ref.close()
-    print('socket-based server: everything went down->ok')
+    if _socket_ref is not None:
+        try:
+            _socket_ref.close()
+        except Exception as err:
+            print(f"Error closing socket: {err}")
+        _socket_ref = None

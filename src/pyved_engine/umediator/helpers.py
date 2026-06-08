@@ -1,12 +1,12 @@
-
-
 class EventReadyCls:
-    ref_mediator = None
-
-    def __init__(self):
+    def __init__(self, mediator):
         super().__init__()
-        self._mediator = self.__class__.ref_mediator
-        assert self._mediator is not None
+        if mediator is None:
+            raise ValueError("a mediator instance is required")
+        self._mediator = mediator
 
-    def pev(self, event_type, event=None, enable_event_forwarding=True):
-        self._mediator.post(event_type, event, enable_event_forwarding)
+    def pev(self, event_type, event=None, delivery=None):
+        if delivery is None:
+            from .protocol import Delivery
+            delivery = Delivery.LOCAL
+        self._mediator.post(event_type, event, delivery=delivery)

@@ -15,7 +15,11 @@ class NetwTransLayer(ABC):
         pass
 
     @abstractmethod
-    def broadcast(self, ev_type, event_content):
+    def send_to_server(self, envelope):
+        pass
+
+    @abstractmethod
+    def broadcast_to_clients(self, envelope):
         pass
 
     @abstractmethod

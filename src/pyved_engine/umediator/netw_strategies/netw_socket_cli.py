@@ -3,18 +3,11 @@ import socket
 import threading
 import time
 
-
-__all__ = [
-    'get_server_flag',
-    'start_comms',
-    'broadcast',
-    'register_mediator',
-    'shutdown_comms'
-]
+from ..protocol import ensure_envelope
 
 
-mediators = list()
-ref_socket = None
+_mediator = None
+_ref_socket = None
 _receiver_thread = None
 _stop_event = threading.Event()
 
@@ -23,103 +16,80 @@ def get_server_flag():
     return 0
 
 
-def ws_on_message(message):
-    global mediators
-    print(f'Received shared variable update: {message}')
-    try:
-        evtype, content = message.split('#', 1)
-        # no json auto -decoding !!
-        # content = json.loads(content)
-    except (ValueError, json.JSONDecodeError) as e:
-        print(f'Error parsing message: {e}')
-        return
-
-    print(f'Passed to {len(mediators)} mediators')
-    for m in mediators:
-        m.post(evtype, content, False)
-
-
 def _receive_updates(host_info, port_info):
-    global ref_socket
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((host_info, port_info))
-        s.settimeout(1.0)  # Permet de vérifier régulièrement si un arrêt est demandé
-        ref_socket = s
+    global _ref_socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect((host_info, port_info))
+        _ref_socket = sock
         print("Socket connection established")
-        while not _stop_event.is_set():
-            try:
-                data = s.recv(1024)
+        try:
+            while not _stop_event.is_set():
+                data = sock.recv(4096)
                 if not data:
-                    # La connexion a été fermée par le serveur
                     break
-                message = data.decode()
-                ws_on_message(message)
-            except socket.timeout:
-                continue
-            except Exception as e:
-                print(f"Socket error: {e}")
-                break
-    except Exception as e:
-        print(f"Error establishing socket connection: {e}")
-    finally:
-        print("Socket connection closed")
-        if ref_socket:
-            try:
-                ref_socket.close()
-            except Exception as e:
-                print("Error closing socket:", e)
-        ref_socket = None
+                envelope = ensure_envelope(json.loads(data.decode()))
+                if _mediator is None:
+                    print("No mediator registered on socket client")
+                else:
+                    _mediator.ingest_remote_envelope(envelope)
+        except Exception as exc:
+            print(f"Socket error: {exc}")
+        finally:
+            _ref_socket = None
+            print("Socket connection closed")
 
 
 def start_comms(host_info, port_info):
-    global _receiver_thread, ref_socket, _stop_event
+    global _receiver_thread
     _stop_event.clear()
     _receiver_thread = threading.Thread(target=_receive_updates, args=(host_info, port_info))
     _receiver_thread.start()
 
-    # Attendre que la connexion socket soit établie (avec un timeout)
-    timeout = 5  # secondes
+    timeout = 5
     start_time = time.time()
-    while ref_socket is None and time.time() - start_time < timeout:
+    while _ref_socket is None and time.time() - start_time < timeout:
         time.sleep(0.1)
-    if ref_socket is None:
+
+    if _ref_socket is None:
         print("Failed to establish socket connection within timeout.")
 
 
-def broadcast(event_type, event_content):
-    global ref_socket
-    if not ref_socket:
+def send_to_server(envelope):
+    global _ref_socket
+    if _ref_socket is None:
         print("No active socket connection")
         return
-    if event_content is None:
-        event_content = 'null'
-    richmsg = f'{event_type}#{json.dumps(event_content)}'
+    message = ensure_envelope(envelope).to_json()
     try:
-        ref_socket.sendall(richmsg.encode())
-    except Exception as e:
-        print(f"Error sending data: {e}")
+        _ref_socket.sendall(message.encode())
+    except Exception as exc:
+        print(f"Error sending data: {exc}")
 
 
-def register_mediator(x):
-    global mediators
-    mediators.append(x)
+def broadcast_to_clients(envelope):
+    raise RuntimeError("client transports cannot broadcast to other clients")
+
+
+def register_mediator(mediator):
+    global _mediator
+    _mediator = mediator
 
 
 def shutdown_comms():
-    global ref_socket, _receiver_thread, _stop_event
+    global _ref_socket, _receiver_thread
     _stop_event.set()
-    if ref_socket:
+    if _ref_socket is not None:
         try:
-            ref_socket.shutdown(socket.SHUT_RDWR)
-        except Exception as e:
-            print(f"Error during socket shutdown: {e}")
+            _ref_socket.shutdown(socket.SHUT_RDWR)
+        except Exception as exc:
+            print(f"Error during socket shutdown: {exc}")
         try:
-            ref_socket.close()
-        except Exception as e:
-            print(f"Error closing socket: {e}")
-        ref_socket = None
-    if _receiver_thread:
+            _ref_socket.close()
+        except Exception as exc:
+            print(f"Error closing socket: {exc}")
+        _ref_socket = None
+    if _receiver_thread is not None:
         _receiver_thread.join()
         _receiver_thread = None
     print("Communication shutdown complete.")
+

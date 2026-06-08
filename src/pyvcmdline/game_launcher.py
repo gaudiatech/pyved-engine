@@ -66,9 +66,7 @@ def game_execution(metadata, gdef_module, **kwargs):
     # if the game is multiplayer, we need to instantiate a netlayer
     # init network comms, create a model, and force sync it
     if metadata['multiplayer']:
-        if 'mode' not in kwargs:
-            raise ValueError('for multiplayer game, "mode" HAS TO be either specify in metadat>kwargs or via cmd line')
-        pyv.netlayer = pyv.netlayer_factory.build_netlayer(kwargs['mode'], 'client')
+        pyv.netlayer = pyv.netlayer_factory.build_netlayer(kwargs.get('mode', 'auto'), 'client')
 
     pyv.run_game(
         getattr(gdef_module, 'init'),
