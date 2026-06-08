@@ -13,9 +13,9 @@ GLOBAL_HELP = {
 
         Examples:
           pyv-cli init MyNewGame
-          pyv-cli play . --host 127.0.0.1 --port 8765 --mode ws
+          pyv-cli play MyGame --host 127.0.0.1 --port 8765 --mode ws
           pyv-cli serve MyServerBundle --host 0.0.0.0 --port 9000
-          pyv-cli refresh .
+          pyv-cli refresh MyGame
           pyv-cli upgrade MyGame
     """),
 }
@@ -55,12 +55,11 @@ COMMAND_SPECS = {
         """),
         "epilog": textwrap.dedent("""\
             Examples:
-              pyv-cli play .
               pyv-cli play MyGame --mode ws
               pyv-cli play MyGame --host 127.0.0.1 --port 8765 --player 2
         """),
         "args": [
-            {"name": "bundle_name", "kwargs": {"type": str, "nargs": "?", "default": ".", "help": "Specified bundle (default: current folder)"}},
+            {"name": "bundle_name", "kwargs": {"type": str, "help": "Specified cartridge/bundle folder"}},
             {"name": "--host", "kwargs": {"type": str, "help": "Server hostname"}},
             {"name": "--port", "kwargs": {"type": int, "help": "Server port"}},
             {"name": "--player", "kwargs": {"type": int, "help": "local player identifier"}},
@@ -90,7 +89,6 @@ COMMAND_SPECS = {
               pyv-cli upgrade <bundle_name>
 
             Examples:
-              pyv-cli upgrade .
               pyv-cli upgrade MyGame
         """),
         "args": [
@@ -108,7 +106,6 @@ COMMAND_SPECS = {
         """),
         "epilog": textwrap.dedent("""\
             Examples:
-              pyv-cli freeze .
               pyv-cli freeze MyGame
         """),
         "args": [
@@ -124,7 +121,6 @@ COMMAND_SPECS = {
         """),
         "epilog": textwrap.dedent("""\
             Examples:
-              pyv-cli refresh .
               pyv-cli refresh MyGame
         """),
         "args": [
@@ -140,7 +136,6 @@ COMMAND_SPECS = {
         """),
         "epilog": textwrap.dedent("""\
             Examples:
-              pyv-cli bump .
               pyv-cli bump MyGame
         """),
         "args": [
@@ -158,10 +153,10 @@ COMMAND_SPECS = {
             Examples:
               pyv-cli serve MyServerBundle
               pyv-cli serve MyServerBundle --host 0.0.0.0 --port 9000
-              pyv-cli serve . --mode ws
+              pyv-cli serve MyServerBundle --mode ws
         """),
         "args": [
-            {"name": "bundle_name", "kwargs": {"type": str, "help": "Specified bundle (default: current folder)"}},
+            {"name": "bundle_name", "kwargs": {"type": str, "help": "Specified cartridge/bundle folder"}},
             {"name": "--host", "kwargs": {"type": str, "help": "Server hostname"}},
             {"name": "--port", "kwargs": {"type": int, "help": "Server port"}},
             {"name": "--player", "kwargs": {"type": int, "help": "local player identifier"}},
@@ -178,11 +173,11 @@ COMMAND_SPECS = {
         """),
         "epilog": textwrap.dedent("""\
             Examples:
-              pyv-cli share .
+              pyv-cli share MyGame
               pyv-cli --dev share MyGame
         """),
         "args": [
-            {"name": "bundle_name", "kwargs": {"type": str, "nargs": "?", "default": ".", "help": "Specified bundle (default: current folder)"}},
+            {"name": "bundle_name", "kwargs": {"type": str, "help": "Specified cartridge/bundle folder"}},
         ],
     },
     "test": {
@@ -194,7 +189,6 @@ COMMAND_SPECS = {
         """),
         "epilog": textwrap.dedent("""\
             Examples:
-              pyv-cli test .
               pyv-cli test MyGame
         """),
         "args": [

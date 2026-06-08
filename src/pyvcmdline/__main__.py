@@ -55,10 +55,12 @@ def trigger_publish(slug):  # deprecated func
     raise NotImplementedError
 
 
-def _remove_junk_from_bundle_name(x):
-    """Trim trailing slashes from bundle names."""
+def _normalize_target_name(x):
+    """Trim trailing slashes and reject current-folder targeting."""
     t = x.rstrip('/')
     t = t.rstrip('\\')
+    if t in ('', '.'):
+        raise ValueError('pyv-cli requires an explicit cartridge/bundle folder name; "." is not supported')
     return t
 
 
@@ -102,12 +104,14 @@ def main_inner(parser, argns, extra_args=None):
             k: v for k, v in vars(argns).items()
             if k not in ["bundle_name", "command", "subcommand", "version", "help"] and v is not None
         }
-        xarg = _remove_junk_from_bundle_name(argns.bundle_name)
+        xarg = _normalize_target_name(argns.bundle_name)
         adhoc_subcommand_func(xarg, extra_args=extra_args, **kwargs)
     elif ope_name == "ts-creation":
         adhoc_subcommand_func(argns.image_path)
+    elif ope_name == "pub":
+        adhoc_subcommand_func(argns.slug)
     else:
-        xarg = _remove_junk_from_bundle_name(argns.bundle_name)
+        xarg = _normalize_target_name(argns.bundle_name)
         if ope_name == "share":
             adhoc_subcommand_func(xarg, argns.dev)
         else:

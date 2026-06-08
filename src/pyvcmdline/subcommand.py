@@ -30,7 +30,7 @@ SERV_CODE_START_FUNC = 'exec'
 
 def _bundle_root_dir(bundle_name: str) -> str:
     if bundle_name in ('.', '', None):
-        return os.getcwd()
+        raise ValueError('pyv-cli requires an explicit cartridge/bundle folder name; "." is not supported')
     return os.path.join(os.getcwd(), bundle_name)
 
 
@@ -83,6 +83,29 @@ def _copy_pyved_engine_tree(target_root: str) -> None:
     if os.path.exists(engine_dst):
         raise FileExistsError(f'cannot create detached server scaffold, {engine_dst} already exists')
     shutil.copytree(engine_src, engine_dst)
+
+
+def _copy_declared_data_files(source_cartridge: str, detached_root: str, metadata: dict) -> None:
+    for data_file in metadata.get('data_files', []):
+        src_path = os.path.join(source_cartridge, data_file)
+        dst_path = os.path.join(detached_root, data_file)
+        if not os.path.exists(src_path):
+            raise FileNotFoundError(f'data file declared in metadat.json not found: {data_file}')
+        if os.path.isdir(src_path):
+            os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+            shutil.copytree(src_path, dst_path)
+        else:
+            os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+            shutil.copy2(src_path, dst_path)
+
+
+def _copy_default_launcher(target_root: str, basic_bundle=True) -> None:
+    root_pyvcli = os.path.dirname(os.path.abspath(__file__))
+    launcher_src = os.path.join(
+        root_pyvcli,
+        *(_utils.BASIC_LAUNCH_GAME_SCRIPT_LOC if basic_bundle else _utils.NETW_LAUNCH_GAME_SCRIPT_LOC)
+    )
+    shutil.copy(launcher_src, os.path.join(target_root, 'launch_game.py'))
 
 
 # -------------------------
@@ -212,6 +235,7 @@ def bump(bundle_name):
     """
     Nota Bene: operations bump, share automatically update the list of source files
     """
+    _bundle_root_dir(bundle_name)
     active_engine_ver_wdots = pyvcli_defs.read_ver()
     print('trying to bump to current version, that is', active_engine_ver_wdots)
 
@@ -317,80 +341,68 @@ def init(chosen_slug: str) -> None:
 
 def freeze(bundle_name):
     """
-    Create a frozen copy of a hot bundle.
+    Embed a hot cartridge into a frozen bundle.
 
-    The frozen output is intentionally a new folder so the original bundle can
-    keep being used during local development.
+    The original cartridge is never mutated. The generated bundle follows this
+    layout: <slug>_bundle/launch_game.py and <slug>_bundle/<slug>/metadat.json.
     """
-    metadata = _utils.read_metadata(bundle_name)
     source_root = _bundle_root_dir(bundle_name)
-    frozen_slug = f"{metadata['slug']}_frozen"
-    target_root = os.path.join(os.getcwd(), frozen_slug)
+    metadata = _utils.read_metadata(bundle_name)
+    slug = metadata['slug']
+    if os.path.basename(os.path.abspath(source_root)) != slug:
+        raise ValueError(f'the cartridge folder must be named after its slug: expected "{slug}"')
 
+    frozen_bundle_name = f"{slug}_bundle"
+    target_root = os.path.join(os.getcwd(), frozen_bundle_name)
     if os.path.exists(target_root):
         raise FileExistsError(f'freeze destination already exists: {target_root}')
 
-    print(f'freezing bundle {bundle_name} -> {frozen_slug}')
+    if metadata.get('has_game_server', False) and not os.path.isdir(os.path.join(source_root, MODULE_WITH_SERV_CODE)):
+        raise FileNotFoundError(f'{MODULE_WITH_SERV_CODE}/ is required when has_game_server=true')
+
+    print(f'freezing cartridge {source_root} -> {target_root}')
     os.makedirs(target_root)
 
-    source_cartridge = os.path.join(source_root, 'cartridge')
-    target_cartridge = os.path.join(target_root, 'cartridge')
-    payload_root = source_cartridge if os.path.isdir(source_cartridge) else source_root
-    shutil.copytree(payload_root, target_cartridge)
+    target_cartridge = os.path.join(target_root, slug)
+    shutil.copytree(source_root, target_cartridge)
 
     frozen_metadata = dict(metadata)
-    frozen_metadata['slug'] = frozen_slug
     frozen_metadata['frozen'] = True
     frozen_metadata['build_date'] = _utils.gen_build_date_now()
-    _utils.rewrite_metadata(frozen_slug, frozen_metadata)
+    _utils.rewrite_metadata(slug, frozen_metadata, target_root)
 
     source_launcher = os.path.join(source_root, 'launch_game.py')
     if os.path.isfile(source_launcher):
         shutil.copy2(source_launcher, os.path.join(target_root, 'launch_game.py'))
     else:
         # Keep the command usable even if the source bundle never had a launcher.
-        _utils.copy_launcher_script(frozen_slug, basic_bundle=True)
+        _copy_default_launcher(target_root, basic_bundle=True)
         # TODO if the source bundle needs a custom launcher, copy it here instead of the default template.
 
-    if os.path.isdir(source_cartridge):
-        for candidate in ('netcode', 'network'):
-            candidate_path = os.path.join(source_root, candidate)
-            if os.path.isdir(candidate_path):
-                shutil.copytree(candidate_path, os.path.join(target_root, candidate))
-                break
-
-    # Multiplayer bundles need a detached-server scaffold too.
-    if metadata.get('multiplayer', False):
+    if metadata.get('has_game_server', False):
         detached_root = os.path.join(target_root, 'detached_server')
         os.makedirs(detached_root, exist_ok=True)
 
-        source_netcode = None
-        for candidate in ('netcode', 'network'):
-            candidate_path = os.path.join(source_root, candidate)
-            if os.path.isdir(candidate_path):
-                source_netcode = candidate_path
-                break
-
-        if source_netcode is not None:
-            shutil.copytree(source_netcode, os.path.join(detached_root, os.path.basename(source_netcode)))
-        # TODO copy any server-specific glue code and normalize the detached-server import layout.
+        source_netcode = os.path.join(source_root, MODULE_WITH_SERV_CODE)
+        shutil.copytree(source_netcode, os.path.join(detached_root, MODULE_WITH_SERV_CODE))
+        _copy_declared_data_files(source_root, detached_root, metadata)
+        # TODO make host/port/mode configurable from metadata and/or deployment environment.
         _copy_pyved_engine_tree(detached_root)
         _write_text_file(
             os.path.join(detached_root, 'main.py'),
-            _generate_detached_server_main(frozen_slug, True)
+            _generate_detached_server_main(slug, metadata.get('multiplayer', False))
         )
 
     print(f'freeze completed: {target_root}')
 
 
 def play(bundle_name, extra_args=None, **kwargs):
+    _bundle_root_dir(bundle_name)
     extra_args = list(extra_args or [])
     if extra_args:
         sys.argv = [sys.argv[0], *extra_args]
     devflag_on = kwargs['dev']
     print('dans la cmd', kwargs)
-    if '.' != bundle_name and os.path.isdir('cartridge'):
-        raise ValueError('launching with a "cartridge" in the current folder, but no parameter "." is forbidden')
 
     # ------------------------
     #  just checking for errors, on metadat.json
@@ -433,6 +445,7 @@ def refresh(bundle_name):
     :param bundle_name:
     :return:
     """
+    _bundle_root_dir(bundle_name)
     print('list of source files has been updated')
     my_metadat = _utils.read_metadata(bundle_name)
     _utils.save_list_of_py_files(os.path.join(bundle_name, 'cartridge'), my_metadat)
@@ -441,6 +454,7 @@ def refresh(bundle_name):
 
 
 def serve(bundle_name, extra_args=None, **kwargs) -> None:
+    _bundle_root_dir(bundle_name)
     extra_args = list(extra_args or [])
     if extra_args:
         sys.argv = [sys.argv[0], *extra_args]
@@ -494,6 +508,7 @@ def serve(bundle_name, extra_args=None, **kwargs) -> None:
 
 
 def share(bundle_name: str, dev_flag: bool):
+    _bundle_root_dir(bundle_name)
     # TODO in the future,
     #  we may want to create a 'pack' subcommand that would only produce the .zip, not send it elsewhere
     # that pack subcommand would pack and send it to the cwd, whereas the classic pack uses the tempfile/tempdir logic
@@ -548,6 +563,7 @@ def share(bundle_name: str, dev_flag: bool):
 
 
 def test(bundle_name):
+    _bundle_root_dir(bundle_name)
     print(f"Folder targetted to inspect game bundle: {bundle_name}")
     metadat = _utils.read_metadata(bundle_name)
 
@@ -622,6 +638,7 @@ def upgrade(bundlename):
     [4] insertion code network vers le chemin bundle/network
     [5] écrasement launch_game.py par la version moddée
     """
+    _bundle_root_dir(bundlename)
 
     # TODO:
     # faut fix ce souci
